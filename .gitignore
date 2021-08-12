@@ -5,7 +5,7 @@ libexec/gcc/aarch64-elf/4.8.2
 share/
 .gdb_history
 include/
-src/
+src/*tgz
 lib/
 lib64/
 sample/4dimage/472.pnm
