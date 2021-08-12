@@ -1,0 +1,15 @@
+aarch64-elf/
+bin/
+.vscode/
+libexec/gcc/aarch64-elf/4.8.2
+share/
+.gdb_history
+include/
+src/
+lib/
+lib64/
+sample/4dimage/472.pnm
+sample/deeppose/data/wfc6
+sample/graph-data/web-BerkStan.edges
+sample/mm_cnn_lf/472.ini
+sample/test/test022-csim.emax6+dma.log

@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../SuiteSparse/CSparse"
+		}
+	],
+	"settings": {}
+}
