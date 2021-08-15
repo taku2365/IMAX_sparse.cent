@@ -27,22 +27,36 @@
 
 export CPP     = cpp -P
 export CC      = gcc
-export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DDEBUG_MODE
+export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 
 export LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
-PROGRAM	      =	test022-cent.emax6nc
-OBJS          =	test022.o
+PROGRAM	      = test023-cent.emax6nc
+OBJS          =	test023.o
 SRCS          =	($(OBJS:.o=.c))
-HEADERS       =	
+#HEADERS       =	../../src/emax6_sparselib/include/emax6_sparselib.h
+INCLUDE = -I../../src/emax6_sparselib/Include
 
-all:		$(PROGRAM)
+EMAX_SPARSE_LIB = ../../src/emax6_sparselib/sparse_lib.a
 
-$(PROGRAM):	$(OBJS)
-		$(CC)  $(OBJS) -o $(PROGRAM) $(LDFLAGS) $(CFLAGS)
+
+
+all: $(PROGRAM) 
+
+$(PROGRAM):	sparse_lib $(OBJS)
+		$(CC)  $(OBJS) -o $(PROGRAM) $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
+
+sparse_lib:
+	(cd ../../src/emax6_sparselib; $(MAKE) static)
+# $(MAKE)はマクロも引き継がれる
+
 
 .c.o:		$(HEADERS)
-		$(CC) $(CFLAGS) -c $<
+		$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
-clean:;		rm -rf *.o *~
+clean:  		
+	rm -rf *.o *~
+	(cd ../../src/emax6_sparselib; $(MAKE) clean)
+
+
 
 ###

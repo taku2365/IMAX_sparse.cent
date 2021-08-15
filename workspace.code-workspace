@@ -7,5 +7,10 @@
 			"path": "../SuiteSparse/CSparse"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"resource.h": "c",
+			"cs.h": "c"
+		}
+	}
 }

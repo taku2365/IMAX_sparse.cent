@@ -27,20 +27,20 @@ define p_array
 end
 
 define p_32_2
-    printf "left %6.3f right %6.3f \n" ,(Uint)($arg0),(Uint)($arg0>>32)
+    printf "left %6.3f right %6.3f \n" ,(Uint)($arg0>>32),(Uint)($arg0)
 end
 
 define p_32_2_BR
-    printf "BR left %6.3f right %6.3f \n" ,(Uint)($arg0),(Uint)($arg0>>32)
+    printf "BR left %6.3f right %6.3f \n" ,(Uint)($arg0>>32),(Uint)($arg0)
 end
 
 define p_32_2_AR
-    printf "AR left %6.3f right %6.3f \n" ,(Uint)($arg0),(Uint)($arg0>>32)
+    printf "AR left %6.3f right %6.3f \n" ,(Uint)($arg0>>32),(Uint)($arg0)
 end
 
 
-#b main
-b imax
-b test022.c:555
+b main
+b imax_debug
+b test023.c:555
 run
 
