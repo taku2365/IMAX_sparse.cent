@@ -10,7 +10,8 @@
 	"settings": {
 		"files.associations": {
 			"resource.h": "c",
-			"cs.h": "c"
+			"cs.h": "c",
+			"emax6_sparselib.h": "c"
 		}
 	}
 }

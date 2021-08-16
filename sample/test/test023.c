@@ -132,7 +132,7 @@ Uint *C1; /*[M1][M2];*/
 Uint *A_debug; /*[M1][L];*/
 Uint *B_debug; /*[L][M2];*/
 Uint *C_debug; /*[M1][M2];*/
-emax6_sparse* sparse_A;
+emax6_sparse* A_sparse;
 int row, col, n;
 int top, blk;
 int w, h;
@@ -181,28 +181,39 @@ main()
   int* row_index_A = (int *)calloc(M1*L,sizeof(int));
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++){
-       tmp = rand()%2;
+       tmp = (int) tmp;
+       tmp = (rand()%3 == 0);
       *(float*)&A[row*L+col] = (float) tmp;
-
-      if(A[row*L+col]){
-          nnz_A += 1;
+      // floatで等価の判断するの危険なので、LIMITで0判定をしている。
+      if(!((-LIMIT <= *(float*)&A[row*L+col]) && (*(float*)&A[row*L+col] <= LIMIT))){
           col_index_A[nnz_A] = col;
           row_index_A[nnz_A] = row;
+          nnz_A += 1;
         }
     }
   }
 
-  sparse_A = sparse_format(nnz_A,A,col_index_A,row_index_A,M1,L);
+  A_sparse = sparse_format(nnz_A,A,col_index_A,row_index_A,M1,L);
   free(row_index_A);
   free(col_index_A);
   
+//   for (row=0; row<L; row++) {
+//     for (col=0; col<M2; col++){
+//        tmp = rand()%2 ;
+//       *(float*)&B[row*M2+col] = (float) tmp;
+//       if(B[row*L+col]) nnz_B += 1; 
+//     }
+//   }
+
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++){
-       tmp = rand()%2 ;
+       tmp = 1 ;
       *(float*)&B[row*M2+col] = (float) tmp;
-      if(B[row*L+col]) nnz_B += 1; 
+      if(!((-LIMIT <= *(float*)&B[row*M2+col]) && (*(float*)&B[row*M2+col] <= LIMIT))) nnz_B += 1; 
     }
   }
+
+  sparse_multiply(A_sparse,B,C1,M2);
 
 
 
@@ -212,7 +223,7 @@ main()
   }
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++)
-      *(float*)&B[row*M2+col] = 0.0;
+      *(float*)&B_debug[row*M2+col] = 0.0;
   }
 
   for (row=0; row<M1; row++) {
@@ -227,13 +238,26 @@ main()
   // reset_nanosec();
   // size_t Dll_size = sizeof(Dll);
   orig();
+
+  for (row=0; row<M1; row++) {
+    for (col=0; col<M2; col++) {
+      if (C0[row*M2+col] != C1[row*M2+col]) {
+        count2++;
+        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
+                                                row, col, (double)*(float*)&C1[row*M2+col]);
+      }
+    }
+  }
+
+  exit(1);
+  
   // get_nanosec(0);
   // show_nanosec();
 
   // reset_nanosec();
   imax_debug();
 //   free(col_index_B);
-  free(sparse_A);
+  free(A_sparse);
 //   free(row_index_B);
   // get_nanosec(0);
   // show_nanosec();
@@ -247,9 +271,10 @@ main()
       }
     }
   }
+  
 
 
-  exit(1);
+
 
 #ifdef ARMSIML
   copy_Z(0, C1); _copyX(0, Z);

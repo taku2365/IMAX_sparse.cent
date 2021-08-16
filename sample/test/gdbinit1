@@ -1,5 +1,6 @@
 set logging file gdb_log
 set logging on
+dashboard -layout !registers !assembly source variables !stack
 
 
 #https://stackoverflow.com/questions/30494918/gdb-alias-for-quick-saving-loading-of-breakpoints

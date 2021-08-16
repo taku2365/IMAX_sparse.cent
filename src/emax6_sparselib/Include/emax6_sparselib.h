@@ -1,5 +1,11 @@
 #ifndef EMAX_SPARSE
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define LIMIT 1.0e-30
+
 #ifndef UTYPEDEF
 #define UTYPEDEF
 typedef unsigned char      Uchar;
@@ -14,15 +20,19 @@ typedef struct {Ull u[2];} Dll;
 #endif
 #endif
 
+
+
 typedef struct {
     int nnz; // nonzero
-    int* row_p; //row pointer 
-    int* col_index; //column index
-    Ull* val;
+    int col_normal_size; //matrix col size
+    int row_normal_size; //matrix row size
+    int* row_p; //row pointer //row_p[n] = nnz
+    int* col_index; //column index len(column_index)=row_normal_size*col_normal_size
+    Uint* val; // actual nonzero value
 } emax6_sparse;
 
 
-emax6_sparse* sparse_format(int nnz, Ull* val, int* col_index, int* row_index,int row_size,int col_size);
-
+emax6_sparse* sparse_format(int nnz, const Uint* const val, int* col_index, int* row_index,int row_size,int col_size);
+void sparse_multiply(const emax6_sparse* const  A_sparse, const Uint* const B, Uint* C_sparse, int B_col_size);
 
 #endif

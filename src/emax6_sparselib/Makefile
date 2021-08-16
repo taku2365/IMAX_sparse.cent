@@ -5,7 +5,7 @@
 ##                sugahara.takuya.ss4@is.naist.jp ##
 
 ARCHIVE = $(AR) $(ARFLAGS)
-EMAX6_SPARSE_LIB = sparse_format.o
+EMAX6_SPARSE_LIB = sparse_format.o sparse_multiply.o
 AR_TARGET = sparse_lib.a
 
 all: static
