@@ -133,6 +133,7 @@ Uint *A_debug; /*[M1][L];*/
 Uint *B_debug; /*[L][M2];*/
 Uint *C_debug; /*[M1][M2];*/
 emax6_sparse* A_sparse;
+emax6_param* params;
 int row, col, n;
 int top, blk;
 int w, h;
@@ -171,7 +172,11 @@ main()
   A_debug = (Uint*)((Uchar*)C1 + M1*M2*sizeof(Uint));
   B_debug  = (Uint*)((Uchar*)A_debug  + M1*L*sizeof(Uint));
   C_debug = (Uint*)((Uchar*)B_debug  + L*M2*sizeof(Uint));
-  
+  params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+  params->RMGRP_param = RMGRP;
+  params->NCHIP_param = NCHIP;
+  params->H_param = H;
+  params->W_param= W;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
@@ -182,7 +187,7 @@ main()
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++){
        tmp = (int) tmp;
-       tmp = (rand()%3 == 0);
+       tmp = (rand()%2 == 0);
       *(float*)&A[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A[row*L+col]) && (*(float*)&A[row*L+col] <= LIMIT))){
@@ -193,7 +198,7 @@ main()
     }
   }
 
-  A_sparse = sparse_format(nnz_A,A,col_index_A,row_index_A,M1,L);
+  A_sparse = sparse_format1(nnz_A,A,col_index_A,row_index_A,M1,L,params);
   free(row_index_A);
   free(col_index_A);
   
@@ -320,7 +325,7 @@ main()
 }
 
 
-
+ 
 
 
 copy_Z(id, from)

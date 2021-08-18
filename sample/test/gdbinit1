@@ -3,6 +3,7 @@ set logging on
 dashboard -layout !registers !assembly source variables !stack
 
 
+
 #https://stackoverflow.com/questions/30494918/gdb-alias-for-quick-saving-loading-of-breakpoints
 #https://stackoverflow.com/questions/20481815/how-to-loop-in-a-gdb-script-till-program-is-finished
 
