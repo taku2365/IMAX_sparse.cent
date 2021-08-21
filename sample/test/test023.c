@@ -122,7 +122,7 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 #define M2 120LL
 #define RMGRP 15
 /*#define NCHIP 4*/
-#define NCHIP 4
+#define NCHIP 1
 #define W  4LL
 #define H  60
 Uint *A;  /*[M1][L];*/
@@ -218,7 +218,11 @@ main()
     }
   }
 
-  sparse_multiply(A_sparse,B,C1,M2);
+  orig();
+  sparse_multiply_imax(A_sparse,B,C1,M2,params);
+  // sparse_multiply(A_sparse,B,C1,M2);
+
+
 
 
 
@@ -242,7 +246,6 @@ main()
 
   // reset_nanosec();
   // size_t Dll_size = sizeof(Dll);
-  orig();
 
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
@@ -255,6 +258,8 @@ main()
   }
 
   exit(1);
+
+  
   
   // get_nanosec(0);
   // show_nanosec();

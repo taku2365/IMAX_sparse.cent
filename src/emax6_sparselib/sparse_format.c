@@ -77,30 +77,30 @@ emax6_sparse* sparse_format1(int nnz,const Uint* const val, int* col_index, int*
         col_index_sparse[i] = col_index_tmp;
         val_sparse[i] = val[row_index[i]*col_size+col_index[i]];
         col_index_sum += 1;
-        if(row_index_tmp != row_index_tmp_past){
+        if((row_index_tmp != row_index_tmp_past)||(i==nnz-1)){
             // rowが次に進んだら、次に進んだrowまでのcolのnozero個数を代入する。
             //rowのzeroはすでに埋まっているので1からスタートする。
             //このifに入っている時点で次の行に進んでいるのでひとつ前のcol_index_sum-1を代入する。
-            // paddingsにpadする数を入れる やることがなかったら-1を入れてスキップする。
+            // paddingsにpadする数を入れる やることがなかったら-2を入れてスキップする。
             // Hで割り切れなかったらpadを入れる。　pad_surplusdeで判定する。
             row_index_sparse_diff = (col_index_sum-1) - row_index_sparse_p[row_index_count-1] ; //その行のnnz
+            row_index_sparse_diff = (i==nnz-1)? row_index_sparse_diff+1 : row_index_sparse_diff; //最後の時は次の行に行っていないので引く1
             full_calculate = row_index_sparse_diff/H; //H=60まで計算する回数  110/60=1 ..50
-            pad_surplus = (row_index_sparse_diff%H != 0);
+            pad_surplus = (row_index_sparse_diff%H != 0); // 割り切れなくて、途中までpadするパターン
             full_pad_iter = col_size/H - full_calculate - pad_surplus; //省略できる回数 ex 480/60 - 1 - 1  = 6
 
-            for(int j=0; j<full_calculate; j++) paddings[paddings_index++] = 1; //Hすべて計算するときは1を入れる
+            for(int j=0; j<full_calculate; j++) paddings[paddings_index++] = -1; //Hすべて計算するときは-1を入れる
 
             if(pad_surplus) paddings[paddings_index++] = H - (int) row_index_sparse_diff%H; //途中まで計算して、最後はpadする回数 ex 60 - 110%60= 60 - 50 = 10　　ex1 60 - 40%60 = 60 - 40 = 20
 
-            for(int k=0; k<full_pad_iter; k++) paddings[paddings_index++] = -1; //省略できるときは-1を入れる
-            
-            row_index_sparse_p[row_index_count++] = col_index_sum-1; //formatの定義で一つ前のcolnnzの数を入れる　ex 0行に4つ 1行に3つ [0]=0 [1]=4　[2]=7
+            for(int k=0; k<full_pad_iter; k++) paddings[paddings_index++] = -2; //省略できるときは-2を入れる
+    
+            row_index_sparse_p[row_index_count++] = (i==nnz-1)? col_index_sum:col_index_sum-1; //formatの定義で一つ前のcolnnzの数を入れる　ex 0行に4つ 1行に3つ [0]=0 [1]=4　[2]=7
         }
         row_index_tmp_past = row_index_tmp;
     }
 
-
-    row_index_sparse_p[row_index_count] = col_index_sum; // rowsize+1個目にnnzが入る
+    //nnz-1も入れるので、for抜けた後にrow_index_sparse_pを代入する必要がなくなった。
     sparse_info->col_index = col_index_sparse;
     sparse_info->row_p = row_index_sparse_p;
     sparse_info->val = val_sparse;
