@@ -176,7 +176,7 @@ main()
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
-  params->W_param= W;
+  params->W_param= W*2;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
@@ -187,7 +187,7 @@ main()
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++){
        tmp = (int) tmp;
-       tmp = (rand()%2 == 0);
+       tmp = (rand()%3 == 0);
       *(float*)&A[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A[row*L+col]) && (*(float*)&A[row*L+col] <= LIMIT))){
@@ -219,7 +219,7 @@ main()
   }
 
   orig();
-  sparse_multiply_imax(A_sparse,B,C1,M2,params);
+  count1 = sparse_multiply_imax(A_sparse,B,C1,M2,params);
   // sparse_multiply(A_sparse,B,C1,M2);
 
 
@@ -257,6 +257,7 @@ main()
     }
   }
 
+  printf("count_normal %d count_sparse %d \n",count0,count1);
   exit(1);
 
   

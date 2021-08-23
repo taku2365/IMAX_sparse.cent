@@ -37,7 +37,7 @@ void sparse_multiply(const emax6_sparse* const A_sparse, const Uint* const B, Ui
 }
 
 
-void sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params){
+int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params){
     if(!A_sparse||!B||!C){
         printf("A,B,C NULL pointer \n");
         exit(0);
@@ -58,9 +58,10 @@ void sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const 
     int RMGRP = params->RMGRP_param;
     int W = params->W_param; 
     int H = params->H_param; 
-    int blk_size = H;
+    int blk_size = 40;
     int A_col_H_div = A_col_size/H; // Aの列をHで何分割するか
     int pad_index;
+    int count=0;
     memset(C, 0, sizeof(Uint)*A_row_size*B_col_size);
 
     
@@ -97,6 +98,7 @@ void sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const 
                                     // H-padding回普通に計算した後に、padding回 0で埋める。A_paddingsにはpadする回数が入っている。　
                                     //h-A_col_min+1 比べているのは回数なので+1している。　さもないとex h=60 A_col_min=60で0になってしまう (実際には1回目)
                                     // ex A_col_min=60 h=63 H=60 A_paddings[pad_index]=58   h-A_col_min+1=3  H-A_paddings[pad_index]=60-58=2 3>2 ----> padding!
+                                    count++;
                                     if ((A_judge!=-1)&&((h-A_col_min+1)>(H-A_paddings[pad_index]))) *(float*)&C[(CHIP*A_row_size/NCHIP+rofs+top)*B_col_size+blk+w_col_4+w] += 0.0f * *(float*)&B[A_nnz_col_index[h]*B_col_size+blk+w_col_4+w];
                                     else *(float*)&C[(CHIP*A_row_size/NCHIP+rofs+top)*B_col_size+blk+w_col_4+w]  += *(float*)&A_nnz_val[h] * *(float*)&B[A_nnz_col_index[h]*B_col_size+blk+w_col_4+w];
                                 } 
@@ -107,6 +109,8 @@ void sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const 
             }
         }
     }
+
+    return count;
 
 
 }
