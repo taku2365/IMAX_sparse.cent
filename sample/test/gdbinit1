@@ -28,6 +28,30 @@ define p_array
     printf "\n"
 end
 
+
+
+define p_array_T
+    set $tmp = 0
+    set $tmp_x_index = 0
+    set $tmp_y_index = 0
+    set $Y_index = $arg2
+    while $Y_index >0
+        set $tmp = $tmp_y_index
+        set $X_index = $arg1 
+        set $Y_index = $Y_index - 1 
+        printf "\n"
+        while $X_index >0
+            printf "%f(%d,%d) " ,$arg0[$tmp],$tmp_y_index,$tmp_x_index
+            set $tmp_x_index = $tmp_x_index +1 
+            set $tmp = $tmp + $arg2 
+            set $X_index = $X_index - 1
+        end
+        set $tmp_y_index = $tmp_y_index +1
+        set $tmp_x_index = 0
+    end
+    printf "\n"
+end
+
 define p_32_2
     printf "left %6.3f right %6.3f \n" ,(Uint)($arg0>>32),(Uint)($arg0)
 end
@@ -42,6 +66,7 @@ end
 
 
 b main
+b main:202
 b imax_debug
 b test023.c:555
 run

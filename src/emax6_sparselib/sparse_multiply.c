@@ -37,6 +37,8 @@ void sparse_multiply(const emax6_sparse* const A_sparse, const Uint* const B, Ui
 }
 
 
+//A sparse B dense
+
 int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params){
     if(!A_sparse||!B||!C){
         printf("A,B,C NULL pointer \n");
@@ -58,7 +60,7 @@ int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B
     int RMGRP = params->RMGRP_param;
     int W = params->W_param; 
     int H = params->H_param; 
-    int blk_size = 40;
+    int blk_size = 80;
     int A_col_H_div = A_col_size/H; // Aの列をHで何分割するか
     int pad_index;
     int count=0;
@@ -111,6 +113,77 @@ int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B
     }
 
     return count;
+
+
+}
+
+
+
+
+int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params){
+    if(!A_sparse||!B||!C){
+        fprintf(stderr,"A,B,C NULL pointer \n");
+        exit(1);
+    }
+    
+
+    int A_nnz =  A_sparse->nnz;
+    int A_col_size = A_sparse->col_normal_size;
+    int A_row_size = A_sparse->row_normal_size;
+    int* A_col_p = A_sparse->col_p;
+    int* A_nnz_col_index = A_sparse->col_index;
+    Uint* A_nnz_val = A_sparse->val;
+    int* A_sort_index= A_sparse->sort_index;
+    int* A_col_num= A_sparse->col_num;
+    int* A_paddings = A_sparse->paddings;
+    int* A_margin = A_sparse->margin;
+    int B_row_size = A_sparse->col_normal_size;
+    int A_judge=0;
+    int B_row_min,B_row_max;
+    int A_col_min,A_col_max;
+    int NCHIP = params->NCHIP_param; 
+    int RMGRP = params->RMGRP_param;
+    int W = params->W_param; 
+    int H = params->H_param; 
+    int blk_size = 80;
+    int A_col_H_div = A_col_size/H; // Aの列をHで何分割するか
+    int pad_index;
+    int count=0;
+    memset(C, 0, sizeof(Uint)*A_row_size*B_col_size);
+
+    
+  
+  Ull CHIP;
+  Ull rofs;
+  printf("<<<IMAX>>>\n");
+  for (int top=0; top<A_row_size/NCHIP; top+=RMGRP) { //RMGRPごとに計算するBの列を動かす
+    for (int blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { //blk_iterをmarginに入れたら次のHに飛ばしてくれる
+/*3*/ for (CHIP=0; (CHIP<NCHIP)&&((A_margin[blk_iter]!=0)); CHIP++) { //marginが0の時は計算省略できる
+  /*2*/ for (rofs=0; rofs<A_margin[blk_iter]; rofs++) { //Aがどれだけrowを確保するか
+    /*1*/ for (int col=0; col<RMGRP; col+=W) { // どれだけBをcolにすすめるか
+            for (int w=0; w<W; w++) {   /* horizontal (parallel) execution */
+              for (int h=0; h<H; h++) { /* vertical (pipelined) execution */
+                count++;
+                //A_sort_index[rofs]で適切な位置に並べ替えているが、実際のIMAXでは後処理でする
+                if (blk == 0 && h == 0)
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w]  = *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w];
+                else
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w] += *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w];
+
+                /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
+              }
+            }
+            /*printf("\n");*/
+          }
+        }
+      }
+    }
+  }
+
+
+
+
+return count;
 
 
 }

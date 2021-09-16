@@ -14,9 +14,11 @@ LDFLAGS       = -m32
 endif
 LIBFLAGS      =
 
-OBJS	      = main.o \
+OBJS	      =  \
 		y.tab.o \
-		emax6.o
+		emax6.o \
+		yacc_lex_util.o \
+		main.o\
 
 SRCS	      = main.c \
 		y.tab.c \
@@ -32,15 +34,16 @@ $(PROGRAM):     $(OBJS)
 .c.o:;		cc -c $(CFLAGS) $<
 
 y.tab.c:	conv-c2c.y
-		yacc conv-c2c.y
+		bison  -t -v -y -d conv-c2c.y
 
 lex.yy.c:	conv-c2c.l
-		lex -l conv-c2c.l
+		flex  conv-c2c.l
 
-clean:;		@rm -f $(OBJS) y.tab.c lex.yy.c core mon.out Make.log *~
+clean:;		@rm -f $(OBJS) y.tab.c y.tab.h lex.yy.c core mon.out y.output Make.log *~
 
 ###
 
-main.o:		conv-c2c.h
-y.tab.o:	conv-c2c.h emax6.h lex.yy.c
+main.o:		yacc_lex_util.h
+y.tab.o:	lex.yy.c yacc_lex_util.h
 emax6.o:	conv-c2c.h emax6.h
+yacc_lex_util.o: conv-c2c.h emax6.h

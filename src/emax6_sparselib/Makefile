@@ -10,12 +10,14 @@ AR_TARGET = sparse_lib.a
 
 all: static
 
-%.o: /emax6_sparselib/%.c ../Include/emax6_sparselib.h
-	$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
 
 $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(ARCHIVE)  $@ $^
+
+
+%.o: /emax6_sparselib/%.c ../Include/emax6_sparselib.h
+	$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
 
 static: $(AR_TARGET)
