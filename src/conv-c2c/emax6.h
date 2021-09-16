@@ -19,6 +19,7 @@ typedef struct {Ull u[2];} Dll;
 #endif
 
 #if 1
+// int emit_emax6a(int mode);
 void /*__attribute__((always_inline))*/ cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
 void /*__attribute__((always_inline))*/ ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
 int  /*__attribute__((always_inline))*/ exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);

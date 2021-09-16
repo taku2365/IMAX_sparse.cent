@@ -120,9 +120,10 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 #define L  120LL
 #define M1 120LL
 #define M2 120LL
-#define RMGRP 15
+#define RMGRP 60
+#define BLK_SIZE 80
 /*#define NCHIP 4*/
-#define NCHIP 1
+#define NCHIP 2
 #define W  4LL
 #define H  60
 Uint *A;  /*[M1][L];*/
@@ -132,13 +133,13 @@ Uint *C1; /*[M1][M2];*/
 Uint *A_debug; /*[M1][L];*/
 Uint *B_debug; /*[L][M2];*/
 Uint *C_debug; /*[M1][M2];*/
-emax6_sparse* A_sparse;
+emax6_sparse1* A_sparse;
 emax6_param* params;
 int row, col, n;
 int top, blk;
 int w, h;
 int count0, count1, count2;
-int nnz_A,nnz_B;
+int nnz_A,nnz_B,nnz_B_debug;
 
 
 #define CSIMWD 320
@@ -176,7 +177,7 @@ main()
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
-  params->W_param= W*2;
+  params->W_param= W;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
@@ -188,6 +189,7 @@ main()
     for (col=0; col<L; col++){
        tmp = (int) tmp;
        tmp = (rand()%3 == 0);
+      //  tmp = (rand()%3 == 0)||(rand()%8);
       *(float*)&A[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A[row*L+col]) && (*(float*)&A[row*L+col] <= LIMIT))){
@@ -198,10 +200,11 @@ main()
     }
   }
 
-  A_sparse = sparse_format1(nnz_A,A,col_index_A,row_index_A,M1,L,params);
+
+  A_sparse = sparse_format2(nnz_A,A,col_index_A,row_index_A,M1,L,params);
   free(row_index_A);
   free(col_index_A);
-  
+
 //   for (row=0; row<L; row++) {
 //     for (col=0; col<M2; col++){
 //        tmp = rand()%2 ;
@@ -214,13 +217,16 @@ main()
     for (col=0; col<M2; col++){
        tmp = 1 ;
       *(float*)&B[row*M2+col] = (float) tmp;
+      *(float*)&B_debug[col*L+row] = (float) tmp;
       if(!((-LIMIT <= *(float*)&B[row*M2+col]) && (*(float*)&B[row*M2+col] <= LIMIT))) nnz_B += 1; 
+      if(!((-LIMIT <= *(float*)&B_debug[col*L+row]) && (*(float*)&B_debug[col*L+row] <= LIMIT))) nnz_B_debug += 1; 
     }
   }
 
-  orig();
-  count1 = sparse_multiply_imax(A_sparse,B,C1,M2,params);
   // sparse_multiply(A_sparse,B,C1,M2);
+  // count1 = sparse_multiply_imax(A_sparse,B,C1,M2,params);
+  orig();
+  count1 = sparse_multiply_imax1(A_sparse,B,C1,M2,params);
 
 
 
@@ -546,7 +552,7 @@ imax_debug() {
   /*      └─────┘└─┴─┴─┘┘        └─┴─┴─┘┘                       */
   printf("<<<IMAX>>>\n");
   for (top=0; top<M1/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
-    for (blk=0; blk<L; blk+=H) { /* 3重ループ展開の外側対象 */
+    for (blk=0; blk<M2; blk+=H) { /* 3重ループ展開の外側対象 */
       typedef struct {Uint i[8]} Ui8;
       Uint *a0[NCHIP],*a0_debug[NCHIP];
       Uint *a[H][NCHIP],*a_debug[H][NCHIP];

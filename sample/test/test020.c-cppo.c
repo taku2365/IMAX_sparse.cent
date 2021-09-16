@@ -837,6 +837,7 @@ enum __fdlibm_version
 };
 extern enum __fdlibm_version __fdlib_version;
 
+int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
 void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
 int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
@@ -1336,7 +1337,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
   }
   if (mode==0 && phase == 1) {
     if (lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
-    else if (lmmo_stat==14 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
+    else if (lmmo_stat==14 && !lmm_ready && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
     else { mark = 0; }
   }
   else if (mode==1 && phase == 1) {
@@ -1347,7 +1348,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
     if (lmmc_stat== 8 && !lmm_ready) { mark = 1; }
     else if (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz) { mark = 1; }
     else if (lmmc_stat==10) { mark = 1; }
-    else if (lmmc_stat==14) { mark = 1; }
+    else if (lmmc_stat==14 && !lmm_ready) { mark = 1; }
     else { mark = 0; }
   }
   else if (phase == 3) {
@@ -2154,6 +2155,33 @@ mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint l
   mmp(op_mm, ex, d, adr, top, len, blk);
 }
 void
+mop_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr,*load64;
+  Uint *load32;
+  Uint tmp,tmp1;
+  eag(&adr, base, offset, msk);
+  switch(op_mm){
+    case 0x01:
+      load64 = (Ull*)(adr&~7LL);
+      tmp = (Uint)(*load64>>32);
+      tmp1 = (Uint)(*load64);
+      float load64_left = *(float*)&(tmp) ;
+      float load64_right = *(float*)&(tmp1) ;
+      load64_left += 1.0;
+      load64_right += 1.0;
+      *((Uint*)(adr&~7LL)+1) = *(Uint*)&load64_left;
+      *((Uint*)(adr&~7LL) ) = *(Uint*)&load64_right;
+      break;
+    case 0x03:
+      load32 = (Uint*)(adr&~3LL);
+      float load32_1 = *(float*)&(*load32) ;
+      load32_1 += 1.0;
+      *((Uint*)(adr&~3LL) ) = *(Uint*)&load32_1;
+      break;
+  }
+}
+void
 mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
   Ull adr;
@@ -2265,159 +2293,12 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
     break;
   }
 }
-typedef struct _float2D {
-  int nstrides;
-  int stride_size;
-  float *data;
-} float2D;
-typedef struct _float4D {
-  int nstrides;
-  int nchannel;
-  int kstrides;
-  int stride_size;
-  float *data;
-} float4D;
-int CNN_DEPTH = 2;
-int FC_DEPTH = 1;
-typedef struct _CNNet {
-  float4D ninput;
-  float2D tmp_col[9];
-  float2D tmp_dst[9];
-  float2D Ki2h[9];
-  float2D g_Ki2h[9];
-  float4D nhidden[9];
-  float4D nhiddenbak[9];
-  float2D hbias[9];
-  float2D g_hbias[9];
-  float4D npool[9];
-  float4D npoolbak[9];
-  float2D nflat[3];
-  float2D Wh2o[3];
-  float2D g_Wh2o[3];
-  float2D nout[3];
-  float2D noutbak[3];
-  float2D obias[3];
-  float2D g_obias[3];
-} CNNet;
-struct c {
-  int isize;
-  int ichan;
-  int ksize;
-  int osize;
-  int ochan;
-  int psize;
-};
-struct f {
-  int osize;
-};
-struct c c[2][9]={
+Uchar* membase;
+sysinit(memsize, alignment) Uint memsize, alignment;
 {
-  {28,1,5,24,9,2},{12,9,3,12,32,2},{ 6,32,2, 5,32,1},{ 5,32,2,4, 64,1},{ 4, 64,2,3, 64,1}
-},
-{
-  {6,2,3,3,4,1},{3,4,2,2,1,1},{7,16,2,7,32,1},{7,32,2,6,32,2},{3,32,2,2,64,1},{2,64,2,1,64,1}
-}
-};
-struct f f[2][3]={
-{
-  {200},{10},{10}
-},
-{
-  {200},{40},{10}
-}
-};
-void init_float2D(float2D *, int, int);
-void multiply_float2D(float2D *, const float2D *, int, const float2D*, int);
-void multiply_float2D_sum(float2D *, const float2D *, int, const float2D*, int);
-void init_float4D(float4D *, int, int, int, int);
-void copy4D(float4D *, const float4D *);
-void flat4Dto2D(float2D *, const float4D *);
-void raise2Dto4D(float4D *, const float2D *);
-void sum_rows4D(float2D *, float4D *);
-void show4D(const float4D);
-void show4D_limited(const float4D, int);
-void LoadParam2D(const char *, int, float2D *);
-void LoadParam4D(const char *, float4D *);
-void F4i2Ipl(int, int, int, int, unsigned int*, float4D *);
-void Ipl2F4i(int, int, int, unsigned int*, float4D *);
-void Ipl2F4h(int, int, int, unsigned int*, unsigned int*, float4D *);
-void init_net(CNNet *, int, struct c *, struct f *);
-void init_xmax(int, struct c *, struct f *);
-void xmax_conv_backward(float4D *, float2D *, float2D *, float4D *, int);
-Uchar *membase;
-int memsize;
-int memalign;
-Uint *i_inp;
-Uint *i_ker;
-Uint *i_out;
-int i_inp_max_size;
-int i_ker_max_size;
-int i_out_max_size;
-void init_float2D(float2D *a, int nstrides, int stride_size) {
-  if (a == ((void *)0)) {
-    printf("init_float2D error, 2D nullptr\n");
-    exit(-1);
-  }
-  a->nstrides = nstrides;
-  a->stride_size = stride_size;
-  if ((a->data = (float *)malloc(nstrides * stride_size * sizeof(float))) == ((void *)0)) {
-    printf("Can not allocate float2D with strides=%d, stride_size=%d\n",
-    nstrides, stride_size);
-    exit(-1);
-  }
-  memset(a->data, 0, nstrides * stride_size * sizeof(float));
-}
-void init_float4D(float4D *a, int nstrides, int nchannel, int kstrides, int stride_size) {
-  if (a == ((void *)0)) {
-    printf("init_float4D error, 4D nullptr\n");
-    exit(-1);
-  }
-  a->nstrides = nstrides;
-  a->nchannel = nchannel;
-  a->kstrides = kstrides;
-  a->stride_size = stride_size;
-  if ((a->data = (float *)malloc(nstrides * nchannel * kstrides * stride_size * sizeof(float))) == ((void *)0)) {
-    printf("Can not allocate float4D with nstrides=%d, nchannel=%d, kstrides=%d, stride_size=%d\n",
-    nstrides, nchannel, kstrides, stride_size);
-    exit(-1);
-  }
-  memset(a->data, 0, nstrides * nchannel * kstrides * stride_size * sizeof(float));
-}
-void init_net(CNNet *net, int batch_size, struct c *c, struct f *f)
-{
-  int l;
-  if (net == ((void *)0)) {
-    printf("init_net error: got a nullptr net\n");
-    exit(-1);
-  }
-  init_float4D(&(net->ninput), batch_size, c[0].ichan, c[0].isize, c[0].isize);
-  for (l=0; l<CNN_DEPTH; l++) {
-    init_float2D(&(net->Ki2h[l]), c[l].ochan, c[l].ichan*c[l].ksize*c[l].ksize);
-    init_float2D(&(net->g_Ki2h[l]), c[l].ochan, c[l].ichan*c[l].ksize*c[l].ksize);
-    init_float4D(&(net->nhidden[l]), batch_size, c[l].ochan, c[l].osize, c[l].osize);
-    init_float4D(&(net->npool[l]), batch_size, c[l].ochan, c[l].osize/c[l].psize, c[l].osize/c[l].psize);
-  }
-}
-void init_xmax(int batch_size, struct c *c, struct f *f)
-{
-  int l;
-  for (l=0; l<CNN_DEPTH; l++) {
-    { if (i_inp_max_size < (batch_size * c[l].ichan * (c[l].isize+c[l].ksize-1) * (c[l].isize+c[l].ksize-1))) i_inp_max_size = (batch_size * c[l].ichan * (c[l].isize+c[l].ksize-1) * (c[l].isize+c[l].ksize-1)); };
-    { if (i_ker_max_size < (c[l].ichan * ((c[l].ochan+3)&~3) * c[l].ksize * c[l].ksize)) i_ker_max_size = (c[l].ichan * ((c[l].ochan+3)&~3) * c[l].ksize * c[l].ksize); };
-    { if (i_out_max_size < (batch_size * ((c[l].ochan+3)&~3) * c[l].osize * c[l].osize)) i_out_max_size = (batch_size * ((c[l].ochan+3)&~3) * c[l].osize * c[l].osize); };
-  }
-  { if (memsize < ((i_inp_max_size+i_ker_max_size+i_out_max_size)*sizeof(int))) memsize = ((i_inp_max_size+i_ker_max_size+i_out_max_size)*sizeof(int)); };
-  memalign = 32;
-  membase = (void*)malloc(memsize+memalign);
-  if ((Ull)membase & (memalign-1))
-    membase = (void*)(((Ull)membase & ~(memalign-1))+memalign);
-  printf("membase: %08.8x\n", (Uint)membase);
-  i_inp = (Uint*)membase;
-  i_ker = (Uint*)i_inp + i_inp_max_size;
-  i_out = (Uint*)i_ker + i_ker_max_size;
-  printf("i_inp : %08.8x-%08.8x\n", (Uint)i_inp, (Uint)i_inp+i_inp_max_size*sizeof(int)-1);
-  printf("i_ker : %08.8x-%08.8x\n", (Uint)i_ker, (Uint)i_ker+i_ker_max_size*sizeof(int)-1);
-  printf("i_out : %08.8x-%08.8x\n", (Uint)i_out, (Uint)i_out+i_out_max_size*sizeof(int)-1);
+  membase = (void*)malloc(memsize+alignment);
+  if ((int)membase & (alignment-1))
+    membase = (void*)(((int)membase & ~(alignment-1))+alignment);
   emax_info.dma_phys = 0x50000000;
   emax_info.dma_mmap = emax_info.dma_phys;
   emax_info.reg_phys = 0x50100000;
@@ -2432,237 +2313,121 @@ void init_xmax(int batch_size, struct c *c, struct f *f)
   ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
   ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
 }
+Uint *A;
+Uint *B;
+Uint *C0;
+Uint *C1;
+int row, col, n;
+int top, blk;
+int w, h;
+int count0, count1, count2;
+Uint Z[(320*240)];
 main()
 {
-  CNNet *net;
-  int batch_size=2;
-  int i, j, k;
-  srand(0);
-  net = (CNNet *)malloc(sizeof(*net));
-  init_net(net, batch_size, c[1], f[1]);
-  init_xmax(batch_size, c[1], f[1]);
-  for (i=0; i<CNN_DEPTH; i++) {
-    for (j=0; j<net->nhidden[i].nstrides*net->nhidden[i].nchannel*net->nhidden[i].kstrides*net->nhidden[i].stride_size; j++)
-      net->nhidden[i].data[j] = 0.03f*j;
-    for (j=0; j<net->npool[i].nstrides*net->npool[i].nchannel*net->npool[i].kstrides*net->npool[i].stride_size; j++)
-      net->npool[i].data[j] = 0.02f*j;
-    for (j=0; j<net->Ki2h[i].nstrides*net->Ki2h[i].stride_size; j++)
-      net->Ki2h[i].data[j] = 0.01f*j;
+  sysinit((Uint)(480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)),32);
+  printf("membase: %08.8x\n", (Uint)membase);
+  A = (Uint*)membase;
+  B = (Uint*)((Uchar*)A + 480LL*480LL*sizeof(Uint));
+  C0 = (Uint*)((Uchar*)B + 480LL*480LL*sizeof(Uint));
+  C1 = (Uint*)((Uchar*)C0 + 480LL*480LL*sizeof(Uint));
+  printf("A : %08.8x\n", A);
+  printf("B : %08.8x\n", B);
+  printf("C0: %08.8x\n", C0);
+  printf("C1: %08.8x\n", C1);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++)
+      *(float*)&A[row*480LL +col] = row%120+1;
   }
-  for (i=CNN_DEPTH-1; i>=1; i--) {
-    printf("i=%d\n", i);
-    xmax_conv_backward(&(net->nhidden[i]), &(net->Ki2h[i]), &(net->g_Ki2h[i]), i==0?&(net->ninput):&(net->npool[i-1]), c[1][i].ksize);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++)
+      *(float*)&B[row*480LL +col] = col%120+1;
+  }
+  reset_nanosec();
+  orig();
+  get_nanosec(0);
+  show_nanosec();
+  reset_nanosec();
+  imax();
+  get_nanosec(0);
+  show_nanosec();
+  copy_Z(0, C1); _copyX(0, Z);
+  copy_Z(1, C1); _copyX(1, Z);
+  copy_Z(4, C1); _copyX(4, Z);
+  copy_Z(5, C1); _copyX(5, Z);
+  copy_Z(8, C1); _copyX(8, Z);
+  copy_Z(9, C1); _copyX(9, Z);
+  _updateX();
+  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++) {
+      if (C0[row*480LL +col] != C1[row*480LL +col]) {
+        count2++;
+        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*480LL +col],
+                                                row, col, (double)*(float*)&C1[row*480LL +col]);
+      }
+    }
+  }
+  if (count2)
+    printf("Num of diffs: %d\n", count2);
+  else
+    printf("Results are equal\n");
+  show_nanosec();
+}
+copy_Z(id, from)
+     int id;
+     unsigned int *from;
+{
+  int i, j;
+  volatile unsigned int *to = Z;
+  unsigned int *offs;
+  switch (id) {
+  case 0: offs = from; break;
+  case 1: offs = from + WD; break;
+  case 2: offs = from + WD*2; break;
+  case 3: offs = from + WD*3; break;
+  case 4: offs = from + 480LL*HT; break;
+  case 5: offs = from + 480LL*HT+WD; break;
+  case 6: offs = from + 480LL*HT+WD*2; break;
+  case 7: offs = from + 480LL*HT+WD*3; break;
+  case 8: offs = from + 480LL*HT*2; break;
+  case 9: offs = from + 480LL*HT*2+WD; break;
+  case 10: offs = from + 480LL*HT*2+WD*2; break;
+  case 11: offs = from + 480LL*HT*2+WD*3; break;
+  case 12: offs = from + 480LL*HT*3; break;
+  case 13: offs = from + 480LL*HT*3+WD; break;
+  case 14: offs = from + 480LL*HT*3+WD*2; break;
+  case 15: offs = from + 480LL*HT*3+WD*3; break;
+  }
+  for (i=0; i<HT; i++, offs+=480LL) {
+    if (offs<from+480LL*480LL) {
+      for (j=0; j<WD; j++) {
+ if (j+(id%4)*WD<480LL) *to++ = (*(offs+j))>>0;
+ else *to++ = 0;
+      }
+    }
+    else {
+      for (j=0; j<WD; j++)
+ *to++ = 0;
+    }
   }
 }
-void imemcpy(Uint *dst, Uint *src, int words)
-{
-  union {
-    Uint i[4];
-    Ull l[2];
-    Dll d;
-  } buf;
-  Uint loop, i;
-  if (words >= 1 && ((Ull)dst & sizeof(Uint))) {
-    *dst++ = *src++;
-    words--;
-  }
-  if (words >= 2 && ((Ull)dst & sizeof(Ull))) {
-    if ((Ull)src & sizeof(Uint)) {
-      buf.i[0] = *src++;
-      buf.i[1] = *src++;
-      *(Ull*)dst = buf.l[0];
-    }
-    else {
-      *(Ull*)dst = *(Ull*)src;
-      src += sizeof(Ull)/sizeof(Uint);
-    }
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (loop = words/(sizeof(Dll)/sizeof(Uint))) {
-    if ((Ull)src & sizeof(Uint)) {
-      for(i=0; i<loop; i++) {
- buf.i[0] = *src++;
- buf.i[1] = *src++;
- buf.i[2] = *src++;
- buf.i[3] = *src++;
- *(Dll*)dst = buf.d;
- dst += sizeof(Dll)/sizeof(Uint);
+orig() {
+  printf("<<<ORIG>>>\n");
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++) {
+      for (n=0; n<480LL; n++) {
+        if (n==0) *(float*)&C0[row*480LL +col] = *(float*)&A[row*480LL +n] * *(float*)&B[n*480LL +col];
+        else *(float*)&C0[row*480LL +col] += *(float*)&A[row*480LL +n] * *(float*)&B[n*480LL +col];
+        count0++;
       }
     }
-    else if ((Ull)src & sizeof(Ull)) {
-      for(i=0; i<loop; i++) {
- buf.l[0] = *(Ull*)src;src += sizeof(Ull)/sizeof(Uint);
- buf.l[1] = *(Ull*)src;src += sizeof(Ull)/sizeof(Uint);
- *(Dll*)dst = buf.d;
- dst += sizeof(Dll)/sizeof(Uint);
-      }
-    }
-    else {
-      for(i=0; i<loop; i++) {
- *(Dll*)dst = *(Dll*)src;
- src += sizeof(Dll)/sizeof(Uint);
- dst += sizeof(Dll)/sizeof(Uint);
-      }
-    }
-    words -= loop*(sizeof(Dll)/sizeof(Uint));
-  }
-  if (words >= 2) {
-    if ((Ull)src & sizeof(Uint)) {
-      buf.i[0] = *src++;
-      buf.i[1] = *src++;
-      *(Ull*)dst = buf.l[0];
-    }
-    else {
-      *(Ull*)dst = *(Ull*)src;
-      src += sizeof(Ull)/sizeof(Uint);
-    }
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (words >= 1) {
-    *dst++ = *src++;
-    words--;
   }
 }
-void xmax_bzero(Uint *dst, int words)
-{
-  Uint loop, i;
-  if (words >= 1 && ((Ull)dst & sizeof(Uint))) {
-    *dst++ = 0;
-    words--;
-  }
-  if (words >= 2 && ((Ull)dst & sizeof(Ull))) {
-    *(Ull*)dst = 0;
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (loop = words/(sizeof(Dll)/sizeof(Uint))) {
-    for(i=0; i<loop; i++) {
-      *((Dll*)dst) = 0;
-      dst += sizeof(Dll)/sizeof(Uint);
-    }
-    words -= loop*(sizeof(Dll)/sizeof(Uint));
-  }
-  if (words >= 2) {
-    *(Ull*)dst = 0;
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (words >= 1) {
-    *dst++ = 0;
-    words--;
-  }
-}
-void xmax_cpyin(int order, Uint *dst, int *imo, Uint *src, int batch, int ic, int im, int m, int k)
-{
-  switch (order) {
-  case 0:
-    if (im == m && 1<k) {
-      int n, i, w = im+k-1;
-      for (n=0; n<batch*ic; n++,dst+=w*w,src+=im*im) {
- for (i=0; i<k/2; i++)
-   xmax_bzero(dst+i*w, w);
- for (i=k/2; i<=im+k/2-1; i++) {
-   xmax_bzero (dst+i*w, (k/2) );
-   imemcpy(dst+i*w+(k/2), src+(i-k/2)*im, im);
-   if (k-1-(k/2)) xmax_bzero (dst+i*w+(k/2)+im, k-1-(k/2));
- }
- for (i=im+k/2; i<w; i++)
-   xmax_bzero(dst+i*w, w);
-      }
-      *imo = w;
-    }
-    else {
-      imemcpy(dst, src, batch*ic*im*im);
-      *imo = im;
-    }
-    break;
-  case 1:
-    if (im == m && 1<k) {
-      int n1, n0, i, w = im+k-1;
-      for (n1=0; n1<batch; n1++) {
- for (n0=0; n0<ic; n0++,src+=im*im) {
-   int ofs = (n0*w*batch+n1)*w;
-   int dist = batch*w;
-   for (i=0; i<k/2; i++)
-     xmax_bzero(dst+ofs+i*dist, w);
-   for (i=k/2; i<=im+k/2-1; i++) {
-     xmax_bzero (dst+ofs+i*dist, (k/2) );
-     imemcpy(dst+ofs+i*dist+(k/2), src+(i-k/2)*im, im);
-     if (k-1-(k/2)) xmax_bzero (dst+ofs+i*dist+(k/2)+im, k-1-(k/2));
-   }
-   for (i=im+k/2; i<w; i++)
-     xmax_bzero(dst+ofs+i*dist, w);
- }
-      }
-      *imo = w;
-    }
-    else {
-      int n1, n0, i;
-      for (n1=0; n1<batch; n1++) {
- for (n0=0; n0<ic; n0++,src+=im*im) {
-   int ofs = (n0*im*batch+n1)*im;
-   int dist = batch*im;
-   for (i=0; i<im; i++)
-     imemcpy(dst+ofs+i*dist, src+i*im, im);
- }
-      }
-      *imo = im;
-    }
-    break;
-  case 2:
-    imemcpy(dst, src, im*m);
-    *imo = im;
-    break;
-  }
-}
-void xmax_cpyout(int order, Uint *dst, int batch, int oc, Uint *src, int m, int n, int oc4)
-{
-  int k, k2, k1, k0;
-  switch (order) {
-  case 0:
-    for (k=0; k<batch; k++,dst+=oc*m*n,src+=oc4*m*n)
-      imemcpy(dst, src, oc*m*n);
-    break;
-  case 1:
-    for (k2=0; k2<batch; k2++) {
-      for (k1=0; k1<oc; k1++) {
- for (k0=0; k0<m; k0++,dst+=n)
-   imemcpy(dst, src+((k1*m+k0)*batch+k2)*n, n);
-      }
-    }
-    break;
-  case 2:
-    if (n == oc4)
-      imemcpy(dst, src, m*n);
-    else {
-      for (k=0; k<m; k++,dst+=n,src+=oc4)
- imemcpy(dst, src, n);
-    }
-    break;
-  }
-}
-void xmax_conv_backward(float4D *out, float2D *kernel, float2D *g_kernel, float4D *in, int ksize)
-{
-  int kstride = 1;
-  int BATCH = in->nstrides;
-  int IC = in->nchannel;
-  int IM = in->kstrides;
-  int IMX;
-  int OC = out->nchannel;
-  int M = out->kstrides;
-  int K = ksize;
-  Uint *in0 = in->data;
-  Uint *ker = kernel->data;
-  Uint *g_ker = g_kernel->data;
-  Uint *out0 = out->data;
-  Uint *ip0, *ip1, *ip2, *ip3, *ip4, *ip5, *op0, *kp, kidx, *kp0;
-  int pad;
-  int count, top, iset, oset, oc, w, ic, y, x;
-  int y0, x0, ch, xy;
-  Ull IMX4, IM4, M4, IMX4M4, M4IM4, IMXlen, IMlen, Mlen;
-  Ull CHIP, img, rofs, cofs, iofs, oofs;
+imax() {
+  Ull CHIP;
   Ull LOOP1, LOOP0;
   Ull INIT1, INIT0;
   Ull AR[64][4];
@@ -2670,96 +2435,110 @@ void xmax_conv_backward(float4D *out, float2D *kernel, float2D *g_kernel, float4
   Ull r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
   Ull r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
   Ull cc0, cc1, cc2, cc3, ex0, ex1;
-  if (IM == M)
-    pad = 0;
-  else if ((IM - K)/1 + 1 == M)
-    pad = K/2;
-  else {
-    printf("xmax_conv_backward error: IM=%d K=%d M=%d\n", IM, K, M);
-    printf("IM == M || (IM-K)/1+1 == M\n");
-    exit(-1);
-  }
-IMX = IM;
-  IMX4 = IMX*4;
-  M4 = M*4;
-  IMX4M4 = IMX4<<32|M4;
-  IMXlen = IMX*BATCH;
-  Mlen = M*BATCH;
-  for (oset=0; oset<((OC+1 -1)&~(1 -1)); oset+=1) {
-    Uint cc0[1][4], cc1[1][4], inum[4], *ip0[4], *it0[4], onum[1], *op0[1], *ot0[1], *kp0[1][4], *kp1[1][4], b00[1][4];
-    for (rofs=0; rofs<1; rofs++) {
-      for (iset=0; iset<((IC+4 -1)&~(4 -1)); iset+=4) {
- kidx = 0;
- for (y=-(K/2); y<0; y++) {
-   for (x=-(K/2); x<0; x++) {
-     printf("oset=%d rofs=%d iset=%d y=%d x=%d\n", oset, rofs, iset, y+K/2, x+K/2);
-     for (ic=0; ic<4; ic++) {
-       inum[ic] = iset+ic;
-       ip0[ic] = &i_inp[(iset+ic)*IMX*BATCH*IMX+(rofs+y+K/2)*BATCH*IMX+(x+K/2)];
-       it0[ic] = &i_inp[(iset+ic)*IMX*BATCH*IMX+(rofs+y+K/2)*BATCH*IMX];
-       for (x0=0; x0<IMXlen; x0++) {
-  *((float*)it0[ic]+x0) = 0.2;
-       }
-     }
-     for (oc=0; oc<1; oc++) {
-       onum[oc] = oset+oc;
-       op0[oc] = &i_out[(oset+oc)*M*BATCH*M+rofs*BATCH*M];
-       ot0[oc] = op0[oc];
-       for (x0=0; x0<Mlen; x0++) {
-  *((float*)ot0[oc]+x0) = 0.2;
-       }
-     }
-     for (oc=0; oc<1; oc++) {
-       for (ic=0; ic<4; ic++) {
-  kp0[oc][ic] = ((iset+ic)<IC&&(oset+oc)<OC) ? &i_ker[((oset+oc)*IC+iset+ic)*K*K+kidx] : 0;
-  kp1[oc][ic] = ((iset+ic)<IC&&(oset+oc)<OC) ? &g_ker[((oset+oc)*IC+iset+ic)*K*K+kidx] : 0;
-  *(float*)kp0[oc][ic] = 0.2;
-  *(float*)kp1[oc][ic] = 0.2;
-       }
-     }
-     printf("IMAX starts\n");
-/-EMAX5AB-/ back_g_ker 0
-/-EMAX5AS-/ for (CHIP=0; CHIP<1; CHIP++) {
-/-EMAX5AS-/ for (INIT1=1,LOOP1=""BATCH"",img=""(0-IMX4)<<32|((0-M4)&0xffffffff)""; LOOP1--; INIT1=0) {
-/-EMAX5AS-/ for (INIT0=1,LOOP0=""M"",cofs=""(0-4LL)<<32|((0-4LL)&0xffffffff)""; LOOP0--; INIT0=0) {
-/-EMAX5AS-/ exe(0x16, &img, img, 3, INIT0?IMX4M4:0, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
-/-EMAX5AS-/ exe(0x16, &cofs, INIT0?cofs:cofs, 3, 4LL<<32|4LL, 3, 0LL, 3, 0x01, 0xffffffffffffffffLL, 0x00, 0LL);
-/-EMAX5AS-/ exe(0x16, &iofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0xffffffff00000000LL, 0x00, 0LL);
-/-EMAX5AS-/ exe(0x16, &oofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0x00000000ffffffffLL, 0x00, 0LL);
-/-EMAX5AS-/ exe(0x1a, &cc0[0][0],onum[0], 3, OC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x1a, &cc1[0][0],inum[0], 3, IC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &BR[2][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[2][2][1], (Ull)ip0[0], iofs, 13, (Ull)it0[0], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); exe(0x00, &AR[2][0], 0LL, 3, 0LL, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &b00[0][0], (Ull)kp0[0][0], 0LL, 12, (Ull)kp0[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][0], b00[0][0], 3, BR[2][2][1], 3, BR[2][1][1], 3, 0x00, 0LL, 0x00, 0LL); cex(0x01, &ex0, 0, 0, cc1[0][0], cc0[0][0], 0x8888); mop(0x12,ex0, &b00[0][0], (Ull)kp0[0][0], 0LL, 14, (Ull)kp0[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-/-EMAX5AS-/ exe(0x1a, &cc0[0][1],onum[0], 3, OC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x1a, &cc1[0][1],inum[1], 3, IC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &BR[3][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[3][2][1], (Ull)ip0[1], iofs, 13, (Ull)it0[1], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); exe(0x00, &AR[3][0], 0LL, 3, 0LL, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &b00[0][1], (Ull)kp0[0][1], 0LL, 12, (Ull)kp0[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][1], b00[0][1], 3, BR[3][2][1], 3, BR[3][1][1], 3, 0x00, 0LL, 0x00, 0LL); cex(0x01, &ex0, 0, 0, cc1[0][1], cc0[0][1], 0x8888); mop(0x12,ex0, &b00[0][1], (Ull)kp0[0][1], 0LL, 14, (Ull)kp0[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-/-EMAX5AS-/ exe(0x1a, &cc0[0][2],onum[0], 3, OC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x1a, &cc1[0][2],inum[2], 3, IC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &BR[4][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[4][2][1], (Ull)ip0[2], iofs, 13, (Ull)it0[2], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); exe(0x00, &AR[4][0], 0LL, 3, 0LL, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &b00[0][2], (Ull)kp0[0][2], 0LL, 12, (Ull)kp0[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][2], b00[0][2], 3, BR[4][2][1], 3, BR[4][1][1], 3, 0x00, 0LL, 0x00, 0LL); cex(0x01, &ex0, 0, 0, cc1[0][2], cc0[0][2], 0x8888); mop(0x12,ex0, &b00[0][2], (Ull)kp0[0][2], 0LL, 14, (Ull)kp0[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-/-EMAX5AS-/ exe(0x1a, &cc0[0][3],onum[0], 3, OC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x1a, &cc1[0][3],inum[3], 3, IC, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &BR[5][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[5][2][1], (Ull)ip0[3], iofs, 13, (Ull)it0[3], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); exe(0x00, &AR[5][0], 0LL, 3, 0LL, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x03, 1, &b00[0][3], (Ull)kp0[0][3], 0LL, 12, (Ull)kp0[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][3], b00[0][3], 3, BR[5][2][1], 3, BR[5][1][1], 3, 0x00, 0LL, 0x00, 0LL); cex(0x01, &ex0, 0, 0, cc1[0][3], cc0[0][3], 0x8888); mop(0x12,ex0, &b00[0][3], (Ull)kp0[0][3], 0LL, 14, (Ull)kp0[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL);
+  Ull cofs, rofs, oofs, k;
+  printf("<<<IMAX>>>\n");
+  for (top=0; top<480LL/4; top+=15) {
+    for (blk=0; blk<480LL; blk+=60) {
+      typedef struct {Uint i[8]} Ui8;
+      Uint *a0[4];
+      Uint *a[60][4];
+      Ui8 *b[60], *b0[60], *b1[60], *b2[60], *b3[60];
+      Ui8 *c0[4];
+      Ui8 *c00[4], *c01[4], *c02[4], *c03[4];
+      for (k=0; k<60; k++) {
+ b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+      }
+      for (CHIP=0; CHIP<4; CHIP++) {
+ a0[CHIP] = A+(CHIP*480LL/4 +top)*480LL;
+ for (k=0; k<60; k++)
+   a[k][CHIP] = a0[CHIP]+blk+k;
+ c0[CHIP] = C1+(CHIP*480LL/4 +top)*480LL;
+ c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      }
+/-EMAX5AB-/ mm 0
+/-EMAX5AS-/ for (CHIP=0; CHIP<4; CHIP++) {
+/-EMAX5AS-/ for (INIT1=1,LOOP1=""15"",rofs=""(0-480LL*4)<<32|((0-480LL*4)&0xffffffff)""; LOOP1--; INIT1=0) {
+/-EMAX5AS-/ for (INIT0=1,LOOP0=""480LL/4LL/2"",cofs=""(0-4LL*8)<<32|((0-4LL*8)&0xffffffff)""; LOOP0--; INIT0=0) {
+/-EMAX5AS-/ exe(0x16, &cofs, INIT0?cofs:cofs, 3, (4LL*8)<<32|(4LL*8), 3, 0LL, 3, 0x01, 0xffffffffffffffffLL, 0x00, 0LL);
+/-EMAX5AS-/ exe(0x16, &rofs, rofs, 3, INIT0?(480LL*4)<<32|(480LL*4):0, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ exe(0x16, &oofs, rofs, 3, cofs, 3, 0, 3, 0x01, 0xffffffff, 0x00, 0LL);
+/-EMAX5AS-/
+/-EMAX5AS-/ mop(0x01, 3, &BR[1][0][1], (Ull)b0[0], (Ull)cofs, 13, (Ull)b[0], 480LL, 0, 0, (Ull)((void *)0), 480LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[1][0][0], (Ull)b1[0], (Ull)cofs, 13, (Ull)b[0], 480LL, 0, 0, (Ull)((void *)0), 480LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[1][1][1], (Ull)b2[0], (Ull)cofs, 13, (Ull)b[0], 480LL, 0, 0, (Ull)((void *)0), 480LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[1][1][0], (Ull)b3[0], (Ull)cofs, 13, (Ull)b[0], 480LL, 0, 0, (Ull)((void *)0), 480LL);
+/-EMAX5AS-/ mop(0x03,1, &BR[1][2][1], (Ull)a[0][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15);
+/-EMAX5AS-/ exe(0x13, &AR[2][0], BR[1][0][1], 3, BR[1][2][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ exe(0x13, &AR[2][1], BR[1][0][0], 3, BR[1][2][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ exe(0x13, &AR[2][2], BR[1][1][1], 3, BR[1][2][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ exe(0x13, &AR[2][3], BR[1][1][0], 3, BR[1][2][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/
+/-EMAX5AS-/ mop(0x01, 3, &BR[2][0][1], (Ull)b0[1], (Ull)cofs, 13, (Ull)b[1], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[2][0][0], (Ull)b1[1], (Ull)cofs, 13, (Ull)b[1], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[2][1][1], (Ull)b2[1], (Ull)cofs, 13, (Ull)b[1], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[2][1][0], (Ull)b3[1], (Ull)cofs, 13, (Ull)b[1], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[2][2][1], (Ull)a[1][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[3][0], AR[2][0], 3, BR[2][2][1], 3, BR[2][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[3][1], AR[2][1], 3, BR[2][2][1], 3, BR[2][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[3][2], AR[2][2], 3, BR[2][2][1], 3, BR[2][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[3][3], AR[2][3], 3, BR[2][2][1], 3, BR[2][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[3][0][1], (Ull)b0[2], (Ull)cofs, 13, (Ull)b[2], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[3][0][0], (Ull)b1[2], (Ull)cofs, 13, (Ull)b[2], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[3][1][1], (Ull)b2[2], (Ull)cofs, 13, (Ull)b[2], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[3][1][0], (Ull)b3[2], (Ull)cofs, 13, (Ull)b[2], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[3][2][1], (Ull)a[2][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[4][0], AR[3][0], 3, BR[3][2][1], 3, BR[3][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[4][1], AR[3][1], 3, BR[3][2][1], 3, BR[3][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[4][2], AR[3][2], 3, BR[3][2][1], 3, BR[3][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[4][3], AR[3][3], 3, BR[3][2][1], 3, BR[3][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[4][0][1], (Ull)b0[3], (Ull)cofs, 13, (Ull)b[3], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[4][0][0], (Ull)b1[3], (Ull)cofs, 13, (Ull)b[3], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[4][1][1], (Ull)b2[3], (Ull)cofs, 13, (Ull)b[3], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[4][1][0], (Ull)b3[3], (Ull)cofs, 13, (Ull)b[3], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[4][2][1], (Ull)a[3][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[5][0], AR[4][0], 3, BR[4][2][1], 3, BR[4][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[5][1], AR[4][1], 3, BR[4][2][1], 3, BR[4][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[5][2], AR[4][2], 3, BR[4][2][1], 3, BR[4][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[5][3], AR[4][3], 3, BR[4][2][1], 3, BR[4][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[5][0][1], (Ull)b0[4], (Ull)cofs, 13, (Ull)b[4], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[5][0][0], (Ull)b1[4], (Ull)cofs, 13, (Ull)b[4], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[5][1][1], (Ull)b2[4], (Ull)cofs, 13, (Ull)b[4], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[5][1][0], (Ull)b3[4], (Ull)cofs, 13, (Ull)b[4], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[5][2][1], (Ull)a[4][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[6][0], AR[5][0], 3, BR[5][2][1], 3, BR[5][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[6][1], AR[5][1], 3, BR[5][2][1], 3, BR[5][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[6][2], AR[5][2], 3, BR[5][2][1], 3, BR[5][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[6][3], AR[5][3], 3, BR[5][2][1], 3, BR[5][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[6][0][1], (Ull)b0[5], (Ull)cofs, 13, (Ull)b[5], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[6][0][0], (Ull)b1[5], (Ull)cofs, 13, (Ull)b[5], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[6][1][1], (Ull)b2[5], (Ull)cofs, 13, (Ull)b[5], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[6][1][0], (Ull)b3[5], (Ull)cofs, 13, (Ull)b[5], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[6][2][1], (Ull)a[5][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[7][0], AR[6][0], 3, BR[6][2][1], 3, BR[6][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[7][1], AR[6][1], 3, BR[6][2][1], 3, BR[6][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[7][2], AR[6][2], 3, BR[6][2][1], 3, BR[6][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[7][3], AR[6][3], 3, BR[6][2][1], 3, BR[6][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[7][0][1], (Ull)b0[6], (Ull)cofs, 13, (Ull)b[6], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[7][0][0], (Ull)b1[6], (Ull)cofs, 13, (Ull)b[6], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[7][1][1], (Ull)b2[6], (Ull)cofs, 13, (Ull)b[6], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[7][1][0], (Ull)b3[6], (Ull)cofs, 13, (Ull)b[6], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[7][2][1], (Ull)a[6][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[8][0], AR[7][0], 3, BR[7][2][1], 3, BR[7][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[8][1], AR[7][1], 3, BR[7][2][1], 3, BR[7][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[8][2], AR[7][2], 3, BR[7][2][1], 3, BR[7][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[8][3], AR[7][3], 3, BR[7][2][1], 3, BR[7][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[8][0][1], (Ull)b0[7], (Ull)cofs, 13, (Ull)b[7], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[8][0][0], (Ull)b1[7], (Ull)cofs, 13, (Ull)b[7], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[8][1][1], (Ull)b2[7], (Ull)cofs, 13, (Ull)b[7], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[8][1][0], (Ull)b3[7], (Ull)cofs, 13, (Ull)b[7], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[8][2][1], (Ull)a[7][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[9][0], AR[8][0], 3, BR[8][2][1], 3, BR[8][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[9][1], AR[8][1], 3, BR[8][2][1], 3, BR[8][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[9][2], AR[8][2], 3, BR[8][2][1], 3, BR[8][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[9][3], AR[8][3], 3, BR[8][2][1], 3, BR[8][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[9][0][1], (Ull)b0[8], (Ull)cofs, 13, (Ull)b[8], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[9][0][0], (Ull)b1[8], (Ull)cofs, 13, (Ull)b[8], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[9][1][1], (Ull)b2[8], (Ull)cofs, 13, (Ull)b[8], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[9][1][0], (Ull)b3[8], (Ull)cofs, 13, (Ull)b[8], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[9][2][1], (Ull)a[8][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[10][0], AR[9][0], 3, BR[9][2][1], 3, BR[9][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[10][1], AR[9][1], 3, BR[9][2][1], 3, BR[9][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[10][2], AR[9][2], 3, BR[9][2][1], 3, BR[9][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[10][3], AR[9][3], 3, BR[9][2][1], 3, BR[9][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[10][0][1], (Ull)b0[9], (Ull)cofs, 13, (Ull)b[9], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[10][0][0], (Ull)b1[9], (Ull)cofs, 13, (Ull)b[9], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[10][1][1], (Ull)b2[9], (Ull)cofs, 13, (Ull)b[9], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[10][1][0], (Ull)b3[9], (Ull)cofs, 13, (Ull)b[9], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[10][2][1], (Ull)a[9][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[11][0], AR[10][0], 3, BR[10][2][1], 3, BR[10][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[11][1], AR[10][1], 3, BR[10][2][1], 3, BR[10][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[11][2], AR[10][2], 3, BR[10][2][1], 3, BR[10][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[11][3], AR[10][3], 3, BR[10][2][1], 3, BR[10][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[11][0][1], (Ull)b0[10], (Ull)cofs, 13, (Ull)b[10], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[11][0][0], (Ull)b1[10], (Ull)cofs, 13, (Ull)b[10], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[11][1][1], (Ull)b2[10], (Ull)cofs, 13, (Ull)b[10], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[11][1][0], (Ull)b3[10], (Ull)cofs, 13, (Ull)b[10], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[11][2][1], (Ull)a[10][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[12][0], AR[11][0], 3, BR[11][2][1], 3, BR[11][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[12][1], AR[11][1], 3, BR[11][2][1], 3, BR[11][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[12][2], AR[11][2], 3, BR[11][2][1], 3, BR[11][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[12][3], AR[11][3], 3, BR[11][2][1], 3, BR[11][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[12][0][1], (Ull)b0[11], (Ull)cofs, 13, (Ull)b[11], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[12][0][0], (Ull)b1[11], (Ull)cofs, 13, (Ull)b[11], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[12][1][1], (Ull)b2[11], (Ull)cofs, 13, (Ull)b[11], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[12][1][0], (Ull)b3[11], (Ull)cofs, 13, (Ull)b[11], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[12][2][1], (Ull)a[11][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[13][0], AR[12][0], 3, BR[12][2][1], 3, BR[12][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[13][1], AR[12][1], 3, BR[12][2][1], 3, BR[12][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[13][2], AR[12][2], 3, BR[12][2][1], 3, BR[12][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[13][3], AR[12][3], 3, BR[12][2][1], 3, BR[12][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[13][0][1], (Ull)b0[12], (Ull)cofs, 13, (Ull)b[12], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[13][0][0], (Ull)b1[12], (Ull)cofs, 13, (Ull)b[12], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[13][1][1], (Ull)b2[12], (Ull)cofs, 13, (Ull)b[12], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[13][1][0], (Ull)b3[12], (Ull)cofs, 13, (Ull)b[12], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[13][2][1], (Ull)a[12][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[14][0], AR[13][0], 3, BR[13][2][1], 3, BR[13][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[14][1], AR[13][1], 3, BR[13][2][1], 3, BR[13][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[14][2], AR[13][2], 3, BR[13][2][1], 3, BR[13][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[14][3], AR[13][3], 3, BR[13][2][1], 3, BR[13][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[14][0][1], (Ull)b0[13], (Ull)cofs, 13, (Ull)b[13], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[14][0][0], (Ull)b1[13], (Ull)cofs, 13, (Ull)b[13], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[14][1][1], (Ull)b2[13], (Ull)cofs, 13, (Ull)b[13], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[14][1][0], (Ull)b3[13], (Ull)cofs, 13, (Ull)b[13], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[14][2][1], (Ull)a[13][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[15][0], AR[14][0], 3, BR[14][2][1], 3, BR[14][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[15][1], AR[14][1], 3, BR[14][2][1], 3, BR[14][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[15][2], AR[14][2], 3, BR[14][2][1], 3, BR[14][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[15][3], AR[14][3], 3, BR[14][2][1], 3, BR[14][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[15][0][1], (Ull)b0[14], (Ull)cofs, 13, (Ull)b[14], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[15][0][0], (Ull)b1[14], (Ull)cofs, 13, (Ull)b[14], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[15][1][1], (Ull)b2[14], (Ull)cofs, 13, (Ull)b[14], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[15][1][0], (Ull)b3[14], (Ull)cofs, 13, (Ull)b[14], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[15][2][1], (Ull)a[14][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[16][0], AR[15][0], 3, BR[15][2][1], 3, BR[15][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[16][1], AR[15][1], 3, BR[15][2][1], 3, BR[15][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[16][2], AR[15][2], 3, BR[15][2][1], 3, BR[15][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[16][3], AR[15][3], 3, BR[15][2][1], 3, BR[15][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[16][0][1], (Ull)b0[15], (Ull)cofs, 13, (Ull)b[15], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[16][0][0], (Ull)b1[15], (Ull)cofs, 13, (Ull)b[15], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[16][1][1], (Ull)b2[15], (Ull)cofs, 13, (Ull)b[15], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[16][1][0], (Ull)b3[15], (Ull)cofs, 13, (Ull)b[15], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[16][2][1], (Ull)a[15][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[17][0], AR[16][0], 3, BR[16][2][1], 3, BR[16][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[17][1], AR[16][1], 3, BR[16][2][1], 3, BR[16][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[17][2], AR[16][2], 3, BR[16][2][1], 3, BR[16][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[17][3], AR[16][3], 3, BR[16][2][1], 3, BR[16][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[17][0][1], (Ull)b0[16], (Ull)cofs, 13, (Ull)b[16], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[17][0][0], (Ull)b1[16], (Ull)cofs, 13, (Ull)b[16], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[17][1][1], (Ull)b2[16], (Ull)cofs, 13, (Ull)b[16], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[17][1][0], (Ull)b3[16], (Ull)cofs, 13, (Ull)b[16], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[17][2][1], (Ull)a[16][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[18][0], AR[17][0], 3, BR[17][2][1], 3, BR[17][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[18][1], AR[17][1], 3, BR[17][2][1], 3, BR[17][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[18][2], AR[17][2], 3, BR[17][2][1], 3, BR[17][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[18][3], AR[17][3], 3, BR[17][2][1], 3, BR[17][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[18][0][1], (Ull)b0[17], (Ull)cofs, 13, (Ull)b[17], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[18][0][0], (Ull)b1[17], (Ull)cofs, 13, (Ull)b[17], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[18][1][1], (Ull)b2[17], (Ull)cofs, 13, (Ull)b[17], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[18][1][0], (Ull)b3[17], (Ull)cofs, 13, (Ull)b[17], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[18][2][1], (Ull)a[17][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[19][0], AR[18][0], 3, BR[18][2][1], 3, BR[18][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[19][1], AR[18][1], 3, BR[18][2][1], 3, BR[18][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[19][2], AR[18][2], 3, BR[18][2][1], 3, BR[18][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[19][3], AR[18][3], 3, BR[18][2][1], 3, BR[18][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[19][0][1], (Ull)b0[18], (Ull)cofs, 13, (Ull)b[18], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[19][0][0], (Ull)b1[18], (Ull)cofs, 13, (Ull)b[18], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[19][1][1], (Ull)b2[18], (Ull)cofs, 13, (Ull)b[18], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[19][1][0], (Ull)b3[18], (Ull)cofs, 13, (Ull)b[18], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[19][2][1], (Ull)a[18][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[20][0], AR[19][0], 3, BR[19][2][1], 3, BR[19][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[20][1], AR[19][1], 3, BR[19][2][1], 3, BR[19][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[20][2], AR[19][2], 3, BR[19][2][1], 3, BR[19][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[20][3], AR[19][3], 3, BR[19][2][1], 3, BR[19][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[20][0][1], (Ull)b0[19], (Ull)cofs, 13, (Ull)b[19], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[20][0][0], (Ull)b1[19], (Ull)cofs, 13, (Ull)b[19], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[20][1][1], (Ull)b2[19], (Ull)cofs, 13, (Ull)b[19], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[20][1][0], (Ull)b3[19], (Ull)cofs, 13, (Ull)b[19], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[20][2][1], (Ull)a[19][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[21][0], AR[20][0], 3, BR[20][2][1], 3, BR[20][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[21][1], AR[20][1], 3, BR[20][2][1], 3, BR[20][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[21][2], AR[20][2], 3, BR[20][2][1], 3, BR[20][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[21][3], AR[20][3], 3, BR[20][2][1], 3, BR[20][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[21][0][1], (Ull)b0[20], (Ull)cofs, 13, (Ull)b[20], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[21][0][0], (Ull)b1[20], (Ull)cofs, 13, (Ull)b[20], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[21][1][1], (Ull)b2[20], (Ull)cofs, 13, (Ull)b[20], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[21][1][0], (Ull)b3[20], (Ull)cofs, 13, (Ull)b[20], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[21][2][1], (Ull)a[20][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[22][0], AR[21][0], 3, BR[21][2][1], 3, BR[21][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[22][1], AR[21][1], 3, BR[21][2][1], 3, BR[21][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[22][2], AR[21][2], 3, BR[21][2][1], 3, BR[21][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[22][3], AR[21][3], 3, BR[21][2][1], 3, BR[21][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[22][0][1], (Ull)b0[21], (Ull)cofs, 13, (Ull)b[21], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[22][0][0], (Ull)b1[21], (Ull)cofs, 13, (Ull)b[21], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[22][1][1], (Ull)b2[21], (Ull)cofs, 13, (Ull)b[21], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[22][1][0], (Ull)b3[21], (Ull)cofs, 13, (Ull)b[21], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[22][2][1], (Ull)a[21][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[23][0], AR[22][0], 3, BR[22][2][1], 3, BR[22][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[23][1], AR[22][1], 3, BR[22][2][1], 3, BR[22][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[23][2], AR[22][2], 3, BR[22][2][1], 3, BR[22][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[23][3], AR[22][3], 3, BR[22][2][1], 3, BR[22][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[23][0][1], (Ull)b0[22], (Ull)cofs, 13, (Ull)b[22], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[23][0][0], (Ull)b1[22], (Ull)cofs, 13, (Ull)b[22], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[23][1][1], (Ull)b2[22], (Ull)cofs, 13, (Ull)b[22], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[23][1][0], (Ull)b3[22], (Ull)cofs, 13, (Ull)b[22], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[23][2][1], (Ull)a[22][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[24][0], AR[23][0], 3, BR[23][2][1], 3, BR[23][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[24][1], AR[23][1], 3, BR[23][2][1], 3, BR[23][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[24][2], AR[23][2], 3, BR[23][2][1], 3, BR[23][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[24][3], AR[23][3], 3, BR[23][2][1], 3, BR[23][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[24][0][1], (Ull)b0[23], (Ull)cofs, 13, (Ull)b[23], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[24][0][0], (Ull)b1[23], (Ull)cofs, 13, (Ull)b[23], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[24][1][1], (Ull)b2[23], (Ull)cofs, 13, (Ull)b[23], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[24][1][0], (Ull)b3[23], (Ull)cofs, 13, (Ull)b[23], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[24][2][1], (Ull)a[23][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[25][0], AR[24][0], 3, BR[24][2][1], 3, BR[24][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[25][1], AR[24][1], 3, BR[24][2][1], 3, BR[24][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[25][2], AR[24][2], 3, BR[24][2][1], 3, BR[24][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[25][3], AR[24][3], 3, BR[24][2][1], 3, BR[24][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[25][0][1], (Ull)b0[24], (Ull)cofs, 13, (Ull)b[24], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[25][0][0], (Ull)b1[24], (Ull)cofs, 13, (Ull)b[24], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[25][1][1], (Ull)b2[24], (Ull)cofs, 13, (Ull)b[24], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[25][1][0], (Ull)b3[24], (Ull)cofs, 13, (Ull)b[24], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[25][2][1], (Ull)a[24][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[26][0], AR[25][0], 3, BR[25][2][1], 3, BR[25][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[26][1], AR[25][1], 3, BR[25][2][1], 3, BR[25][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[26][2], AR[25][2], 3, BR[25][2][1], 3, BR[25][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[26][3], AR[25][3], 3, BR[25][2][1], 3, BR[25][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[26][0][1], (Ull)b0[25], (Ull)cofs, 13, (Ull)b[25], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[26][0][0], (Ull)b1[25], (Ull)cofs, 13, (Ull)b[25], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[26][1][1], (Ull)b2[25], (Ull)cofs, 13, (Ull)b[25], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[26][1][0], (Ull)b3[25], (Ull)cofs, 13, (Ull)b[25], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[26][2][1], (Ull)a[25][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[27][0], AR[26][0], 3, BR[26][2][1], 3, BR[26][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[27][1], AR[26][1], 3, BR[26][2][1], 3, BR[26][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[27][2], AR[26][2], 3, BR[26][2][1], 3, BR[26][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[27][3], AR[26][3], 3, BR[26][2][1], 3, BR[26][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[27][0][1], (Ull)b0[26], (Ull)cofs, 13, (Ull)b[26], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[27][0][0], (Ull)b1[26], (Ull)cofs, 13, (Ull)b[26], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[27][1][1], (Ull)b2[26], (Ull)cofs, 13, (Ull)b[26], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[27][1][0], (Ull)b3[26], (Ull)cofs, 13, (Ull)b[26], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[27][2][1], (Ull)a[26][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[28][0], AR[27][0], 3, BR[27][2][1], 3, BR[27][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[28][1], AR[27][1], 3, BR[27][2][1], 3, BR[27][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[28][2], AR[27][2], 3, BR[27][2][1], 3, BR[27][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[28][3], AR[27][3], 3, BR[27][2][1], 3, BR[27][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[28][0][1], (Ull)b0[27], (Ull)cofs, 13, (Ull)b[27], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[28][0][0], (Ull)b1[27], (Ull)cofs, 13, (Ull)b[27], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[28][1][1], (Ull)b2[27], (Ull)cofs, 13, (Ull)b[27], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[28][1][0], (Ull)b3[27], (Ull)cofs, 13, (Ull)b[27], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[28][2][1], (Ull)a[27][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[29][0], AR[28][0], 3, BR[28][2][1], 3, BR[28][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[29][1], AR[28][1], 3, BR[28][2][1], 3, BR[28][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[29][2], AR[28][2], 3, BR[28][2][1], 3, BR[28][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[29][3], AR[28][3], 3, BR[28][2][1], 3, BR[28][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[29][0][1], (Ull)b0[28], (Ull)cofs, 13, (Ull)b[28], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[29][0][0], (Ull)b1[28], (Ull)cofs, 13, (Ull)b[28], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[29][1][1], (Ull)b2[28], (Ull)cofs, 13, (Ull)b[28], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[29][1][0], (Ull)b3[28], (Ull)cofs, 13, (Ull)b[28], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[29][2][1], (Ull)a[28][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[30][0], AR[29][0], 3, BR[29][2][1], 3, BR[29][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[30][1], AR[29][1], 3, BR[29][2][1], 3, BR[29][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[30][2], AR[29][2], 3, BR[29][2][1], 3, BR[29][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[30][3], AR[29][3], 3, BR[29][2][1], 3, BR[29][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[30][0][1], (Ull)b0[29], (Ull)cofs, 13, (Ull)b[29], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[30][0][0], (Ull)b1[29], (Ull)cofs, 13, (Ull)b[29], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[30][1][1], (Ull)b2[29], (Ull)cofs, 13, (Ull)b[29], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[30][1][0], (Ull)b3[29], (Ull)cofs, 13, (Ull)b[29], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[30][2][1], (Ull)a[29][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[31][0], AR[30][0], 3, BR[30][2][1], 3, BR[30][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[31][1], AR[30][1], 3, BR[30][2][1], 3, BR[30][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[31][2], AR[30][2], 3, BR[30][2][1], 3, BR[30][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[31][3], AR[30][3], 3, BR[30][2][1], 3, BR[30][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[31][0][1], (Ull)b0[30], (Ull)cofs, 13, (Ull)b[30], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[31][0][0], (Ull)b1[30], (Ull)cofs, 13, (Ull)b[30], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[31][1][1], (Ull)b2[30], (Ull)cofs, 13, (Ull)b[30], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[31][1][0], (Ull)b3[30], (Ull)cofs, 13, (Ull)b[30], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[31][2][1], (Ull)a[30][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[32][0], AR[31][0], 3, BR[31][2][1], 3, BR[31][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[32][1], AR[31][1], 3, BR[31][2][1], 3, BR[31][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[32][2], AR[31][2], 3, BR[31][2][1], 3, BR[31][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[32][3], AR[31][3], 3, BR[31][2][1], 3, BR[31][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[32][0][1], (Ull)b0[31], (Ull)cofs, 13, (Ull)b[31], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[32][0][0], (Ull)b1[31], (Ull)cofs, 13, (Ull)b[31], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[32][1][1], (Ull)b2[31], (Ull)cofs, 13, (Ull)b[31], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[32][1][0], (Ull)b3[31], (Ull)cofs, 13, (Ull)b[31], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[32][2][1], (Ull)a[31][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[33][0], AR[32][0], 3, BR[32][2][1], 3, BR[32][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[33][1], AR[32][1], 3, BR[32][2][1], 3, BR[32][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[33][2], AR[32][2], 3, BR[32][2][1], 3, BR[32][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[33][3], AR[32][3], 3, BR[32][2][1], 3, BR[32][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[33][0][1], (Ull)b0[32], (Ull)cofs, 13, (Ull)b[32], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[33][0][0], (Ull)b1[32], (Ull)cofs, 13, (Ull)b[32], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[33][1][1], (Ull)b2[32], (Ull)cofs, 13, (Ull)b[32], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[33][1][0], (Ull)b3[32], (Ull)cofs, 13, (Ull)b[32], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[33][2][1], (Ull)a[32][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[34][0], AR[33][0], 3, BR[33][2][1], 3, BR[33][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[34][1], AR[33][1], 3, BR[33][2][1], 3, BR[33][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[34][2], AR[33][2], 3, BR[33][2][1], 3, BR[33][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[34][3], AR[33][3], 3, BR[33][2][1], 3, BR[33][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[34][0][1], (Ull)b0[33], (Ull)cofs, 13, (Ull)b[33], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[34][0][0], (Ull)b1[33], (Ull)cofs, 13, (Ull)b[33], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[34][1][1], (Ull)b2[33], (Ull)cofs, 13, (Ull)b[33], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[34][1][0], (Ull)b3[33], (Ull)cofs, 13, (Ull)b[33], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[34][2][1], (Ull)a[33][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[35][0], AR[34][0], 3, BR[34][2][1], 3, BR[34][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[35][1], AR[34][1], 3, BR[34][2][1], 3, BR[34][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[35][2], AR[34][2], 3, BR[34][2][1], 3, BR[34][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[35][3], AR[34][3], 3, BR[34][2][1], 3, BR[34][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[35][0][1], (Ull)b0[34], (Ull)cofs, 13, (Ull)b[34], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[35][0][0], (Ull)b1[34], (Ull)cofs, 13, (Ull)b[34], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[35][1][1], (Ull)b2[34], (Ull)cofs, 13, (Ull)b[34], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[35][1][0], (Ull)b3[34], (Ull)cofs, 13, (Ull)b[34], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[35][2][1], (Ull)a[34][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[36][0], AR[35][0], 3, BR[35][2][1], 3, BR[35][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[36][1], AR[35][1], 3, BR[35][2][1], 3, BR[35][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[36][2], AR[35][2], 3, BR[35][2][1], 3, BR[35][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[36][3], AR[35][3], 3, BR[35][2][1], 3, BR[35][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[36][0][1], (Ull)b0[35], (Ull)cofs, 13, (Ull)b[35], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[36][0][0], (Ull)b1[35], (Ull)cofs, 13, (Ull)b[35], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[36][1][1], (Ull)b2[35], (Ull)cofs, 13, (Ull)b[35], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[36][1][0], (Ull)b3[35], (Ull)cofs, 13, (Ull)b[35], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[36][2][1], (Ull)a[35][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[37][0], AR[36][0], 3, BR[36][2][1], 3, BR[36][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[37][1], AR[36][1], 3, BR[36][2][1], 3, BR[36][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[37][2], AR[36][2], 3, BR[36][2][1], 3, BR[36][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[37][3], AR[36][3], 3, BR[36][2][1], 3, BR[36][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[37][0][1], (Ull)b0[36], (Ull)cofs, 13, (Ull)b[36], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[37][0][0], (Ull)b1[36], (Ull)cofs, 13, (Ull)b[36], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[37][1][1], (Ull)b2[36], (Ull)cofs, 13, (Ull)b[36], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[37][1][0], (Ull)b3[36], (Ull)cofs, 13, (Ull)b[36], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[37][2][1], (Ull)a[36][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[38][0], AR[37][0], 3, BR[37][2][1], 3, BR[37][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[38][1], AR[37][1], 3, BR[37][2][1], 3, BR[37][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[38][2], AR[37][2], 3, BR[37][2][1], 3, BR[37][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[38][3], AR[37][3], 3, BR[37][2][1], 3, BR[37][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[38][0][1], (Ull)b0[37], (Ull)cofs, 13, (Ull)b[37], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[38][0][0], (Ull)b1[37], (Ull)cofs, 13, (Ull)b[37], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[38][1][1], (Ull)b2[37], (Ull)cofs, 13, (Ull)b[37], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[38][1][0], (Ull)b3[37], (Ull)cofs, 13, (Ull)b[37], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[38][2][1], (Ull)a[37][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[39][0], AR[38][0], 3, BR[38][2][1], 3, BR[38][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[39][1], AR[38][1], 3, BR[38][2][1], 3, BR[38][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[39][2], AR[38][2], 3, BR[38][2][1], 3, BR[38][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[39][3], AR[38][3], 3, BR[38][2][1], 3, BR[38][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[39][0][1], (Ull)b0[38], (Ull)cofs, 13, (Ull)b[38], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[39][0][0], (Ull)b1[38], (Ull)cofs, 13, (Ull)b[38], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[39][1][1], (Ull)b2[38], (Ull)cofs, 13, (Ull)b[38], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[39][1][0], (Ull)b3[38], (Ull)cofs, 13, (Ull)b[38], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[39][2][1], (Ull)a[38][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[40][0], AR[39][0], 3, BR[39][2][1], 3, BR[39][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[40][1], AR[39][1], 3, BR[39][2][1], 3, BR[39][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[40][2], AR[39][2], 3, BR[39][2][1], 3, BR[39][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[40][3], AR[39][3], 3, BR[39][2][1], 3, BR[39][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[40][0][1], (Ull)b0[39], (Ull)cofs, 13, (Ull)b[39], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[40][0][0], (Ull)b1[39], (Ull)cofs, 13, (Ull)b[39], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[40][1][1], (Ull)b2[39], (Ull)cofs, 13, (Ull)b[39], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[40][1][0], (Ull)b3[39], (Ull)cofs, 13, (Ull)b[39], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[40][2][1], (Ull)a[39][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[41][0], AR[40][0], 3, BR[40][2][1], 3, BR[40][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[41][1], AR[40][1], 3, BR[40][2][1], 3, BR[40][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[41][2], AR[40][2], 3, BR[40][2][1], 3, BR[40][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[41][3], AR[40][3], 3, BR[40][2][1], 3, BR[40][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[41][0][1], (Ull)b0[40], (Ull)cofs, 13, (Ull)b[40], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[41][0][0], (Ull)b1[40], (Ull)cofs, 13, (Ull)b[40], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[41][1][1], (Ull)b2[40], (Ull)cofs, 13, (Ull)b[40], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[41][1][0], (Ull)b3[40], (Ull)cofs, 13, (Ull)b[40], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[41][2][1], (Ull)a[40][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[42][0], AR[41][0], 3, BR[41][2][1], 3, BR[41][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[42][1], AR[41][1], 3, BR[41][2][1], 3, BR[41][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[42][2], AR[41][2], 3, BR[41][2][1], 3, BR[41][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[42][3], AR[41][3], 3, BR[41][2][1], 3, BR[41][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[42][0][1], (Ull)b0[41], (Ull)cofs, 13, (Ull)b[41], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[42][0][0], (Ull)b1[41], (Ull)cofs, 13, (Ull)b[41], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[42][1][1], (Ull)b2[41], (Ull)cofs, 13, (Ull)b[41], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[42][1][0], (Ull)b3[41], (Ull)cofs, 13, (Ull)b[41], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[42][2][1], (Ull)a[41][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[43][0], AR[42][0], 3, BR[42][2][1], 3, BR[42][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[43][1], AR[42][1], 3, BR[42][2][1], 3, BR[42][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[43][2], AR[42][2], 3, BR[42][2][1], 3, BR[42][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[43][3], AR[42][3], 3, BR[42][2][1], 3, BR[42][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[43][0][1], (Ull)b0[42], (Ull)cofs, 13, (Ull)b[42], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[43][0][0], (Ull)b1[42], (Ull)cofs, 13, (Ull)b[42], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[43][1][1], (Ull)b2[42], (Ull)cofs, 13, (Ull)b[42], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[43][1][0], (Ull)b3[42], (Ull)cofs, 13, (Ull)b[42], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[43][2][1], (Ull)a[42][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[44][0], AR[43][0], 3, BR[43][2][1], 3, BR[43][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[44][1], AR[43][1], 3, BR[43][2][1], 3, BR[43][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[44][2], AR[43][2], 3, BR[43][2][1], 3, BR[43][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[44][3], AR[43][3], 3, BR[43][2][1], 3, BR[43][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[44][0][1], (Ull)b0[43], (Ull)cofs, 13, (Ull)b[43], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[44][0][0], (Ull)b1[43], (Ull)cofs, 13, (Ull)b[43], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[44][1][1], (Ull)b2[43], (Ull)cofs, 13, (Ull)b[43], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[44][1][0], (Ull)b3[43], (Ull)cofs, 13, (Ull)b[43], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[44][2][1], (Ull)a[43][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[45][0], AR[44][0], 3, BR[44][2][1], 3, BR[44][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[45][1], AR[44][1], 3, BR[44][2][1], 3, BR[44][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[45][2], AR[44][2], 3, BR[44][2][1], 3, BR[44][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[45][3], AR[44][3], 3, BR[44][2][1], 3, BR[44][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[45][0][1], (Ull)b0[44], (Ull)cofs, 13, (Ull)b[44], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[45][0][0], (Ull)b1[44], (Ull)cofs, 13, (Ull)b[44], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[45][1][1], (Ull)b2[44], (Ull)cofs, 13, (Ull)b[44], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[45][1][0], (Ull)b3[44], (Ull)cofs, 13, (Ull)b[44], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[45][2][1], (Ull)a[44][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[46][0], AR[45][0], 3, BR[45][2][1], 3, BR[45][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[46][1], AR[45][1], 3, BR[45][2][1], 3, BR[45][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[46][2], AR[45][2], 3, BR[45][2][1], 3, BR[45][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[46][3], AR[45][3], 3, BR[45][2][1], 3, BR[45][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[46][0][1], (Ull)b0[45], (Ull)cofs, 13, (Ull)b[45], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[46][0][0], (Ull)b1[45], (Ull)cofs, 13, (Ull)b[45], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[46][1][1], (Ull)b2[45], (Ull)cofs, 13, (Ull)b[45], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[46][1][0], (Ull)b3[45], (Ull)cofs, 13, (Ull)b[45], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[46][2][1], (Ull)a[45][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[47][0], AR[46][0], 3, BR[46][2][1], 3, BR[46][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[47][1], AR[46][1], 3, BR[46][2][1], 3, BR[46][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[47][2], AR[46][2], 3, BR[46][2][1], 3, BR[46][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[47][3], AR[46][3], 3, BR[46][2][1], 3, BR[46][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[47][0][1], (Ull)b0[46], (Ull)cofs, 13, (Ull)b[46], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[47][0][0], (Ull)b1[46], (Ull)cofs, 13, (Ull)b[46], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[47][1][1], (Ull)b2[46], (Ull)cofs, 13, (Ull)b[46], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[47][1][0], (Ull)b3[46], (Ull)cofs, 13, (Ull)b[46], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[47][2][1], (Ull)a[46][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[48][0], AR[47][0], 3, BR[47][2][1], 3, BR[47][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[48][1], AR[47][1], 3, BR[47][2][1], 3, BR[47][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[48][2], AR[47][2], 3, BR[47][2][1], 3, BR[47][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[48][3], AR[47][3], 3, BR[47][2][1], 3, BR[47][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[48][0][1], (Ull)b0[47], (Ull)cofs, 13, (Ull)b[47], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[48][0][0], (Ull)b1[47], (Ull)cofs, 13, (Ull)b[47], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[48][1][1], (Ull)b2[47], (Ull)cofs, 13, (Ull)b[47], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[48][1][0], (Ull)b3[47], (Ull)cofs, 13, (Ull)b[47], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[48][2][1], (Ull)a[47][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[49][0], AR[48][0], 3, BR[48][2][1], 3, BR[48][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[49][1], AR[48][1], 3, BR[48][2][1], 3, BR[48][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[49][2], AR[48][2], 3, BR[48][2][1], 3, BR[48][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[49][3], AR[48][3], 3, BR[48][2][1], 3, BR[48][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[49][0][1], (Ull)b0[48], (Ull)cofs, 13, (Ull)b[48], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[49][0][0], (Ull)b1[48], (Ull)cofs, 13, (Ull)b[48], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[49][1][1], (Ull)b2[48], (Ull)cofs, 13, (Ull)b[48], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[49][1][0], (Ull)b3[48], (Ull)cofs, 13, (Ull)b[48], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[49][2][1], (Ull)a[48][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[50][0], AR[49][0], 3, BR[49][2][1], 3, BR[49][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[50][1], AR[49][1], 3, BR[49][2][1], 3, BR[49][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[50][2], AR[49][2], 3, BR[49][2][1], 3, BR[49][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[50][3], AR[49][3], 3, BR[49][2][1], 3, BR[49][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[50][0][1], (Ull)b0[49], (Ull)cofs, 13, (Ull)b[49], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[50][0][0], (Ull)b1[49], (Ull)cofs, 13, (Ull)b[49], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[50][1][1], (Ull)b2[49], (Ull)cofs, 13, (Ull)b[49], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[50][1][0], (Ull)b3[49], (Ull)cofs, 13, (Ull)b[49], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[50][2][1], (Ull)a[49][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[51][0], AR[50][0], 3, BR[50][2][1], 3, BR[50][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[51][1], AR[50][1], 3, BR[50][2][1], 3, BR[50][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[51][2], AR[50][2], 3, BR[50][2][1], 3, BR[50][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[51][3], AR[50][3], 3, BR[50][2][1], 3, BR[50][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[51][0][1], (Ull)b0[50], (Ull)cofs, 13, (Ull)b[50], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[51][0][0], (Ull)b1[50], (Ull)cofs, 13, (Ull)b[50], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[51][1][1], (Ull)b2[50], (Ull)cofs, 13, (Ull)b[50], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[51][1][0], (Ull)b3[50], (Ull)cofs, 13, (Ull)b[50], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[51][2][1], (Ull)a[50][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[52][0], AR[51][0], 3, BR[51][2][1], 3, BR[51][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[52][1], AR[51][1], 3, BR[51][2][1], 3, BR[51][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[52][2], AR[51][2], 3, BR[51][2][1], 3, BR[51][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[52][3], AR[51][3], 3, BR[51][2][1], 3, BR[51][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[52][0][1], (Ull)b0[51], (Ull)cofs, 13, (Ull)b[51], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[52][0][0], (Ull)b1[51], (Ull)cofs, 13, (Ull)b[51], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[52][1][1], (Ull)b2[51], (Ull)cofs, 13, (Ull)b[51], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[52][1][0], (Ull)b3[51], (Ull)cofs, 13, (Ull)b[51], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[52][2][1], (Ull)a[51][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[53][0], AR[52][0], 3, BR[52][2][1], 3, BR[52][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[53][1], AR[52][1], 3, BR[52][2][1], 3, BR[52][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[53][2], AR[52][2], 3, BR[52][2][1], 3, BR[52][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[53][3], AR[52][3], 3, BR[52][2][1], 3, BR[52][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[53][0][1], (Ull)b0[52], (Ull)cofs, 13, (Ull)b[52], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[53][0][0], (Ull)b1[52], (Ull)cofs, 13, (Ull)b[52], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[53][1][1], (Ull)b2[52], (Ull)cofs, 13, (Ull)b[52], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[53][1][0], (Ull)b3[52], (Ull)cofs, 13, (Ull)b[52], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[53][2][1], (Ull)a[52][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[54][0], AR[53][0], 3, BR[53][2][1], 3, BR[53][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[54][1], AR[53][1], 3, BR[53][2][1], 3, BR[53][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[54][2], AR[53][2], 3, BR[53][2][1], 3, BR[53][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[54][3], AR[53][3], 3, BR[53][2][1], 3, BR[53][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[54][0][1], (Ull)b0[53], (Ull)cofs, 13, (Ull)b[53], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[54][0][0], (Ull)b1[53], (Ull)cofs, 13, (Ull)b[53], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[54][1][1], (Ull)b2[53], (Ull)cofs, 13, (Ull)b[53], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[54][1][0], (Ull)b3[53], (Ull)cofs, 13, (Ull)b[53], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[54][2][1], (Ull)a[53][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[55][0], AR[54][0], 3, BR[54][2][1], 3, BR[54][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[55][1], AR[54][1], 3, BR[54][2][1], 3, BR[54][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[55][2], AR[54][2], 3, BR[54][2][1], 3, BR[54][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[55][3], AR[54][3], 3, BR[54][2][1], 3, BR[54][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[55][0][1], (Ull)b0[54], (Ull)cofs, 13, (Ull)b[54], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[55][0][0], (Ull)b1[54], (Ull)cofs, 13, (Ull)b[54], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[55][1][1], (Ull)b2[54], (Ull)cofs, 13, (Ull)b[54], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[55][1][0], (Ull)b3[54], (Ull)cofs, 13, (Ull)b[54], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[55][2][1], (Ull)a[54][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[56][0], AR[55][0], 3, BR[55][2][1], 3, BR[55][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[56][1], AR[55][1], 3, BR[55][2][1], 3, BR[55][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[56][2], AR[55][2], 3, BR[55][2][1], 3, BR[55][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[56][3], AR[55][3], 3, BR[55][2][1], 3, BR[55][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[56][0][1], (Ull)b0[55], (Ull)cofs, 13, (Ull)b[55], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[56][0][0], (Ull)b1[55], (Ull)cofs, 13, (Ull)b[55], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[56][1][1], (Ull)b2[55], (Ull)cofs, 13, (Ull)b[55], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[56][1][0], (Ull)b3[55], (Ull)cofs, 13, (Ull)b[55], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[56][2][1], (Ull)a[55][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[57][0], AR[56][0], 3, BR[56][2][1], 3, BR[56][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[57][1], AR[56][1], 3, BR[56][2][1], 3, BR[56][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[57][2], AR[56][2], 3, BR[56][2][1], 3, BR[56][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[57][3], AR[56][3], 3, BR[56][2][1], 3, BR[56][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[57][0][1], (Ull)b0[56], (Ull)cofs, 13, (Ull)b[56], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[57][0][0], (Ull)b1[56], (Ull)cofs, 13, (Ull)b[56], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[57][1][1], (Ull)b2[56], (Ull)cofs, 13, (Ull)b[56], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[57][1][0], (Ull)b3[56], (Ull)cofs, 13, (Ull)b[56], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[57][2][1], (Ull)a[56][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[58][0], AR[57][0], 3, BR[57][2][1], 3, BR[57][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[58][1], AR[57][1], 3, BR[57][2][1], 3, BR[57][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[58][2], AR[57][2], 3, BR[57][2][1], 3, BR[57][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[58][3], AR[57][3], 3, BR[57][2][1], 3, BR[57][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[58][0][1], (Ull)b0[57], (Ull)cofs, 13, (Ull)b[57], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[58][0][0], (Ull)b1[57], (Ull)cofs, 13, (Ull)b[57], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[58][1][1], (Ull)b2[57], (Ull)cofs, 13, (Ull)b[57], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[58][1][0], (Ull)b3[57], (Ull)cofs, 13, (Ull)b[57], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[58][2][1], (Ull)a[57][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[59][0], AR[58][0], 3, BR[58][2][1], 3, BR[58][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[59][1], AR[58][1], 3, BR[58][2][1], 3, BR[58][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[59][2], AR[58][2], 3, BR[58][2][1], 3, BR[58][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[59][3], AR[58][3], 3, BR[58][2][1], 3, BR[58][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[59][0][1], (Ull)b0[58], (Ull)cofs, 13, (Ull)b[58], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[59][0][0], (Ull)b1[58], (Ull)cofs, 13, (Ull)b[58], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[59][1][1], (Ull)b2[58], (Ull)cofs, 13, (Ull)b[58], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[59][1][0], (Ull)b3[58], (Ull)cofs, 13, (Ull)b[58], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[59][2][1], (Ull)a[58][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[60][0], AR[59][0], 3, BR[59][2][1], 3, BR[59][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[60][1], AR[59][1], 3, BR[59][2][1], 3, BR[59][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[60][2], AR[59][2], 3, BR[59][2][1], 3, BR[59][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[60][3], AR[59][3], 3, BR[59][2][1], 3, BR[59][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/ mop(0x01, 3, &BR[60][0][1], (Ull)b0[59], (Ull)cofs, 13, (Ull)b[59], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[60][0][0], (Ull)b1[59], (Ull)cofs, 13, (Ull)b[59], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[60][1][1], (Ull)b2[59], (Ull)cofs, 13, (Ull)b[59], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x01, 3, &BR[60][1][0], (Ull)b3[59], (Ull)cofs, 13, (Ull)b[59], 480LL, 0, 0, (Ull)((void *)0), 480LL); mop(0x03,1, &BR[60][2][1], (Ull)a[59][CHIP], (Ull)rofs, 13, (Ull)a0[CHIP], 480LL*15, 0, 0, (Ull)((void *)0), 480LL*15); exe(0x10, &AR[61][0], AR[60][0], 3, BR[60][2][1], 3, BR[60][0][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[61][1], AR[60][1], 3, BR[60][2][1], 3, BR[60][0][0], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[61][2], AR[60][2], 3, BR[60][2][1], 3, BR[60][1][1], 3, 0x00, 0LL, 0x00, 0LL); exe(0x10, &AR[61][3], AR[60][3], 3, BR[60][2][1], 3, BR[60][1][0], 3, 0x00, 0LL, 0x00, 0LL);
+/-EMAX5AS-/
+/-EMAX5AS-/ mop(0x01, 3, &BR[62][0][1], (Ull)c00[CHIP], (Ull)oofs, 12, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x01, 3, &BR[62][1][1], (Ull)c01[CHIP], (Ull)oofs, 12, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x01, 3, &BR[62][2][1], (Ull)c02[CHIP], (Ull)oofs, 12, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x01, 3, &BR[62][3][1], (Ull)c03[CHIP], (Ull)oofs, 12, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); exe(0x12, &AR[62][0], AR[61][0], 3, BR[62][0][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x12, &AR[62][1], AR[61][1], 3, BR[62][1][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x12, &AR[62][2], AR[61][2], 3, BR[62][2][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); exe(0x12, &AR[62][3], AR[61][3], 3, BR[62][3][1], 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL); mop(0x11, 3, &AR[62][0], (Ull)oofs, (Ull)c00[CHIP], 14, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x11, 3, &AR[62][1], (Ull)oofs, (Ull)c01[CHIP], 14, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x11, 3, &AR[62][2], (Ull)oofs, (Ull)c02[CHIP], 14, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15); mop(0x11, 3, &AR[62][3], (Ull)oofs, (Ull)c03[CHIP], 14, (Ull)c0[CHIP], 480LL*15, 0, 1, (Ull)((void *)0), 480LL*15);
 /-EMAX5AS-/ }
 /-EMAX5AS-/ }
 /-EMAX5AS-/ }
 /-EMAX5AE-/
-/-EMAX5AD-/
-            for (CHIP=0; CHIP<1; CHIP++) {
-              for (INIT1=1,LOOP1=BATCH,img=(0-IMX4)<<32|((0-M4)&0xffffffff); LOOP1--; INIT1=0) {
-                for (INIT0=1,LOOP0=M,cofs=(0-4LL)<<32|((0-4LL)&0xffffffff); LOOP0--; INIT0=0) {
-                  exe(0x16, &img, img, 3, INIT0?IMX4M4:0, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
-    exe(0x16, &cofs, INIT0?cofs:cofs, 3, 4LL<<32|4LL, 3, 0LL, 3, 0x01, 0xffffffffffffffffLL, 0x00, 0LL);
-    exe(0x16, &iofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0xffffffff00000000LL, 0x00, 0LL);
-    exe(0x16, &oofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0x00000000ffffffffLL, 0x00, 0LL);
-    mop(0x03, 1, &BR[2][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[2][2][1], (Ull)ip0[0], iofs, 13, (Ull)it0[0], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][0], (Ull)kp1[0][0], 0LL, 12, (Ull)kp1[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][0], b00[0][0], 3, BR[2][2][1], 3, BR[2][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][0], (Ull)kp1[0][0], 0LL, 14, (Ull)kp1[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[3][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[3][2][1], (Ull)ip0[1], iofs, 13, (Ull)it0[1], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][1], (Ull)kp1[0][1], 0LL, 12, (Ull)kp1[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][1], b00[0][1], 3, BR[3][2][1], 3, BR[3][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][1], (Ull)kp1[0][1], 0LL, 14, (Ull)kp1[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[4][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[4][2][1], (Ull)ip0[2], iofs, 13, (Ull)it0[2], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][2], (Ull)kp1[0][2], 0LL, 12, (Ull)kp1[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][2], b00[0][2], 3, BR[4][2][1], 3, BR[4][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][2], (Ull)kp1[0][2], 0LL, 14, (Ull)kp1[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[5][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[5][2][1], (Ull)ip0[3], iofs, 13, (Ull)it0[3], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][3], (Ull)kp1[0][3], 0LL, 12, (Ull)kp1[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][3], b00[0][3], 3, BR[5][2][1], 3, BR[5][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][3], (Ull)kp1[0][3], 0LL, 14, (Ull)kp1[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-                }
-              }
-            }
-            for (oc=0; oc<OC; oc++) {
-       for (ic=0; ic<IC; ic++) {
-  float xmax = *(float*)kp0[oc][ic], host = *(float*)kp1[oc][ic];
-  if ((((host)-(xmax)>=0.0?(host)-(xmax):(xmax)-(host))/((host)==0.0?1:(host)))>(5.0E-4)) printf("x[%d][%d][%d][%d]: g_ker=%7.5e(%8.8x) i_ker=%7.5e(%8.8x)\n", oc, ic, y+K/2, x+K/2, host, *(Uint*)&host, xmax, *(Uint*)&xmax);
-  else printf(" [%d][%d][%d][%d]: g_ker=%7.5e(%8.8x) i_ker=%7.5e(%8.8x)\n", oc, ic, y+K/2, x+K/2, host, *(Uint*)&host, xmax, *(Uint*)&xmax);
-       }
-     }
-            kidx++;
-          }
-        }
-      }
     }
   }
+/-EMAX5AD-/
 }

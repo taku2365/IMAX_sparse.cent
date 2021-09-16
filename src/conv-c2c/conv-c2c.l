@@ -14,12 +14,14 @@
 %o      500
 
 %{
+#include "yacc_lex_util.h"
 double      atof();
 void        *malloc();
 static int  indx;
 %}
 
 %%
+
 \n                   { ++y_lineno; return(EOL); }
 ^[^\/\n].*           { return(ARMV8); }
 ^\/[^-\n].*          { return(ARMV8); }
@@ -202,3 +204,5 @@ INIT[0-3] { /* INIT[23] not available */
     }
     return(ASIS);
 }
+
+%%

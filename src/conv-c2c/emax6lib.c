@@ -1666,7 +1666,6 @@ mop_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, 
 
   }
 
-
 }
 
 void /*__attribute__((always_inline))*/

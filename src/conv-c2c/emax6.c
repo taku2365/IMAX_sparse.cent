@@ -12,7 +12,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/R
 #include "conv-c2c.h"
 #include "emax6.h"
 
-emit_emax6a(int mode) /* 0:array, 1:drain */
+int emit_emax6a(int mode) /* 0:array, 1:drain */
 {
   int c, i, j, k, flag;
   int last_row = -1; /* last location */
@@ -2920,6 +2920,7 @@ mode_drain_dirty_lmm:
 
   return (0);
 }
+
 
 /*****************************************************************************************/
 /*****************************************************************************************/

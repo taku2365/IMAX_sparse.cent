@@ -829,6 +829,7 @@ enum __fdlibm_version
   __fdlibm_posix
 };
 extern enum __fdlibm_version __fdlib_version;
+int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
 void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
 int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
@@ -1328,7 +1329,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
   }
   if (mode==0 && phase == 1) {
     if (lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
-    else if (lmmo_stat==14 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
+    else if (lmmo_stat==14 && !lmm_ready && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
     else { mark = 0; }
   }
   else if (mode==1 && phase == 1) {
@@ -1339,7 +1340,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
     if (lmmc_stat== 8 && !lmm_ready) { mark = 1; }
     else if (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz) { mark = 1; }
     else if (lmmc_stat==10) { mark = 1; }
-    else if (lmmc_stat==14) { mark = 1; }
+    else if (lmmc_stat==14 && !lmm_ready) { mark = 1; }
     else { mark = 0; }
   }
   else if (phase == 3) {
@@ -2146,6 +2147,33 @@ mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint l
   mmp(op_mm, ex, d, adr, top, len, blk);
 }
 void
+mop_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr,*load64;
+  Uint *load32;
+  Uint tmp,tmp1;
+  eag(&adr, base, offset, msk);
+  switch(op_mm){
+    case 0x01:
+      load64 = (Ull*)(adr&~7LL);
+      tmp = (Uint)(*load64>>32);
+      tmp1 = (Uint)(*load64);
+      float load64_left = *(float*)&(tmp) ;
+      float load64_right = *(float*)&(tmp1) ;
+      load64_left += 1.0;
+      load64_right += 1.0;
+      *((Uint*)(adr&~7LL)+1) = *(Uint*)&load64_left;
+      *((Uint*)(adr&~7LL) ) = *(Uint*)&load64_right;
+      break;
+    case 0x03:
+      load32 = (Uint*)(adr&~3LL);
+      float load32_1 = *(float*)&(*load32) ;
+      load32_1 += 1.0;
+      *((Uint*)(adr&~3LL) ) = *(Uint*)&load32_1;
+      break;
+  }
+}
+void
 mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
   Ull adr;
@@ -2257,159 +2285,12 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
     break;
   }
 }
-typedef struct _float2D {
-  int nstrides;
-  int stride_size;
-  float *data;
-} float2D;
-typedef struct _float4D {
-  int nstrides;
-  int nchannel;
-  int kstrides;
-  int stride_size;
-  float *data;
-} float4D;
-int CNN_DEPTH = 2;
-int FC_DEPTH = 1;
-typedef struct _CNNet {
-  float4D ninput;
-  float2D tmp_col[9];
-  float2D tmp_dst[9];
-  float2D Ki2h[9];
-  float2D g_Ki2h[9];
-  float4D nhidden[9];
-  float4D nhiddenbak[9];
-  float2D hbias[9];
-  float2D g_hbias[9];
-  float4D npool[9];
-  float4D npoolbak[9];
-  float2D nflat[3];
-  float2D Wh2o[3];
-  float2D g_Wh2o[3];
-  float2D nout[3];
-  float2D noutbak[3];
-  float2D obias[3];
-  float2D g_obias[3];
-} CNNet;
-struct c {
-  int isize;
-  int ichan;
-  int ksize;
-  int osize;
-  int ochan;
-  int psize;
-};
-struct f {
-  int osize;
-};
-struct c c[2][9]={
+Uchar* membase;
+sysinit(memsize, alignment) Uint memsize, alignment;
 {
-  {28,1,5,24,9,2},{12,9,3,12,32,2},{ 6,32,2, 5,32,1},{ 5,32,2,4, 64,1},{ 4, 64,2,3, 64,1}
-},
-{
-  {6,2,3,3,4,1},{3,4,2,2,1,1},{7,16,2,7,32,1},{7,32,2,6,32,2},{3,32,2,2,64,1},{2,64,2,1,64,1}
-}
-};
-struct f f[2][3]={
-{
-  {200},{10},{10}
-},
-{
-  {200},{40},{10}
-}
-};
-void init_float2D(float2D *, int, int);
-void multiply_float2D(float2D *, const float2D *, int, const float2D*, int);
-void multiply_float2D_sum(float2D *, const float2D *, int, const float2D*, int);
-void init_float4D(float4D *, int, int, int, int);
-void copy4D(float4D *, const float4D *);
-void flat4Dto2D(float2D *, const float4D *);
-void raise2Dto4D(float4D *, const float2D *);
-void sum_rows4D(float2D *, float4D *);
-void show4D(const float4D);
-void show4D_limited(const float4D, int);
-void LoadParam2D(const char *, int, float2D *);
-void LoadParam4D(const char *, float4D *);
-void F4i2Ipl(int, int, int, int, unsigned int*, float4D *);
-void Ipl2F4i(int, int, int, unsigned int*, float4D *);
-void Ipl2F4h(int, int, int, unsigned int*, unsigned int*, float4D *);
-void init_net(CNNet *, int, struct c *, struct f *);
-void init_xmax(int, struct c *, struct f *);
-void xmax_conv_backward(float4D *, float2D *, float2D *, float4D *, int);
-Uchar *membase;
-int memsize;
-int memalign;
-Uint *i_inp;
-Uint *i_ker;
-Uint *i_out;
-int i_inp_max_size;
-int i_ker_max_size;
-int i_out_max_size;
-void init_float2D(float2D *a, int nstrides, int stride_size) {
-  if (a == ((void *)0)) {
-    printf("init_float2D error, 2D nullptr\n");
-    exit(-1);
-  }
-  a->nstrides = nstrides;
-  a->stride_size = stride_size;
-  if ((a->data = (float *)malloc(nstrides * stride_size * sizeof(float))) == ((void *)0)) {
-    printf("Can not allocate float2D with strides=%d, stride_size=%d\n",
-    nstrides, stride_size);
-    exit(-1);
-  }
-  memset(a->data, 0, nstrides * stride_size * sizeof(float));
-}
-void init_float4D(float4D *a, int nstrides, int nchannel, int kstrides, int stride_size) {
-  if (a == ((void *)0)) {
-    printf("init_float4D error, 4D nullptr\n");
-    exit(-1);
-  }
-  a->nstrides = nstrides;
-  a->nchannel = nchannel;
-  a->kstrides = kstrides;
-  a->stride_size = stride_size;
-  if ((a->data = (float *)malloc(nstrides * nchannel * kstrides * stride_size * sizeof(float))) == ((void *)0)) {
-    printf("Can not allocate float4D with nstrides=%d, nchannel=%d, kstrides=%d, stride_size=%d\n",
-    nstrides, nchannel, kstrides, stride_size);
-    exit(-1);
-  }
-  memset(a->data, 0, nstrides * nchannel * kstrides * stride_size * sizeof(float));
-}
-void init_net(CNNet *net, int batch_size, struct c *c, struct f *f)
-{
-  int l;
-  if (net == ((void *)0)) {
-    printf("init_net error: got a nullptr net\n");
-    exit(-1);
-  }
-  init_float4D(&(net->ninput), batch_size, c[0].ichan, c[0].isize, c[0].isize);
-  for (l=0; l<CNN_DEPTH; l++) {
-    init_float2D(&(net->Ki2h[l]), c[l].ochan, c[l].ichan*c[l].ksize*c[l].ksize);
-    init_float2D(&(net->g_Ki2h[l]), c[l].ochan, c[l].ichan*c[l].ksize*c[l].ksize);
-    init_float4D(&(net->nhidden[l]), batch_size, c[l].ochan, c[l].osize, c[l].osize);
-    init_float4D(&(net->npool[l]), batch_size, c[l].ochan, c[l].osize/c[l].psize, c[l].osize/c[l].psize);
-  }
-}
-void init_xmax(int batch_size, struct c *c, struct f *f)
-{
-  int l;
-  for (l=0; l<CNN_DEPTH; l++) {
-    { if (i_inp_max_size < (batch_size * c[l].ichan * (c[l].isize+c[l].ksize-1) * (c[l].isize+c[l].ksize-1))) i_inp_max_size = (batch_size * c[l].ichan * (c[l].isize+c[l].ksize-1) * (c[l].isize+c[l].ksize-1)); };
-    { if (i_ker_max_size < (c[l].ichan * ((c[l].ochan+3)&~3) * c[l].ksize * c[l].ksize)) i_ker_max_size = (c[l].ichan * ((c[l].ochan+3)&~3) * c[l].ksize * c[l].ksize); };
-    { if (i_out_max_size < (batch_size * ((c[l].ochan+3)&~3) * c[l].osize * c[l].osize)) i_out_max_size = (batch_size * ((c[l].ochan+3)&~3) * c[l].osize * c[l].osize); };
-  }
-  { if (memsize < ((i_inp_max_size+i_ker_max_size+i_out_max_size)*sizeof(int))) memsize = ((i_inp_max_size+i_ker_max_size+i_out_max_size)*sizeof(int)); };
-  memalign = 32;
-  membase = (void*)malloc(memsize+memalign);
-  if ((Ull)membase & (memalign-1))
-    membase = (void*)(((Ull)membase & ~(memalign-1))+memalign);
-  printf("membase: %08.8x\n", (Uint)membase);
-  i_inp = (Uint*)membase;
-  i_ker = (Uint*)i_inp + i_inp_max_size;
-  i_out = (Uint*)i_ker + i_ker_max_size;
-  printf("i_inp : %08.8x-%08.8x\n", (Uint)i_inp, (Uint)i_inp+i_inp_max_size*sizeof(int)-1);
-  printf("i_ker : %08.8x-%08.8x\n", (Uint)i_ker, (Uint)i_ker+i_ker_max_size*sizeof(int)-1);
-  printf("i_out : %08.8x-%08.8x\n", (Uint)i_out, (Uint)i_out+i_out_max_size*sizeof(int)-1);
+  membase = (void*)malloc(memsize+alignment);
+  if ((int)membase & (alignment-1))
+    membase = (void*)(((int)membase & ~(alignment-1))+alignment);
   emax_info.dma_phys = 0x50000000;
   emax_info.dma_mmap = emax_info.dma_phys;
   emax_info.reg_phys = 0x50100000;
@@ -2424,237 +2305,121 @@ void init_xmax(int batch_size, struct c *c, struct f *f)
   ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
   ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
 }
+Uint *A;
+Uint *B;
+Uint *C0;
+Uint *C1;
+int row, col, n;
+int top, blk;
+int w, h;
+int count0, count1, count2;
+Uint Z[(320*240)];
 main()
 {
-  CNNet *net;
-  int batch_size=2;
-  int i, j, k;
-  srand(0);
-  net = (CNNet *)malloc(sizeof(*net));
-  init_net(net, batch_size, c[1], f[1]);
-  init_xmax(batch_size, c[1], f[1]);
-  for (i=0; i<CNN_DEPTH; i++) {
-    for (j=0; j<net->nhidden[i].nstrides*net->nhidden[i].nchannel*net->nhidden[i].kstrides*net->nhidden[i].stride_size; j++)
-      net->nhidden[i].data[j] = 0.03f*j;
-    for (j=0; j<net->npool[i].nstrides*net->npool[i].nchannel*net->npool[i].kstrides*net->npool[i].stride_size; j++)
-      net->npool[i].data[j] = 0.02f*j;
-    for (j=0; j<net->Ki2h[i].nstrides*net->Ki2h[i].stride_size; j++)
-      net->Ki2h[i].data[j] = 0.01f*j;
+  sysinit((Uint)(480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)
+                +480LL*480LL*sizeof(Uint)),32);
+  printf("membase: %08.8x\n", (Uint)membase);
+  A = (Uint*)membase;
+  B = (Uint*)((Uchar*)A + 480LL*480LL*sizeof(Uint));
+  C0 = (Uint*)((Uchar*)B + 480LL*480LL*sizeof(Uint));
+  C1 = (Uint*)((Uchar*)C0 + 480LL*480LL*sizeof(Uint));
+  printf("A : %08.8x\n", A);
+  printf("B : %08.8x\n", B);
+  printf("C0: %08.8x\n", C0);
+  printf("C1: %08.8x\n", C1);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++)
+      *(float*)&A[row*480LL +col] = row%120+1;
   }
-  for (i=CNN_DEPTH-1; i>=1; i--) {
-    printf("i=%d\n", i);
-    xmax_conv_backward(&(net->nhidden[i]), &(net->Ki2h[i]), &(net->g_Ki2h[i]), i==0?&(net->ninput):&(net->npool[i-1]), c[1][i].ksize);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++)
+      *(float*)&B[row*480LL +col] = col%120+1;
+  }
+  reset_nanosec();
+  orig();
+  get_nanosec(0);
+  show_nanosec();
+  reset_nanosec();
+  imax();
+  get_nanosec(0);
+  show_nanosec();
+  copy_Z(0, C1); _copyX(0, Z);
+  copy_Z(1, C1); _copyX(1, Z);
+  copy_Z(4, C1); _copyX(4, Z);
+  copy_Z(5, C1); _copyX(5, Z);
+  copy_Z(8, C1); _copyX(8, Z);
+  copy_Z(9, C1); _copyX(9, Z);
+  _updateX();
+  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++) {
+      if (C0[row*480LL +col] != C1[row*480LL +col]) {
+        count2++;
+        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*480LL +col],
+                                                row, col, (double)*(float*)&C1[row*480LL +col]);
+      }
+    }
+  }
+  if (count2)
+    printf("Num of diffs: %d\n", count2);
+  else
+    printf("Results are equal\n");
+  show_nanosec();
+}
+copy_Z(id, from)
+     int id;
+     unsigned int *from;
+{
+  int i, j;
+  volatile unsigned int *to = Z;
+  unsigned int *offs;
+  switch (id) {
+  case 0: offs = from; break;
+  case 1: offs = from + WD; break;
+  case 2: offs = from + WD*2; break;
+  case 3: offs = from + WD*3; break;
+  case 4: offs = from + 480LL*HT; break;
+  case 5: offs = from + 480LL*HT+WD; break;
+  case 6: offs = from + 480LL*HT+WD*2; break;
+  case 7: offs = from + 480LL*HT+WD*3; break;
+  case 8: offs = from + 480LL*HT*2; break;
+  case 9: offs = from + 480LL*HT*2+WD; break;
+  case 10: offs = from + 480LL*HT*2+WD*2; break;
+  case 11: offs = from + 480LL*HT*2+WD*3; break;
+  case 12: offs = from + 480LL*HT*3; break;
+  case 13: offs = from + 480LL*HT*3+WD; break;
+  case 14: offs = from + 480LL*HT*3+WD*2; break;
+  case 15: offs = from + 480LL*HT*3+WD*3; break;
+  }
+  for (i=0; i<HT; i++, offs+=480LL) {
+    if (offs<from+480LL*480LL) {
+      for (j=0; j<WD; j++) {
+ if (j+(id%4)*WD<480LL) *to++ = (*(offs+j))>>0;
+ else *to++ = 0;
+      }
+    }
+    else {
+      for (j=0; j<WD; j++)
+ *to++ = 0;
+    }
   }
 }
-void imemcpy(Uint *dst, Uint *src, int words)
-{
-  union {
-    Uint i[4];
-    Ull l[2];
-    Dll d;
-  } buf;
-  Uint loop, i;
-  if (words >= 1 && ((Ull)dst & sizeof(Uint))) {
-    *dst++ = *src++;
-    words--;
-  }
-  if (words >= 2 && ((Ull)dst & sizeof(Ull))) {
-    if ((Ull)src & sizeof(Uint)) {
-      buf.i[0] = *src++;
-      buf.i[1] = *src++;
-      *(Ull*)dst = buf.l[0];
-    }
-    else {
-      *(Ull*)dst = *(Ull*)src;
-      src += sizeof(Ull)/sizeof(Uint);
-    }
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (loop = words/(sizeof(Dll)/sizeof(Uint))) {
-    if ((Ull)src & sizeof(Uint)) {
-      for(i=0; i<loop; i++) {
- buf.i[0] = *src++;
- buf.i[1] = *src++;
- buf.i[2] = *src++;
- buf.i[3] = *src++;
- *(Dll*)dst = buf.d;
- dst += sizeof(Dll)/sizeof(Uint);
+orig() {
+  printf("<<<ORIG>>>\n");
+  for (row=0; row<480LL; row++) {
+    for (col=0; col<480LL; col++) {
+      for (n=0; n<480LL; n++) {
+        if (n==0) *(float*)&C0[row*480LL +col] = *(float*)&A[row*480LL +n] * *(float*)&B[n*480LL +col];
+        else *(float*)&C0[row*480LL +col] += *(float*)&A[row*480LL +n] * *(float*)&B[n*480LL +col];
+        count0++;
       }
     }
-    else if ((Ull)src & sizeof(Ull)) {
-      for(i=0; i<loop; i++) {
- buf.l[0] = *(Ull*)src;src += sizeof(Ull)/sizeof(Uint);
- buf.l[1] = *(Ull*)src;src += sizeof(Ull)/sizeof(Uint);
- *(Dll*)dst = buf.d;
- dst += sizeof(Dll)/sizeof(Uint);
-      }
-    }
-    else {
-      for(i=0; i<loop; i++) {
- *(Dll*)dst = *(Dll*)src;
- src += sizeof(Dll)/sizeof(Uint);
- dst += sizeof(Dll)/sizeof(Uint);
-      }
-    }
-    words -= loop*(sizeof(Dll)/sizeof(Uint));
-  }
-  if (words >= 2) {
-    if ((Ull)src & sizeof(Uint)) {
-      buf.i[0] = *src++;
-      buf.i[1] = *src++;
-      *(Ull*)dst = buf.l[0];
-    }
-    else {
-      *(Ull*)dst = *(Ull*)src;
-      src += sizeof(Ull)/sizeof(Uint);
-    }
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (words >= 1) {
-    *dst++ = *src++;
-    words--;
   }
 }
-void xmax_bzero(Uint *dst, int words)
-{
-  Uint loop, i;
-  if (words >= 1 && ((Ull)dst & sizeof(Uint))) {
-    *dst++ = 0;
-    words--;
-  }
-  if (words >= 2 && ((Ull)dst & sizeof(Ull))) {
-    *(Ull*)dst = 0;
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (loop = words/(sizeof(Dll)/sizeof(Uint))) {
-    for(i=0; i<loop; i++) {
-      *((Dll*)dst) = 0;
-      dst += sizeof(Dll)/sizeof(Uint);
-    }
-    words -= loop*(sizeof(Dll)/sizeof(Uint));
-  }
-  if (words >= 2) {
-    *(Ull*)dst = 0;
-    dst += sizeof(Ull)/sizeof(Uint);
-    words-=2;
-  }
-  if (words >= 1) {
-    *dst++ = 0;
-    words--;
-  }
-}
-void xmax_cpyin(int order, Uint *dst, int *imo, Uint *src, int batch, int ic, int im, int m, int k)
-{
-  switch (order) {
-  case 0:
-    if (im == m && 1<k) {
-      int n, i, w = im+k-1;
-      for (n=0; n<batch*ic; n++,dst+=w*w,src+=im*im) {
- for (i=0; i<k/2; i++)
-   xmax_bzero(dst+i*w, w);
- for (i=k/2; i<=im+k/2-1; i++) {
-   xmax_bzero (dst+i*w, (k/2) );
-   imemcpy(dst+i*w+(k/2), src+(i-k/2)*im, im);
-   if (k-1-(k/2)) xmax_bzero (dst+i*w+(k/2)+im, k-1-(k/2));
- }
- for (i=im+k/2; i<w; i++)
-   xmax_bzero(dst+i*w, w);
-      }
-      *imo = w;
-    }
-    else {
-      imemcpy(dst, src, batch*ic*im*im);
-      *imo = im;
-    }
-    break;
-  case 1:
-    if (im == m && 1<k) {
-      int n1, n0, i, w = im+k-1;
-      for (n1=0; n1<batch; n1++) {
- for (n0=0; n0<ic; n0++,src+=im*im) {
-   int ofs = (n0*w*batch+n1)*w;
-   int dist = batch*w;
-   for (i=0; i<k/2; i++)
-     xmax_bzero(dst+ofs+i*dist, w);
-   for (i=k/2; i<=im+k/2-1; i++) {
-     xmax_bzero (dst+ofs+i*dist, (k/2) );
-     imemcpy(dst+ofs+i*dist+(k/2), src+(i-k/2)*im, im);
-     if (k-1-(k/2)) xmax_bzero (dst+ofs+i*dist+(k/2)+im, k-1-(k/2));
-   }
-   for (i=im+k/2; i<w; i++)
-     xmax_bzero(dst+ofs+i*dist, w);
- }
-      }
-      *imo = w;
-    }
-    else {
-      int n1, n0, i;
-      for (n1=0; n1<batch; n1++) {
- for (n0=0; n0<ic; n0++,src+=im*im) {
-   int ofs = (n0*im*batch+n1)*im;
-   int dist = batch*im;
-   for (i=0; i<im; i++)
-     imemcpy(dst+ofs+i*dist, src+i*im, im);
- }
-      }
-      *imo = im;
-    }
-    break;
-  case 2:
-    imemcpy(dst, src, im*m);
-    *imo = im;
-    break;
-  }
-}
-void xmax_cpyout(int order, Uint *dst, int batch, int oc, Uint *src, int m, int n, int oc4)
-{
-  int k, k2, k1, k0;
-  switch (order) {
-  case 0:
-    for (k=0; k<batch; k++,dst+=oc*m*n,src+=oc4*m*n)
-      imemcpy(dst, src, oc*m*n);
-    break;
-  case 1:
-    for (k2=0; k2<batch; k2++) {
-      for (k1=0; k1<oc; k1++) {
- for (k0=0; k0<m; k0++,dst+=n)
-   imemcpy(dst, src+((k1*m+k0)*batch+k2)*n, n);
-      }
-    }
-    break;
-  case 2:
-    if (n == oc4)
-      imemcpy(dst, src, m*n);
-    else {
-      for (k=0; k<m; k++,dst+=n,src+=oc4)
- imemcpy(dst, src, n);
-    }
-    break;
-  }
-}
-void xmax_conv_backward(float4D *out, float2D *kernel, float2D *g_kernel, float4D *in, int ksize)
-{
-  int kstride = 1;
-  int BATCH = in->nstrides;
-  int IC = in->nchannel;
-  int IM = in->kstrides;
-  int IMX;
-  int OC = out->nchannel;
-  int M = out->kstrides;
-  int K = ksize;
-  Uint *in0 = in->data;
-  Uint *ker = kernel->data;
-  Uint *g_ker = g_kernel->data;
-  Uint *out0 = out->data;
-  Uint *ip0, *ip1, *ip2, *ip3, *ip4, *ip5, *op0, *kp, kidx, *kp0;
-  int pad;
-  int count, top, iset, oset, oc, w, ic, y, x;
-  int y0, x0, ch, xy;
-  Ull IMX4, IM4, M4, IMX4M4, M4IM4, IMXlen, IMlen, Mlen;
-  Ull CHIP, img, rofs, cofs, iofs, oofs;
+imax() {
+  Ull CHIP;
   Ull LOOP1, LOOP0;
   Ull INIT1, INIT0;
   Ull AR[64][4];
@@ -2662,111 +2427,261 @@ void xmax_conv_backward(float4D *out, float2D *kernel, float2D *g_kernel, float4
   Ull r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
   Ull r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
   Ull cc0, cc1, cc2, cc3, ex0, ex1;
-  if (IM == M)
-    pad = 0;
-  else if ((IM - K)/1 + 1 == M)
-    pad = K/2;
-  else {
-    printf("xmax_conv_backward error: IM=%d K=%d M=%d\n", IM, K, M);
-    printf("IM == M || (IM-K)/1+1 == M\n");
-    exit(-1);
-  }
-IMX = IM;
-  IMX4 = IMX*4;
-  M4 = M*4;
-  IMX4M4 = IMX4<<32|M4;
-  IMXlen = IMX*BATCH;
-  Mlen = M*BATCH;
-  for (oset=0; oset<((OC+1 -1)&~(1 -1)); oset+=1) {
-    Uint cc0[1][4], cc1[1][4], inum[4], *ip0[4], *it0[4], onum[1], *op0[1], *ot0[1], *kp0[1][4], *kp1[1][4], b00[1][4];
-    for (rofs=0; rofs<1; rofs++) {
-      for (iset=0; iset<((IC+4 -1)&~(4 -1)); iset+=4) {
- kidx = 0;
- for (y=-(K/2); y<0; y++) {
-   for (x=-(K/2); x<0; x++) {
-     printf("oset=%d rofs=%d iset=%d y=%d x=%d\n", oset, rofs, iset, y+K/2, x+K/2);
-     for (ic=0; ic<4; ic++) {
-       inum[ic] = iset+ic;
-       ip0[ic] = &i_inp[(iset+ic)*IMX*BATCH*IMX+(rofs+y+K/2)*BATCH*IMX+(x+K/2)];
-       it0[ic] = &i_inp[(iset+ic)*IMX*BATCH*IMX+(rofs+y+K/2)*BATCH*IMX];
-       for (x0=0; x0<IMXlen; x0++) {
-  *((float*)it0[ic]+x0) = 0.2;
-       }
-     }
-     for (oc=0; oc<1; oc++) {
-       onum[oc] = oset+oc;
-       op0[oc] = &i_out[(oset+oc)*M*BATCH*M+rofs*BATCH*M];
-       ot0[oc] = op0[oc];
-       for (x0=0; x0<Mlen; x0++) {
-  *((float*)ot0[oc]+x0) = 0.2;
-       }
-     }
-     for (oc=0; oc<1; oc++) {
-       for (ic=0; ic<4; ic++) {
-  kp0[oc][ic] = ((iset+ic)<IC&&(oset+oc)<OC) ? &i_ker[((oset+oc)*IC+iset+ic)*K*K+kidx] : 0;
-  kp1[oc][ic] = ((iset+ic)<IC&&(oset+oc)<OC) ? &g_ker[((oset+oc)*IC+iset+ic)*K*K+kidx] : 0;
-  *(float*)kp0[oc][ic] = 0.2;
-  *(float*)kp1[oc][ic] = 0.2;
-       }
-     }
-     printf("IMAX starts\n");
-volatile emax6_conf_back_g_ker();
-	  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = 0; // NCHIP-1
-	LOOP1 = ((BATCH));
-	img = (((0-IMX4)<<32|((0-M4)&0xffffffff)));
-	LOOP0 = ((M));
-	cofs = (((0-4LL)<<32|((0-4LL)&0xffffffff)));
+  Ull cofs, rofs, oofs, k;
+  printf("<<<IMAX>>>\n");
+  for (top=0; top<480LL/4; top+=15) {
+    for (blk=0; blk<480LL; blk+=60) {
+      typedef struct {Uint i[8]} Ui8;
+      Uint *a0[4];
+      Uint *a[60][4];
+      Ui8 *b[60], *b0[60], *b1[60], *b2[60], *b3[60];
+      Ui8 *c0[4];
+      Ui8 *c00[4], *c01[4], *c02[4], *c03[4];
+      for (k=0; k<60; k++) {
+ b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+      }
+      for (CHIP=0; CHIP<4; CHIP++) {
+ a0[CHIP] = A+(CHIP*480LL/4 +top)*480LL;
+ for (k=0; k<60; k++)
+   a[k][CHIP] = a0[CHIP]+blk+k;
+ c0[CHIP] = C1+(CHIP*480LL/4 +top)*480LL;
+ c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      }
+volatile emax6_conf_mm();
+	  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = 3; // NCHIP-1
+	LOOP1 = ((15));
+	rofs = (((0-480LL*4)<<32|((0-480LL*4)&0xffffffff)));
+	LOOP0 = ((480LL/4LL/2));
+	cofs = (((0-4LL*8)<<32|((0-4LL*8)&0xffffffff)));
 	emax6.lmmio = emax6.lmmic;
 	emax6.lmmic = 1-emax6.lmmic;
 	emax6.mapdist = 0;
-	*(Uint*)&emax6.lmmi[0][2][0][emax6.lmmic] = 0x00000007|(1<<2);
+	emax6.lastdist = 0;
+	*(Uint*)&emax6.lmmi[0][1][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][1][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][1][0][emax6.lmmic].top = b[0];
+	*(Uint*)&emax6.lmmi[0][2][0][emax6.lmmic] = 0x01df0021|(0<<2);
 	emax6.lmmi[0][2][0][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][2][0][emax6.lmmic].top = kp0[0][0];
-	*(Uint*)&emax6.lmmi[0][2][2][emax6.lmmic] = ((IMXlen-1)<<16)|0x0001|(0<<2);
-	emax6.lmmi[0][2][2][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][2][2][emax6.lmmic].top = it0[0];
-	*(Uint*)&emax6.lmmi[0][3][0][emax6.lmmic] = 0x00000007|(1<<2);
+	emax6.lmmi[0][2][0][emax6.lmmic].top = b[1];
+	*(Uint*)&emax6.lmmi[0][3][0][emax6.lmmic] = 0x01df0021|(0<<2);
 	emax6.lmmi[0][3][0][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][3][0][emax6.lmmic].top = kp0[0][1];
-	*(Uint*)&emax6.lmmi[0][3][2][emax6.lmmic] = ((IMXlen-1)<<16)|0x0001|(0<<2);
-	emax6.lmmi[0][3][2][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][3][2][emax6.lmmic].top = it0[1];
-	*(Uint*)&emax6.lmmi[0][4][0][emax6.lmmic] = 0x00000007|(1<<2);
+	emax6.lmmi[0][3][0][emax6.lmmic].top = b[2];
+	*(Uint*)&emax6.lmmi[0][4][0][emax6.lmmic] = 0x01df0021|(0<<2);
 	emax6.lmmi[0][4][0][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][4][0][emax6.lmmic].top = kp0[0][2];
-	*(Uint*)&emax6.lmmi[0][4][2][emax6.lmmic] = ((IMXlen-1)<<16)|0x0001|(0<<2);
-	emax6.lmmi[0][4][2][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][4][2][emax6.lmmic].top = it0[2];
-	*(Uint*)&emax6.lmmi[0][5][0][emax6.lmmic] = 0x00000007|(1<<2);
+	emax6.lmmi[0][4][0][emax6.lmmic].top = b[3];
+	*(Uint*)&emax6.lmmi[0][5][0][emax6.lmmic] = 0x01df0021|(0<<2);
 	emax6.lmmi[0][5][0][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][5][0][emax6.lmmic].top = kp0[0][3];
-	*(Uint*)&emax6.lmmi[0][5][1][emax6.lmmic] = ((Mlen-1)<<16)|0x0001|(0<<2);
-	emax6.lmmi[0][5][1][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][5][1][emax6.lmmic].top = ot0[0];
-	*(Uint*)&emax6.lmmi[0][5][2][emax6.lmmic] = ((IMXlen-1)<<16)|0x0001|(0<<2);
-	emax6.lmmi[0][5][2][emax6.lmmic].ofs = 0;
-	emax6.lmmi[0][5][2][emax6.lmmic].top = it0[3];
-	emax6.lmmi_bitmap[0] = 0x000000000000003cLL;
-	emax6.lmmi_bitmap[1] = 0x0000000000000020LL;
-	emax6.lmmi_bitmap[2] = 0x000000000000003cLL;
+	emax6.lmmi[0][5][0][emax6.lmmic].top = b[4];
+	*(Uint*)&emax6.lmmi[0][6][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][6][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][6][0][emax6.lmmic].top = b[5];
+	*(Uint*)&emax6.lmmi[0][7][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][7][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][7][0][emax6.lmmic].top = b[6];
+	*(Uint*)&emax6.lmmi[0][8][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][8][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][8][0][emax6.lmmic].top = b[7];
+	*(Uint*)&emax6.lmmi[0][9][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][9][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][9][0][emax6.lmmic].top = b[8];
+	*(Uint*)&emax6.lmmi[0][10][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][10][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][10][0][emax6.lmmic].top = b[9];
+	*(Uint*)&emax6.lmmi[0][11][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][11][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][11][0][emax6.lmmic].top = b[10];
+	*(Uint*)&emax6.lmmi[0][12][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][12][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][12][0][emax6.lmmic].top = b[11];
+	*(Uint*)&emax6.lmmi[0][13][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][13][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][13][0][emax6.lmmic].top = b[12];
+	*(Uint*)&emax6.lmmi[0][14][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][14][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][14][0][emax6.lmmic].top = b[13];
+	*(Uint*)&emax6.lmmi[0][15][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][15][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][15][0][emax6.lmmic].top = b[14];
+	*(Uint*)&emax6.lmmi[0][16][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][16][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][16][0][emax6.lmmic].top = b[15];
+	*(Uint*)&emax6.lmmi[0][17][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][17][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][17][0][emax6.lmmic].top = b[16];
+	*(Uint*)&emax6.lmmi[0][18][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][18][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][18][0][emax6.lmmic].top = b[17];
+	*(Uint*)&emax6.lmmi[0][19][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][19][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][19][0][emax6.lmmic].top = b[18];
+	*(Uint*)&emax6.lmmi[0][20][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][20][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][20][0][emax6.lmmic].top = b[19];
+	*(Uint*)&emax6.lmmi[0][21][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][21][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][21][0][emax6.lmmic].top = b[20];
+	*(Uint*)&emax6.lmmi[0][22][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][22][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][22][0][emax6.lmmic].top = b[21];
+	*(Uint*)&emax6.lmmi[0][23][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][23][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][23][0][emax6.lmmic].top = b[22];
+	*(Uint*)&emax6.lmmi[0][24][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][24][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][24][0][emax6.lmmic].top = b[23];
+	*(Uint*)&emax6.lmmi[0][25][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][25][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][25][0][emax6.lmmic].top = b[24];
+	*(Uint*)&emax6.lmmi[0][26][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][26][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][26][0][emax6.lmmic].top = b[25];
+	*(Uint*)&emax6.lmmi[0][27][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][27][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][27][0][emax6.lmmic].top = b[26];
+	*(Uint*)&emax6.lmmi[0][28][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][28][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][28][0][emax6.lmmic].top = b[27];
+	*(Uint*)&emax6.lmmi[0][29][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][29][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][29][0][emax6.lmmic].top = b[28];
+	*(Uint*)&emax6.lmmi[0][30][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][30][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][30][0][emax6.lmmic].top = b[29];
+	*(Uint*)&emax6.lmmi[0][31][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][31][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][31][0][emax6.lmmic].top = b[30];
+	*(Uint*)&emax6.lmmi[0][32][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][32][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][32][0][emax6.lmmic].top = b[31];
+	*(Uint*)&emax6.lmmi[0][33][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][33][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][33][0][emax6.lmmic].top = b[32];
+	*(Uint*)&emax6.lmmi[0][34][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][34][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][34][0][emax6.lmmic].top = b[33];
+	*(Uint*)&emax6.lmmi[0][35][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][35][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][35][0][emax6.lmmic].top = b[34];
+	*(Uint*)&emax6.lmmi[0][36][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][36][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][36][0][emax6.lmmic].top = b[35];
+	*(Uint*)&emax6.lmmi[0][37][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][37][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][37][0][emax6.lmmic].top = b[36];
+	*(Uint*)&emax6.lmmi[0][38][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][38][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][38][0][emax6.lmmic].top = b[37];
+	*(Uint*)&emax6.lmmi[0][39][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][39][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][39][0][emax6.lmmic].top = b[38];
+	*(Uint*)&emax6.lmmi[0][40][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][40][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][40][0][emax6.lmmic].top = b[39];
+	*(Uint*)&emax6.lmmi[0][41][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][41][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][41][0][emax6.lmmic].top = b[40];
+	*(Uint*)&emax6.lmmi[0][42][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][42][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][42][0][emax6.lmmic].top = b[41];
+	*(Uint*)&emax6.lmmi[0][43][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][43][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][43][0][emax6.lmmic].top = b[42];
+	*(Uint*)&emax6.lmmi[0][44][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][44][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][44][0][emax6.lmmic].top = b[43];
+	*(Uint*)&emax6.lmmi[0][45][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][45][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][45][0][emax6.lmmic].top = b[44];
+	*(Uint*)&emax6.lmmi[0][46][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][46][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][46][0][emax6.lmmic].top = b[45];
+	*(Uint*)&emax6.lmmi[0][47][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][47][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][47][0][emax6.lmmic].top = b[46];
+	*(Uint*)&emax6.lmmi[0][48][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][48][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][48][0][emax6.lmmic].top = b[47];
+	*(Uint*)&emax6.lmmi[0][49][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][49][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][49][0][emax6.lmmic].top = b[48];
+	*(Uint*)&emax6.lmmi[0][50][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][50][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][50][0][emax6.lmmic].top = b[49];
+	*(Uint*)&emax6.lmmi[0][51][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][51][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][51][0][emax6.lmmic].top = b[50];
+	*(Uint*)&emax6.lmmi[0][52][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][52][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][52][0][emax6.lmmic].top = b[51];
+	*(Uint*)&emax6.lmmi[0][53][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][53][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][53][0][emax6.lmmic].top = b[52];
+	*(Uint*)&emax6.lmmi[0][54][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][54][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][54][0][emax6.lmmic].top = b[53];
+	*(Uint*)&emax6.lmmi[0][55][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][55][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][55][0][emax6.lmmic].top = b[54];
+	*(Uint*)&emax6.lmmi[0][56][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][56][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][56][0][emax6.lmmic].top = b[55];
+	*(Uint*)&emax6.lmmi[0][57][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][57][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][57][0][emax6.lmmic].top = b[56];
+	*(Uint*)&emax6.lmmi[0][58][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][58][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][58][0][emax6.lmmic].top = b[57];
+	*(Uint*)&emax6.lmmi[0][59][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][59][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][59][0][emax6.lmmic].top = b[58];
+	*(Uint*)&emax6.lmmi[0][60][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][60][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][60][0][emax6.lmmic].top = b[59];
+	*(Uint*)&emax6.lmmi[0][60][2][emax6.lmmic] = 0x1c1f1001|(0<<2);
+	emax6.lmmi[0][60][2][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][60][2][emax6.lmmic].top = a0[0];
+	*(Uint*)&emax6.lmmi[1][60][2][emax6.lmmic] = 0x1c1f1001|(0<<2);
+	emax6.lmmi[1][60][2][emax6.lmmic].ofs = 0;
+	emax6.lmmi[1][60][2][emax6.lmmic].top = a0[1];
+	*(Uint*)&emax6.lmmi[2][60][2][emax6.lmmic] = 0x1c1f1001|(0<<2);
+	emax6.lmmi[2][60][2][emax6.lmmic].ofs = 0;
+	emax6.lmmi[2][60][2][emax6.lmmic].top = a0[2];
+	*(Uint*)&emax6.lmmi[3][60][2][emax6.lmmic] = 0x1c1f1001|(0<<2);
+	emax6.lmmi[3][60][2][emax6.lmmic].ofs = 0;
+	emax6.lmmi[3][60][2][emax6.lmmic].top = a0[3];
+	*(Uint*)&emax6.lmmi[0][62][0][emax6.lmmic] = 0x1c1f10e7|(1<<2);
+	emax6.lmmi[0][62][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][62][0][emax6.lmmic].top = c0[0];
+	*(Uint*)&emax6.lmmi[1][62][0][emax6.lmmic] = 0x1c1f10e7|(1<<2);
+	emax6.lmmi[1][62][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[1][62][0][emax6.lmmic].top = c0[1];
+	*(Uint*)&emax6.lmmi[2][62][0][emax6.lmmic] = 0x1c1f10e7|(1<<2);
+	emax6.lmmi[2][62][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[2][62][0][emax6.lmmic].top = c0[2];
+	*(Uint*)&emax6.lmmi[3][62][0][emax6.lmmic] = 0x1c1f10e7|(1<<2);
+	emax6.lmmi[3][62][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[3][62][0][emax6.lmmic].top = c0[3];
+	emax6.lmmi_bitmap[0] = 0x5ffffffffffffffeLL;
+	emax6.lmmi_bitmap[1] = 0x0000000000000000LL;
+	emax6.lmmi_bitmap[2] = 0x1000000000000000LL;
 	emax6.lmmi_bitmap[3] = 0x0000000000000000LL;
 	emax6_pre_with_drain_cache();
 	get_nanosec(NANOS_ARM);
-	if (emax6.last_conf == emax6_conf_back_g_ker) {
+	if (emax6.last_conf == emax6_conf_mm) {
 	  emax6.status = STATUS_DRAIN;
-	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 2, 0);/*drain*/
-	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 3, 0);/*drain*/
-	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 4, 0);/*drain*/
-	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 5, 0);/*drain*/
+	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 62, 0);/*drain*/
+	  emax6_check_lmmi_and_dma(0, 1, 0, 1, 62, 0);/*drain*/
+	  emax6_check_lmmi_and_dma(0, 1, 0, 2, 62, 0);/*drain*/
+	  emax6_check_lmmi_and_dma(0, 1, 0, 3, 62, 0);/*drain*/
 	}
 	get_nanosec(NANOS_DRAIN);
-	if (emax6.last_conf != emax6_conf_back_g_ker) {
+	if (emax6.last_conf != emax6_conf_mm) {
 	  Dll *dst, *src;
 	  int i,j;
 	  emax6.status = STATUS_CONF;
-	  emax6.last_conf = emax6_conf_back_g_ker;
+	  emax6.last_conf = emax6_conf_mm;
 	  dst = (Dll*)(((struct reg_ctrl*)emax6.reg_ctrl)->i[0].conf);
-	  src = (Dll*)emax6_conf_back_g_ker;
+	  src = (Dll*)emax6_conf_mm;
 	  for (i=0; i<sizeof(conf)/sizeof(Dll); i++)
 	    *dst++ = *src++;
 	  for (i=0; i<64; i++) {
@@ -2777,104 +2692,916 @@ volatile emax6_conf_back_g_ker();
 	}
 	get_nanosec(NANOS_CONF);
 	emax6.status = STATUS_REGV;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[0][0].br[0] = onum[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[0][0].br[1] = OC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[0][0].br[3] = inum[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[0][1].br[0] = IC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[1][0].br[0] = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[1][0].br[1] = onum[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[1][0].br[3] = OC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[1][1].br[0] = inum[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[1][1].br[1] = IC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][1].br[0] = 0;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][2].br[3] = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][3].br[0] = onum[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][3].br[1] = OC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][3].br[2] = inum[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[2][3].br[3] = IC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][1].br[0] = 0;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][2].br[3] = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][3].br[0] = onum[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][3].br[1] = OC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][3].br[2] = inum[3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[3][3].br[3] = IC;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[4][1].br[0] = 0;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[4][2].br[3] = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[5][1].br[0] = 0;
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[0] = LOOP1;
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[1] = -1LL;
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[2] = LOOP0;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[3] = img;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[0] = IMX4M4;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[1] = cofs;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[2] = ((4LL)<<(32))|(4LL);
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0b = kp0[0][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1b = kp0[0][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea1b = op0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][2].ea1b = ip0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0b = kp0[0][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1b = kp0[0][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea1b = op0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][2].ea1b = ip0[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0b = kp0[0][2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1b = kp0[0][2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea1b = op0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][2].ea1b = ip0[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0b = kp0[0][3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1b = kp0[0][3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1o = 0LL;
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea1b = op0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][2].ea1b = ip0[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[3] = cofs;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[0] = (((4LL)*(8))<<(32))|((4LL)*(8));
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[1] = rofs;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[2] = (((480LL)*(4))<<(32))|((480LL)*(4));
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea0b = b1[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea1b = b0[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea0b = b3[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea1b = b2[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][2].ea1b = a[0][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[1][2].ea1b = a[0][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[1][2].ea1b = a[0][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[1][2].ea1b = a[0][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0b = b1[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1b = b0[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea0b = b3[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea1b = b2[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][2].ea1b = a[1][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[2][2].ea1b = a[1][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[2][2].ea1b = a[1][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[2][2].ea1b = a[1][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0b = b1[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1b = b0[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea0b = b3[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea1b = b2[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][2].ea1b = a[2][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[3][2].ea1b = a[2][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[3][2].ea1b = a[2][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[3][2].ea1b = a[2][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0b = b1[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1b = b0[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea0b = b3[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea1b = b2[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][2].ea1b = a[3][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[4][2].ea1b = a[3][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[4][2].ea1b = a[3][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[4][2].ea1b = a[3][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0b = b1[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1b = b0[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea0b = b3[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea1b = b2[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][2].ea1b = a[4][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[5][2].ea1b = a[4][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[5][2].ea1b = a[4][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[5][2].ea1b = a[4][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea0b = b1[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea1b = b0[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea0b = b3[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea1b = b2[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][2].ea1b = a[5][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[6][2].ea1b = a[5][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[6][2].ea1b = a[5][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[6][2].ea1b = a[5][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea0b = b1[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea1b = b0[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea0b = b3[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea1b = b2[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][2].ea1b = a[6][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[7][2].ea1b = a[6][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[7][2].ea1b = a[6][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[7][2].ea1b = a[6][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea0b = b1[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea1b = b0[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea0b = b3[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea1b = b2[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][2].ea1b = a[7][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[8][2].ea1b = a[7][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[8][2].ea1b = a[7][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[8][2].ea1b = a[7][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea0b = b1[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea1b = b0[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea0b = b3[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea1b = b2[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][2].ea1b = a[8][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[9][2].ea1b = a[8][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[9][2].ea1b = a[8][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[9][2].ea1b = a[8][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea0b = b1[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea1b = b0[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea0b = b3[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea1b = b2[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][2].ea1b = a[9][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[10][2].ea1b = a[9][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[10][2].ea1b = a[9][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[10][2].ea1b = a[9][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea0b = b1[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea1b = b0[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea0b = b3[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea1b = b2[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][2].ea1b = a[10][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[11][2].ea1b = a[10][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[11][2].ea1b = a[10][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[11][2].ea1b = a[10][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea0b = b1[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea1b = b0[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea0b = b3[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea1b = b2[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][2].ea1b = a[11][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[12][2].ea1b = a[11][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[12][2].ea1b = a[11][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[12][2].ea1b = a[11][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea0b = b1[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea1b = b0[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea0b = b3[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea1b = b2[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][2].ea1b = a[12][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[13][2].ea1b = a[12][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[13][2].ea1b = a[12][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[13][2].ea1b = a[12][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea0b = b1[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea1b = b0[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea0b = b3[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea1b = b2[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][2].ea1b = a[13][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[14][2].ea1b = a[13][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[14][2].ea1b = a[13][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[14][2].ea1b = a[13][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea0b = b1[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea1b = b0[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea0b = b3[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea1b = b2[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][2].ea1b = a[14][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[15][2].ea1b = a[14][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[15][2].ea1b = a[14][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[15][2].ea1b = a[14][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea0b = b1[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea1b = b0[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea0b = b3[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea1b = b2[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][2].ea1b = a[15][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[16][2].ea1b = a[15][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[16][2].ea1b = a[15][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[16][2].ea1b = a[15][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea0b = b1[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea1b = b0[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea0b = b3[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea1b = b2[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][2].ea1b = a[16][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[17][2].ea1b = a[16][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[17][2].ea1b = a[16][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[17][2].ea1b = a[16][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea0b = b1[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea1b = b0[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea0b = b3[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea1b = b2[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][2].ea1b = a[17][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[18][2].ea1b = a[17][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[18][2].ea1b = a[17][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[18][2].ea1b = a[17][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea0b = b1[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea1b = b0[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea0b = b3[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea1b = b2[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][2].ea1b = a[18][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[19][2].ea1b = a[18][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[19][2].ea1b = a[18][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[19][2].ea1b = a[18][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea0b = b1[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea1b = b0[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea0b = b3[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea1b = b2[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][2].ea1b = a[19][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[20][2].ea1b = a[19][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[20][2].ea1b = a[19][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[20][2].ea1b = a[19][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea0b = b1[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea1b = b0[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea0b = b3[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea1b = b2[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][2].ea1b = a[20][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[21][2].ea1b = a[20][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[21][2].ea1b = a[20][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[21][2].ea1b = a[20][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea0b = b1[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea1b = b0[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea0b = b3[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea1b = b2[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][2].ea1b = a[21][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[22][2].ea1b = a[21][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[22][2].ea1b = a[21][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[22][2].ea1b = a[21][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea0b = b1[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea1b = b0[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea0b = b3[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea1b = b2[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][2].ea1b = a[22][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[23][2].ea1b = a[22][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[23][2].ea1b = a[22][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[23][2].ea1b = a[22][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea0b = b1[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea1b = b0[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea0b = b3[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea1b = b2[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][2].ea1b = a[23][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[24][2].ea1b = a[23][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[24][2].ea1b = a[23][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[24][2].ea1b = a[23][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea0b = b1[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea1b = b0[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea0b = b3[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea1b = b2[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][2].ea1b = a[24][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[25][2].ea1b = a[24][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[25][2].ea1b = a[24][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[25][2].ea1b = a[24][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea0b = b1[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea1b = b0[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea0b = b3[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea1b = b2[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][2].ea1b = a[25][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[26][2].ea1b = a[25][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[26][2].ea1b = a[25][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[26][2].ea1b = a[25][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea0b = b1[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea1b = b0[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea0b = b3[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea1b = b2[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][2].ea1b = a[26][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[27][2].ea1b = a[26][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[27][2].ea1b = a[26][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[27][2].ea1b = a[26][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea0b = b1[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea1b = b0[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea0b = b3[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea1b = b2[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][2].ea1b = a[27][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[28][2].ea1b = a[27][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[28][2].ea1b = a[27][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[28][2].ea1b = a[27][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea0b = b1[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea1b = b0[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea0b = b3[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea1b = b2[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][2].ea1b = a[28][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[29][2].ea1b = a[28][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[29][2].ea1b = a[28][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[29][2].ea1b = a[28][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea0b = b1[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea1b = b0[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea0b = b3[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea1b = b2[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][2].ea1b = a[29][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[30][2].ea1b = a[29][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[30][2].ea1b = a[29][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[30][2].ea1b = a[29][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea0b = b1[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea1b = b0[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea0b = b3[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea1b = b2[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][2].ea1b = a[30][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[31][2].ea1b = a[30][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[31][2].ea1b = a[30][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[31][2].ea1b = a[30][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea0b = b1[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea1b = b0[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea0b = b3[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea1b = b2[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][2].ea1b = a[31][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[32][2].ea1b = a[31][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[32][2].ea1b = a[31][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[32][2].ea1b = a[31][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea0b = b1[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea1b = b0[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea0b = b3[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea1b = b2[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][2].ea1b = a[32][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[33][2].ea1b = a[32][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[33][2].ea1b = a[32][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[33][2].ea1b = a[32][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea0b = b1[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea1b = b0[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea0b = b3[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea1b = b2[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][2].ea1b = a[33][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[34][2].ea1b = a[33][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[34][2].ea1b = a[33][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[34][2].ea1b = a[33][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea0b = b1[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea1b = b0[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea0b = b3[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea1b = b2[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][2].ea1b = a[34][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[35][2].ea1b = a[34][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[35][2].ea1b = a[34][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[35][2].ea1b = a[34][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea0b = b1[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea1b = b0[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea0b = b3[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea1b = b2[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][2].ea1b = a[35][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[36][2].ea1b = a[35][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[36][2].ea1b = a[35][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[36][2].ea1b = a[35][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea0b = b1[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea1b = b0[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea0b = b3[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea1b = b2[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][2].ea1b = a[36][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[37][2].ea1b = a[36][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[37][2].ea1b = a[36][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[37][2].ea1b = a[36][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea0b = b1[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea1b = b0[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea0b = b3[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea1b = b2[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][2].ea1b = a[37][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[38][2].ea1b = a[37][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[38][2].ea1b = a[37][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[38][2].ea1b = a[37][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea0b = b1[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea1b = b0[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea0b = b3[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea1b = b2[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][2].ea1b = a[38][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[39][2].ea1b = a[38][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[39][2].ea1b = a[38][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[39][2].ea1b = a[38][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea0b = b1[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea1b = b0[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea0b = b3[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea1b = b2[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][2].ea1b = a[39][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[40][2].ea1b = a[39][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[40][2].ea1b = a[39][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[40][2].ea1b = a[39][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea0b = b1[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea1b = b0[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea0b = b3[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea1b = b2[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][2].ea1b = a[40][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[41][2].ea1b = a[40][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[41][2].ea1b = a[40][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[41][2].ea1b = a[40][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea0b = b1[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea1b = b0[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea0b = b3[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea1b = b2[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][2].ea1b = a[41][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[42][2].ea1b = a[41][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[42][2].ea1b = a[41][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[42][2].ea1b = a[41][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea0b = b1[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea1b = b0[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea0b = b3[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea1b = b2[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][2].ea1b = a[42][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[43][2].ea1b = a[42][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[43][2].ea1b = a[42][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[43][2].ea1b = a[42][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea0b = b1[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea1b = b0[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea0b = b3[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea1b = b2[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][2].ea1b = a[43][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[44][2].ea1b = a[43][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[44][2].ea1b = a[43][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[44][2].ea1b = a[43][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea0b = b1[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea1b = b0[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea0b = b3[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea1b = b2[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][2].ea1b = a[44][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[45][2].ea1b = a[44][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[45][2].ea1b = a[44][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[45][2].ea1b = a[44][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea0b = b1[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea1b = b0[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea0b = b3[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea1b = b2[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][2].ea1b = a[45][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[46][2].ea1b = a[45][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[46][2].ea1b = a[45][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[46][2].ea1b = a[45][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][0].ea0b = b1[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][0].ea1b = b0[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][1].ea0b = b3[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][1].ea1b = b2[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][2].ea1b = a[46][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[47][2].ea1b = a[46][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[47][2].ea1b = a[46][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[47][2].ea1b = a[46][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea0b = b1[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea1b = b0[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea0b = b3[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea1b = b2[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea1b = a[47][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][2].ea1b = a[47][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[48][2].ea1b = a[47][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[48][2].ea1b = a[47][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][0].ea0b = b1[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][0].ea1b = b0[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][1].ea0b = b3[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][1].ea1b = b2[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][2].ea1b = a[48][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[49][2].ea1b = a[48][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[49][2].ea1b = a[48][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[49][2].ea1b = a[48][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][0].ea0b = b1[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][0].ea1b = b0[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][1].ea0b = b3[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][1].ea1b = b2[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][2].ea1b = a[49][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[50][2].ea1b = a[49][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[50][2].ea1b = a[49][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[50][2].ea1b = a[49][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][0].ea0b = b1[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][0].ea1b = b0[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][1].ea0b = b3[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][1].ea1b = b2[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][2].ea1b = a[50][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[51][2].ea1b = a[50][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[51][2].ea1b = a[50][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[51][2].ea1b = a[50][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][0].ea0b = b1[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][0].ea1b = b0[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][1].ea0b = b3[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][1].ea1b = b2[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][2].ea1b = a[51][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[52][2].ea1b = a[51][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[52][2].ea1b = a[51][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[52][2].ea1b = a[51][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][0].ea0b = b1[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][0].ea1b = b0[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][1].ea0b = b3[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][1].ea1b = b2[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][2].ea1b = a[52][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[53][2].ea1b = a[52][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[53][2].ea1b = a[52][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[53][2].ea1b = a[52][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][0].ea0b = b1[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][0].ea1b = b0[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][1].ea0b = b3[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][1].ea1b = b2[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][2].ea1b = a[53][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[54][2].ea1b = a[53][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[54][2].ea1b = a[53][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[54][2].ea1b = a[53][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][0].ea0b = b1[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][0].ea1b = b0[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][1].ea0b = b3[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][1].ea1b = b2[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][2].ea1b = a[54][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[55][2].ea1b = a[54][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[55][2].ea1b = a[54][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[55][2].ea1b = a[54][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][0].ea0b = b1[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][0].ea1b = b0[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][1].ea0b = b3[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][1].ea1b = b2[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][2].ea1b = a[55][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[56][2].ea1b = a[55][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[56][2].ea1b = a[55][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[56][2].ea1b = a[55][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][0].ea0b = b1[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][0].ea1b = b0[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][1].ea0b = b3[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][1].ea1b = b2[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][2].ea1b = a[56][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[57][2].ea1b = a[56][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[57][2].ea1b = a[56][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[57][2].ea1b = a[56][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][0].ea0b = b1[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][0].ea1b = b0[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][1].ea0b = b3[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][1].ea1b = b2[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][2].ea1b = a[57][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[58][2].ea1b = a[57][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[58][2].ea1b = a[57][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[58][2].ea1b = a[57][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][0].ea0b = b1[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][0].ea1b = b0[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][1].ea0b = b3[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][1].ea1b = b2[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][2].ea1b = a[58][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[59][2].ea1b = a[58][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[59][2].ea1b = a[58][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[59][2].ea1b = a[58][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][0].ea0b = b1[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][0].ea1b = b0[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][1].ea0b = b3[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][1].ea1b = b2[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][2].ea1b = a[59][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[60][2].ea1b = a[59][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[60][2].ea1b = a[59][2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[60][2].ea1b = a[59][3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][0].ea0o = c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][0].ea0o = c00[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][0].ea0o = c00[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][0].ea0o = c00[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][0].ea1b = c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][0].ea1b = c00[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][0].ea1b = c00[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][0].ea1b = c00[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][1].ea0o = c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][1].ea0o = c01[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][1].ea0o = c01[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][1].ea0o = c01[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][1].ea1b = c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][1].ea1b = c01[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][1].ea1b = c01[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][1].ea1b = c01[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][2].ea0o = c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][2].ea0o = c02[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][2].ea0o = c02[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][2].ea0o = c02[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][2].ea1b = c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][2].ea1b = c02[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][2].ea1b = c02[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][2].ea1b = c02[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][3].ea0o = c03[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][3].ea0o = c03[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][3].ea0o = c03[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][3].ea0o = c03[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][3].ea1b = c03[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[62][3].ea1b = c03[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[2].addr[62][3].ea1b = c03[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[3].addr[62][3].ea1b = c03[3];
 	get_nanosec(NANOS_REGV);
 	emax6.status = STATUS_RANGE;
 	{struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
 	 Uint            lmmic     = emax6.lmmic;
+	*(Ull*)&(reg_ctrl->i[0].addr[1][0].top) = ((Ull)(emax6.lmmi[0][1][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][1][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][1][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[1][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[1][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[1][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[1][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
 	*(Ull*)&(reg_ctrl->i[0].addr[2][0].top) = ((Ull)(emax6.lmmi[0][2][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][2][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][2][0][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[2][1].top) = ((Ull)(emax6.lmmi[0][5][1][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][1][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][1][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[2][2].top) = ((Ull)(emax6.lmmi[0][2][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][2][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][2][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[2][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[2][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[2][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[2][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
 	*(Ull*)&(reg_ctrl->i[0].addr[3][0].top) = ((Ull)(emax6.lmmi[0][3][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][3][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][3][0][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[3][1].top) = ((Ull)(emax6.lmmi[0][5][1][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][1][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][1][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[3][2].top) = ((Ull)(emax6.lmmi[0][3][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][3][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][3][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[3][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[3][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[3][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[3][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
 	*(Ull*)&(reg_ctrl->i[0].addr[4][0].top) = ((Ull)(emax6.lmmi[0][4][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][4][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][4][0][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[4][1].top) = ((Ull)(emax6.lmmi[0][5][1][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][1][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][1][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[4][2].top) = ((Ull)(emax6.lmmi[0][4][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][4][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][4][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[4][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[4][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[4][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[4][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
 	*(Ull*)&(reg_ctrl->i[0].addr[5][0].top) = ((Ull)(emax6.lmmi[0][5][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][0][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[5][1].top) = ((Ull)(emax6.lmmi[0][5][1][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][1][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][1][lmmic].top;
-	*(Ull*)&(reg_ctrl->i[0].addr[5][2].top) = ((Ull)(emax6.lmmi[0][5][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[5][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[5][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[5][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[5][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[6][0].top) = ((Ull)(emax6.lmmi[0][6][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][6][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][6][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[6][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[6][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[6][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[6][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[7][0].top) = ((Ull)(emax6.lmmi[0][7][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][7][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][7][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[7][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[7][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[7][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[7][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[8][0].top) = ((Ull)(emax6.lmmi[0][8][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][8][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][8][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[8][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[8][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[8][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[8][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[9][0].top) = ((Ull)(emax6.lmmi[0][9][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][9][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][9][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[9][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[9][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[9][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[9][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[10][0].top) = ((Ull)(emax6.lmmi[0][10][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][10][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][10][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[10][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[10][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[10][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[10][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[11][0].top) = ((Ull)(emax6.lmmi[0][11][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][11][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][11][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[11][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[11][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[11][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[11][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[12][0].top) = ((Ull)(emax6.lmmi[0][12][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][12][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][12][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[12][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[12][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[12][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[12][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[13][0].top) = ((Ull)(emax6.lmmi[0][13][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][13][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][13][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[13][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[13][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[13][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[13][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[14][0].top) = ((Ull)(emax6.lmmi[0][14][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][14][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][14][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[14][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[14][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[14][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[14][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[15][0].top) = ((Ull)(emax6.lmmi[0][15][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][15][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][15][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[15][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[15][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[15][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[15][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[16][0].top) = ((Ull)(emax6.lmmi[0][16][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][16][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][16][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[16][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[16][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[16][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[16][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[17][0].top) = ((Ull)(emax6.lmmi[0][17][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][17][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][17][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[17][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[17][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[17][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[17][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[18][0].top) = ((Ull)(emax6.lmmi[0][18][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][18][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][18][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[18][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[18][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[18][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[18][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[19][0].top) = ((Ull)(emax6.lmmi[0][19][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][19][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][19][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[19][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[19][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[19][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[19][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[20][0].top) = ((Ull)(emax6.lmmi[0][20][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][20][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][20][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[20][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[20][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[20][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[20][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[21][0].top) = ((Ull)(emax6.lmmi[0][21][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][21][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][21][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[21][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[21][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[21][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[21][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[22][0].top) = ((Ull)(emax6.lmmi[0][22][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][22][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][22][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[22][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[22][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[22][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[22][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[23][0].top) = ((Ull)(emax6.lmmi[0][23][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][23][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][23][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[23][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[23][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[23][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[23][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[24][0].top) = ((Ull)(emax6.lmmi[0][24][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][24][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][24][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[24][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[24][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[24][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[24][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[25][0].top) = ((Ull)(emax6.lmmi[0][25][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][25][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][25][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[25][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[25][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[25][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[25][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[26][0].top) = ((Ull)(emax6.lmmi[0][26][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][26][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][26][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[26][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[26][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[26][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[26][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[27][0].top) = ((Ull)(emax6.lmmi[0][27][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][27][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][27][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[27][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[27][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[27][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[27][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[28][0].top) = ((Ull)(emax6.lmmi[0][28][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][28][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][28][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[28][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[28][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[28][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[28][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[29][0].top) = ((Ull)(emax6.lmmi[0][29][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][29][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][29][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[29][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[29][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[29][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[29][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[30][0].top) = ((Ull)(emax6.lmmi[0][30][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][30][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][30][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[30][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[30][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[30][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[30][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[31][0].top) = ((Ull)(emax6.lmmi[0][31][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][31][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][31][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[31][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[31][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[31][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[31][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[32][0].top) = ((Ull)(emax6.lmmi[0][32][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][32][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][32][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[32][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[32][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[32][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[32][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[33][0].top) = ((Ull)(emax6.lmmi[0][33][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][33][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][33][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[33][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[33][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[33][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[33][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[34][0].top) = ((Ull)(emax6.lmmi[0][34][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][34][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][34][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[34][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[34][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[34][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[34][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[35][0].top) = ((Ull)(emax6.lmmi[0][35][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][35][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][35][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[35][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[35][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[35][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[35][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[36][0].top) = ((Ull)(emax6.lmmi[0][36][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][36][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][36][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[36][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[36][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[36][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[36][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[37][0].top) = ((Ull)(emax6.lmmi[0][37][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][37][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][37][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[37][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[37][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[37][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[37][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[38][0].top) = ((Ull)(emax6.lmmi[0][38][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][38][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][38][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[38][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[38][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[38][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[38][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[39][0].top) = ((Ull)(emax6.lmmi[0][39][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][39][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][39][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[39][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[39][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[39][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[39][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[40][0].top) = ((Ull)(emax6.lmmi[0][40][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][40][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][40][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[40][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[40][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[40][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[40][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[41][0].top) = ((Ull)(emax6.lmmi[0][41][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][41][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][41][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[41][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[41][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[41][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[41][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[42][0].top) = ((Ull)(emax6.lmmi[0][42][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][42][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][42][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[42][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[42][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[42][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[42][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[43][0].top) = ((Ull)(emax6.lmmi[0][43][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][43][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][43][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[43][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[43][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[43][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[43][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[44][0].top) = ((Ull)(emax6.lmmi[0][44][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][44][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][44][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[44][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[44][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[44][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[44][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[45][0].top) = ((Ull)(emax6.lmmi[0][45][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][45][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][45][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[45][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[45][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[45][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[45][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[46][0].top) = ((Ull)(emax6.lmmi[0][46][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][46][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][46][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[46][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[46][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[46][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[46][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[47][0].top) = ((Ull)(emax6.lmmi[0][47][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][47][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][47][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[47][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[47][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[47][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[47][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[48][0].top) = ((Ull)(emax6.lmmi[0][48][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][48][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][48][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[48][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[48][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[48][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[48][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[49][0].top) = ((Ull)(emax6.lmmi[0][49][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][49][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][49][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[49][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[49][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[49][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[49][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[50][0].top) = ((Ull)(emax6.lmmi[0][50][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][50][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][50][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[50][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[50][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[50][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[50][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[51][0].top) = ((Ull)(emax6.lmmi[0][51][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][51][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][51][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[51][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[51][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[51][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[51][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[52][0].top) = ((Ull)(emax6.lmmi[0][52][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][52][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][52][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[52][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[52][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[52][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[52][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[53][0].top) = ((Ull)(emax6.lmmi[0][53][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][53][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][53][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[53][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[53][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[53][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[53][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[54][0].top) = ((Ull)(emax6.lmmi[0][54][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][54][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][54][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[54][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[54][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[54][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[54][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[55][0].top) = ((Ull)(emax6.lmmi[0][55][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][55][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][55][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[55][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[55][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[55][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[55][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[56][0].top) = ((Ull)(emax6.lmmi[0][56][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][56][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][56][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[56][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[56][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[56][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[56][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[57][0].top) = ((Ull)(emax6.lmmi[0][57][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][57][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][57][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[57][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[57][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[57][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[57][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[58][0].top) = ((Ull)(emax6.lmmi[0][58][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][58][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][58][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[58][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[58][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[58][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[58][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[59][0].top) = ((Ull)(emax6.lmmi[0][59][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][59][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][59][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[59][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[59][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[59][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[59][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[60][0].top) = ((Ull)(emax6.lmmi[0][60][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[60][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[60][2].top) = ((Ull)(emax6.lmmi[1][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[1][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[60][2].top) = ((Ull)(emax6.lmmi[2][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[2][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[60][2].top) = ((Ull)(emax6.lmmi[3][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[3][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[62][0].top) = ((Ull)(emax6.lmmi[0][62][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][62][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][62][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[1].addr[62][0].top) = ((Ull)(emax6.lmmi[1][62][0][lmmic].top+*((Ushort*)&emax6.lmmi[1][62][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[1][62][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[2].addr[62][0].top) = ((Ull)(emax6.lmmi[2][62][0][lmmic].top+*((Ushort*)&emax6.lmmi[2][62][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[2][62][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[3].addr[62][0].top) = ((Ull)(emax6.lmmi[3][62][0][lmmic].top+*((Ushort*)&emax6.lmmi[3][62][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[3][62][0][lmmic].top;
 	}
 	get_nanosec(NANOS_RANGE);
 	emax6.status = STATUS_LOAD;
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 1, 0);/*load*/
 	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 2, 0);/*load*/
-	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 2, 2);/*load*/
 	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 3, 0);/*load*/
-	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 3, 2);/*load*/
 	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 4, 0);/*load*/
-	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 4, 2);/*load*/
 	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 5, 0);/*load*/
-	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 5, 1);/*load*/
-	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 5, 2);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 6, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 7, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 8, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 9, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 10, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 11, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 12, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 13, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 14, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 15, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 16, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 17, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 18, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 19, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 20, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 21, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 22, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 23, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 24, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 25, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 26, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 27, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 28, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 29, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 30, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 31, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 32, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 33, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 34, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 35, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 36, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 37, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 38, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 39, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 40, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 41, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 42, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 43, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 44, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 45, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 46, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 47, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 48, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 49, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 50, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 51, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 52, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 53, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 54, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 55, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 56, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 57, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 58, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 59, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 60, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 60, 2);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 1, 60, 2);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 2, 60, 2);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 3, 60, 2);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 62, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 1, 62, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 2, 62, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 3, 62, 0);/*load*/
 	get_nanosec(NANOS_LOAD);
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].cmd = 3LL; // EXEC
 	{struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
 	 Uint            lmmic     = emax6.lmmic;
 	}
-	emax6.lmmd[2][0] = 0xff>>7;
-	emax6.lmmd[3][0] = 0xff>>7;
-	emax6.lmmd[4][0] = 0xff>>7;
-	emax6.lmmd[5][0] = 0xff>>7;
+	emax6.lmmd[62][0] = 0xff>>4;
 	while (((struct reg_ctrl*)emax6.reg_ctrl)->i[0].stat); //LMRING_BUSY|EXRING_BUSY
 	get_nanosec(NANOS_EXEC);
-asm volatile("b emax6_conf_end_back_g_ker\n"
+asm volatile("b emax6_conf_end_mm\n"
 ".align 5\n"
-".global emax6_conf_back_g_ker\n"
-"emax6_conf_back_g_ker:\n"
+".global emax6_conf_mm\n"
+"emax6_conf_mm:\n"
 "	.word	0x031e4005, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
@@ -2883,1005 +3610,1005 @@ asm volatile("b emax6_conf_end_back_g_ker\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x034e602d, 0x00000400\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000060\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x036ea0ad, 0x00000200\n"
+"	.word	0x034e60ad, 0x00000200\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000060\n"
 "	.word	0xffffffff, 0xffffffff\n"
-"	.word	0x03ed40ad, 0x00000000\n"
+"	.word	0x036ea02d, 0x00000400\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000060\n"
-"	.word	0x00000000, 0xffffffff\n"
-"	.word	0x03ed40ad, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x03adc0ad, 0x00000000\n"
+"	.word	0xffff0000, 0xa0d81d81\n"
+"	.word	0x0080a000, 0x0003017e\n"
 "	.word	0xffffffff, 0x00000000\n"
-"	.word	0x031c0035, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000060\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x034c6035, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000060\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xd79e2021, 0x00000800\n"
-"	.word	0x88884430, 0x00c03e12\n"
-"	.word	0xab82e00a, 0x0007811c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x033c2035, 0x00000000\n"
-"	.word	0xffff0000, 0x60c83000\n"
-"	.word	0x00806000, 0x00038178\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x035c8035, 0x00000000\n"
-"	.word	0xffff0000, 0x20d83000\n"
-"	.word	0x00020002, 0x0003007c\n"
+"	.word	0x00000001, 0x00000000\n"
+"	.word	0xffff0000, 0xa0d81d81\n"
+"	.word	0x00200e00, 0x0003005e\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000001, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xd79e2021, 0x00000800\n"
-"	.word	0x88884430, 0x00c03e12\n"
-"	.word	0xab82a006, 0x0007811c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x03dd8035, 0x00000000\n"
-"	.word	0xffff0000, 0x70c83000\n"
-"	.word	0x00807000, 0x00038178\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x03fdc035, 0x00000000\n"
-"	.word	0xffff0000, 0x80d83000\n"
-"	.word	0x00020008, 0x0003007c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000001, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xd79e2021, 0x00000800\n"
-"	.word	0x88884430, 0x00c03e12\n"
-"	.word	0xab82a006, 0x0007811c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x03dd8035, 0x00000000\n"
-"	.word	0xffff0000, 0x70c83000\n"
-"	.word	0x00807000, 0x00038178\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x03fdc035, 0x00000000\n"
-"	.word	0xffff0000, 0x80d83000\n"
-"	.word	0x00020008, 0x0003007c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000001, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xd79e2021, 0x00000800\n"
-"	.word	0x88884430, 0x00c03e12\n"
-"	.word	0xab82a006, 0x0007811c\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000001, 0x00000000\n"
-"	.word	0xffff0000, 0x70c83000\n"
-"	.word	0x00000000, 0x00038018\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000001, 0x00000000\n"
-"	.word	0xffff0000, 0x80d83000\n"
+"	.word	0xffff0000, 0xe0d83000\n"
 "	.word	0x00000000, 0x00030018\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000001, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x039c2027, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x039c0027, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00806000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x039ca027, 0x00000000\n"
+"	.word	0xffff0000, 0x60d83000\n"
+"	.word	0x00020002, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x039c8027, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00020008, 0x0003007c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00808000, 0x0003017e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00000000, 0x0003007e\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d83000\n"
+"	.word	0x00000000, 0x00030078\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xc79c4021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00020003, 0x00000064\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0xc39cc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd79d4021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
-"	.word	0x00000000, 0x00000000\n"
+"	.word	0xd39dc021, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x031c0025, 0x00000800\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab826002, 0x0006811c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x035c6025, 0x00000800\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab82e00a, 0x0006811c\n"
 "	.word	0x00000000, 0x00000000\n"
-"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x039c8025, 0x00000800\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab020000, 0x0006801c\n"
 "	.word	0x00000000, 0x00000000\n"
+"	.word	0x03dce025, 0x00000800\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab000000, 0x00068018\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0xffff0000, 0x00000000\n"
@@ -3899,9 +4626,11 @@ asm volatile("b emax6_conf_end_back_g_ker\n"
 "	.word	0xffff0000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
 "	.word	0x00000000, 0x00000000\n"
-".global emax6_conf_end_back_g_ker\n"
-"emax6_conf_end_back_g_ker:\n"
+".global emax6_conf_end_mm\n"
+"emax6_conf_end_mm:\n"
 );
+    }
+  }
 	emax6_pre_with_drain_cache();
 	get_nanosec(NANOS_ARM);
 	{
@@ -3913,7 +4642,7 @@ asm volatile("b emax6_conf_end_back_g_ker\n"
 	  for (i=0; i<64; i++) {
 	    for (j=0; j<4; j++) {
 	      if (emax6.lmmi_bitmap[j] & (1LL<<i) && emax6.lmmi[0][i][j][lmmic].rw) {
-	        for (c=0; c<1; c++) {
+	        for (c=0; c<4; c++) {
 	          if (emax6.lmmi[0][i][j][lmmic].ofs)
 	            *(Ull*)&(reg_ctrl->i[c].addr[i][j].top) = ((Ull)(emax6.lmmi[c][i][j][lmmic].top+*((Ushort*)&emax6.lmmi[c][i][j][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[c][i][j][lmmic].top;
 	          emax6_check_lmmi_and_dma(1, 1, mapdist, c, i, j);/*drain*/
@@ -3923,31 +4652,4 @@ asm volatile("b emax6_conf_end_back_g_ker\n"
 	  }
 	}
 	get_nanosec(NANOS_DRAIN);
-            for (CHIP=0; CHIP<1; CHIP++) {
-              for (INIT1=1,LOOP1=BATCH,img=(0-IMX4)<<32|((0-M4)&0xffffffff); LOOP1--; INIT1=0) {
-                for (INIT0=1,LOOP0=M,cofs=(0-4LL)<<32|((0-4LL)&0xffffffff); LOOP0--; INIT0=0) {
-                  exe(0x16, &img, img, 3, INIT0?IMX4M4:0, 3, 0LL, 3, 0x00, 0LL, 0x00, 0LL);
-    exe(0x16, &cofs, INIT0?cofs:cofs, 3, 4LL<<32|4LL, 3, 0LL, 3, 0x01, 0xffffffffffffffffLL, 0x00, 0LL);
-    exe(0x16, &iofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0xffffffff00000000LL, 0x00, 0LL);
-    exe(0x16, &oofs, img, 3, cofs, 3, 0LL, 3, 0x01, 0x00000000ffffffffLL, 0x00, 0LL);
-    mop(0x03, 1, &BR[2][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[2][2][1], (Ull)ip0[0], iofs, 13, (Ull)it0[0], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][0], (Ull)kp1[0][0], 0LL, 12, (Ull)kp1[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][0], b00[0][0], 3, BR[2][2][1], 3, BR[2][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][0], (Ull)kp1[0][0], 0LL, 14, (Ull)kp1[0][0], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[3][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[3][2][1], (Ull)ip0[1], iofs, 13, (Ull)it0[1], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][1], (Ull)kp1[0][1], 0LL, 12, (Ull)kp1[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][1], b00[0][1], 3, BR[3][2][1], 3, BR[3][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][1], (Ull)kp1[0][1], 0LL, 14, (Ull)kp1[0][1], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[4][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[4][2][1], (Ull)ip0[2], iofs, 13, (Ull)it0[2], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][2], (Ull)kp1[0][2], 0LL, 12, (Ull)kp1[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][2], b00[0][2], 3, BR[4][2][1], 3, BR[4][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][2], (Ull)kp1[0][2], 0LL, 14, (Ull)kp1[0][2], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-    mop(0x03, 1, &BR[5][1][1], (Ull)op0[0], oofs, 12, (Ull)ot0[0], Mlen, 0, 0, (Ull)((void *)0), Mlen); mop(0x03, 1, &BR[5][2][1], (Ull)ip0[3], iofs, 13, (Ull)it0[3], IMXlen, 0, 0, (Ull)((void *)0), IMXlen); mop(0x03, 1, &b00[0][3], (Ull)kp1[0][3], 0LL, 12, (Ull)kp1[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL); exe(0x10, &b00[0][3], b00[0][3], 3, BR[5][2][1], 3, BR[5][1][1], 3, 0x00, 0LL, 0x00, 0LL); mop(0x12, 1, &b00[0][3], (Ull)kp1[0][3], 0LL, 14, (Ull)kp1[0][3], 1LL, 0, 1, (Ull)((void *)0), 1LL);
-                }
-              }
-            }
-            for (oc=0; oc<OC; oc++) {
-       for (ic=0; ic<IC; ic++) {
-  float xmax = *(float*)kp0[oc][ic], host = *(float*)kp1[oc][ic];
-  if ((((host)-(xmax)>=0.0?(host)-(xmax):(xmax)-(host))/((host)==0.0?1:(host)))>(5.0E-4)) printf("x[%d][%d][%d][%d]: g_ker=%7.5e(%8.8x) i_ker=%7.5e(%8.8x)\n", oc, ic, y+K/2, x+K/2, host, *(Uint*)&host, xmax, *(Uint*)&xmax);
-  else printf(" [%d][%d][%d][%d]: g_ker=%7.5e(%8.8x) i_ker=%7.5e(%8.8x)\n", oc, ic, y+K/2, x+K/2, host, *(Uint*)&host, xmax, *(Uint*)&xmax);
-       }
-     }
-            kidx++;
-          }
-        }
-      }
-    }
-  }
 }

@@ -5,13 +5,21 @@
 		},
 		{
 			"path": "../SuiteSparse/CSparse"
+		},
+		{
+			"path": "/home/nakashim/proj-arm64"
 		}
 	],
 	"settings": {
 		"files.associations": {
 			"resource.h": "c",
 			"cs.h": "c",
-			"emax6_sparselib.h": "c"
+			"emax6_sparselib.h": "c",
+			"times.h": "c",
+			"types.h": "c",
+			"param.h": "c",
+			"yacc_lex_util.h": "c",
+			"emax6.h": "c"
 		}
 	}
 }

@@ -7,6 +7,10 @@
 /*=======================================================================
 =       conv-c2c.h      2012/9/21                                       =
 =======================================================================*/
+// #include </usr/include/x86_64-linux-gnu/sys/types.h>
+// #include </usr/include/x86_64-linux-gnu/sys/param.h>
+// #include </usr/include/x86_64-linux-gnu/sys/times.h>
+// #include </usr/include/x86_64-linux-gnu/sys/stat.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/times.h>
