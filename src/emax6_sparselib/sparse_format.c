@@ -134,7 +134,7 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
     int* margin = (int*) calloc((row_size/H),sizeof(int));
-    int iter = 0;
+    int iter = 0,margin_tmp;
     
     for(int k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
 
@@ -167,18 +167,28 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
 
         if(tmp != paddings[row]){
             //paddingsが変化する境界線を探している
-            if(paddings[row]-tmp>1) margin[1+iter++] = margin[iter]; 
-        
-            margin[1+iter++] = row; //Hごとに必要な列の長さが求まる 減少した最初のrowが入る　ex 0~62まで2 63~から1の場合、63が値として入る　LMMは62まで取得
+            if(paddings[row]-tmp>1) {
+                //境界線の変化がH*2以上の時はH刻みになるように間を埋める
+                for(int diff_tmp=0; diff_tmp<paddings[row]-tmp-1 ;diff_tmp++) margin[1+iter++] = margin[iter]; 
+            }
+            margin[1+iter++] = row; 
 
             tmp = paddings[row];
         }
+
+    }
+
+    margin_tmp = margin[1+iter];
+
+    if((paddings[row_size-1] != 1) && (paddings[margin[1+iter]] == paddings[row_size-1])) {
+        // 最後がH以下じゃないかつmarginが前回から変化ない場合  
+       margin[1+iter++] = margin[iter];  
     }
 
     // if(iter != (row_size/H-1)&&(paddings[row_size-1]>H)) margin[1+iter++] = margin[iter]; 
 
 
-    Uint* val_sparse = (Uint*) calloc(row_size*col_size,sizeof(Uint));
+    Ull* val_index_set = (Ull*) calloc(row_size*col_size,sizeof(Ull));
     int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
     int* row_index_sort_sparse = (int*) calloc((row_size*col_size),sizeof(int));
     
@@ -190,7 +200,8 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         //row_count[1+row_index[k]]*row_sizeでどの列かを特定
         //CSRのpのようにrow_countを0から使うために1+row_index[k]にしている
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
-        val_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = val[row_index[k]*col_size+col_index[k]];
+        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = (Uint)(row_index[k]+col_index[k]*row_size);
          //rowを左詰めしているので、colの位置が値ごとに必要
         col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
         row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
@@ -199,7 +210,14 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
 
     }
 
-    sparse_info->val = val_sparse;
+
+
+//   case OP_STR: /* 64bit lmm LMM is drained. random-access */
+//     if (c1) *((Uint*)(adr&~7LL)+1) = *d>>32;
+//     if (c0) *((Uint*)(adr&~7LL)  ) = *d;
+
+
+    sparse_info->val_index_set = val_index_set;
     sparse_info->col_p = col_count;
     sparse_info->col_index = col_index_sparse;
     sparse_info->sort_index = count_sort_index;
@@ -220,3 +238,5 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
 //outputCはCCR形式
 
 }
+
+

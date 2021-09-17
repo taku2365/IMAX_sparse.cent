@@ -132,7 +132,7 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
     int A_row_size = A_sparse->row_normal_size;
     int* A_col_p = A_sparse->col_p;
     int* A_nnz_col_index = A_sparse->col_index;
-    Uint* A_nnz_val = A_sparse->val;
+    Ull* A_nnz_val = A_sparse->val_index_set;
     int* A_sort_index= A_sparse->sort_index;
     int* A_col_num= A_sparse->col_num;
     int* A_paddings = A_sparse->paddings;
@@ -166,9 +166,9 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
                 count++;
                 //A_sort_index[rofs]で適切な位置に並べ替えているが、実際のIMAXでは後処理でする
                 if (blk == 0 && h == 0)
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w]  = *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w];
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w]  = *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+col+w)*B_row_size];
                 else
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w] += *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w];
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w] += *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+col+w)*B_row_size];
 
                 /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
               }
