@@ -169,10 +169,8 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
                 for(int diff_tmp=0; diff_tmp<paddings[row]-tmp-1 ;diff_tmp++) margin[1+iter++] = margin[iter]; 
             }
             margin[1+iter++] = row; 
-
             tmp = paddings[row];
         }
-
     }
 
     margin_tmp = margin[1+iter];
@@ -185,7 +183,7 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     // if(iter != (row_size/H-1)&&(paddings[row_size-1]>H)) margin[1+iter++] = margin[iter]; 
 
 
-    Ull* val_index_set = (Ull*) calloc(row_size*col_size,sizeof(Ull));
+    Ull* val_index_set = (Ull*) calloc(1+row_size*col_size,sizeof(Ull));
     int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
     int* row_index_sort_sparse = (int*) calloc((row_size*col_size),sizeof(int));
     
@@ -198,11 +196,11 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         //CSRのpのようにrow_countを0から使うために1+row_index[k]にしている
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
         //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
-        //*((Uint*)&val_index_set[どの行かを特定+どの行かを特定] = Aの値
-        //*((Uint*)&val_index_set[どの行かを特定+どの行かを特定]+1) = Bの対応箇所+1(下段)
-        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
-        //(Uint)((count_sort_index_inverse[row_index[k]]-1))でBの対応箇所を教えている。下のunitに伝播する情報なので+1している
-        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = (Uint)((count_sort_index_inverse[row_index[k]]+1));
+        //indexを1からスタートする。val_index_setに一つ
+        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  //1からはじめるために1+
+        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段)
+        *((Uint*)&val_index_set[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k];
          //rowを左詰めしているので、colの位置が値ごとに必要
         col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
         row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
@@ -210,6 +208,13 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         col_count[1+col_index[k]]++;
 
     }
+
+    // for(int k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){ 
+    //     //col_index_sparse[(count_sort_index_inverse_tmp+1)+row_count[1+row_index[k]]*row_size]でBの対応箇所を教えている。
+    //     //下のunitに伝播する情報なのでcount_sort_index_inverse_tmpに+1している
+    //     *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = (Uint)(col_index_sparse[(count_sort_index_inverse_tmp+1)+row_count[1+row_index[k]]*row_size]);  
+    // }
+
 
 
 
