@@ -160,15 +160,15 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
     for (int blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { //blk_iterをmarginに入れたら次のHに飛ばしてくれる
 /*3*/ for (CHIP=0; (CHIP<NCHIP)&&((A_margin[blk_iter]!=0)); CHIP++) { //marginが0の時は計算省略できる
   /*2*/ for (rofs=0; rofs<A_margin[blk_iter]; rofs++) { //Aがどれだけrowを確保するか
-    /*1*/ for (int col=0; col<RMGRP; col+=W) { // どれだけBをcolにすすめるか
+    /*1*/ for (int cofs=0; cofs<RMGRP; cofs+=W) { // どれだけBをcolにすすめるか
             for (int w=0; w<W; w++) {   /* horizontal (parallel) execution */
               for (int h=0; h<H; h++) { /* vertical (pipelined) execution */
                 count++;
                 //A_sort_index[rofs]で適切な位置に並べ替えているが、実際のIMAXでは後処理でする
                 if (blk == 0 && h == 0)
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w]  = *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+col+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w]  = *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                 else
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+col+w] += *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+col+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w] += *(float*)&A_nnz_val[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[(A_nnz_col_index[h*A_row_size+rofs+blk*A_row_size])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
 
                 /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
               }
@@ -179,8 +179,6 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
       }
     }
   }
-
-
 
 
 return count;

@@ -191,6 +191,7 @@ main()
       tmp = (rand()%3 == 0);
       //tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A[row+col*M2] = (float) tmp;
+      *(float*)&A_debug[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A[row+col*M2]) && (*(float*)&A[row+col*M2] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -216,10 +217,10 @@ main()
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++){
        tmp = 1 ;
-      *(float*)&B[row*M2+col] = (float) tmp;
-      *(float*)&B_debug[col*L+row] = (float) tmp;
-      if(!((-LIMIT <= *(float*)&B[col*L+row]) && (*(float*)&B[col*L+row] <= LIMIT))) nnz_B += 1; 
-      if(!((-LIMIT <= *(float*)&B_debug[col*L+row]) && (*(float*)&B_debug[col*L+row] <= LIMIT))) nnz_B_debug += 1; 
+      *(float*)&B[col*M2+row] = (float) tmp;
+      *(float*)&B_debug[col*M2+row] = (float) tmp;
+      if(!((-LIMIT <= *(float*)&B[col*M2+row]) && (*(float*)&B[col*M2+row] <= LIMIT))) nnz_B += 1; 
+      if(!((-LIMIT <= *(float*)&B_debug[col*M2+row]) && (*(float*)&B_debug[col*M2+row] <= LIMIT))) nnz_B_debug += 1; 
     }
   }
 
@@ -385,8 +386,8 @@ orig() {
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
       for (n=0; n<L; n++) {
-        if (n==0) *(float*)&C0[row*M2+col]  = *(float*)&A[row*L+n] * *(float*)&B[n*M2+col];
-        else      *(float*)&C0[row*M2+col] += *(float*)&A[row*L+n] * *(float*)&B[n*M2+col];
+        if (n==0) *(float*)&C0[row*M2+col]  = *(float*)&A[row+n*M1] * *(float*)&B[n+col*L];
+        else      *(float*)&C0[row*M2+col] += *(float*)&A[row+n*M1] * *(float*)&B[n+col*L];
         count0++;
         /*printf("[%d %d %d]", row, col, n);*/
       }
