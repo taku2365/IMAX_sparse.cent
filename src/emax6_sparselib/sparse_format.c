@@ -112,7 +112,7 @@ emax6_sparse* sparse_format1(int nnz,const Uint* const val, int* col_index, int*
 
 
 //CCR base
-emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param){
+emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param){
 
     if(!val || !col_index || !row_index ) {
         fprintf(stderr,"sparse_format NULL error! \n");
@@ -178,8 +178,8 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     }
 
 
-    Ull* val_index_set = (Ull*) calloc(1+row_size*col_size,sizeof(Ull));
-    Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
+    // Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
+    Ull* val_index_set = val;
     int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
     int* row_index_sort_sparse = (int*) calloc((row_size*col_size),sizeof(int));
     
@@ -195,9 +195,9 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         //indexを1からスタートする。val_index_setに一つ
         //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  //1からはじめるために1+
         //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)
-        *((Uint*)&val_index_set[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
-        *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_index_set[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val_tmp[row_index[k]+col_index[k]*row_size];
         *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k];
+        // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
          //rowを左詰めしているので、colの位置が値ごとに必要
         col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
         row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
@@ -233,7 +233,7 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     
     free(count);
     free(count_tmp);
-    free(val_debug);
+    // free(val_debug);
 
 
     return sparse_info;

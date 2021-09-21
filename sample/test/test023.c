@@ -70,6 +70,8 @@ sysinit(memsize, alignment) Uint memsize, alignment;
   printf("membase_before_align: %08.8x\n", (Uint)membase);
   if ((Ull)membase & (Ull)(alignment-1))
   membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
+  memset(membase, 0, memsize+alignment);
+  
   // 32byte = 16byte*2 = 0x20
   printf("membase_after_align: %08.8x\n", (Uint)membase);
 
@@ -160,8 +162,8 @@ Uint Z[CSIMBM];
 #define abs(a) (((a)<0)?-(a):(a))
 
 main()
-{
-  sysinit((Uint)(M1*L*sizeof(Uint)
+{ //pointerでないので普通に足される。
+  sysinit((Uint)(2*(M1*L+1)*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
@@ -170,8 +172,8 @@ main()
                 +M1*M2*sizeof(Uint)
                 ),32);
   printf("membase: %08.8x\n", (Uint)membase);
-  A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + M1*L*sizeof(Uint));
+  A  = (Ull*)membase;
+  B  = (Uint*)((Uchar*)A  + 2*(M1*L+1)*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
 
@@ -191,15 +193,16 @@ main()
   int tmp = 0,num = 0;
   int* col_index_A = (int *)calloc(M1*L,sizeof(int));
   int* row_index_A = (int *)calloc(M1*L,sizeof(int));
+  int* A_tmp = (Uint *)calloc(M1*L,sizeof(Uint));
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++){
       tmp = (int) tmp;
       tmp = (rand()%5 == 0);
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A[row+col*M2] = (float) tmp;
+      *(float*)&A_tmp[row+col*M2] = (float) tmp;
       *(float*)&A_debug[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
-      if(!((-LIMIT <= *(float*)&A[row+col*M2]) && (*(float*)&A[row+col*M2] <= LIMIT))){
+      if(!((-LIMIT <= *(float*)&A_tmp[row+col*M2]) && (*(float*)&A_tmp[row+col*M2] <= LIMIT))){
           col_index_A[nnz_A] = col;
           row_index_A[nnz_A] = row;
           nnz_A += 1;
@@ -208,7 +211,7 @@ main()
   }
 
 
-  A_sparse = sparse_format2(nnz_A,A,col_index_A,row_index_A,M1,L,params);
+  A_sparse = sparse_format2(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params);
   free(row_index_A);
   free(col_index_A);
 
@@ -232,7 +235,7 @@ main()
 
   // sparse_multiply(A_sparse,B,C1,M2);
   // count1 = sparse_multiply_imax(A_sparse,B,C1,M2,params);
-  orig();
+  orig(A_tmp,B,C0);
   count1 = sparse_multiply_imax1(A_sparse,B,C1,M2,params);
 
 
@@ -387,7 +390,7 @@ copy_Z(id, from)
   }
 }
 
-orig() {
+orig(Uint* A,Uint* B,Uint* C) {
   printf("<<<ORIG>>>\n");
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
