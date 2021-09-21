@@ -117,10 +117,14 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 /* A A                 C C C C C C */
 /* L=2, M1=4, M2=6     L<M1,M2     */
 
-#define L  120LL
-#define M1 120LL
-#define M2 120LL
-#define RMGRP 60
+// #define L  120LL
+// #define M1 120LL
+// #define M2 120LL
+#define L  480LL
+#define M1 480LL
+#define M2 480LL
+// #define RMGRP 60
+#define RMGRP 24
 #define BLK_SIZE 80
 /*#define NCHIP 4*/
 #define NCHIP 2
@@ -135,6 +139,7 @@ Uint *B_debug; /*[L][M2];*/
 Uint *C_debug; /*[M1][M2];*/
 emax6_sparse1* A_sparse;
 emax6_param* params;
+int blk_iter;
 int row, col, n;
 int top, blk;
 int w, h;
@@ -177,7 +182,8 @@ main()
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
-  params->W_param= W;
+  params->W_param= W*2;
+  // params->W_param= W*2;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
@@ -187,9 +193,9 @@ main()
   int* row_index_A = (int *)calloc(M1*L,sizeof(int));
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++){
-       tmp = (int) tmp;
-      tmp = (rand()%3 == 0);
-      //tmp = (rand()%3 == 0)||(rand()%2);
+      tmp = (int) tmp;
+      tmp = (rand()%5 == 0);
+      // tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A[row+col*M2] = (float) tmp;
       *(float*)&A_debug[row*L+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。

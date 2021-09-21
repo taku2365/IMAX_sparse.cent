@@ -131,7 +131,7 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
     int* margin = (int*) calloc((row_size/H),sizeof(int));
-    int iter = 0,margin_tmp;
+    int iter_num = 0,margin_tmp;
     
     for(int k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
 
@@ -151,39 +151,35 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         // row_size-1は0から始めるために引く1している。            
         // ex row=0 count_sort_index_inverse[row]=6 row_size-1=9 count_tmp1=3　0行目は3番目に小さいの0列目の7-1番目に入る
         //{[0] = 6, [1] = 7, [2] = 8, [3] = 2, [4] = 3, [5] = 9, [6] = 4, [7] = 0, [8] = 5, [9] = 1}
-        count_sort_index_inverse[row] = tmp = (row_size-1) - count_tmp1;
+        count_sort_index_inverse[row] = (row_size-1) - count_tmp1;
          //アライメントのために次の手段は使えない 倍数の時のみ可(count[row] + (H-1))~(H-1);
          // sortされた後のrowごとのpaddings
-         paddings[tmp] = count[row]/H + (int)(count[row]%H != 0); 
+         //降順
+         paddings[(row_size-1) - count_tmp1] = count[row]/H + (int)(count[row]%H != 0); 
 
     }
 
-    margin[0] = row_size;
-    
-    for(int row=0,tmp=paddings[row]; row<row_size; row++) {
 
+    //paddingsは最低でも1
+    //最小のpaddingsではAを一番下まで確保するので、row_size
+    for(int iter=0;iter<paddings[row_size-1]; iter++){
+        margin[iter_num++] = row_size; //row+1
+    }
+    for(int row=row_size-2,tmp=paddings[row_size-1]; row>=0; row--){
+        //前回からの変化があれば変化の差分を埋める
         if(tmp != paddings[row]){
-            //paddingsが変化する境界線を探している
-            if(paddings[row]-tmp>1) {
-                //境界線の変化がH*2以上の時はH刻みになるように間を埋める
-                for(int diff_tmp=0; diff_tmp<paddings[row]-tmp-1 ;diff_tmp++) margin[1+iter++] = margin[iter]; 
-            }
-            margin[1+iter++] = row; 
-            tmp = paddings[row];
+            //row+1が入っているので、margin[iter_num-1]-1
+            for(int iter=paddings[margin[iter_num-1]-1];iter<paddings[row]; iter++){
+                //row+1が入る multiplyのfor文で扱いやすくするため。 for (rofs=0; rofs<A_margin[blk_iter]; rofs++) 
+                margin[iter_num++] = row+1;
+            } 
         }
+        tmp = paddings[row];
     }
-
-    margin_tmp = margin[1+iter];
-
-    if((paddings[row_size-1] != 1) && (paddings[margin[1+iter]] == paddings[row_size-1])) {
-        // 最後がH以下じゃないかつmarginが前回から変化ない場合  
-       margin[1+iter++] = margin[iter];  
-    }
-
-    // if(iter != (row_size/H-1)&&(paddings[row_size-1]>H)) margin[1+iter++] = margin[iter]; 
 
 
     Ull* val_index_set = (Ull*) calloc(1+row_size*col_size,sizeof(Ull));
+    Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
     int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
     int* row_index_sort_sparse = (int*) calloc((row_size*col_size),sizeof(int));
     
@@ -198,8 +194,9 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
         //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
         //indexを1からスタートする。val_index_setに一つ
         //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  //1からはじめるために1+
-        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段)
+        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)
         *((Uint*)&val_index_set[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
         *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k];
          //rowを左詰めしているので、colの位置が値ごとに必要
         col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
@@ -236,6 +233,7 @@ emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int
     
     free(count);
     free(count_tmp);
+    free(val_debug);
 
 
     return sparse_info;
