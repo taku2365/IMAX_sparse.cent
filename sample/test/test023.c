@@ -25,6 +25,7 @@ typedef struct {Ull u[2];} Dll;
 #include <fcntl.h>
 #include <math.h>
 #include <malloc.h>
+#include <assert.h>
 #ifndef ARMSIML
 #include <unistd.h>
 #include <sys/times.h>
@@ -142,11 +143,12 @@ Uint *C_debug; /*[M1][M2];*/
 emax6_sparse1* A_sparse;
 emax6_param* params;
 int blk_iter;
-int row, col, n;
+int row,row1, col, col1, n, n1;
 int top, blk;
 int w, h;
 int count0, count1, count2;
 int nnz_A,nnz_B,nnz_B_debug;
+int sum=0,sum1=0;
 
 
 #define CSIMWD 320
@@ -212,8 +214,7 @@ main()
 
 
   A_sparse = sparse_format2(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params);
-  free(row_index_A);
-  free(col_index_A);
+  
 
 //   for (row=0; row<L; row++) {
 //     for (col=0; col<M2; col++){
@@ -226,6 +227,7 @@ main()
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++){
        tmp = 1 ;
+      tmp = (rand()%5 == 0);
       *(float*)&B[col*M2+row] = (float) tmp;
       *(float*)&B_debug[col*M2+row] = (float) tmp;
       if(!((-LIMIT <= *(float*)&B[col*M2+row]) && (*(float*)&B[col*M2+row] <= LIMIT))) nnz_B += 1; 
@@ -233,12 +235,32 @@ main()
     }
   }
 
+
+    for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
+      for (row=0,row1=0; row1<L; row+=2,row1+=1) {
+        // simdを使うため
+      *(float*)&B[col*2*L+row] = *(float*)&B_debug[col1*L+row1];
+      *(float*)&B[col*2*L+row+1] = *(float*)&B_debug[(col1+1)*L+row1];
+    }
+  }
+  
+    for (col=0; col<M2; col++){
+      for (row=0; row<L; row++) {
+        // simdを使うため
+        sum += *(float*)&B_debug[col*L+row];
+        sum1 += *(float*)&B[col*L+row];
+    }
+  }
+  assert(sum == sum1);
+
+
   // sparse_multiply(A_sparse,B,C1,M2);
   // count1 = sparse_multiply_imax(A_sparse,B,C1,M2,params);
-  orig(A_tmp,B,C0);
+  orig(A_tmp,B_debug,C0);
+  // orig_simd(A_tmp,B,C1);
   count1 = sparse_multiply_imax1(A_sparse,B,C1,M2,params);
 
-
+ 
 
 
 
@@ -282,7 +304,7 @@ main()
   // show_nanosec();
 
   // reset_nanosec();
-  imax_debug();
+  imax_debug(A_sparse, B, C1);
 //   free(col_index_B);
   free(A_sparse);
 //   free(row_index_B);
@@ -390,14 +412,46 @@ copy_Z(id, from)
   }
 }
 
-orig(Uint* A,Uint* B,Uint* C) {
+orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
   printf("<<<ORIG>>>\n");
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
       for (n=0; n<L; n++) {
-        if (n==0) *(float*)&C0[row*M2+col]  = *(float*)&A[row+n*M1] * *(float*)&B[n+col*L];
-        else      *(float*)&C0[row*M2+col] += *(float*)&A[row+n*M1] * *(float*)&B[n+col*L];
+        if (n==0) *(float*)&C_orig[row*M2+col]  = *(float*)&A_orig[row+n*M1] * *(float*)&B_orig[n+col*L];
+        else      *(float*)&C_orig[row*M2+col] += *(float*)&A_orig[row+n*M1] * *(float*)&B_orig[n+col*L];
         count0++;
+        /*printf("[%d %d %d]", row, col, n);*/
+      }
+      /*printf("\n");*/
+    }
+  }
+}
+
+
+//watch (row*M2+col1)>M1*M2
+//watch (row+n*M1) > M1*L
+// watch (n1+col*(2*L)) > M2*L
+// watch (n1+1+col*(2*L)) > M2*L
+orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
+  printf("<<<ORIG_simd>>>\n");
+  for (row=0; row<M1; row++) {
+    for (col=0,col1=0; col<M2/2; col++,col1+=2) {
+      for (n=0,n1=0; n<L; n+=1,n1+=2) {
+        // printf("n %d  n1 %d  col %d col1 %d row %d\n",n,n1,col,col1,row);
+        assert(((row*M2+col1)<M1*M2));
+        assert((row+n*M1) < M1*L);
+        assert((n1+col*(2*L)) <M2*L);
+        assert((n1+1+col*(2*L)) < M2*L);
+        if (n==0) {
+          *(float*)&C_orig_simd[row*M2+col1]  = *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+col*(2*L)];
+          *(float*)&C_orig_simd[row*M2+col1+1]  = *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+1+col*(2*L)];
+        }
+        else{      
+          *(float*)&C_orig_simd[row*M2+col1]  += *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+col*(2*L)];
+          *(float*)&C_orig_simd[row*M2+col1+1]  += *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+1+col*(2*L)];
+        }  
+        count0++;
+
         /*printf("[%d %d %d]", row, col, n);*/
       }
       /*printf("\n");*/
@@ -541,7 +595,7 @@ imax() {
 #else
 
 
-imax_debug() {
+imax_debug(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C) {
   Ull  CHIP;
   Ull  LOOP1, LOOP0;
   Ull  INIT1, INIT0;
@@ -551,6 +605,16 @@ imax_debug() {
   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
   Ull  cofs, rofs, oofs, k;
+  int blk_iter;
+  int* A_margin = A_sparse->margin;
+  Ull* A_val_index_set = A_sparse->val_index_set;
+  int* A_sort_index= A_sparse->sort_index;
+  Ull A_row_size = M1;
+  Ull A_col_size = L;
+  Ull B_row_size = L;
+  Ull B_col_size = M2;
+
+
   /*  ┌─────┐convolutionの場合                                                  */
   /*  │┌────┴┐Bが複数と考える                                                  */
   /*  ││┌────┴┐┌─────┐┐        ┌─────┐┐                       */
@@ -561,8 +625,9 @@ imax_debug() {
   /*    └│b        k││blk       ││        │blk       ││                       */
   /*      └─────┘└─┴─┴─┘┘        └─┴─┴─┘┘                       */
   printf("<<<IMAX>>>\n");
-  for (top=0; top<M1/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
-    for (blk=0; blk<M2; blk+=H) { /* 3重ループ展開の外側対象 */
+  for (top=0; top<B_col_size/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
+    for (blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { /* 3重ループ展開の外側対象 */
+      if(A_margin[blk_iter]==0) break;
       typedef struct {Uint i[8]} Ui8;
       Uint *a0[NCHIP],*a0_debug[NCHIP];
       Uint *a[H][NCHIP],*a_debug[H][NCHIP];
@@ -571,9 +636,10 @@ imax_debug() {
       Ui8  *c0[NCHIP],*c0_debug[NCHIP];
       Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
       Ui8  *c00_debug[NCHIP], *c01_debug[NCHIP], *c02_debug[NCHIP], *c03_debug[NCHIP];
-      for (k=0; k<H; k++) {
-	      b[k] = B+(blk+k)*M2; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
-	      b_debug[k] = B_debug+(blk+k)*M2; b0_debug[k] = b_debug[k]; b1_debug[k] = (Uint*)b_debug[k]+2; b2_debug[k] = (Uint*)b_debug[k]+4;  b3_debug[k] = (Uint*)b_debug[k]+6; 
+      for (CHIP=0; CHIP<NCHIP; CHIP++) { 
+
+        b[k] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size; b0[k] = b[k]; b1[k] = (Uint*)b[k]+B_row_size; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
+        b_debug[k] = B_debug+(CHIP*B_col_size/NCHIP+top)*B_row_size; b0_debug[k] = b_debug[k]; b1_debug[k] = (Uint*)b_debug[k]+2; b2_debug[k] = (Uint*)b_debug[k]+4;  b3_debug[k] = (Uint*)b_debug[k]+6; 
       }
       for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
 	      a0[CHIP] = A+(CHIP*M1/NCHIP+top)*L;

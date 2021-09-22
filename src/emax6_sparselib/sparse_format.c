@@ -212,14 +212,6 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
     //     *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = (Uint)(col_index_sparse[(count_sort_index_inverse_tmp+1)+row_count[1+row_index[k]]*row_size]);  
     // }
 
-
-
-
-//   case OP_STR: /* 64bit lmm LMM is drained. random-access */
-//     if (c1) *((Uint*)(adr&~7LL)+1) = *d>>32;
-//     if (c0) *((Uint*)(adr&~7LL)  ) = *d;
-
-
     sparse_info->val_index_set = val_index_set;
     sparse_info->col_p = col_count;
     sparse_info->col_index = col_index_sparse;
@@ -233,6 +225,10 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
     
     free(count);
     free(count_tmp);
+    free(row_count);
+    free(col_index);
+    free(row_index);
+    free(row_index_sort_sparse);
     // free(val_debug);
 
 
