@@ -148,7 +148,7 @@ int top, blk;
 int w, h;
 int count0, count1, count2;
 int nnz_A,nnz_B,nnz_B_debug;
-int sum=0,sum1=0;
+double sum=0,sum1=0;
 
 
 #define CSIMWD 320
@@ -226,12 +226,11 @@ main()
 
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++){
-       tmp = 1 ;
-      tmp = (rand()%5 == 0);
+      float tmp = row+col;
       *(float*)&B[col*M2+row] = (float) tmp;
       *(float*)&B_debug[col*M2+row] = (float) tmp;
-      if(!((-LIMIT <= *(float*)&B[col*M2+row]) && (*(float*)&B[col*M2+row] <= LIMIT))) nnz_B += 1; 
-      if(!((-LIMIT <= *(float*)&B_debug[col*M2+row]) && (*(float*)&B_debug[col*M2+row] <= LIMIT))) nnz_B_debug += 1; 
+      // if(!((-LIMIT <= *(float*)&B[col*M2+row]) && (*(float*)&B[col*M2+row] <= LIMIT))) nnz_B += 1; 
+      // if(!((-LIMIT <= *(float*)&B_debug[col*M2+row]) && (*(float*)&B_debug[col*M2+row] <= LIMIT))) nnz_B_debug += 1; 
     }
   }
 
@@ -251,6 +250,7 @@ main()
         sum1 += *(float*)&B[col*L+row];
     }
   }
+
   assert(sum == sum1);
 
 
@@ -287,10 +287,10 @@ main()
 
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row*M2+col]) {
+      if (C0[row*M2+col] != C1[row+col*M1]) {
         count2++;
         printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row*M2+col]);
+                                                row, col, (double)*(float*)&C1[row+col*M1]);
       }
     }
   }
@@ -313,10 +313,10 @@ main()
 
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row*M2+col]) {
+      if (C0[row*M2+col] != C1[row+col*M1]) {
         count2++;
         printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row*M2+col]);
+                                                row, col, (double)*(float*)&C1[row+col*M1]);
       }
     }
   }
@@ -346,15 +346,6 @@ main()
 
   printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
 
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row*M2+col]) {
-        count2++;
-        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row*M2+col]);
-      }
-    }
-  }
   if (count2)
     printf("Num of diffs: %d\n", count2);
   else
@@ -605,7 +596,7 @@ imax_debug(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C) {
   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
   Ull  cofs, rofs, oofs, k;
-  int blk_iter;
+  int blk_iter,A_margin_tmp;
   int* A_margin = A_sparse->margin;
   Ull* A_val_index_set = A_sparse->val_index_set;
   int* A_sort_index= A_sparse->sort_index;
@@ -625,34 +616,34 @@ imax_debug(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C) {
   /*    └│b        k││blk       ││        │blk       ││                       */
   /*      └─────┘└─┴─┴─┘┘        └─┴─┴─┘┘                       */
   printf("<<<IMAX>>>\n");
-  for (top=0; top<B_col_size/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
+  for (top=0; top<B_col_size/NCHIP; top+=RMGRP) {
     for (blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { /* 3重ループ展開の外側対象 */
-      if(A_margin[blk_iter]==0) break;
+      if((A_margin_tmp=A_margin[blk_iter])==0) break;
       typedef struct {Uint i[8]} Ui8;
       Uint *a0[NCHIP],*a0_debug[NCHIP];
-      Uint *a[H][NCHIP],*a_debug[H][NCHIP];
-      Ui8  *b[H], *b0[H], *b1[H], *b2[H], *b3[H];
-      Ui8  *b_debug[H], *b0_debug[H], *b1_debug[H], *b2_debug[H], *b3_debug[H];
+      Uint *a[H],*a_debug[H];
+      Ui8  *b[NCHIP], *b0[H][NCHIP], *b1[H][NCHIP], *b2[H][NCHIP], *b3[H][NCHIP];
+      Ui8  *b_debug[NCHIP], *b0_debug[H][NCHIP], *b1_debug[H][NCHIP], *b2_debug[H][NCHIP], *b3_debug[H][NCHIP];
       Ui8  *c0[NCHIP],*c0_debug[NCHIP];
       Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
       Ui8  *c00_debug[NCHIP], *c01_debug[NCHIP], *c02_debug[NCHIP], *c03_debug[NCHIP];
       for (CHIP=0; CHIP<NCHIP; CHIP++) { 
-
-        b[k] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size; b0[k] = b[k]; b1[k] = (Uint*)b[k]+B_row_size; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
-        b_debug[k] = B_debug+(CHIP*B_col_size/NCHIP+top)*B_row_size; b0_debug[k] = b_debug[k]; b1_debug[k] = (Uint*)b_debug[k]+2; b2_debug[k] = (Uint*)b_debug[k]+4;  b3_debug[k] = (Uint*)b_debug[k]+6; 
+      
+        b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
+        // for (k=0; k<H; k++){
+        //   b0[k][NCHIP] = b[CHIP]+; b1[k][NCHIP] = (Uint*)b[k]+B_row_size*2; b2[k][NCHIP] = (Uint*)b[k]+B_row_size*4;  b3[k][NCHIP] = (Uint*)b[k]+B_row_size*6; 
+        //   b_debug[k][NCHIP]  = B_debug+(CHIP*B_col_size/NCHIP+top)*B_row_size*2; b0_debug[k][NCHIP]  = b_debug[k]; b1_debug[k][NCHIP]  = (Uint*)b_debug[k]+B_row_size*2; b2_debug[k][NCHIP]  = (Uint*)b_debug[k]+B_row_size*4;  b3_debug[k][NCHIP]  = (Uint*)b_debug[k]+B_row_size*6; 
+        // }
       }
-      for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-	      a0[CHIP] = A+(CHIP*M1/NCHIP+top)*L;
-	      a0_debug[CHIP] = A_debug+(CHIP*M1/NCHIP+top)*L;
 
-	      for (k=0; k<H; k++) a[k][CHIP] = a0[CHIP]+blk+k;
-	      for (k=0; k<H; k++) a_debug[k][CHIP] = a0_debug[CHIP]+blk+k;
+      for (k=0; k<H; k++) a[k] = A+(blk+k)*A_row_size;
+      for (k=0; k<H; k++) a_debug[k]= A+(blk+k)*A_row_size;
 
-	      c0[CHIP] = C1+(CHIP*M1/NCHIP+top)*M2;
-	      c0_debug[CHIP] = C_debug+(CHIP*M1/NCHIP+top)*M2;
-    	  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
-    	  c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
-      }
+      c0[CHIP] = C1+(CHIP*A_row_size/NCHIP+top)*M2;
+      c0_debug[CHIP] = C_debug+(CHIP*M1/NCHIP+top)*M2;
+      c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+    
 
 #define sgemm00_core1(r, rm1, rp1) \
 	    mop(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\

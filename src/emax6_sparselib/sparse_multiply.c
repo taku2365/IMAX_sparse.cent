@@ -165,22 +165,24 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
             for (int w=0; w<W; w+=2) {   /* horizontal (parallel) execution */
               for (int h=0; h<H; h++) { /* vertical (pipelined) execution */
                 count++;
-                // AもBも縦方向に格納している。
+                // AもBもCも縦方向に格納している。
                 // A  32bit val : 32bit next unit Brow
-                // B simd  ex [0 480 1 481 2 482 3 483] simdのために次のcolをセットにしている
+                // B simd  2colごとにひとまとめにして1rowにまとめてる  ex [0 480 1 481 2 482 3 483] simdのために次のcolをセットにしている
+                // C simdかどうかを選べるようにする　今は普通に格納　future work  
                 //A_sort_index[rofs]で適切な位置に並べ替えているが、実際のIMAXでは後処理でする
                 //*(float*)&C[(A_sort_index[rofs])*B_col_size(並べ替え後のCの行)+CHIP*B_col_size/NCHIP(CHIPごとの列)+top(RMGRPごとのグループ)+cofs(wごとにRMGRPが終わるまでcolに進む)+w(colに進む)]
                 //*(float*)&A_val_index_set[1(sparse formatの都合で+1している)+h*A_row_size(Aの列 Unitごとに入っている)+rofs(Aの行  AcolHごとにArowをどれだけ進めるか)+blk*A_row_size(Hごとのcol marginが0の時はおわり)]
-                //*(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)(前段のunitから伝搬するBrow(Acol) 前段から伝播するので1+がない)*2(simdの2)+1(simdの1)+(CHIP*B_col_size/NCHIP(CHIP分割)+top(RMGRPごとに縦分割)+cofs(Bcol Wごとに更新)+w(Bcol 横幅))*B_row_size(Bのcol)]
+                //*(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)(前段のunitから伝搬するBrow(Acol) 前段から伝播するので1+がない)*2(simdの2)+1(simdの1)+(CHIP*B_col_size/NCHIP(CHIP分割)+top(RMGRPごとに縦分割)+cofs(Bcol Wごとに更新)+w(Bcol 横幅))*B_row_size(かたまり全体でBのcol)]
                 // C = Aの行×Bの列
                 // Bsimdのためにw+=2
+                //+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_sizeでsimdのために2をかけないのはw+=2ですでに実現しているから。
                 if (blk == 0 && h == 0){
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w+1]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w+1)*B_row_size]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                 }
                 else{
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w] += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
-                  *(float*)&C[(A_sort_index[rofs])*B_col_size+CHIP*B_col_size/NCHIP+top+cofs+w+1]  += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size] += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w+1)*B_row_size]  += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)*2+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                 }
                 /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
               }

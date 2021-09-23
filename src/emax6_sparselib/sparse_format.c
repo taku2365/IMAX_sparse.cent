@@ -206,12 +206,6 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
 
     }
 
-    // for(int k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){ 
-    //     //col_index_sparse[(count_sort_index_inverse_tmp+1)+row_count[1+row_index[k]]*row_size]でBの対応箇所を教えている。
-    //     //下のunitに伝播する情報なのでcount_sort_index_inverse_tmpに+1している
-    //     *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = (Uint)(col_index_sparse[(count_sort_index_inverse_tmp+1)+row_count[1+row_index[k]]*row_size]);  
-    // }
-
     sparse_info->val_index_set = val_index_set;
     sparse_info->col_p = col_count;
     sparse_info->col_index = col_index_sparse;
