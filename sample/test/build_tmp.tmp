@@ -1,0 +1,2813 @@
+(cd ../../src/emax6_sparselib; make static)
+make[1]: Entering directory '/home/takuya-s/IMAX_sparse.cent/src/emax6_sparselib'
+make[1]: Nothing to be done for 'static'.
+make[1]: Leaving directory '/home/takuya-s/IMAX_sparse.cent/src/emax6_sparselib'
+gcc -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6  -c -I../../src/emax6_sparselib/Include test023.c
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:456:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  456 | reset_nanosec()
+      | ^~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:470:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  470 | get_nanosec(int class)
+      | ^~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:488:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  488 | show_nanosec()
+      | ^~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:518:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  518 | emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
+      | ^~~~~~~~~~~~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c: In function ‘emax6_check_lmmi_and_dma’:
+../../src/conv-c2c/emax6lib.c:641:5: warning: implicit declaration of function ‘emax6_kick_dma’ [-Wimplicit-function-declaration]
+  641 |     emax6_kick_dma(j);
+      |     ^~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:533:7: warning: unused variable ‘k’ [-Wunused-variable]
+  533 |   int k, m = (i+lastdist)%EMAX_DEPTH; /* lmmo-index */
+      |       ^
+../../src/conv-c2c/emax6lib.c: At top level:
+../../src/conv-c2c/emax6lib.c:645:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  645 | emax6_kick_dma(int j) /* col */
+      | ^~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c: In function ‘emax6_kick_dma’:
+../../src/conv-c2c/emax6lib.c:771:9: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+  771 |     if (pio_loop = pio_words/(sizeof(Dll)/sizeof(Uint))) {
+      |         ^~~~~~~~
+../../src/conv-c2c/emax6lib.c:649:77: warning: unused variable ‘pio_e16’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                                                             ^~~~~~~
+../../src/conv-c2c/emax6lib.c:649:69: warning: unused variable ‘pio_e8’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                                                     ^~~~~~
+../../src/conv-c2c/emax6lib.c:649:61: warning: unused variable ‘pio_e4’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                                             ^~~~~~
+../../src/conv-c2c/emax6lib.c:649:52: warning: unused variable ‘pio_b16’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                                    ^~~~~~~
+../../src/conv-c2c/emax6lib.c:649:44: warning: unused variable ‘pio_b8’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                            ^~~~~~
+../../src/conv-c2c/emax6lib.c:649:36: warning: unused variable ‘pio_b4’ [-Wunused-variable]
+  649 |   Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+      |                                    ^~~~~~
+../../src/conv-c2c/emax6lib.c:647:7: warning: unused variable ‘status’ [-Wunused-variable]
+  647 |   int status;
+      |       ^~~~~~
+../../src/conv-c2c/emax6lib.c: At top level:
+../../src/conv-c2c/emax6lib.c:801:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  801 | emax6_pre_with_keep_cache()
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:813:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  813 | emax6_pre_with_drain_cache()
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c: In function ‘softu64’:
+../../src/conv-c2c/emax6lib.c:1021:28: warning: suggest parentheses around arithmetic in operand of ‘^’ [-Wparentheses]
+ 1021 |       ss[i] = (r2>>(i*8+7))&1 ^ (r3>>(i*8+7))&1;
+      |               ~~~~~~~~~~~~~^~
+../../src/conv-c2c/emax6lib.c: In function ‘mmp’:
+../../src/conv-c2c/emax6lib.c:1819:12: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+ 1819 |     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../src/conv-c2c/emax6lib.c:1819:12: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+../../src/conv-c2c/emax6lib.c:1819:12: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+../../src/conv-c2c/emax6lib.c:1819:12: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+../../src/conv-c2c/emax6lib.c:1819:73: warning: format ‘%d’ expects argument of type ‘int’, but argument 6 has type ‘long unsigned int’ [-Wformat=]
+ 1819 |     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
+      |                                                                        ~^                                                               ~~~~~~~~~~~~~~~~
+      |                                                                         |                                                                  |
+      |                                                                         int                                                                long unsigned int
+      |                                                                        %ld
+../../src/conv-c2c/emax6lib.c:1927:24: warning: initialization of ‘Ull (*)()’ {aka ‘long long unsigned int (*)()’} from ‘Ull’ {aka ‘long long unsigned int’} makes pointer from integer without a cast [-Wint-conversion]
+ 1927 |       Ull (*trans)() = top;
+      |                        ^~~
+In file included from test023.c:51:
+./xdisp.c: In function ‘x11_vector_update’:
+./xdisp.c:263:36: warning: unused variable ‘y0’ [-Wunused-variable]
+  263 |   unsigned int  fc, col, x, y, x0, y0;
+      |                                    ^~
+./xdisp.c:263:32: warning: unused variable ‘x0’ [-Wunused-variable]
+  263 |   unsigned int  fc, col, x, y, x0, y0;
+      |                                ^~
+test023.c: At top level:
+test023.c:56:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+   56 | sysinit(memsize, alignment) Uint memsize, alignment;
+      | ^~~~~~~
+test023.c: In function ‘sysinit’:
+test023.c:70:24: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
+   70 |   printf("malloc size %d \n",malloc_usable_size(membase));
+      |                       ~^     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                        |     |
+      |                        int   size_t {aka long unsigned int}
+      |                       %ld
+test023.c:71:44: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+   71 |   printf("membase_before_align: %08.8x\n", (Uint)membase);
+      |                                            ^
+test023.c:71:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+   71 |   printf("membase_before_align: %08.8x\n", (Uint)membase);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test023.c:77:43: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+   77 |   printf("membase_after_align: %08.8x\n", (Uint)membase);
+      |                                           ^
+test023.c:77:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+   77 |   printf("membase_after_align: %08.8x\n", (Uint)membase);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test023.c:101:22: warning: assignment to ‘Ull’ {aka ‘volatile long long unsigned int’} from ‘Uchar *’ {aka ‘unsigned char *’} makes integer from pointer without a cast [-Wint-conversion]
+  101 |   emax_info.ddr_phys = membase;
+      |                      ^
+test023.c: At top level:
+test023.c:164: warning: "abs" redefined
+  164 | #define abs(a) (((a)<0)?-(a):(a))
+      | 
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:34: note: this is the location of the previous definition
+   34 | #define abs(a)    ((a)>  0 ? (a) :-(a)    )
+      | 
+test023.c:166:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  166 | main()
+      | ^~~~
+test023.c: In function ‘main’:
+test023.c:176:31: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+  176 |   printf("membase: %08.8x\n", (Uint)membase);
+      |                               ^
+test023.c:176:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+  176 |   printf("membase: %08.8x\n", (Uint)membase);
+      |          ^~~~~~~~~~~~~~~~~~~
+test023.c:177:6: warning: assignment to ‘Uint *’ {aka ‘unsigned int *’} from incompatible pointer type ‘Ull *’ {aka ‘long long unsigned int *’} [-Wincompatible-pointer-types]
+  177 |   A  = (Ull*)membase;
+      |      ^
+test023.c:191:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+  191 |   printf("A : %08.8x\n", A);
+      |          ^~~~~~~~~~~~~~
+test023.c:191:20: warning: format ‘%x’ expects argument of type ‘unsigned int’, but argument 2 has type ‘Uint *’ {aka ‘unsigned int *’} [-Wformat=]
+  191 |   printf("A : %08.8x\n", A);
+      |               ~~~~~^     ~
+      |                    |     |
+      |                    |     Uint * {aka unsigned int *}
+      |                    unsigned int
+      |               %08.8ls
+test023.c:192:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+  192 |   printf("B : %08.8x\n", B);
+      |          ^~~~~~~~~~~~~~
+test023.c:192:20: warning: format ‘%x’ expects argument of type ‘unsigned int’, but argument 2 has type ‘Uint *’ {aka ‘unsigned int *’} [-Wformat=]
+  192 |   printf("B : %08.8x\n", B);
+      |               ~~~~~^     ~
+      |                    |     |
+      |                    |     Uint * {aka unsigned int *}
+      |                    unsigned int
+      |               %08.8ls
+test023.c:193:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+  193 |   printf("C0: %08.8x\n", C0);
+      |          ^~~~~~~~~~~~~~
+test023.c:193:20: warning: format ‘%x’ expects argument of type ‘unsigned int’, but argument 2 has type ‘Uint *’ {aka ‘unsigned int *’} [-Wformat=]
+  193 |   printf("C0: %08.8x\n", C0);
+      |               ~~~~~^     ~~
+      |                    |     |
+      |                    |     Uint * {aka unsigned int *}
+      |                    unsigned int
+      |               %08.8ls
+test023.c:194:10: warning: '0' flag ignored with precision and ‘%x’ gnu_printf format [-Wformat=]
+  194 |   printf("C1: %08.8x\n", C1);
+      |          ^~~~~~~~~~~~~~
+test023.c:194:20: warning: format ‘%x’ expects argument of type ‘unsigned int’, but argument 2 has type ‘Uint *’ {aka ‘unsigned int *’} [-Wformat=]
+  194 |   printf("C1: %08.8x\n", C1);
+      |               ~~~~~^     ~~
+      |                    |     |
+      |                    |     Uint * {aka unsigned int *}
+      |                    unsigned int
+      |               %08.8ls
+test023.c:216:35: warning: passing argument 2 of ‘sparse_format2’ from incompatible pointer type [-Wincompatible-pointer-types]
+  216 |   A_sparse = sparse_format2(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params);
+      |                                   ^
+      |                                   |
+      |                                   Uint * {aka unsigned int *}
+In file included from test023.c:48:
+../../src/emax6_sparselib/Include/emax6_sparselib.h:58:16: note: expected ‘Ull *’ {aka ‘long long unsigned int *’} but argument is of type ‘Uint *’ {aka ‘unsigned int *’}
+   58 | emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
+      |                ^~~~~~~~~~~~~~
+test023.c:259:3: warning: implicit declaration of function ‘orig’ [-Wimplicit-function-declaration]
+  259 |   orig(A_tmp,B_debug,C0);
+      |   ^~~~
+test023.c:307:3: warning: implicit declaration of function ‘imax_debug’; did you mean ‘mop_debug’? [-Wimplicit-function-declaration]
+  307 |   imax_debug(A_sparse, B, C1);
+      |   ^~~~~~~~~~
+      |   mop_debug
+test023.c:338:3: warning: implicit declaration of function ‘copy_Z’ [-Wimplicit-function-declaration]
+  338 |   copy_Z(0, C1); BGR_to_X(0, Z);
+      |   ^~~~~~
+test023.c:195:15: warning: unused variable ‘num’ [-Wunused-variable]
+  195 |   int tmp = 0,num = 0;
+      |               ^~~
+test023.c: At top level:
+test023.c:366:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  366 | copy_Z(id, from)
+      | ^~~~~~
+test023.c:406:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  406 | orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
+      | ^~~~
+test023.c:426:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+  426 | orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
+      | ^~~~~~~~~
+test023.c:589:6: warning: conflicting types for ‘imax_debug’
+  589 | void imax_debug(emax6_sparse1* A_sparse, Uint* B, Uint* C) {
+      |      ^~~~~~~~~~
+test023.c:307:3: note: previous implicit declaration of ‘imax_debug’ was here
+  307 |   imax_debug(A_sparse, B, C1);
+      |   ^~~~~~~~~~
+test023.c: In function ‘imax_debug’:
+test023.c:622:32: warning: no semicolon at end of struct or union
+  622 |       typedef struct {Uint i[8]} Ui8;
+      |                                ^
+test023.c:632:17: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  632 |         b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
+      |                 ^
+test023.c:633:23: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  633 |         b_debug[CHIP] = B_debug+(CHIP*B_col_size/NCHIP+top)*B_row_size;
+      |                       ^
+test023.c:635:46: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  635 |         b0[k][CHIP] = b[CHIP]+0; b1[k][CHIP] = (Uint*)b[k]+B_row_size*2; b2[k][CHIP] = (Uint*)b[k]+B_row_size*4;  b3[k][CHIP] = (Uint*)b[k]+B_row_size*6;
+      |                                              ^
+test023.c:635:86: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  635 |         b0[k][CHIP] = b[CHIP]+0; b1[k][CHIP] = (Uint*)b[k]+B_row_size*2; b2[k][CHIP] = (Uint*)b[k]+B_row_size*4;  b3[k][CHIP] = (Uint*)b[k]+B_row_size*6;
+      |                                                                                      ^
+test023.c:635:127: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  635 |         b0[k][CHIP] = b[CHIP]+0; b1[k][CHIP] = (Uint*)b[k]+B_row_size*2; b2[k][CHIP] = (Uint*)b[k]+B_row_size*4;  b3[k][CHIP] = (Uint*)b[k]+B_row_size*6;
+      |                                                                                                                               ^
+test023.c:636:64: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  636 |         b0_debug[k][CHIP] = b_debug[CHIP]+0; b1_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*2; b2_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*4;  b3_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*6;
+      |                                                                ^
+test023.c:636:116: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  636 |         b0_debug[k][CHIP] = b_debug[CHIP]+0; b1_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*2; b2_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*4;  b3_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*6;
+      |                                                                                                                    ^
+test023.c:636:169: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  636 |         b0_debug[k][CHIP] = b_debug[CHIP]+0; b1_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*2; b2_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*4;  b3_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*6;
+      |                                                                                                                                                                         ^
+test023.c:639:18: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  639 |         c0[CHIP] = C1+(CHIP*A_col_size/NCHIP+top)*B_row_size;
+      |                  ^
+test023.c:640:24: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  640 |         c0_debug[CHIP] = C1+(CHIP*A_col_size/NCHIP+top)*B_row_size;
+      |                        ^
+test023.c:641:18: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  641 |         c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      |                  ^
+test023.c:641:48: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  641 |         c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      |                                                ^
+test023.c:641:78: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  641 |         c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      |                                                                              ^
+test023.c:641:108: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  641 |         c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+      |                                                                                                            ^
+test023.c:642:24: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  642 |         c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+      |                        ^
+test023.c:642:66: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  642 |         c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+      |                                                                  ^
+test023.c:642:108: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  642 |         c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+      |                                                                                                            ^
+test023.c:642:150: warning: assignment to ‘Ui8 *’ {aka ‘struct <anonymous> *’} from incompatible pointer type ‘Uint *’ {aka ‘unsigned int *’} [-Wincompatible-pointer-types]
+  642 |         c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+      |                                                                                                                                                      ^
+test023.c:711:63: warning: left shift count >= width of type [-Wshift-count-overflow]
+  711 |             exe(OP_ADD,    &rofs, rofs, EXP_H3210, INIT0?(1*4)<<32|(M2*4):0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
+      |                                                               ^~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:733:6: note: in expansion of macro ‘sgemm00_core1’
+  733 |      sgemm00_core1(3,  1,  2,  4);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:733:6: note: in expansion of macro ‘sgemm00_core1’
+  733 |      sgemm00_core1(3,  1,  2,  4);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:733:6: note: in expansion of macro ‘sgemm00_core1’
+  733 |      sgemm00_core1(3,  1,  2,  4);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:733:6: note: in expansion of macro ‘sgemm00_core1’
+  733 |      sgemm00_core1(3,  1,  2,  4);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:734:6: note: in expansion of macro ‘sgemm00_core1’
+  734 |      sgemm00_core1(4,  2,  3,  5);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:734:6: note: in expansion of macro ‘sgemm00_core1’
+  734 |      sgemm00_core1(4,  2,  3,  5);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:734:6: note: in expansion of macro ‘sgemm00_core1’
+  734 |      sgemm00_core1(4,  2,  3,  5);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:734:6: note: in expansion of macro ‘sgemm00_core1’
+  734 |      sgemm00_core1(4,  2,  3,  5);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:735:6: note: in expansion of macro ‘sgemm00_core1’
+  735 |      sgemm00_core1(5,  3,  4,  6);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:735:6: note: in expansion of macro ‘sgemm00_core1’
+  735 |      sgemm00_core1(5,  3,  4,  6);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:735:6: note: in expansion of macro ‘sgemm00_core1’
+  735 |      sgemm00_core1(5,  3,  4,  6);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:735:6: note: in expansion of macro ‘sgemm00_core1’
+  735 |      sgemm00_core1(5,  3,  4,  6);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:736:6: note: in expansion of macro ‘sgemm00_core1’
+  736 |      sgemm00_core1(6,  4,  5,  7);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:736:6: note: in expansion of macro ‘sgemm00_core1’
+  736 |      sgemm00_core1(6,  4,  5,  7);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:736:6: note: in expansion of macro ‘sgemm00_core1’
+  736 |      sgemm00_core1(6,  4,  5,  7);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:736:6: note: in expansion of macro ‘sgemm00_core1’
+  736 |      sgemm00_core1(6,  4,  5,  7);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:737:6: note: in expansion of macro ‘sgemm00_core1’
+  737 |      sgemm00_core1(7,  5,  6,  8);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:737:6: note: in expansion of macro ‘sgemm00_core1’
+  737 |      sgemm00_core1(7,  5,  6,  8);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:737:6: note: in expansion of macro ‘sgemm00_core1’
+  737 |      sgemm00_core1(7,  5,  6,  8);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:737:6: note: in expansion of macro ‘sgemm00_core1’
+  737 |      sgemm00_core1(7,  5,  6,  8);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:738:6: note: in expansion of macro ‘sgemm00_core1’
+  738 |      sgemm00_core1(8,  6,  7,  9);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:738:6: note: in expansion of macro ‘sgemm00_core1’
+  738 |      sgemm00_core1(8,  6,  7,  9);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:738:6: note: in expansion of macro ‘sgemm00_core1’
+  738 |      sgemm00_core1(8,  6,  7,  9);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:738:6: note: in expansion of macro ‘sgemm00_core1’
+  738 |      sgemm00_core1(8,  6,  7,  9);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:739:6: note: in expansion of macro ‘sgemm00_core1’
+  739 |      sgemm00_core1(9,  7,  8,  10);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:739:6: note: in expansion of macro ‘sgemm00_core1’
+  739 |      sgemm00_core1(9,  7,  8,  10);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:739:6: note: in expansion of macro ‘sgemm00_core1’
+  739 |      sgemm00_core1(9,  7,  8,  10);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:739:6: note: in expansion of macro ‘sgemm00_core1’
+  739 |      sgemm00_core1(9,  7,  8,  10);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:740:6: note: in expansion of macro ‘sgemm00_core1’
+  740 |      sgemm00_core1(10, 8,  9,  11);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:740:6: note: in expansion of macro ‘sgemm00_core1’
+  740 |      sgemm00_core1(10, 8,  9,  11);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:740:6: note: in expansion of macro ‘sgemm00_core1’
+  740 |      sgemm00_core1(10, 8,  9,  11);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:740:6: note: in expansion of macro ‘sgemm00_core1’
+  740 |      sgemm00_core1(10, 8,  9,  11);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:741:6: note: in expansion of macro ‘sgemm00_core1’
+  741 |      sgemm00_core1(11, 9,  10, 12);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:741:6: note: in expansion of macro ‘sgemm00_core1’
+  741 |      sgemm00_core1(11, 9,  10, 12);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:741:6: note: in expansion of macro ‘sgemm00_core1’
+  741 |      sgemm00_core1(11, 9,  10, 12);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:741:6: note: in expansion of macro ‘sgemm00_core1’
+  741 |      sgemm00_core1(11, 9,  10, 12);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:742:6: note: in expansion of macro ‘sgemm00_core1’
+  742 |      sgemm00_core1(12, 10, 11, 13);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:742:6: note: in expansion of macro ‘sgemm00_core1’
+  742 |      sgemm00_core1(12, 10, 11, 13);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:742:6: note: in expansion of macro ‘sgemm00_core1’
+  742 |      sgemm00_core1(12, 10, 11, 13);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:742:6: note: in expansion of macro ‘sgemm00_core1’
+  742 |      sgemm00_core1(12, 10, 11, 13);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:743:6: note: in expansion of macro ‘sgemm00_core1’
+  743 |      sgemm00_core1(13, 11, 12, 14);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:743:6: note: in expansion of macro ‘sgemm00_core1’
+  743 |      sgemm00_core1(13, 11, 12, 14);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:743:6: note: in expansion of macro ‘sgemm00_core1’
+  743 |      sgemm00_core1(13, 11, 12, 14);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:743:6: note: in expansion of macro ‘sgemm00_core1’
+  743 |      sgemm00_core1(13, 11, 12, 14);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:744:6: note: in expansion of macro ‘sgemm00_core1’
+  744 |      sgemm00_core1(14, 12, 13, 15);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:744:6: note: in expansion of macro ‘sgemm00_core1’
+  744 |      sgemm00_core1(14, 12, 13, 15);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:744:6: note: in expansion of macro ‘sgemm00_core1’
+  744 |      sgemm00_core1(14, 12, 13, 15);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:744:6: note: in expansion of macro ‘sgemm00_core1’
+  744 |      sgemm00_core1(14, 12, 13, 15);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:745:6: note: in expansion of macro ‘sgemm00_core1’
+  745 |      sgemm00_core1(15, 13, 14, 16);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:745:6: note: in expansion of macro ‘sgemm00_core1’
+  745 |      sgemm00_core1(15, 13, 14, 16);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:745:6: note: in expansion of macro ‘sgemm00_core1’
+  745 |      sgemm00_core1(15, 13, 14, 16);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:745:6: note: in expansion of macro ‘sgemm00_core1’
+  745 |      sgemm00_core1(15, 13, 14, 16);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:746:6: note: in expansion of macro ‘sgemm00_core1’
+  746 |      sgemm00_core1(16, 14, 15, 17);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:746:6: note: in expansion of macro ‘sgemm00_core1’
+  746 |      sgemm00_core1(16, 14, 15, 17);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:746:6: note: in expansion of macro ‘sgemm00_core1’
+  746 |      sgemm00_core1(16, 14, 15, 17);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:746:6: note: in expansion of macro ‘sgemm00_core1’
+  746 |      sgemm00_core1(16, 14, 15, 17);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:747:6: note: in expansion of macro ‘sgemm00_core1’
+  747 |      sgemm00_core1(17, 15, 16, 18);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:747:6: note: in expansion of macro ‘sgemm00_core1’
+  747 |      sgemm00_core1(17, 15, 16, 18);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:747:6: note: in expansion of macro ‘sgemm00_core1’
+  747 |      sgemm00_core1(17, 15, 16, 18);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:747:6: note: in expansion of macro ‘sgemm00_core1’
+  747 |      sgemm00_core1(17, 15, 16, 18);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:748:6: note: in expansion of macro ‘sgemm00_core1’
+  748 |      sgemm00_core1(18, 16, 17, 19);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:748:6: note: in expansion of macro ‘sgemm00_core1’
+  748 |      sgemm00_core1(18, 16, 17, 19);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:748:6: note: in expansion of macro ‘sgemm00_core1’
+  748 |      sgemm00_core1(18, 16, 17, 19);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:748:6: note: in expansion of macro ‘sgemm00_core1’
+  748 |      sgemm00_core1(18, 16, 17, 19);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:749:6: note: in expansion of macro ‘sgemm00_core1’
+  749 |      sgemm00_core1(19, 17, 18, 20);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:749:6: note: in expansion of macro ‘sgemm00_core1’
+  749 |      sgemm00_core1(19, 17, 18, 20);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:749:6: note: in expansion of macro ‘sgemm00_core1’
+  749 |      sgemm00_core1(19, 17, 18, 20);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:749:6: note: in expansion of macro ‘sgemm00_core1’
+  749 |      sgemm00_core1(19, 17, 18, 20);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:750:6: note: in expansion of macro ‘sgemm00_core1’
+  750 |      sgemm00_core1(20, 18, 19, 21);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:750:6: note: in expansion of macro ‘sgemm00_core1’
+  750 |      sgemm00_core1(20, 18, 19, 21);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:750:6: note: in expansion of macro ‘sgemm00_core1’
+  750 |      sgemm00_core1(20, 18, 19, 21);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:750:6: note: in expansion of macro ‘sgemm00_core1’
+  750 |      sgemm00_core1(20, 18, 19, 21);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:751:6: note: in expansion of macro ‘sgemm00_core1’
+  751 |      sgemm00_core1(21, 19, 20, 22);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:751:6: note: in expansion of macro ‘sgemm00_core1’
+  751 |      sgemm00_core1(21, 19, 20, 22);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:751:6: note: in expansion of macro ‘sgemm00_core1’
+  751 |      sgemm00_core1(21, 19, 20, 22);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:751:6: note: in expansion of macro ‘sgemm00_core1’
+  751 |      sgemm00_core1(21, 19, 20, 22);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:752:6: note: in expansion of macro ‘sgemm00_core1’
+  752 |      sgemm00_core1(22, 20, 21, 23);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:752:6: note: in expansion of macro ‘sgemm00_core1’
+  752 |      sgemm00_core1(22, 20, 21, 23);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:752:6: note: in expansion of macro ‘sgemm00_core1’
+  752 |      sgemm00_core1(22, 20, 21, 23);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:752:6: note: in expansion of macro ‘sgemm00_core1’
+  752 |      sgemm00_core1(22, 20, 21, 23);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:753:6: note: in expansion of macro ‘sgemm00_core1’
+  753 |      sgemm00_core1(23, 21, 22, 24);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:753:6: note: in expansion of macro ‘sgemm00_core1’
+  753 |      sgemm00_core1(23, 21, 22, 24);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:753:6: note: in expansion of macro ‘sgemm00_core1’
+  753 |      sgemm00_core1(23, 21, 22, 24);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:753:6: note: in expansion of macro ‘sgemm00_core1’
+  753 |      sgemm00_core1(23, 21, 22, 24);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:754:6: note: in expansion of macro ‘sgemm00_core1’
+  754 |      sgemm00_core1(24, 22, 23, 25);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:754:6: note: in expansion of macro ‘sgemm00_core1’
+  754 |      sgemm00_core1(24, 22, 23, 25);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:754:6: note: in expansion of macro ‘sgemm00_core1’
+  754 |      sgemm00_core1(24, 22, 23, 25);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:754:6: note: in expansion of macro ‘sgemm00_core1’
+  754 |      sgemm00_core1(24, 22, 23, 25);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:755:6: note: in expansion of macro ‘sgemm00_core1’
+  755 |      sgemm00_core1(25, 23, 24, 26);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:755:6: note: in expansion of macro ‘sgemm00_core1’
+  755 |      sgemm00_core1(25, 23, 24, 26);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:755:6: note: in expansion of macro ‘sgemm00_core1’
+  755 |      sgemm00_core1(25, 23, 24, 26);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:755:6: note: in expansion of macro ‘sgemm00_core1’
+  755 |      sgemm00_core1(25, 23, 24, 26);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:756:6: note: in expansion of macro ‘sgemm00_core1’
+  756 |      sgemm00_core1(26, 24, 25, 27);                      //(Ull)A_sort_indexのUll対応  outputCもsimd
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:756:6: note: in expansion of macro ‘sgemm00_core1’
+  756 |      sgemm00_core1(26, 24, 25, 27);                      //(Ull)A_sort_indexのUll対応  outputCもsimd
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:756:6: note: in expansion of macro ‘sgemm00_core1’
+  756 |      sgemm00_core1(26, 24, 25, 27);                      //(Ull)A_sort_indexのUll対応  outputCもsimd
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:756:6: note: in expansion of macro ‘sgemm00_core1’
+  756 |      sgemm00_core1(26, 24, 25, 27);                      //(Ull)A_sort_indexのUll対応  outputCもsimd
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:757:6: note: in expansion of macro ‘sgemm00_core1’
+  757 |      sgemm00_core1(27, 25, 26, 28);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:757:6: note: in expansion of macro ‘sgemm00_core1’
+  757 |      sgemm00_core1(27, 25, 26, 28);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:757:6: note: in expansion of macro ‘sgemm00_core1’
+  757 |      sgemm00_core1(27, 25, 26, 28);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:757:6: note: in expansion of macro ‘sgemm00_core1’
+  757 |      sgemm00_core1(27, 25, 26, 28);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:758:6: note: in expansion of macro ‘sgemm00_core1’
+  758 |      sgemm00_core1(28, 26, 27, 29);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:758:6: note: in expansion of macro ‘sgemm00_core1’
+  758 |      sgemm00_core1(28, 26, 27, 29);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:758:6: note: in expansion of macro ‘sgemm00_core1’
+  758 |      sgemm00_core1(28, 26, 27, 29);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:758:6: note: in expansion of macro ‘sgemm00_core1’
+  758 |      sgemm00_core1(28, 26, 27, 29);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:759:6: note: in expansion of macro ‘sgemm00_core1’
+  759 |      sgemm00_core1(29, 27, 28, 30);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:759:6: note: in expansion of macro ‘sgemm00_core1’
+  759 |      sgemm00_core1(29, 27, 28, 30);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:759:6: note: in expansion of macro ‘sgemm00_core1’
+  759 |      sgemm00_core1(29, 27, 28, 30);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:759:6: note: in expansion of macro ‘sgemm00_core1’
+  759 |      sgemm00_core1(29, 27, 28, 30);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:760:6: note: in expansion of macro ‘sgemm00_core1’
+  760 |      sgemm00_core1(30, 28, 29, 31);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:760:6: note: in expansion of macro ‘sgemm00_core1’
+  760 |      sgemm00_core1(30, 28, 29, 31);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:760:6: note: in expansion of macro ‘sgemm00_core1’
+  760 |      sgemm00_core1(30, 28, 29, 31);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:760:6: note: in expansion of macro ‘sgemm00_core1’
+  760 |      sgemm00_core1(30, 28, 29, 31);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:761:6: note: in expansion of macro ‘sgemm00_core1’
+  761 |      sgemm00_core1(31, 29, 30, 32);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:761:6: note: in expansion of macro ‘sgemm00_core1’
+  761 |      sgemm00_core1(31, 29, 30, 32);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:761:6: note: in expansion of macro ‘sgemm00_core1’
+  761 |      sgemm00_core1(31, 29, 30, 32);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:761:6: note: in expansion of macro ‘sgemm00_core1’
+  761 |      sgemm00_core1(31, 29, 30, 32);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:762:6: note: in expansion of macro ‘sgemm00_core1’
+  762 |      sgemm00_core1(32, 30, 31, 33);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:762:6: note: in expansion of macro ‘sgemm00_core1’
+  762 |      sgemm00_core1(32, 30, 31, 33);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:762:6: note: in expansion of macro ‘sgemm00_core1’
+  762 |      sgemm00_core1(32, 30, 31, 33);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:762:6: note: in expansion of macro ‘sgemm00_core1’
+  762 |      sgemm00_core1(32, 30, 31, 33);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:763:6: note: in expansion of macro ‘sgemm00_core1’
+  763 |      sgemm00_core1(33, 31, 32, 34);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:763:6: note: in expansion of macro ‘sgemm00_core1’
+  763 |      sgemm00_core1(33, 31, 32, 34);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:763:6: note: in expansion of macro ‘sgemm00_core1’
+  763 |      sgemm00_core1(33, 31, 32, 34);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:763:6: note: in expansion of macro ‘sgemm00_core1’
+  763 |      sgemm00_core1(33, 31, 32, 34);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:764:6: note: in expansion of macro ‘sgemm00_core1’
+  764 |      sgemm00_core1(34, 32, 33, 35);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:764:6: note: in expansion of macro ‘sgemm00_core1’
+  764 |      sgemm00_core1(34, 32, 33, 35);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:764:6: note: in expansion of macro ‘sgemm00_core1’
+  764 |      sgemm00_core1(34, 32, 33, 35);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:764:6: note: in expansion of macro ‘sgemm00_core1’
+  764 |      sgemm00_core1(34, 32, 33, 35);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:765:6: note: in expansion of macro ‘sgemm00_core1’
+  765 |      sgemm00_core1(35, 33, 34, 36);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:765:6: note: in expansion of macro ‘sgemm00_core1’
+  765 |      sgemm00_core1(35, 33, 34, 36);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:765:6: note: in expansion of macro ‘sgemm00_core1’
+  765 |      sgemm00_core1(35, 33, 34, 36);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:765:6: note: in expansion of macro ‘sgemm00_core1’
+  765 |      sgemm00_core1(35, 33, 34, 36);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:766:6: note: in expansion of macro ‘sgemm00_core1’
+  766 |      sgemm00_core1(36, 34, 35, 37);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:766:6: note: in expansion of macro ‘sgemm00_core1’
+  766 |      sgemm00_core1(36, 34, 35, 37);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:766:6: note: in expansion of macro ‘sgemm00_core1’
+  766 |      sgemm00_core1(36, 34, 35, 37);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:766:6: note: in expansion of macro ‘sgemm00_core1’
+  766 |      sgemm00_core1(36, 34, 35, 37);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:767:6: note: in expansion of macro ‘sgemm00_core1’
+  767 |      sgemm00_core1(37, 35, 36, 38);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:767:6: note: in expansion of macro ‘sgemm00_core1’
+  767 |      sgemm00_core1(37, 35, 36, 38);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:767:6: note: in expansion of macro ‘sgemm00_core1’
+  767 |      sgemm00_core1(37, 35, 36, 38);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:767:6: note: in expansion of macro ‘sgemm00_core1’
+  767 |      sgemm00_core1(37, 35, 36, 38);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:768:6: note: in expansion of macro ‘sgemm00_core1’
+  768 |      sgemm00_core1(38, 36, 37, 39);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:768:6: note: in expansion of macro ‘sgemm00_core1’
+  768 |      sgemm00_core1(38, 36, 37, 39);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:768:6: note: in expansion of macro ‘sgemm00_core1’
+  768 |      sgemm00_core1(38, 36, 37, 39);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:768:6: note: in expansion of macro ‘sgemm00_core1’
+  768 |      sgemm00_core1(38, 36, 37, 39);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:769:6: note: in expansion of macro ‘sgemm00_core1’
+  769 |      sgemm00_core1(39, 37, 38, 40);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:769:6: note: in expansion of macro ‘sgemm00_core1’
+  769 |      sgemm00_core1(39, 37, 38, 40);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:769:6: note: in expansion of macro ‘sgemm00_core1’
+  769 |      sgemm00_core1(39, 37, 38, 40);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:769:6: note: in expansion of macro ‘sgemm00_core1’
+  769 |      sgemm00_core1(39, 37, 38, 40);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:770:6: note: in expansion of macro ‘sgemm00_core1’
+  770 |      sgemm00_core1(40, 38, 39, 41);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:770:6: note: in expansion of macro ‘sgemm00_core1’
+  770 |      sgemm00_core1(40, 38, 39, 41);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:770:6: note: in expansion of macro ‘sgemm00_core1’
+  770 |      sgemm00_core1(40, 38, 39, 41);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:770:6: note: in expansion of macro ‘sgemm00_core1’
+  770 |      sgemm00_core1(40, 38, 39, 41);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:771:6: note: in expansion of macro ‘sgemm00_core1’
+  771 |      sgemm00_core1(41, 39, 40, 42);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:771:6: note: in expansion of macro ‘sgemm00_core1’
+  771 |      sgemm00_core1(41, 39, 40, 42);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:771:6: note: in expansion of macro ‘sgemm00_core1’
+  771 |      sgemm00_core1(41, 39, 40, 42);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:771:6: note: in expansion of macro ‘sgemm00_core1’
+  771 |      sgemm00_core1(41, 39, 40, 42);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:772:6: note: in expansion of macro ‘sgemm00_core1’
+  772 |      sgemm00_core1(42, 40, 41, 43);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:772:6: note: in expansion of macro ‘sgemm00_core1’
+  772 |      sgemm00_core1(42, 40, 41, 43);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:772:6: note: in expansion of macro ‘sgemm00_core1’
+  772 |      sgemm00_core1(42, 40, 41, 43);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:772:6: note: in expansion of macro ‘sgemm00_core1’
+  772 |      sgemm00_core1(42, 40, 41, 43);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:773:6: note: in expansion of macro ‘sgemm00_core1’
+  773 |      sgemm00_core1(43, 41, 42, 44);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:773:6: note: in expansion of macro ‘sgemm00_core1’
+  773 |      sgemm00_core1(43, 41, 42, 44);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:773:6: note: in expansion of macro ‘sgemm00_core1’
+  773 |      sgemm00_core1(43, 41, 42, 44);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:773:6: note: in expansion of macro ‘sgemm00_core1’
+  773 |      sgemm00_core1(43, 41, 42, 44);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:774:6: note: in expansion of macro ‘sgemm00_core1’
+  774 |      sgemm00_core1(44, 42, 43, 45);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:774:6: note: in expansion of macro ‘sgemm00_core1’
+  774 |      sgemm00_core1(44, 42, 43, 45);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:774:6: note: in expansion of macro ‘sgemm00_core1’
+  774 |      sgemm00_core1(44, 42, 43, 45);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:774:6: note: in expansion of macro ‘sgemm00_core1’
+  774 |      sgemm00_core1(44, 42, 43, 45);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:775:6: note: in expansion of macro ‘sgemm00_core1’
+  775 |      sgemm00_core1(45, 43, 44, 46);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:775:6: note: in expansion of macro ‘sgemm00_core1’
+  775 |      sgemm00_core1(45, 43, 44, 46);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:775:6: note: in expansion of macro ‘sgemm00_core1’
+  775 |      sgemm00_core1(45, 43, 44, 46);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:775:6: note: in expansion of macro ‘sgemm00_core1’
+  775 |      sgemm00_core1(45, 43, 44, 46);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:776:6: note: in expansion of macro ‘sgemm00_core1’
+  776 |      sgemm00_core1(46, 44, 45, 47);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:776:6: note: in expansion of macro ‘sgemm00_core1’
+  776 |      sgemm00_core1(46, 44, 45, 47);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:776:6: note: in expansion of macro ‘sgemm00_core1’
+  776 |      sgemm00_core1(46, 44, 45, 47);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:776:6: note: in expansion of macro ‘sgemm00_core1’
+  776 |      sgemm00_core1(46, 44, 45, 47);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:777:6: note: in expansion of macro ‘sgemm00_core1’
+  777 |      sgemm00_core1(47, 45, 46, 48);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:777:6: note: in expansion of macro ‘sgemm00_core1’
+  777 |      sgemm00_core1(47, 45, 46, 48);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:777:6: note: in expansion of macro ‘sgemm00_core1’
+  777 |      sgemm00_core1(47, 45, 46, 48);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:777:6: note: in expansion of macro ‘sgemm00_core1’
+  777 |      sgemm00_core1(47, 45, 46, 48);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:778:6: note: in expansion of macro ‘sgemm00_core1’
+  778 |      sgemm00_core1(48, 46, 47, 49);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:778:6: note: in expansion of macro ‘sgemm00_core1’
+  778 |      sgemm00_core1(48, 46, 47, 49);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:778:6: note: in expansion of macro ‘sgemm00_core1’
+  778 |      sgemm00_core1(48, 46, 47, 49);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:778:6: note: in expansion of macro ‘sgemm00_core1’
+  778 |      sgemm00_core1(48, 46, 47, 49);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:779:6: note: in expansion of macro ‘sgemm00_core1’
+  779 |      sgemm00_core1(49, 47, 48, 50);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:779:6: note: in expansion of macro ‘sgemm00_core1’
+  779 |      sgemm00_core1(49, 47, 48, 50);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:779:6: note: in expansion of macro ‘sgemm00_core1’
+  779 |      sgemm00_core1(49, 47, 48, 50);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:779:6: note: in expansion of macro ‘sgemm00_core1’
+  779 |      sgemm00_core1(49, 47, 48, 50);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:780:6: note: in expansion of macro ‘sgemm00_core1’
+  780 |      sgemm00_core1(50, 48, 49, 51);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:780:6: note: in expansion of macro ‘sgemm00_core1’
+  780 |      sgemm00_core1(50, 48, 49, 51);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:780:6: note: in expansion of macro ‘sgemm00_core1’
+  780 |      sgemm00_core1(50, 48, 49, 51);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:780:6: note: in expansion of macro ‘sgemm00_core1’
+  780 |      sgemm00_core1(50, 48, 49, 51);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:781:6: note: in expansion of macro ‘sgemm00_core1’
+  781 |      sgemm00_core1(51, 49, 50, 52);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:781:6: note: in expansion of macro ‘sgemm00_core1’
+  781 |      sgemm00_core1(51, 49, 50, 52);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:781:6: note: in expansion of macro ‘sgemm00_core1’
+  781 |      sgemm00_core1(51, 49, 50, 52);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:781:6: note: in expansion of macro ‘sgemm00_core1’
+  781 |      sgemm00_core1(51, 49, 50, 52);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:782:6: note: in expansion of macro ‘sgemm00_core1’
+  782 |      sgemm00_core1(52, 50, 51, 53);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:782:6: note: in expansion of macro ‘sgemm00_core1’
+  782 |      sgemm00_core1(52, 50, 51, 53);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:782:6: note: in expansion of macro ‘sgemm00_core1’
+  782 |      sgemm00_core1(52, 50, 51, 53);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:782:6: note: in expansion of macro ‘sgemm00_core1’
+  782 |      sgemm00_core1(52, 50, 51, 53);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:783:6: note: in expansion of macro ‘sgemm00_core1’
+  783 |      sgemm00_core1(53, 51, 52, 54);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:783:6: note: in expansion of macro ‘sgemm00_core1’
+  783 |      sgemm00_core1(53, 51, 52, 54);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:783:6: note: in expansion of macro ‘sgemm00_core1’
+  783 |      sgemm00_core1(53, 51, 52, 54);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:783:6: note: in expansion of macro ‘sgemm00_core1’
+  783 |      sgemm00_core1(53, 51, 52, 54);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:784:6: note: in expansion of macro ‘sgemm00_core1’
+  784 |      sgemm00_core1(54, 52, 53, 55);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:784:6: note: in expansion of macro ‘sgemm00_core1’
+  784 |      sgemm00_core1(54, 52, 53, 55);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:784:6: note: in expansion of macro ‘sgemm00_core1’
+  784 |      sgemm00_core1(54, 52, 53, 55);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:784:6: note: in expansion of macro ‘sgemm00_core1’
+  784 |      sgemm00_core1(54, 52, 53, 55);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:785:6: note: in expansion of macro ‘sgemm00_core1’
+  785 |      sgemm00_core1(55, 53, 54, 56);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:785:6: note: in expansion of macro ‘sgemm00_core1’
+  785 |      sgemm00_core1(55, 53, 54, 56);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:785:6: note: in expansion of macro ‘sgemm00_core1’
+  785 |      sgemm00_core1(55, 53, 54, 56);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:785:6: note: in expansion of macro ‘sgemm00_core1’
+  785 |      sgemm00_core1(55, 53, 54, 56);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:786:6: note: in expansion of macro ‘sgemm00_core1’
+  786 |      sgemm00_core1(56, 54, 55, 57);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:786:6: note: in expansion of macro ‘sgemm00_core1’
+  786 |      sgemm00_core1(56, 54, 55, 57);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:786:6: note: in expansion of macro ‘sgemm00_core1’
+  786 |      sgemm00_core1(56, 54, 55, 57);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:786:6: note: in expansion of macro ‘sgemm00_core1’
+  786 |      sgemm00_core1(56, 54, 55, 57);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:787:6: note: in expansion of macro ‘sgemm00_core1’
+  787 |      sgemm00_core1(57, 55, 56, 58);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:787:6: note: in expansion of macro ‘sgemm00_core1’
+  787 |      sgemm00_core1(57, 55, 56, 58);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:787:6: note: in expansion of macro ‘sgemm00_core1’
+  787 |      sgemm00_core1(57, 55, 56, 58);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:787:6: note: in expansion of macro ‘sgemm00_core1’
+  787 |      sgemm00_core1(57, 55, 56, 58);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:788:6: note: in expansion of macro ‘sgemm00_core1’
+  788 |      sgemm00_core1(58, 56, 57, 59);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:788:6: note: in expansion of macro ‘sgemm00_core1’
+  788 |      sgemm00_core1(58, 56, 57, 59);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:788:6: note: in expansion of macro ‘sgemm00_core1’
+  788 |      sgemm00_core1(58, 56, 57, 59);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:788:6: note: in expansion of macro ‘sgemm00_core1’
+  788 |      sgemm00_core1(58, 56, 57, 59);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:789:6: note: in expansion of macro ‘sgemm00_core1’
+  789 |      sgemm00_core1(59, 57, 58, 60);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:789:6: note: in expansion of macro ‘sgemm00_core1’
+  789 |      sgemm00_core1(59, 57, 58, 60);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:789:6: note: in expansion of macro ‘sgemm00_core1’
+  789 |      sgemm00_core1(59, 57, 58, 60);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:789:6: note: in expansion of macro ‘sgemm00_core1’
+  789 |      sgemm00_core1(59, 57, 58, 60);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:656:7: error: too few arguments to function ‘mop2_debug’
+  656 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:790:6: note: in expansion of macro ‘sgemm00_core1’
+  790 |      sgemm00_core1(60, 58, 59, 61);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:657:6: error: too few arguments to function ‘mop2_debug’
+  657 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:790:6: note: in expansion of macro ‘sgemm00_core1’
+  790 |      sgemm00_core1(60, 58, 59, 61);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:658:6: error: too few arguments to function ‘mop2_debug’
+  658 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:790:6: note: in expansion of macro ‘sgemm00_core1’
+  790 |      sgemm00_core1(60, 58, 59, 61);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:659:6: error: too few arguments to function ‘mop2_debug’
+  659 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:790:6: note: in expansion of macro ‘sgemm00_core1’
+  790 |      sgemm00_core1(60, 58, 59, 61);
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:673:7: error: too few arguments to function ‘mop2_debug’
+  673 |       mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
+      |       ^~~~~~~~~~
+test023.c:791:6: note: in expansion of macro ‘sgemm00_core2’
+  791 |      sgemm00_core2(61, 59, 60, 62); /* H=60 */
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:674:6: error: too few arguments to function ‘mop2_debug’
+  674 |      mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
+      |      ^~~~~~~~~~
+test023.c:791:6: note: in expansion of macro ‘sgemm00_core2’
+  791 |      sgemm00_core2(61, 59, 60, 62); /* H=60 */
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:675:6: error: too few arguments to function ‘mop2_debug’
+  675 |      mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
+      |      ^~~~~~~~~~
+test023.c:791:6: note: in expansion of macro ‘sgemm00_core2’
+  791 |      sgemm00_core2(61, 59, 60, 62); /* H=60 */
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:676:6: error: too few arguments to function ‘mop2_debug’
+  676 |      mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
+      |      ^~~~~~~~~~
+test023.c:791:6: note: in expansion of macro ‘sgemm00_core2’
+  791 |      sgemm00_core2(61, 59, 60, 62); /* H=60 */
+      |      ^~~~~~~~~~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c:1744:1: note: declared here
+ 1744 | mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+      | ^~~~~~~~~~
+test023.c:601:8: warning: unused variable ‘A_val_index_set’ [-Wunused-variable]
+  601 |   Ull* A_val_index_set = A_sparse->val_index_set;
+      |        ^~~~~~~~~~~~~~~
+test023.c:597:33: warning: unused variable ‘ex1’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |                                 ^~~
+test023.c:597:28: warning: unused variable ‘ex0’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |                            ^~~
+test023.c:597:23: warning: unused variable ‘cc3’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |                       ^~~
+test023.c:597:18: warning: unused variable ‘cc2’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |                  ^~~
+test023.c:597:13: warning: unused variable ‘cc1’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |             ^~~
+test023.c:597:8: warning: unused variable ‘cc0’ [-Wunused-variable]
+  597 |   Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+      |        ^~~
+test023.c:596:83: warning: unused variable ‘r31’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                                                   ^~~
+test023.c:596:78: warning: unused variable ‘r30’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                                              ^~~
+test023.c:596:73: warning: unused variable ‘r29’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                                         ^~~
+test023.c:596:68: warning: unused variable ‘r28’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                                    ^~~
+test023.c:596:63: warning: unused variable ‘r27’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                               ^~~
+test023.c:596:58: warning: unused variable ‘r26’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                          ^~~
+test023.c:596:53: warning: unused variable ‘r25’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                     ^~~
+test023.c:596:48: warning: unused variable ‘r24’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                                ^~~
+test023.c:596:43: warning: unused variable ‘r23’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                           ^~~
+test023.c:596:38: warning: unused variable ‘r22’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                      ^~~
+test023.c:596:33: warning: unused variable ‘r21’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                                 ^~~
+test023.c:596:28: warning: unused variable ‘r20’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                            ^~~
+test023.c:596:23: warning: unused variable ‘r19’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                       ^~~
+test023.c:596:18: warning: unused variable ‘r18’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |                  ^~~
+test023.c:596:13: warning: unused variable ‘r17’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |             ^~~
+test023.c:596:8: warning: unused variable ‘r16’ [-Wunused-variable]
+  596 |   Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+      |        ^~~
+test023.c:595:73: warning: unused variable ‘r15’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                                         ^~~
+test023.c:595:68: warning: unused variable ‘r14’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                                    ^~~
+test023.c:595:63: warning: unused variable ‘r13’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                               ^~~
+test023.c:595:58: warning: unused variable ‘r12’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                          ^~~
+test023.c:595:53: warning: unused variable ‘r11’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                     ^~~
+test023.c:595:48: warning: unused variable ‘r10’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                                ^~~
+test023.c:595:44: warning: unused variable ‘r9’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                            ^~
+test023.c:595:40: warning: unused variable ‘r8’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                        ^~
+test023.c:595:36: warning: unused variable ‘r7’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                    ^~
+test023.c:595:32: warning: unused variable ‘r6’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                                ^~
+test023.c:595:28: warning: unused variable ‘r5’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                            ^~
+test023.c:595:24: warning: unused variable ‘r4’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                        ^~
+test023.c:595:20: warning: unused variable ‘r3’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                    ^~
+test023.c:595:16: warning: unused variable ‘r2’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |                ^~
+test023.c:595:12: warning: unused variable ‘r1’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |            ^~
+test023.c:595:8: warning: unused variable ‘r0’ [-Wunused-variable]
+  595 |   Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+      |        ^~
+test023.c:592:8: warning: variable ‘INIT1’ set but not used [-Wunused-but-set-variable]
+  592 |   Ull  INIT1, INIT0;
+      |        ^~~~~
+In file included from test023.c:47:
+../../src/conv-c2c/emax6lib.c: In function ‘reset_nanosec’:
+../../src/conv-c2c/emax6lib.c:468:1: warning: control reaches end of non-void function [-Wreturn-type]
+  468 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘get_nanosec’:
+../../src/conv-c2c/emax6lib.c:486:1: warning: control reaches end of non-void function [-Wreturn-type]
+  486 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘show_nanosec’:
+../../src/conv-c2c/emax6lib.c:511:1: warning: control reaches end of non-void function [-Wreturn-type]
+  511 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘emax6_check_lmmi_and_dma’:
+../../src/conv-c2c/emax6lib.c:643:1: warning: control reaches end of non-void function [-Wreturn-type]
+  643 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘emax6_pre_with_keep_cache’:
+../../src/conv-c2c/emax6lib.c:810:1: warning: control reaches end of non-void function [-Wreturn-type]
+  810 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘emax6_pre_with_drain_cache’:
+../../src/conv-c2c/emax6lib.c:822:1: warning: control reaches end of non-void function [-Wreturn-type]
+  822 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘convf32tou7’:
+../../src/conv-c2c/emax6lib.c:921:1: warning: control reaches end of non-void function [-Wreturn-type]
+  921 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘convf32tou8’:
+../../src/conv-c2c/emax6lib.c:936:1: warning: control reaches end of non-void function [-Wreturn-type]
+  936 | }
+      | ^
+../../src/conv-c2c/emax6lib.c: In function ‘convu8tof32’:
+../../src/conv-c2c/emax6lib.c:947:1: warning: control reaches end of non-void function [-Wreturn-type]
+  947 | }
+      | ^
+test023.c: In function ‘sysinit’:
+test023.c:114:1: warning: control reaches end of non-void function [-Wreturn-type]
+  114 | }
+      | ^
+test023.c: In function ‘copy_Z’:
+test023.c:404:1: warning: control reaches end of non-void function [-Wreturn-type]
+  404 | }
+      | ^
+test023.c: In function ‘orig’:
+test023.c:419:1: warning: control reaches end of non-void function [-Wreturn-type]
+  419 | }
+      | ^
+test023.c: In function ‘orig_simd’:
+test023.c:451:1: warning: control reaches end of non-void function [-Wreturn-type]
+  451 | }
+      | ^
+At top level:
+test023.c:2:13: warning: ‘RcsHeader’ defined but not used [-Wunused-variable]
+    2 | static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_lf/RCS/mm.c,v 1.4 2018/02/04 10:28:53 nakashim Exp nakashim $";
+      |             ^~~~~~~~~
+make: *** [Makefile-cent.emax6nc:54: test023.o] Error 1

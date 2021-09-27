@@ -1,1 +1,1358 @@
-make: Nothing to be done for `test021-zynq.emax6nc'.
+GNU Make 3.82
+Built for x86_64-redhat-linux-gnu
+Copyright (C) 2010  Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Reading makefiles...
+Reading makefile `Makefile-csim.emax6+dma'...
+Updating makefiles....
+ Considering target file `Makefile-csim.emax6+dma'.
+  Looking for an implicit rule for `Makefile-csim.emax6+dma'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.o'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.c'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.cc'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.C'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.cpp'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.p'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.f'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.F'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.m'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.r'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.s'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.S'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.mod'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.sh'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma,v'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma,v'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `s.Makefile-csim.emax6+dma'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.o'.
+  Looking for a rule with intermediate file `Makefile-csim.emax6+dma.o'.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.c'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.cc'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.C'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.cpp'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.p'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.f'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.F'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.m'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.r'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.s'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.S'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.mod'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.o'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.o,v'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.o'.
+   Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.o,v'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.o'.
+   Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.o'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.o'.
+   Trying implicit prerequisite `s.Makefile-csim.emax6+dma.o'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.o'.
+   Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.o'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.c'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.c'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.y'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.l'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.w'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.w'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.c'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.c,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.c'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.c,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.c'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.c'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.c'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.c'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.c'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.c'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.y'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.y'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.y'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.y,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.y'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.y,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.y'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.y'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.y'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.y'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.y'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.y'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.l'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.l'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.l'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.l,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.l'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.l,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.l'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.l'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.l'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.l'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.l'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.l'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.w'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.w'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.w'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.w,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.w'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.w,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.w'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.w'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.w'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.w'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.w'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.w'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.w'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.cc'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.cc'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cc'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.cc,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cc'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.cc,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cc'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.cc'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cc'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.cc'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cc'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.cc'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.C'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.C'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.C'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.C,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.C'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.C,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.C'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.C'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.C'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.C'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.C'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.C'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.cpp'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.cpp'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cpp'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.cpp,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cpp'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.cpp,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cpp'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.cpp'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cpp'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.cpp'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.cpp'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.cpp'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.p'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.p'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.web'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.p'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.p,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.p'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.p,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.p'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.p'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.p'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.p'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.p'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.p'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.web'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.web'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.web'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.web,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.web'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.web,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.web'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.web'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.web'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.web'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.web'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.web'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.f'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.f'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.F'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.r'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.f'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.f,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.f'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.f,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.f'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.f'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.f'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.f'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.f'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.f'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.F'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.F'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.F'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.F,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.F'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.F,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.F'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.F'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.F'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.F'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.F'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.F'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.r'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.r'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+     Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.l'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.r'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.r,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.r'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.r,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.r'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.r'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.r'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.r'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.r'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.r'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.F'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.m'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.m'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.ym'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.m'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.m,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.m'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.m,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.m'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.m'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.m'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.m'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.m'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.m'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.ym'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.ym'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.ym'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.ym,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.ym'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.ym,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.ym'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.ym'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.ym'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.ym'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.ym'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.ym'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.r'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.s'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.s'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.S'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.s'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.s,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.s'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.s,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.s'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.s'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.s'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.s'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.s'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.s'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.S'.
+    Looking for a rule with intermediate file `Makefile-csim.emax6+dma.S'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.S'.
+     Trying implicit prerequisite `Makefile-csim.emax6+dma.S,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.S'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.S,v'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.S'.
+     Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.S'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.S'.
+     Trying implicit prerequisite `s.Makefile-csim.emax6+dma.S'.
+     Trying pattern rule with stem `Makefile-csim.emax6+dma.S'.
+     Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.S'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.S'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.mod'.
+   Looking for a rule with intermediate file `Makefile-csim.emax6+dma.mod'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.mod'.
+    Trying implicit prerequisite `Makefile-csim.emax6+dma.mod,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.mod'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.mod,v'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.mod'.
+    Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.mod'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.mod'.
+    Trying implicit prerequisite `s.Makefile-csim.emax6+dma.mod'.
+    Trying pattern rule with stem `Makefile-csim.emax6+dma.mod'.
+    Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.mod'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.c'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.cc'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.C'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.cpp'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.p'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.f'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.F'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.m'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.r'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.s'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.S'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Rejecting impossible implicit prerequisite `Makefile-csim.emax6+dma.mod'.
+  Trying pattern rule with stem `Makefile-csim.emax6+dma'.
+  Trying implicit prerequisite `Makefile-csim.emax6+dma.sh'.
+  Looking for a rule with intermediate file `Makefile-csim.emax6+dma.sh'.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.sh'.
+   Trying implicit prerequisite `Makefile-csim.emax6+dma.sh,v'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.sh'.
+   Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.sh,v'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.sh'.
+   Trying implicit prerequisite `RCS/Makefile-csim.emax6+dma.sh'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.sh'.
+   Trying implicit prerequisite `s.Makefile-csim.emax6+dma.sh'.
+   Trying pattern rule with stem `Makefile-csim.emax6+dma.sh'.
+   Trying implicit prerequisite `SCCS/s.Makefile-csim.emax6+dma.sh'.
+  No implicit rule found for `Makefile-csim.emax6+dma'.
+  Finished prerequisites of target file `Makefile-csim.emax6+dma'.
+ No need to remake target `Makefile-csim.emax6+dma'.
+Updating goal targets....
+Considering target file `all'.
+ File `all' does not exist.
+ Looking for an implicit rule for `all'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.o'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.c'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.cc'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.C'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.cpp'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.p'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.f'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.F'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.m'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.r'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.s'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.S'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.mod'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.sh'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all,v'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `RCS/all,v'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `RCS/all'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `s.all'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `SCCS/s.all'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.o'.
+ Looking for a rule with intermediate file `all.o'.
+  Avoiding implicit rule recursion.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.c'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.cc'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.C'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.cpp'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.p'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.f'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.F'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.m'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.r'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.s'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.S'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.mod'.
+  Trying pattern rule with stem `all.o'.
+  Trying implicit prerequisite `all.o,v'.
+  Trying pattern rule with stem `all.o'.
+  Trying implicit prerequisite `RCS/all.o,v'.
+  Trying pattern rule with stem `all.o'.
+  Trying implicit prerequisite `RCS/all.o'.
+  Trying pattern rule with stem `all.o'.
+  Trying implicit prerequisite `s.all.o'.
+  Trying pattern rule with stem `all.o'.
+  Trying implicit prerequisite `SCCS/s.all.o'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.c'.
+  Looking for a rule with intermediate file `all.c'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.y'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.l'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.w'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.w'.
+   Trying pattern rule with stem `all.c'.
+   Trying implicit prerequisite `all.c,v'.
+   Trying pattern rule with stem `all.c'.
+   Trying implicit prerequisite `RCS/all.c,v'.
+   Trying pattern rule with stem `all.c'.
+   Trying implicit prerequisite `RCS/all.c'.
+   Trying pattern rule with stem `all.c'.
+   Trying implicit prerequisite `s.all.c'.
+   Trying pattern rule with stem `all.c'.
+   Trying implicit prerequisite `SCCS/s.all.c'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.y'.
+   Looking for a rule with intermediate file `all.y'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.y'.
+    Trying implicit prerequisite `all.y,v'.
+    Trying pattern rule with stem `all.y'.
+    Trying implicit prerequisite `RCS/all.y,v'.
+    Trying pattern rule with stem `all.y'.
+    Trying implicit prerequisite `RCS/all.y'.
+    Trying pattern rule with stem `all.y'.
+    Trying implicit prerequisite `s.all.y'.
+    Trying pattern rule with stem `all.y'.
+    Trying implicit prerequisite `SCCS/s.all.y'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.l'.
+   Looking for a rule with intermediate file `all.l'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.l'.
+    Trying implicit prerequisite `all.l,v'.
+    Trying pattern rule with stem `all.l'.
+    Trying implicit prerequisite `RCS/all.l,v'.
+    Trying pattern rule with stem `all.l'.
+    Trying implicit prerequisite `RCS/all.l'.
+    Trying pattern rule with stem `all.l'.
+    Trying implicit prerequisite `s.all.l'.
+    Trying pattern rule with stem `all.l'.
+    Trying implicit prerequisite `SCCS/s.all.l'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.w'.
+   Looking for a rule with intermediate file `all.w'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.w'.
+    Trying implicit prerequisite `all.w,v'.
+    Trying pattern rule with stem `all.w'.
+    Trying implicit prerequisite `RCS/all.w,v'.
+    Trying pattern rule with stem `all.w'.
+    Trying implicit prerequisite `RCS/all.w'.
+    Trying pattern rule with stem `all.w'.
+    Trying implicit prerequisite `s.all.w'.
+    Trying pattern rule with stem `all.w'.
+    Trying implicit prerequisite `SCCS/s.all.w'.
+   Trying pattern rule with stem `all'.
+   Rejecting impossible implicit prerequisite `all.w'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.cc'.
+  Looking for a rule with intermediate file `all.cc'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all.cc'.
+   Trying implicit prerequisite `all.cc,v'.
+   Trying pattern rule with stem `all.cc'.
+   Trying implicit prerequisite `RCS/all.cc,v'.
+   Trying pattern rule with stem `all.cc'.
+   Trying implicit prerequisite `RCS/all.cc'.
+   Trying pattern rule with stem `all.cc'.
+   Trying implicit prerequisite `s.all.cc'.
+   Trying pattern rule with stem `all.cc'.
+   Trying implicit prerequisite `SCCS/s.all.cc'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.C'.
+  Looking for a rule with intermediate file `all.C'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all.C'.
+   Trying implicit prerequisite `all.C,v'.
+   Trying pattern rule with stem `all.C'.
+   Trying implicit prerequisite `RCS/all.C,v'.
+   Trying pattern rule with stem `all.C'.
+   Trying implicit prerequisite `RCS/all.C'.
+   Trying pattern rule with stem `all.C'.
+   Trying implicit prerequisite `s.all.C'.
+   Trying pattern rule with stem `all.C'.
+   Trying implicit prerequisite `SCCS/s.all.C'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.cpp'.
+  Looking for a rule with intermediate file `all.cpp'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all.cpp'.
+   Trying implicit prerequisite `all.cpp,v'.
+   Trying pattern rule with stem `all.cpp'.
+   Trying implicit prerequisite `RCS/all.cpp,v'.
+   Trying pattern rule with stem `all.cpp'.
+   Trying implicit prerequisite `RCS/all.cpp'.
+   Trying pattern rule with stem `all.cpp'.
+   Trying implicit prerequisite `s.all.cpp'.
+   Trying pattern rule with stem `all.cpp'.
+   Trying implicit prerequisite `SCCS/s.all.cpp'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.p'.
+  Looking for a rule with intermediate file `all.p'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.web'.
+   Trying pattern rule with stem `all.p'.
+   Trying implicit prerequisite `all.p,v'.
+   Trying pattern rule with stem `all.p'.
+   Trying implicit prerequisite `RCS/all.p,v'.
+   Trying pattern rule with stem `all.p'.
+   Trying implicit prerequisite `RCS/all.p'.
+   Trying pattern rule with stem `all.p'.
+   Trying implicit prerequisite `s.all.p'.
+   Trying pattern rule with stem `all.p'.
+   Trying implicit prerequisite `SCCS/s.all.p'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.web'.
+   Looking for a rule with intermediate file `all.web'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.web'.
+    Trying implicit prerequisite `all.web,v'.
+    Trying pattern rule with stem `all.web'.
+    Trying implicit prerequisite `RCS/all.web,v'.
+    Trying pattern rule with stem `all.web'.
+    Trying implicit prerequisite `RCS/all.web'.
+    Trying pattern rule with stem `all.web'.
+    Trying implicit prerequisite `s.all.web'.
+    Trying pattern rule with stem `all.web'.
+    Trying implicit prerequisite `SCCS/s.all.web'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.f'.
+  Looking for a rule with intermediate file `all.f'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.F'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.r'.
+   Trying pattern rule with stem `all.f'.
+   Trying implicit prerequisite `all.f,v'.
+   Trying pattern rule with stem `all.f'.
+   Trying implicit prerequisite `RCS/all.f,v'.
+   Trying pattern rule with stem `all.f'.
+   Trying implicit prerequisite `RCS/all.f'.
+   Trying pattern rule with stem `all.f'.
+   Trying implicit prerequisite `s.all.f'.
+   Trying pattern rule with stem `all.f'.
+   Trying implicit prerequisite `SCCS/s.all.f'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.F'.
+   Looking for a rule with intermediate file `all.F'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.F'.
+    Trying implicit prerequisite `all.F,v'.
+    Trying pattern rule with stem `all.F'.
+    Trying implicit prerequisite `RCS/all.F,v'.
+    Trying pattern rule with stem `all.F'.
+    Trying implicit prerequisite `RCS/all.F'.
+    Trying pattern rule with stem `all.F'.
+    Trying implicit prerequisite `s.all.F'.
+    Trying pattern rule with stem `all.F'.
+    Trying implicit prerequisite `SCCS/s.all.F'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.r'.
+   Looking for a rule with intermediate file `all.r'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all'.
+    Rejecting impossible implicit prerequisite `all.l'.
+    Trying pattern rule with stem `all.r'.
+    Trying implicit prerequisite `all.r,v'.
+    Trying pattern rule with stem `all.r'.
+    Trying implicit prerequisite `RCS/all.r,v'.
+    Trying pattern rule with stem `all.r'.
+    Trying implicit prerequisite `RCS/all.r'.
+    Trying pattern rule with stem `all.r'.
+    Trying implicit prerequisite `s.all.r'.
+    Trying pattern rule with stem `all.r'.
+    Trying implicit prerequisite `SCCS/s.all.r'.
+  Trying pattern rule with stem `all'.
+  Rejecting impossible implicit prerequisite `all.F'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.m'.
+  Looking for a rule with intermediate file `all.m'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.ym'.
+   Trying pattern rule with stem `all.m'.
+   Trying implicit prerequisite `all.m,v'.
+   Trying pattern rule with stem `all.m'.
+   Trying implicit prerequisite `RCS/all.m,v'.
+   Trying pattern rule with stem `all.m'.
+   Trying implicit prerequisite `RCS/all.m'.
+   Trying pattern rule with stem `all.m'.
+   Trying implicit prerequisite `s.all.m'.
+   Trying pattern rule with stem `all.m'.
+   Trying implicit prerequisite `SCCS/s.all.m'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.ym'.
+   Looking for a rule with intermediate file `all.ym'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.ym'.
+    Trying implicit prerequisite `all.ym,v'.
+    Trying pattern rule with stem `all.ym'.
+    Trying implicit prerequisite `RCS/all.ym,v'.
+    Trying pattern rule with stem `all.ym'.
+    Trying implicit prerequisite `RCS/all.ym'.
+    Trying pattern rule with stem `all.ym'.
+    Trying implicit prerequisite `s.all.ym'.
+    Trying pattern rule with stem `all.ym'.
+    Trying implicit prerequisite `SCCS/s.all.ym'.
+  Trying pattern rule with stem `all'.
+  Rejecting impossible implicit prerequisite `all.r'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.s'.
+  Looking for a rule with intermediate file `all.s'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.S'.
+   Trying pattern rule with stem `all.s'.
+   Trying implicit prerequisite `all.s,v'.
+   Trying pattern rule with stem `all.s'.
+   Trying implicit prerequisite `RCS/all.s,v'.
+   Trying pattern rule with stem `all.s'.
+   Trying implicit prerequisite `RCS/all.s'.
+   Trying pattern rule with stem `all.s'.
+   Trying implicit prerequisite `s.all.s'.
+   Trying pattern rule with stem `all.s'.
+   Trying implicit prerequisite `SCCS/s.all.s'.
+   Trying pattern rule with stem `all'.
+   Trying implicit prerequisite `all.S'.
+   Looking for a rule with intermediate file `all.S'.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `all.S'.
+    Trying implicit prerequisite `all.S,v'.
+    Trying pattern rule with stem `all.S'.
+    Trying implicit prerequisite `RCS/all.S,v'.
+    Trying pattern rule with stem `all.S'.
+    Trying implicit prerequisite `RCS/all.S'.
+    Trying pattern rule with stem `all.S'.
+    Trying implicit prerequisite `s.all.S'.
+    Trying pattern rule with stem `all.S'.
+    Trying implicit prerequisite `SCCS/s.all.S'.
+  Trying pattern rule with stem `all'.
+  Rejecting impossible implicit prerequisite `all.S'.
+  Trying pattern rule with stem `all'.
+  Trying implicit prerequisite `all.mod'.
+  Looking for a rule with intermediate file `all.mod'.
+   Avoiding implicit rule recursion.
+   Avoiding implicit rule recursion.
+   Trying pattern rule with stem `all.mod'.
+   Trying implicit prerequisite `all.mod,v'.
+   Trying pattern rule with stem `all.mod'.
+   Trying implicit prerequisite `RCS/all.mod,v'.
+   Trying pattern rule with stem `all.mod'.
+   Trying implicit prerequisite `RCS/all.mod'.
+   Trying pattern rule with stem `all.mod'.
+   Trying implicit prerequisite `s.all.mod'.
+   Trying pattern rule with stem `all.mod'.
+   Trying implicit prerequisite `SCCS/s.all.mod'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.c'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.cc'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.C'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.cpp'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.p'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.f'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.F'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.m'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.r'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.s'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.S'.
+ Trying pattern rule with stem `all'.
+ Rejecting impossible implicit prerequisite `all.mod'.
+ Trying pattern rule with stem `all'.
+ Trying implicit prerequisite `all.sh'.
+ Looking for a rule with intermediate file `all.sh'.
+  Avoiding implicit rule recursion.
+  Trying pattern rule with stem `all.sh'.
+  Trying implicit prerequisite `all.sh,v'.
+  Trying pattern rule with stem `all.sh'.
+  Trying implicit prerequisite `RCS/all.sh,v'.
+  Trying pattern rule with stem `all.sh'.
+  Trying implicit prerequisite `RCS/all.sh'.
+  Trying pattern rule with stem `all.sh'.
+  Trying implicit prerequisite `s.all.sh'.
+  Trying pattern rule with stem `all.sh'.
+  Trying implicit prerequisite `SCCS/s.all.sh'.
+ No implicit rule found for `all'.
+  Considering target file `test020-csim.emax6+dma'.
+    Considering target file `test020-emax6.o'.
+      Considering target file `test020-emax6.c'.
+        Considering target file `test020.c'.
+         Looking for an implicit rule for `test020.c'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.y'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.l'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.w'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.w'.
+         Trying pattern rule with stem `test020.c'.
+         Trying implicit prerequisite `test020.c,v'.
+         Trying pattern rule with stem `test020.c'.
+         Trying implicit prerequisite `RCS/test020.c,v'.
+         Trying pattern rule with stem `test020.c'.
+         Trying implicit prerequisite `RCS/test020.c'.
+         Trying pattern rule with stem `test020.c'.
+         Trying implicit prerequisite `s.test020.c'.
+         Trying pattern rule with stem `test020.c'.
+         Trying implicit prerequisite `SCCS/s.test020.c'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.y'.
+         Looking for a rule with intermediate file `test020.y'.
+          Avoiding implicit rule recursion.
+          Trying pattern rule with stem `test020.y'.
+          Trying implicit prerequisite `test020.y,v'.
+          Trying pattern rule with stem `test020.y'.
+          Trying implicit prerequisite `RCS/test020.y,v'.
+          Trying pattern rule with stem `test020.y'.
+          Trying implicit prerequisite `RCS/test020.y'.
+          Trying pattern rule with stem `test020.y'.
+          Trying implicit prerequisite `s.test020.y'.
+          Trying pattern rule with stem `test020.y'.
+          Trying implicit prerequisite `SCCS/s.test020.y'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.l'.
+         Looking for a rule with intermediate file `test020.l'.
+          Avoiding implicit rule recursion.
+          Trying pattern rule with stem `test020.l'.
+          Trying implicit prerequisite `test020.l,v'.
+          Trying pattern rule with stem `test020.l'.
+          Trying implicit prerequisite `RCS/test020.l,v'.
+          Trying pattern rule with stem `test020.l'.
+          Trying implicit prerequisite `RCS/test020.l'.
+          Trying pattern rule with stem `test020.l'.
+          Trying implicit prerequisite `s.test020.l'.
+          Trying pattern rule with stem `test020.l'.
+          Trying implicit prerequisite `SCCS/s.test020.l'.
+         Trying pattern rule with stem `test020'.
+         Trying implicit prerequisite `test020.w'.
+         Looking for a rule with intermediate file `test020.w'.
+          Avoiding implicit rule recursion.
+          Trying pattern rule with stem `test020.w'.
+          Trying implicit prerequisite `test020.w,v'.
+          Trying pattern rule with stem `test020.w'.
+          Trying implicit prerequisite `RCS/test020.w,v'.
+          Trying pattern rule with stem `test020.w'.
+          Trying implicit prerequisite `RCS/test020.w'.
+          Trying pattern rule with stem `test020.w'.
+          Trying implicit prerequisite `s.test020.w'.
+          Trying pattern rule with stem `test020.w'.
+          Trying implicit prerequisite `SCCS/s.test020.w'.
+         Trying pattern rule with stem `test020'.
+         Rejecting impossible implicit prerequisite `test020.w'.
+         No implicit rule found for `test020.c'.
+         Finished prerequisites of target file `test020.c'.
+        No need to remake target `test020.c'.
+       Finished prerequisites of target file `test020-emax6.c'.
+       Prerequisite `test020.c' is older than target `test020-emax6.c'.
+      No need to remake target `test020-emax6.c'.
+      Considering target file `../../src/conv-c2c/emax6.h'.
+       Looking for an implicit rule for `../../src/conv-c2c/emax6.h'.
+       Trying pattern rule with stem `emax6.h'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6.h,v'.
+       Trying pattern rule with stem `emax6.h'.
+       Trying implicit prerequisite `../../src/conv-c2c/RCS/emax6.h,v'.
+       Found an implicit rule for `../../src/conv-c2c/emax6.h'.
+        Considering target file `../../src/conv-c2c/RCS/emax6.h,v'.
+         Finished prerequisites of target file `../../src/conv-c2c/RCS/emax6.h,v'.
+        No need to remake target `../../src/conv-c2c/RCS/emax6.h,v'.
+       Finished prerequisites of target file `../../src/conv-c2c/emax6.h'.
+       Prerequisite `../../src/conv-c2c/RCS/emax6.h,v' is older than target `../../src/conv-c2c/emax6.h'.
+      No need to remake target `../../src/conv-c2c/emax6.h'.
+      Considering target file `../../src/conv-c2c/emax6lib.c'.
+       Looking for an implicit rule for `../../src/conv-c2c/emax6lib.c'.
+       Trying pattern rule with stem `emax6lib'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6lib.y'.
+       Trying pattern rule with stem `emax6lib'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6lib.l'.
+       Trying pattern rule with stem `emax6lib'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6lib.w'.
+       Trying pattern rule with stem `emax6lib'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6lib.w'.
+       Trying pattern rule with stem `emax6lib.c'.
+       Trying implicit prerequisite `../../src/conv-c2c/emax6lib.c,v'.
+       Trying pattern rule with stem `emax6lib.c'.
+       Trying implicit prerequisite `../../src/conv-c2c/RCS/emax6lib.c,v'.
+       Found an implicit rule for `../../src/conv-c2c/emax6lib.c'.
+        Considering target file `../../src/conv-c2c/RCS/emax6lib.c,v'.
+         Finished prerequisites of target file `../../src/conv-c2c/RCS/emax6lib.c,v'.
+        No need to remake target `../../src/conv-c2c/RCS/emax6lib.c,v'.
+       Finished prerequisites of target file `../../src/conv-c2c/emax6lib.c'.
+       Prerequisite `../../src/conv-c2c/RCS/emax6lib.c,v' is older than target `../../src/conv-c2c/emax6lib.c'.
+      No need to remake target `../../src/conv-c2c/emax6lib.c'.
+     Finished prerequisites of target file `test020-emax6.o'.
+     Prerequisite `test020-emax6.c' is older than target `test020-emax6.o'.
+     Prerequisite `../../src/conv-c2c/emax6.h' is older than target `test020-emax6.o'.
+     Prerequisite `../../src/conv-c2c/emax6lib.c' is older than target `test020-emax6.o'.
+    No need to remake target `test020-emax6.o'.
+   Finished prerequisites of target file `test020-csim.emax6+dma'.
+   Prerequisite `test020-emax6.o' is older than target `test020-csim.emax6+dma'.
+  No need to remake target `test020-csim.emax6+dma'.
+  Considering target file `test022-csim.emax6+dma'.
+   Looking for an implicit rule for `test022-csim.emax6+dma'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.o'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.c'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.cc'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.C'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.cpp'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.p'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.f'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.F'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.m'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.r'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.s'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.S'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.mod'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.sh'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma,v'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `RCS/test022-csim.emax6+dma,v'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `RCS/test022-csim.emax6+dma'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `s.test022-csim.emax6+dma'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.o'.
+   Looking for a rule with intermediate file `test022-csim.emax6+dma.o'.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.c'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.cc'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.C'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.cpp'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.p'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.f'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.F'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.m'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.r'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.s'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.S'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.mod'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.o'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.o,v'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.o'.
+    Trying implicit prerequisite `RCS/test022-csim.emax6+dma.o,v'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.o'.
+    Trying implicit prerequisite `RCS/test022-csim.emax6+dma.o'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.o'.
+    Trying implicit prerequisite `s.test022-csim.emax6+dma.o'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.o'.
+    Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.o'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.c'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.c'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.y'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.l'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.w'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.w'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.c'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.c,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.c'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.c,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.c'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.c'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.c'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.c'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.c'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.c'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.y'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.y'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.y'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.y,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.y'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.y,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.y'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.y'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.y'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.y'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.y'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.y'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.l'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.l'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.l'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.l,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.l'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.l,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.l'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.l'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.l'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.l'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.l'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.l'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.w'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.w'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.w'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.w,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.w'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.w,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.w'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.w'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.w'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.w'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.w'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.w'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.w'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.cc'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.cc'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cc'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.cc,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cc'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.cc,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cc'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.cc'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cc'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.cc'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cc'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.cc'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.C'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.C'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma.C'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.C,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.C'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.C,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.C'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.C'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.C'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.C'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.C'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.C'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.cpp'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.cpp'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cpp'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.cpp,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cpp'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.cpp,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cpp'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.cpp'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cpp'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.cpp'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.cpp'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.cpp'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.p'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.p'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.web'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.p'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.p,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.p'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.p,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.p'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.p'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.p'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.p'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.p'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.p'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.web'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.web'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.web'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.web,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.web'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.web,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.web'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.web'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.web'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.web'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.web'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.web'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.f'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.f'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.F'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.r'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.f'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.f,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.f'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.f,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.f'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.f'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.f'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.f'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.f'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.f'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.F'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.F'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.F'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.F,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.F'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.F,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.F'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.F'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.F'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.F'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.F'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.F'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.r'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.r'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma'.
+      Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.l'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.r'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.r,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.r'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.r,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.r'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.r'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.r'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.r'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.r'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.r'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.F'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.m'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.m'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.ym'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.m'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.m,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.m'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.m,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.m'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.m'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.m'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.m'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.m'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.m'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.ym'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.ym'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.ym'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.ym,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.ym'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.ym,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.ym'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.ym'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.ym'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.ym'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.ym'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.ym'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.r'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.s'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.s'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.S'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.s'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.s,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.s'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.s,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.s'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.s'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.s'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.s'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.s'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.s'.
+     Trying pattern rule with stem `test022-csim.emax6+dma'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.S'.
+     Looking for a rule with intermediate file `test022-csim.emax6+dma.S'.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Avoiding implicit rule recursion.
+      Trying pattern rule with stem `test022-csim.emax6+dma.S'.
+      Trying implicit prerequisite `test022-csim.emax6+dma.S,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.S'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.S,v'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.S'.
+      Trying implicit prerequisite `RCS/test022-csim.emax6+dma.S'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.S'.
+      Trying implicit prerequisite `s.test022-csim.emax6+dma.S'.
+      Trying pattern rule with stem `test022-csim.emax6+dma.S'.
+      Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.S'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.S'.
+    Trying pattern rule with stem `test022-csim.emax6+dma'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.mod'.
+    Looking for a rule with intermediate file `test022-csim.emax6+dma.mod'.
+     Avoiding implicit rule recursion.
+     Avoiding implicit rule recursion.
+     Trying pattern rule with stem `test022-csim.emax6+dma.mod'.
+     Trying implicit prerequisite `test022-csim.emax6+dma.mod,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.mod'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.mod,v'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.mod'.
+     Trying implicit prerequisite `RCS/test022-csim.emax6+dma.mod'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.mod'.
+     Trying implicit prerequisite `s.test022-csim.emax6+dma.mod'.
+     Trying pattern rule with stem `test022-csim.emax6+dma.mod'.
+     Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.mod'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.c'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.cc'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.C'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.cpp'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.p'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.f'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.F'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.m'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.r'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.s'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.S'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Rejecting impossible implicit prerequisite `test022-csim.emax6+dma.mod'.
+   Trying pattern rule with stem `test022-csim.emax6+dma'.
+   Trying implicit prerequisite `test022-csim.emax6+dma.sh'.
+   Looking for a rule with intermediate file `test022-csim.emax6+dma.sh'.
+    Avoiding implicit rule recursion.
+    Trying pattern rule with stem `test022-csim.emax6+dma.sh'.
+    Trying implicit prerequisite `test022-csim.emax6+dma.sh,v'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.sh'.
+    Trying implicit prerequisite `RCS/test022-csim.emax6+dma.sh,v'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.sh'.
+    Trying implicit prerequisite `RCS/test022-csim.emax6+dma.sh'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.sh'.
+    Trying implicit prerequisite `s.test022-csim.emax6+dma.sh'.
+    Trying pattern rule with stem `test022-csim.emax6+dma.sh'.
+    Trying implicit prerequisite `SCCS/s.test022-csim.emax6+dma.sh'.
+   No implicit rule found for `test022-csim.emax6+dma'.
+   Finished prerequisites of target file `test022-csim.emax6+dma'.
+  No need to remake target `test022-csim.emax6+dma'.
+ Finished prerequisites of target file `all'.
+Must remake target `all'.
+Successfully remade target file `all'.
+make: Nothing to be done for `all'.
