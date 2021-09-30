@@ -125,7 +125,7 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
     int* count = (int*) calloc(col_size,sizeof(int));
     int* count_tmp = (int*) calloc((col_size+1),sizeof(int));
     int* count_sort_index_inverse = (int*) calloc(row_size,sizeof(int));
-    Ull* count_sort_index= (Ull*) calloc(row_size,sizeof(Ull));
+    Uint* count_sort_index= (Uint*) calloc(row_size,sizeof(Uint));
     int* row_count = (int*) calloc((row_size+1),sizeof(int));
     int* col_count = (int*) calloc((col_size+1),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
@@ -145,7 +145,8 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
         // count_sort_indexと count_sort_index_inverseは逆の関係
         //count_sort_indexは並べ替えた後、該当のrow(index)に入るべき、並べ替え後のrow(index)を表していていて、count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
         //{[0] = 7, [1] = 9, [2] = 3, [3] = 4, [4] = 6, [5] = 8, [6] = 0, [7] = 1, [8] = 2, [9] = 5}
-        count_sort_index[(row_size-1)-count_tmp1] =  row*2;  //降下sortされた場所に入る //simdの×2
+        // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
+        count_sort_index[(row_size-1)-count_tmp1] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
 
         //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
         // row_size-1は0から始めるために引く1している。            
@@ -193,10 +194,11 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
         //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
         //indexを1からスタートする。0は下段にindexを伝播するためだけに使う
-        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  //1からはじめるために1+
-        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)*2(simd)
-        *((Uint*)&val_index_set[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val_tmp[row_index[k]+col_index[k]*row_size];
-        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k]*2;
+        //Aが次のUnitに伝搬するのを表現するためにどの列かを特定+1
+        //*((Uint*)&val_index_set[どの行かを特定+(どの列かを特定+1)]) = Aの値  
+        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)*2(simd)*4(実際のIMAXコードはUllのアドレス演算なので4byteかける)
+        *((Uint*)&val_index_set[(count_sort_index_inverse_tmp)+(1+row_count[1+row_index[k]])*row_size]) = val_tmp[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k]*2*4;
         // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
          //rowを左詰めしているので、colの位置が値ごとに必要
         col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];

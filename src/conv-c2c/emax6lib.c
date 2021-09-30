@@ -1632,7 +1632,7 @@ eag1(Ull *adr, Ull base, Ull offset1,Ull offset2, Uchar msk)
     break;
   case  MSK_W0:
     offset1 = offset1&0x00000000ffffffffLL;
-    offset1 = offset2&0x00000000ffffffffLL;
+    offset2 = offset2&0x00000000ffffffffLL;
     break;
   case  MSK_H3:
     offset1 = offset1>>48&0x000000000000ffffLL;
@@ -1815,7 +1815,7 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
   if (!adr || !top) return; /* NULL skip DMA */
   
 #define CHECK_MMP_MARGINE 12
-  if (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGINE) {
+  if (adr < top || adr >= top+len*sizeof(Uint)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
   }

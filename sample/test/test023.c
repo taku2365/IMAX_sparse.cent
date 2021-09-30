@@ -165,22 +165,22 @@ Uint Z[CSIMBM];
 
 main()
 { //pointerでないので普通に足される。
-  sysinit((Uint)(2*(M1*L+1)*sizeof(Uint)
+  sysinit((Uint)(2*((M1+1)*L)*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
-                +M1*L*sizeof(Uint)
+                +2*((M1+1)*L)*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
                 ),32);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Ull*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*(M1*L+1)*sizeof(Uint));
+  B  = (Uint*)((Uchar*)A  + 2*((M1+1)*L)*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
 
   A_debug = (Uint*)((Uchar*)C1 + M1*M2*sizeof(Uint));
-  B_debug  = (Uint*)((Uchar*)A_debug  + M1*L*sizeof(Uint));
+  B_debug  = (Uint*)((Uchar*)A_debug  +2*((M1+1)*L)*sizeof(Uint));
   C_debug = (Uint*)((Uchar*)B_debug  + L*M2*sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
   params->RMGRP_param = RMGRP;
@@ -326,31 +326,50 @@ main()
   }
 
   printf("count_normal %d count_sparse %d  normal/sparse = %d\n",count0,count1,count0/count1);
-  exit(1);
 
 
   // get_nanosec(0);
   // show_nanosec();
 
   // reset_nanosec();
+
+  for (row=0; row<M1; row++) {
+    for (col=0; col<L; col++)
+      *(Ull*)&A_debug[row*L+col] = 0.0;
+  }
+  for (row=0; row<L; row++) {
+    for (col=0; col<M2; col++)
+      *(float*)&B_debug[row*M2+col] = 0.0;
+  }
+
+  for (row=0; row<M1; row++) {
+    for (col=0; col<M2; col++)
+      *(float*)&C_debug[row*M1+col] = 0.0;
+      *(float*)&C1[row*M1+col] = 0.0;
+  }
+  memset(C1, 0,sizeof(Uint)*M1*M2 );
   imax_debug(A_sparse, B, C1);
 //   free(col_index_B);
-  free(A_sparse);
+  // free(A_sparse);
+  // free(B);
 //   free(row_index_B);
   // get_nanosec(0);
   // show_nanosec();
 
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row+col*M1]) {
-        count2++;
-        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row+col*M1]);
+    for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
+      for (row=0,row1=0; row1<L; row+=2,row1+=1) {
+        if ((C0[col1+row1*L] != C1[col*2*M2+row])||(C0[(col1+1)+row1*L] != C1[col*2*M2+row+1])) {
+          count2++;
+          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1, (double)*(float*)&C0[col1+row1*L],
+                                                  row, col*2, (double)*(float*)&C1[col*2*M2+row]);
+          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1+1, (double)*(float*)&C0[(col1+1)+row1*L],
+                                                  row+1, col*2, (double)*(float*)&C1[col*2*M2+row+1]);  
+          exit(1);       
       }
     }
   }
   
-
+exit(1);
 
 
 
@@ -615,7 +634,7 @@ imax() {
 #else
 
 
-void imax_debug(emax6_sparse1* A_sparse, Uint* B, Uint* C) {
+void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C1) {
   Ull  CHIP;
   Ull  LOOP1, LOOP0;
   Ull  INIT1, INIT0;
@@ -627,8 +646,8 @@ void imax_debug(emax6_sparse1* A_sparse, Uint* B, Uint* C) {
   Ull  cofs, rofs, oofs, k;
   Uint blk_iter,A_margin_tmp;
   Ull* A_margin = A_sparse->margin;
-  Ull* A_val_index_set = A_sparse->val_index_set;
-  Ull* A_sort_index= A_sparse->sort_index;
+  Ull* val_index_set = A_sparse->val_index_set;
+  Uint* A_sort_index= A_sparse->sort_index;
   Ull A_row_size = M1;
   Ull A_col_size = L;
   Ull B_row_size = L;
@@ -649,10 +668,9 @@ void imax_debug(emax6_sparse1* A_sparse, Uint* B, Uint* C) {
     for (blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { /* 3重ループ展開の外側対象 */
       if((A_margin_tmp=A_margin[blk_iter])==0) break;
       typedef struct {Uint i[8]} Ui8;
-      Uint *a0[NCHIP],*a0_debug[NCHIP];
       Uint *a[H+1],*a_debug[H+1];
-      Ui8  *b[NCHIP], *b0[H][NCHIP], *b1[H][NCHIP], *b2[H][NCHIP], *b3[H][NCHIP];
-      Ui8  *b_debug[NCHIP], *b0_debug[H][NCHIP], *b1_debug[H][NCHIP], *b2_debug[H][NCHIP], *b3_debug[H][NCHIP];
+      Ui8  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
+      Ui8  *b_debug[NCHIP], *b0_debug[NCHIP], *b1_debug[NCHIP], *b2_debug[NCHIP], *b3_debug[NCHIP];
       Ui8  *c0[NCHIP],*c0_debug[NCHIP];
       Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
       Ui8  *c00_debug[NCHIP], *c01_debug[NCHIP], *c02_debug[NCHIP], *c03_debug[NCHIP];
@@ -660,154 +678,169 @@ void imax_debug(emax6_sparse1* A_sparse, Uint* B, Uint* C) {
       
         b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
         b_debug[CHIP] = B_debug+(CHIP*B_col_size/NCHIP+top)*B_row_size;
-        for (k=0; k<H+1; k++){
-        b0[k][CHIP] = b[CHIP]+0; b1[k][CHIP] = (Uint*)b[k]+B_row_size*2; b2[k][CHIP] = (Uint*)b[k]+B_row_size*4;  b3[k][CHIP] = (Uint*)b[k]+B_row_size*6; 
-        b0_debug[k][CHIP] = b_debug[CHIP]+0; b1_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*2; b2_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*4;  b3_debug[k][CHIP] = (Uint*)b_debug[k]+B_row_size*6; 
-        }
+        b0[CHIP] = b[CHIP]+0; b1[CHIP] = (Uint*)b[CHIP]+B_row_size*2; b2[CHIP] = (Uint*)b[CHIP]+B_row_size*4;  b3[CHIP] = (Uint*)b[CHIP]+B_row_size*6; 
+        b0_debug[CHIP] = b_debug[CHIP]+0; b1_debug[CHIP] = (Uint*)b_debug[CHIP]+B_row_size*2; b2_debug[CHIP] = (Uint*)b_debug[CHIP]+B_row_size*4;  b3_debug[CHIP] = (Uint*)b_debug[CHIP]+B_row_size*6; 
+
 
         c0[CHIP] = C1+(CHIP*A_col_size/NCHIP+top)*B_row_size;
         c0_debug[CHIP] = C1+(CHIP*A_col_size/NCHIP+top)*B_row_size;
-        c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
-        c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+        c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP] = (Uint*)c0[CHIP]+A_row_size*2; c02[CHIP] = (Uint*)c0[CHIP]+A_row_size*4; c03[CHIP] = (Uint*)c0[CHIP]+A_row_size*6;
+        c00_debug[CHIP] = (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP] = (Uint*)c0_debug[CHIP]+A_row_size*2; c02_debug[CHIP] = (Uint*)c0_debug[CHIP]+A_row_size*4; c03_debug[CHIP] = (Uint*)c0_debug[CHIP]+A_row_size*6;
     
       }
-
-      for (k=0; k<H+1; k++) a[k] = A+(blk+k)*A_row_size;
-      for (k=0; k<H+1; k++) a_debug[k]= A_debug+(blk+k)*A_row_size;
-
-
-#define sgemm00_core1(r, rm1,rm2,rp1) \
-	    mo2(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL,  RMGRP*B_row_size*1);\
-	    mo2(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL,  RMGRP*B_row_size*2);\
-	    mo2(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL,  RMGRP*B_row_size*3);\
-	    mo2(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL,  RMGRP*B_row_size*4);\
-	    mo2(OP_LDR,  3, &BR[r][2][1],  (Ull)a[rm2][CHIP],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a0[rm2], A_row_size, 0, 0, (Ull)NULL, A_row_size);\
-      mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
-	    mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
-	    mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
-	    mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
-	    mop2_debug(OP_LDR,  3, &BR[r][2][1],  (Ull)a_debug[rm2][CHIP], (Ull)rofs,(Ull)0, MSK_W1, (Ull)a0_debug[rm2], A_row_size, 0, 0, (Ull)NULL, A_row_size);\
+      // little edianで格納 big <- <- <- <- small 右から左に流れていく
+      //ex 64bit *((Ull*)&offset2)  11000000000000000000000000000000000   
+      //   32bit *((Uint*)&offset2) -> 0    *((Uint*)&offset2+1) -> 1
+      //   8bit  *((char*)&offset2+1) -> 0   *((char*)&offset2+2) -> 0 *((char*)&offset2+3) -> 0 *((char*)&offset2+4) -> 110
+      // Ullで扱うときは *((Ull*)&offset2)>>32は*((Uint*)&offset2+1)を取得しているのと等価
+      // https://hackaday.com/2020/08/04/dont-let-endianness-flip-you-around/
+      //https://www.bogotobogo.com/Embedded/Little_endian_big_endian_htons_htonl.php
+      //p *(float*)((Uint*)b[0]+6) 一つ目の値 3
+      //>>> p/f  *((Uint*)&BR[2][0][1])
+    // $17 = 3
+    // >>> p/f  *((Uint*)&BR[2][0][1]+1)
+    // $18 = 4
+    //UllのA_row_size*2
+    // rofs=(0-(Ull)1*8)<<32|((0-(Ull)1*4)&0xffffffff) マスクを使って2パターン使用している
+      for (k=0; k<H+1; k++) a[k] = (Uint*)val_index_set+(blk+k)*A_row_size*2;
+      for (k=0; k<H+1; k++) a_debug[k]= (Uint*)A_debug+(blk+k)*A_row_size*2;
+#define sgemm00_core1(r, rm1,rp1) \
+	    mo2(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDWR, 1, &BR[r][2][1],  (Ull)a[rm1],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[rm1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
+	    mo2(OP_LDR,  3, &BR[r][2][0],  (Ull)a[rm1],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[rm1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
+      mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][2][1],  (Ull)a_debug[rm1], (Ull)rofs,(Ull)0, MSK_W1, (Ull)a_debug[rm1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
       exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
 
-#define sgemm00_core2(r, rm1,rm2,rp1) \
-	    mo2(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL,  RMGRP*B_row_size*1);\
-	    mo2(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL,  RMGRP*B_row_size*2);\
-	    mo2(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL,  RMGRP*B_row_size*3);\
-	    mo2(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[rm1], (Ull)cofs,(Ull)BR[rm1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL,  RMGRP*B_row_size*4);\
-	    mo2(OP_LDR,  3, &BR[r][2][1],  (Ull)a[rm2][CHIP],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a0[rm2], A_row_size, 0, 0, (Ull)NULL, A_row_size);\
-	    mo2(OP_LDR,  3, &BR[r][2][0],  (Ull)A_sort_index[0],  (Ull)rofs,(Ull)0, MSK_W1,(Ull)A_sort_index[0],A_row_size, 0, 0, (Ull)NULL, A_row_size);\
-      mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][1], (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);\
-	    mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][1], (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);\
-	    mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][1], (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);\
-	    mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][1], (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);\
-	    mop2_debug(OP_LDR,  3, &BR[r][2][1],  (Ull)a_debug[rm2][CHIP],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a0_debug[rm2], A_row_size, 0, 0, (Ull)NULL, A_row_size);\
+#define sgemm00_core2(r, rm1,rp1) \
+	    mo2(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[CHIP], (Ull)cofs,(Ull)BR[rm1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mo2(OP_LDWR, 1, &BR[r][2][1],  (Ull)a[rm1],   (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[rm1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
+	    mo2(OP_LDWR, 1, &BR[r][2][0],  (Ull)A_sort_index,  (Ull)rofs,(Ull)0, MSK_W0,(Ull)A_sort_index,A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
+      mop2_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[CHIP], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][0], (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[CHIP], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][0], (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[CHIP], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][0], (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[CHIP], (Ull)cofs, MSK_W1,(Ull)BR[rm1][2][0], (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+	    mop2_debug(OP_LDR,  3, &BR[r][2][1],  (Ull)a_debug[rm1],  (Ull)rofs,(Ull)0, MSK_W1, (Ull)a_debug[rm1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);\
 	    exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
 
-#define sgemm00_final(r, rp1) \
-	    mo2(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00[CHIP], (Ull)cofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01[CHIP], (Ull)cofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02[CHIP], (Ull)cofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03[CHIP], (Ull)cofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-      mop2_debug(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00_debug[CHIP], (Ull)oofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01_debug[CHIP], (Ull)oofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02_debug[CHIP], (Ull)oofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03_debug[CHIP], (Ull)oofs,(Ull)BR[r][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+#define sgemm00_final(r,r1,rp1) \
+	    mo2(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+      mop2_debug(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00_debug[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01_debug[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02_debug[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03_debug[CHIP], (Ull)cofs,(Ull)BR[r1][2][0], MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
 	    exe(OP_FAD, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[rp1][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[rp1][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[rp1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[rp1][3][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
-	    mo2(OP_STR, 3, &AR[rp1][0], (Ull)c00[CHIP], (Ull)BR[r][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_STR, 3, &AR[rp1][1], (Ull)c01[CHIP], (Ull)BR[r][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_STR, 3, &AR[rp1][2], (Ull)c02[CHIP], (Ull)BR[r][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mo2(OP_STR, 3, &AR[rp1][3], (Ull)c03[CHIP], (Ull)BR[r][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-      mop2_debug(OP_STR, 3, &AR[rp1][0], (Ull)c00_debug[CHIP], (Ull)BR[r][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_STR, 3, &AR[rp1][1], (Ull)c01_debug[CHIP], (Ull)BR[r][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_STR, 3, &AR[rp1][2], (Ull)c02_debug[CHIP], (Ull)BR[r][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
-	    mop2_debug(OP_STR, 3, &AR[rp1][3], (Ull)c03_debug[CHIP], (Ull)BR[r][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP)
+	    mo2(OP_STR, 3, &AR[rp1][0], (Ull)c00[CHIP], (Ull)BR[r1][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_STR, 3, &AR[rp1][1], (Ull)c01[CHIP], (Ull)BR[r1][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_STR, 3, &AR[rp1][2], (Ull)c02[CHIP], (Ull)BR[r1][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mo2(OP_STR, 3, &AR[rp1][3], (Ull)c03[CHIP], (Ull)BR[r1][2][0], (Ull)cofs, MSK_W0, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+      mop2_debug(OP_STR, 3, &AR[rp1][0], (Ull)c00_debug[CHIP], (Ull)BR[r1][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_STR, 3, &AR[rp1][1], (Ull)c01_debug[CHIP], (Ull)BR[r1][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_STR, 3, &AR[rp1][2], (Ull)c02_debug[CHIP], (Ull)BR[r1][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop2_debug(OP_STR, 3, &AR[rp1][3], (Ull)c03_debug[CHIP], (Ull)BR[r1][2][0],  (Ull)cofs, MSK_W0, (Ull)c0_debug[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP)
 
 
 //EMAX5A begin mm mapdist=0
 /*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-  /*2*/ for (INIT1=1,LOOP1=A_margin_tmp,rofs=(0-(Ull)1*4)<<32|((0-M2*4)&0xffffffff); LOOP1--; INIT1=0) { /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
-    /*1*/ for (INIT0=1,LOOP0=RMGRP,cofs=(0-W*8*B_row_size)<<32|((0-W*8*B_row_size)&0xffffffff); LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
-            exe(OP_ADD,    &cofs, INIT0?cofs:cofs, EXP_H3210, (W*8*B_row_size)<<32|(W*8*B_row_size), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
-            exe(OP_ADD,    &rofs, rofs, EXP_H3210, INIT0?(1*4)<<32|(M2*4):0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
+  /*2*/ for (INIT1=1,LOOP1=A_margin_tmp,rofs=(0-(Ull)1*8)<<32|((0-(Ull)1*4)&0xffffffff); LOOP1--; INIT1=0) { /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
+    /*1*/ for (INIT0=1,LOOP0=RMGRP/(W*2),cofs=(0-W*4*2*B_row_size)<<32|((0-W*4*2*B_row_size)&0xffffffff); LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
+            exe(OP_ADD,    &cofs, INIT0?cofs:cofs, EXP_H3210, (W*4*2*B_row_size)<<32|(W*4*2*B_row_size), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
+            exe(OP_ADD,    &rofs, rofs, EXP_H3210, INIT0?((Ull)1*8)<<32|((Ull)1*4):0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
             // exe(OP_ADD,    &oofs, rofs, EXP_H3210, cofs, EXP_H3210, 0, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
 
-            mo2(OP_LDUWR,1, &BR[1][2][1],  (Ull)a[0], (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[0], A_row_size, 0, 0, (Ull)NULL, A_row_size);             /* stage#1 */
-            mop2_debug(OP_LDUWR,1, &BR[1][2][1],  (Ull)a0_debug[0],(Ull)rofs,(Ull)0, MSK_W1, (Ull)a_debug[0], A_row_size, 0, 0, (Ull)NULL, A_row_size);             /* stage#1 */
+            mo2(OP_LDR,3, &BR[1][2][0],  (Ull)a[0], (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[0], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);             /* stage#1 */
+            mop2_debug(OP_LDR,1, &BR[1][2][0],  (Ull)a_debug[0],(Ull)rofs,(Ull)0, MSK_W1, (Ull)a_debug[0], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);             /* stage#1 */
 
-            mo2(OP_LDR,  3, &BR[2][0][1],  (Ull)b0[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);             /* stage#2 */
-            mo2(OP_LDR,  3, &BR[2][0][0],  (Ull)b1[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);             /* stage#2 */
-            mo2(OP_LDR,  3, &BR[2][1][1],  (Ull)b2[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);             /* stage#2 */
-            mo2(OP_LDR,  3, &BR[2][1][0],  (Ull)b3[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);             /* stage#2 2KB */
-            mo2(OP_LDR,  3, &BR[2][2][1],  (Ull)a[1],        (Ull)rofs,(Ull)0,           MSK_W1, (Ull)a0[1],      A_row_size,         0, 0, (Ull)NULL, A_row_size); /* stage#2 16KB */
-            mop2_debug(OP_LDR,  3, &BR[2][0][1],  (Ull)b0_debug[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*1, 0, 0, (Ull)NULL, RMGRP*B_row_size*1);             /* stage#2 */
-            mop2_debug(OP_LDR,  3, &BR[2][0][0],  (Ull)b1_debug[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*2, 0, 0, (Ull)NULL, RMGRP*B_row_size*2);             /* stage#2 */
-            mop2_debug(OP_LDR,  3, &BR[2][1][1],  (Ull)b2_debug[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*3, 0, 0, (Ull)NULL, RMGRP*B_row_size*3);             /* stage#2 */
-            mop2_debug(OP_LDR,  3, &BR[2][1][0],  (Ull)b3_debug[0][CHIP], (Ull)cofs,(Ull)BR[1][2][1], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size*4, 0, 0, (Ull)NULL, RMGRP*B_row_size*4);             /* stage#2 2KB */
-            mop2_debug(OP_LDR,  3, &BR[2][2][1],  (Ull)a_debug[1], (Ull)rofs, (Ull)0, MSK_W1, (Ull)a0_debug[1], A_row_size, 0, 0, (Ull)NULL, A_row_size); /* stage#2 16KB */
+            mo2(OP_LDR,  3, &BR[2][0][1],  (Ull)b0[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mo2(OP_LDR,  3, &BR[2][0][0],  (Ull)b1[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mo2(OP_LDR,  3, &BR[2][1][1],  (Ull)b2[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mo2(OP_LDR,  3, &BR[2][1][0],  (Ull)b3[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 2KB */
+            mo2(OP_LDWR, 1, &BR[2][2][1],  (Ull)a[1],        (Ull)rofs,(Ull)0,           MSK_W1, (Ull)a[1],      A_row_size*2,         0, 0, (Ull)NULL, A_row_size*2); /* stage#2 16KB */
+            mo2(OP_LDR,  3, &BR[2][2][0],  (Ull)a[1],        (Ull)rofs,(Ull)0,           MSK_W1, (Ull)a[1],      A_row_size*2,         0, 0, (Ull)NULL, A_row_size*2); /* stage#2 16KB */
+            mop2_debug(OP_LDR,  3, &BR[2][0][1],  (Ull)b0_debug[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mop2_debug(OP_LDR,  3, &BR[2][0][0],  (Ull)b1_debug[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mop2_debug(OP_LDR,  3, &BR[2][1][1],  (Ull)b2_debug[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+            mop2_debug(OP_LDR,  3, &BR[2][1][0],  (Ull)b3_debug[CHIP], (Ull)cofs,(Ull)BR[1][2][0], MSK_W1, (Ull)b_debug[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 2KB */
+            mop2_debug(OP_LDWR, 3, &BR[2][2][1],  (Ull)a_debug[1], (Ull)rofs, (Ull)0, MSK_W1, (Ull)a_debug[1], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2); /* stage#2 16KB */
 
             exe(OP_FML, &AR[3][0], BR[2][0][1], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
             exe(OP_FML, &AR[3][1], BR[2][0][0], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
             exe(OP_FML, &AR[3][2], BR[2][1][1], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
             exe(OP_FML, &AR[3][3], BR[2][1][0], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
 
-	    sgemm00_core1(3,  1,  2,  4);
-	    sgemm00_core1(4,  2,  3,  5);
-	    sgemm00_core1(5,  3,  4,  6);
-	    sgemm00_core1(6,  4,  5,  7);
-	    sgemm00_core1(7,  5,  6,  8);                     
-	    sgemm00_core1(8,  6,  7,  9);
-	    sgemm00_core1(9,  7,  8,  10);
-	    sgemm00_core1(10, 8,  9,  11);
-	    sgemm00_core1(11, 9,  10, 12);
-	    sgemm00_core1(12, 10, 11, 13);
-	    sgemm00_core1(13, 11, 12, 14);
-	    sgemm00_core1(14, 12, 13, 15);
-	    sgemm00_core1(15, 13, 14, 16);
-	    sgemm00_core1(16, 14, 15, 17);
-	    sgemm00_core1(17, 15, 16, 18);
-	    sgemm00_core1(18, 16, 17, 19);
-	    sgemm00_core1(19, 17, 18, 20);
-	    sgemm00_core1(20, 18, 19, 21);
-	    sgemm00_core1(21, 19, 20, 22);
-	    sgemm00_core1(22, 20, 21, 23);
-	    sgemm00_core1(23, 21, 22, 24);
-	    sgemm00_core1(24, 22, 23, 25);
-	    sgemm00_core1(25, 23, 24, 26);
-	    sgemm00_core1(26, 24, 25, 27);                      //(Ull)A_sort_indexのUll対応  outputCもsimd
-	    sgemm00_core1(27, 25, 26, 28);
-	    sgemm00_core1(28, 26, 27, 29);
-	    sgemm00_core1(29, 27, 28, 30);
-	    sgemm00_core1(30, 28, 29, 31);
-	    sgemm00_core1(31, 29, 30, 32);
-	    sgemm00_core1(32, 30, 31, 33);
-	    sgemm00_core1(33, 31, 32, 34);
-	    sgemm00_core1(34, 32, 33, 35);
-	    sgemm00_core1(35, 33, 34, 36);
-	    sgemm00_core1(36, 34, 35, 37);
-	    sgemm00_core1(37, 35, 36, 38);
-	    sgemm00_core1(38, 36, 37, 39);
-	    sgemm00_core1(39, 37, 38, 40);
-	    sgemm00_core1(40, 38, 39, 41);
-	    sgemm00_core1(41, 39, 40, 42);
-	    sgemm00_core1(42, 40, 41, 43);
-	    sgemm00_core1(43, 41, 42, 44);
-	    sgemm00_core1(44, 42, 43, 45);
-	    sgemm00_core1(45, 43, 44, 46);
-	    sgemm00_core1(46, 44, 45, 47);
-	    sgemm00_core1(47, 45, 46, 48);
-	    sgemm00_core1(48, 46, 47, 49);
-	    sgemm00_core2(49, 47, 48, 50); /* H=48 */
+//C0[10][0]=55257.000000 C1[20][0]=54495.000000
+      
+	    sgemm00_core1(3,  2,  4);
+	    sgemm00_core1(4,  3,  5);
+	    sgemm00_core1(5,  4,  6);
+	    sgemm00_core1(6,  5,  7);
+	    sgemm00_core1(7,  6,  8);                     
+	    sgemm00_core1(8,  7,  9);
+	    sgemm00_core1(9,  8,  10);
+	    sgemm00_core1(10, 9,  11);
+	    sgemm00_core1(11, 10, 12);
+	    sgemm00_core1(12, 11, 13);
+	    sgemm00_core1(13, 12, 14);
+	    sgemm00_core1(14, 13, 15);
+	    sgemm00_core1(15, 14, 16);
+	    sgemm00_core1(16, 15, 17);
+	    sgemm00_core1(17, 16, 18);
+	    sgemm00_core1(18, 17, 19);
+	    sgemm00_core1(19, 18, 20);
+	    sgemm00_core1(20, 19, 21);
+	    sgemm00_core1(21, 20, 22);
+	    sgemm00_core1(22, 21, 23);
+	    sgemm00_core1(23, 22, 24);
+	    sgemm00_core1(24, 23, 25);
+	    sgemm00_core1(25, 24, 26);
+	    sgemm00_core1(26, 25, 27);                     
+	    sgemm00_core1(27, 26, 28);
+	    sgemm00_core1(28, 27, 29);
+	    sgemm00_core1(29, 28, 30);
+	    sgemm00_core1(30, 29, 31);
+	    sgemm00_core1(31, 30, 32);
+	    sgemm00_core1(32, 31, 33);
+	    sgemm00_core1(33, 32, 34);
+	    sgemm00_core1(34, 33, 35);
+	    sgemm00_core1(35, 34, 36);
+	    sgemm00_core1(36, 35, 37);
+	    sgemm00_core1(37, 36, 38);
+	    sgemm00_core1(38, 37, 39);
+	    sgemm00_core1(39, 38, 40);
+	    sgemm00_core1(40, 39, 41);
+	    sgemm00_core1(41, 40, 42);
+	    sgemm00_core1(42, 41, 43);
+	    sgemm00_core1(43, 42, 44);
+	    sgemm00_core1(44, 43, 45);
+	    sgemm00_core1(45, 44, 46);
+	    sgemm00_core1(46, 45, 47);
+	    sgemm00_core1(47, 46, 48);
+	    sgemm00_core1(48, 47, 49);
+	    sgemm00_core2(49, 48, 50); /* H=48 */
 	    /****final*****/
-	    sgemm00_final(51,     52);
+	    // mo2(OP_LDR,  3, &BR[49][2][0],  A_sort_index,  (Ull)rofs,(Ull)0, MSK_W1,A_sort_index,A_row_size, 0, 0, (Ull)NULL, A_row_size);
+	    sgemm00_final(50,49,51);
           }
         }
       }

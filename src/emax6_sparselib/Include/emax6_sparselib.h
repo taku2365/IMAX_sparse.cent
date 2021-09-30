@@ -38,7 +38,7 @@ typedef struct {
     int* col_p; //row pointer //row_p[n] = nnz
     int* col_index; //column index len(column_index)=row_normal_size*col_normal_size
     Ull* val_index_set; // 0:actual nonzero value 1:next index
-    Ull* sort_index; // index after sorting
+    Uint* sort_index; // index after sorting
     int* col_num;  // The number of calculations per H in row
     int* paddings; // pad operation  ex H=60 num=150 -> 150/60=2+1  120/60=2+0
     Ull* margin;   // A row per AcolH   0:omission of calculation else:Depth of A to be obtained 

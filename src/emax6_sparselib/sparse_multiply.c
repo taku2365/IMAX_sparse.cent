@@ -133,7 +133,7 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
     int* A_col_p = A_sparse->col_p;
     int* A_nnz_col_index = A_sparse->col_index;
     Ull* A_val_index_set = A_sparse->val_index_set;
-    Ull* A_sort_index= A_sparse->sort_index;
+    Uint* A_sort_index= A_sparse->sort_index;
     int* A_col_num= A_sparse->col_num;
     int* A_paddings = A_sparse->paddings;
     Ull* A_margin = A_sparse->margin;
@@ -162,8 +162,8 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
 /*3*/ for (CHIP=0; (CHIP<NCHIP)&&((A_margin[blk_iter]!=0)); CHIP++) { //marginが0の時は計算省略できる　marginはAの入れ替え時にみる
   /*2*/ for (rofs=0; rofs<A_margin[blk_iter]; rofs++) { //Aがどれだけrowを確保するか
     /*1*/ for (int cofs=0; cofs<RMGRP; cofs+=W) { // どれだけBをcolにすすめるか
-            for (int w=0; w<W; w+=2) {   /* horizontal (parallel) execution */
-              for (int h=0; h<H; h++) { /* vertical (pipelined) execution */
+            for (int h=0; h<H; h++) { /* vertical (pipelined) execution */
+                for (int w=0; w<W; w+=2) {    // Bcol +=2
                 count++;
                 // AもBもCも縦方向に格納している。
                 // A  32bit val : 32bit next unit Brow
@@ -172,19 +172,20 @@ int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const
                 //A_sort_index[rofs]で適切な位置に並べ替えているが、実際のIMAXでは後処理でする
                 //A_sort_indexを59段目でmopで読めるかもしれない。　その場合並べ替え不要
                 //*(float*)&C[(A_sort_index[rofs])*B_col_size(並べ替え後のCの行)+CHIP*B_col_size/NCHIP(CHIPごとの列)+top(RMGRPごとのグループ)+cofs(wごとにRMGRPが終わるまでcolに進む)+w(colに進む)]
-                //*(float*)&A_val_index_set[1(sparse formatの都合で+1している)+h*A_row_size(Aの列 Unitごとに入っている)+rofs(Aの行  AcolHごとにArowをどれだけ進めるか)+blk*A_row_size(Hごとのcol marginが0の時はおわり)]
-                //*(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)(前段のunitから伝搬するBrow(Acol) 前段から伝播するので1+がない)*2(formatのほうに移した幻のsimdの2)+1(simdの1)+(CHIP*B_col_size/NCHIP(CHIP分割)+top(RMGRPごとに縦分割)+cofs(Bcol Wごとに更新)+w(Bcol 横幅))*B_row_size(かたまり全体でBのcol)]
+                //*(float*)&A_val_index_set[h*A_row_size(Aの列 Unitごとに入っている)+rofs(Aの行  AcolHごとにArowをどれだけ進めるか)+(blk+1)(前段Unitからの伝搬を表現するために+1している)*A_row_size(Hごとのcol marginが0の時はおわり)]
+                //*(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+(blk*A_row_size]+1)(前段のunitから伝搬するBrow(Acol) 前段から伝播するので1+がない)*2(formatのほうに移した幻のsimdの2)/4(実際のIMAXに合わせるために×4してあるが模擬コードではいらないので割っている)+1(simdの1)+(CHIP*B_col_size/NCHIP(CHIP分割)+top(RMGRPごとに縦分割)+cofs(Bcol Wごとに更新)+w(Bcol 横幅))*B_row_size(かたまり全体でBのcol)]
                 //A_sort_indexにsimdの×2が含まれている。
                 // C = Aの行×Bの列
                 // Bsimdのためにw+=2
+                // IMAXの実際のコードに対応するために*4しているので、こちらでは/4する
                 //+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_sizeでsimdのために2をかけないのはw+=2ですでに実現しているから。
                 if (blk == 0 && h == 0){
-                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
-                  *(float*)&C[(A_sort_index[rofs])+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  = *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  = *(float*)&A_val_index_set[h*A_row_size+rofs+(blk+1)*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  = *(float*)&A_val_index_set[h*A_row_size+rofs+(blk+1)*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                 }
                 else{
-                  *(float*)&C[(A_sort_index[rofs])+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size] += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
-                  *(float*)&C[(A_sort_index[rofs])+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  += *(float*)&A_val_index_set[1+h*A_row_size+rofs+blk*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size] += *(float*)&A_val_index_set[h*A_row_size+rofs+(blk+1)*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
+                  *(float*)&C[(A_sort_index[rofs])/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  += *(float*)&A_val_index_set[h*A_row_size+rofs+(blk+1)*A_row_size]**(float*)&B[*((Uint*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]+1)/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                 }
                 /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
               }
