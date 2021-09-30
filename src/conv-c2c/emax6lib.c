@@ -1619,6 +1619,77 @@ eag(Ull *adr, Ull base, Ull offset, Uchar msk)
   *adr = base + offset;
 }
 
+
+void /*__attribute__((always_inline))*/
+eag1(Ull *adr, Ull base, Ull offset1,Ull offset2, Uchar msk)
+{
+  switch (msk) {
+  case  MSK_D0:
+    break;
+  case  MSK_W1:		
+    offset1 = offset1>>32;
+    offset2 = offset2>>32;
+    break;
+  case  MSK_W0:
+    offset1 = offset1&0x00000000ffffffffLL;
+    offset2 = offset2&0x00000000ffffffffLL;
+    break;
+  case  MSK_H3:
+    offset1 = offset1>>48&0x000000000000ffffLL;
+    offset2 = offset2>>48&0x000000000000ffffLL;
+    break;
+  case  MSK_H2:
+    offset1 = offset1>>32&0x000000000000ffffLL;
+    offset2 = offset2>>32&0x000000000000ffffLL;
+    break;
+  case  MSK_H1:
+    offset1 = offset1>>16&0x000000000000ffffLL;
+    offset2 = offset2>>16&0x000000000000ffffLL;
+    break;
+  case  MSK_H0:
+    offset1 = offset1&0x000000000000ffffLL;
+    offset2 = offset2&0x000000000000ffffLL;
+    break;
+  case  MSK_B7:
+    offset1 = offset1>>56&0x00000000000000ffLL;
+    offset2 = offset2>>56&0x00000000000000ffLL;
+    break;
+  case  MSK_B6:
+    offset1 = offset1>>48&0x00000000000000ffLL;
+    offset2 = offset2>>48&0x00000000000000ffLL;
+    break;
+  case  MSK_B5:
+    offset1 = offset1>>40&0x00000000000000ffLL;
+    offset2 = offset2>>40&0x00000000000000ffLL;
+    break;
+  case  MSK_B4:
+    offset1 = offset1>>32&0x00000000000000ffLL;
+    offset2 = offset2>>32&0x00000000000000ffLL;
+    break;
+  case  MSK_B3:
+    offset1 = offset1>>24&0x00000000000000ffLL;
+    offset2 = offset2>>24&0x00000000000000ffLL;
+    break;
+  case  MSK_B2:
+    offset1 = offset1>>16&0x00000000000000ffLL;
+    offset2 = offset2>>16&0x00000000000000ffLL;
+    break;
+  case  MSK_B1:
+    offset1 = offset1>>8&0x00000000000000ffLL;
+    offset2 = offset2>>8&0x00000000000000ffLL;
+    break;
+  case  MSK_B0:
+    offset1 = offset1&0x00000000000000ffLL;
+    offset2 = offset2&0x00000000000000ffLL;
+    break;
+  default:
+    printf("emax6lib: eag: undefined msk=%d\n", msk);
+    break;
+  }
+
+  *adr = base + offset1 + offset2;
+}
+
 void /*__attribute__((always_inline))*/
 mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
@@ -1668,6 +1739,57 @@ mop_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, 
 
 }
 
+
+void /*__attribute__((always_inline))*/
+mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr,*load64;
+  Uint *load32;
+  Uint tmp,tmp1;
+
+  eag1(&adr, base, offset1, offset2, msk);
+  
+  switch(op_mm){
+    case OP_LDR:
+      load64 = (Ull*)(adr&~7LL);
+      //Ullとしてlaod64を読む 二つのfloatをUintに直す
+      tmp = (Uint)(*load64>>32);
+      tmp1 = (Uint)(*load64);
+      
+      float load64_left = *(float*)&(tmp) ;
+      float load64_right = *(float*)&(tmp1) ;
+      load64_left += 1.0;
+      load64_right += 1.0;
+      *((Uint*)(adr&~7LL)+1) = *(Uint*)&load64_left;
+      *((Uint*)(adr&~7LL)  ) = *(Uint*)&load64_right;
+      break;
+
+
+    case OP_LDUWR:
+
+      load32 = (Uint*)(adr&~3LL);
+      float load32_1 = *(float*)&(*load32) ;
+      load32_1 += 1.0;
+      // いらん　*((Uint*)(adr&~3LL)+1) = *(Uint*)&load32;
+      *((Uint*)(adr&~3LL)  ) = *(Uint*)&load32_1;
+      break;
+
+
+
+  }
+
+}
+
+
+void /*__attribute__((always_inline))*/
+mo2(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1, Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr;
+
+  eag1(&adr, base, offset1,offset2, msk);
+  mmp(op_mm, ex, d, adr, top, len, blk);
+}
+
 void /*__attribute__((always_inline))*/
 mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
@@ -1693,7 +1815,7 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
   if (!adr || !top) return; /* NULL skip DMA */
   
 #define CHECK_MMP_MARGINE 12
-  if (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGINE) {
+  if (adr < top || adr >= top+len*sizeof(Uint)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
   }

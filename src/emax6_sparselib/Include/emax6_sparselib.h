@@ -37,11 +37,11 @@ typedef struct {
     int row_normal_size; //matrix row size
     int* col_p; //row pointer //row_p[n] = nnz
     int* col_index; //column index len(column_index)=row_normal_size*col_normal_size
-    Uint* val; // actual nonzero value
-    int* sort_index; // index after sorting
+    Ull* val_index_set; // 0:actual nonzero value 1:next index
+    Uint* sort_index; // index after sorting
     int* col_num;  // The number of calculations per H in row
     int* paddings; // pad operation  ex H=60 num=150 -> 150/60=2+1  120/60=2+0
-    int* margin;
+    Ull* margin;   // A row per AcolH   0:omission of calculation else:Depth of A to be obtained 
 } emax6_sparse1;
 
 
@@ -55,7 +55,7 @@ typedef struct {
 
 emax6_sparse* sparse_format(int nnz, const Uint* const val, int* col_index, int* row_index,int row_size,int col_size);
 emax6_sparse* sparse_format1(int nnz,const Uint* const val, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
-emax6_sparse1* sparse_format2(int nnz,const Uint* const val, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
+emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
 void sparse_multiply(const emax6_sparse* const  A_sparse, const Uint* const B, Uint* C_sparse, int B_col_size);
 int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);

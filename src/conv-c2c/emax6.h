@@ -25,13 +25,17 @@ void /*__attribute__((always_inline))*/ ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, 
 int  /*__attribute__((always_inline))*/ exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
 void /*__attribute__((always_inline))*/ mo4(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
 void /*__attribute__((always_inline))*/ mop(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
+void /*__attribute__((always_inline))*/ mo2(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1, Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen);
 /* internal use only */
 void /*__attribute__((always_inline))*/ eag(Ull*, Ull, Ull, Uchar);
+void /*__attribute__((always_inline))*/ eag1(Ull *adr, Ull base, Ull offset1,Ull offset2, Uchar msk);
 void /*__attribute__((always_inline))*/ mmp(Uint, Ull, Ull*, Ull, Ull, Uint, Uint);
 #endif
 
 #if DEBUG_MODE 
 void /*__attribute__((always_inline))*/ mop_debug(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
+void /*__attribute__((always_inline))*/ mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen);
+{
 #endif
 
 #ifndef EMAX6DEF

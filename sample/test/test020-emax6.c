@@ -835,7 +835,9 @@ void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*)
 int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
 void mo4(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
 void mop(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
+void mo2(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1, Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen);
 void eag(Ull*, Ull, Ull, Uchar);
+void eag1(Ull *adr, Ull base, Ull offset1,Ull offset2, Uchar msk);
 void mmp(Uint, Ull, Ull*, Ull, Ull, Uint, Uint);
 int current_prefix;
 int current_mapdist;
@@ -2140,6 +2142,74 @@ eag(Ull *adr, Ull base, Ull offset, Uchar msk)
   *adr = base + offset;
 }
 void
+eag1(Ull *adr, Ull base, Ull offset1,Ull offset2, Uchar msk)
+{
+  switch (msk) {
+  case 14:
+    break;
+  case 13:
+    offset1 = offset1>>32;
+    offset2 = offset2>>32;
+    break;
+  case 12:
+    offset1 = offset1&0x00000000ffffffffLL;
+    offset1 = offset2&0x00000000ffffffffLL;
+    break;
+  case 11:
+    offset1 = offset1>>48&0x000000000000ffffLL;
+    offset2 = offset2>>48&0x000000000000ffffLL;
+    break;
+  case 10:
+    offset1 = offset1>>32&0x000000000000ffffLL;
+    offset2 = offset2>>32&0x000000000000ffffLL;
+    break;
+  case 9:
+    offset1 = offset1>>16&0x000000000000ffffLL;
+    offset2 = offset2>>16&0x000000000000ffffLL;
+    break;
+  case 8:
+    offset1 = offset1&0x000000000000ffffLL;
+    offset2 = offset2&0x000000000000ffffLL;
+    break;
+  case 7:
+    offset1 = offset1>>56&0x00000000000000ffLL;
+    offset2 = offset2>>56&0x00000000000000ffLL;
+    break;
+  case 6:
+    offset1 = offset1>>48&0x00000000000000ffLL;
+    offset2 = offset2>>48&0x00000000000000ffLL;
+    break;
+  case 5:
+    offset1 = offset1>>40&0x00000000000000ffLL;
+    offset2 = offset2>>40&0x00000000000000ffLL;
+    break;
+  case 4:
+    offset1 = offset1>>32&0x00000000000000ffLL;
+    offset2 = offset2>>32&0x00000000000000ffLL;
+    break;
+  case 3:
+    offset1 = offset1>>24&0x00000000000000ffLL;
+    offset2 = offset2>>24&0x00000000000000ffLL;
+    break;
+  case 2:
+    offset1 = offset1>>16&0x00000000000000ffLL;
+    offset2 = offset2>>16&0x00000000000000ffLL;
+    break;
+  case 1:
+    offset1 = offset1>>8&0x00000000000000ffLL;
+    offset2 = offset2>>8&0x00000000000000ffLL;
+    break;
+  case 0:
+    offset1 = offset1&0x00000000000000ffLL;
+    offset2 = offset2&0x00000000000000ffLL;
+    break;
+  default:
+    printf("emax6lib: eag: undefined msk=%d\n", msk);
+    break;
+  }
+  *adr = base + offset1 + offset2;
+}
+void
 mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
   Ull adr;
@@ -2172,6 +2242,40 @@ mop_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, 
       *((Uint*)(adr&~3LL) ) = *(Uint*)&load32_1;
       break;
   }
+}
+void
+mop2_debug(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1,Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr,*load64;
+  Uint *load32;
+  Uint tmp,tmp1;
+  eag1(&adr, base, offset1, offset2, msk);
+  switch(op_mm){
+    case 0x01:
+      load64 = (Ull*)(adr&~7LL);
+      tmp = (Uint)(*load64>>32);
+      tmp1 = (Uint)(*load64);
+      float load64_left = *(float*)&(tmp) ;
+      float load64_right = *(float*)&(tmp1) ;
+      load64_left += 1.0;
+      load64_right += 1.0;
+      *((Uint*)(adr&~7LL)+1) = *(Uint*)&load64_left;
+      *((Uint*)(adr&~7LL) ) = *(Uint*)&load64_right;
+      break;
+    case 0x03:
+      load32 = (Uint*)(adr&~3LL);
+      float load32_1 = *(float*)&(*load32) ;
+      load32_1 += 1.0;
+      *((Uint*)(adr&~3LL) ) = *(Uint*)&load32_1;
+      break;
+  }
+}
+void
+mo2(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset1, Ull offset2, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr;
+  eag1(&adr, base, offset1,offset2, msk);
+  mmp(op_mm, ex, d, adr, top, len, blk);
 }
 void
 mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
