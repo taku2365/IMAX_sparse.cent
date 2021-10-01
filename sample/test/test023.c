@@ -348,7 +348,10 @@ main()
       *(float*)&C1[row*M1+col] = 0.0;
   }
   memset(C1, 0,sizeof(Uint)*M1*M2 );
+  start = clock();
   imax_debug(A_sparse, B, C1);
+  end = clock();
+  printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
 //   free(col_index_B);
   // free(A_sparse);
   // free(B);
@@ -767,7 +770,6 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
     /*1*/ for (INIT0=1,LOOP0=RMGRP/(W*2),cofs=(0-W*4*2*B_row_size)<<32|((0-W*4*2*B_row_size)&0xffffffff); LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
             exe(OP_ADD,    &cofs, INIT0?cofs:cofs, EXP_H3210, (W*4*2*B_row_size)<<32|(W*4*2*B_row_size), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
             exe(OP_ADD,    &rofs, rofs, EXP_H3210, INIT0?((Ull)1*8)<<32|((Ull)1*4):0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
-            // exe(OP_ADD,    &oofs, rofs, EXP_H3210, cofs, EXP_H3210, 0, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
 
             mo2(OP_LDR,3, &BR[1][2][0],  (Ull)a[0], (Ull)rofs,(Ull)0, MSK_W1, (Ull)a[0], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);             /* stage#1 */
             mop2_debug(OP_LDR,1, &BR[1][2][0],  (Ull)a_debug[0],(Ull)rofs,(Ull)0, MSK_W1, (Ull)a_debug[0], A_row_size*2, 0, 0, (Ull)NULL, A_row_size*2);             /* stage#1 */
