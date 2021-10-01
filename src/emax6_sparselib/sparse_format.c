@@ -126,7 +126,7 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
     int* count_tmp = (int*) calloc((col_size+1),sizeof(int));
     int* count_sort_index_inverse = (int*) calloc(row_size,sizeof(int));
     Uint* count_sort_index= (Uint*) calloc(row_size,sizeof(Uint));
-    int* row_count = (int*) calloc((row_size+1),sizeof(int));
+    int* row_count = (int*) calloc((row_size),sizeof(int));
     int* col_count = (int*) calloc((col_size+1),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
@@ -190,20 +190,19 @@ emax6_sparse1* sparse_format2(int nnz,Ull* val,const Uint* const val_tmp, int* c
         // row_countは最初すべて0 row_countがふえると格納する行が右にずれて格納先が次のLMMになる
         //count_sort_index_inverse[row_index[k]]でどの行かを特定
         //row_count[1+row_index[k]]*row_sizeでどの列かを特定
-        //CSRのpのようにrow_countを0から使うために1+row_index[k]にしている
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
         //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
         //indexを1からスタートする。0は下段にindexを伝播するためだけに使う
         //Aが次のUnitに伝搬するのを表現するためにどの列かを特定+1
         //*((Uint*)&val_index_set[どの行かを特定+(どの列かを特定+1)]) = Aの値  
         //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)*2(simd)*4(実際のIMAXコードはUllのアドレス演算なので4byteかける)
-        *((Uint*)&val_index_set[(count_sort_index_inverse_tmp)+(1+row_count[1+row_index[k]])*row_size]) = val_tmp[row_index[k]+col_index[k]*row_size];
-        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size]+1) = col_index[k]*2*4;
+        *((Uint*)&val_index_set[(count_sort_index_inverse_tmp)+(1+row_count[row_index[k]])*row_size]) = val_tmp[row_index[k]+col_index[k]*row_size];
+        *((Uint*)&val_index_set[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size]+1) = col_index[k]*2*4;
         // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
          //rowを左詰めしているので、colの位置が値ごとに必要
-        col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
+        col_index_sparse[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size] = col_index[k];
         row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
-        row_count[1+row_index[k]]++;
+        row_count[row_index[k]]++;
         col_count[1+col_index[k]]++;
 
     }
