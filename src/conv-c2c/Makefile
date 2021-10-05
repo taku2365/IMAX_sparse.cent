@@ -5,6 +5,7 @@
 ##                nakashim@is.naist.jp ##
 
 PROGRAM	      = conv-c2c
+IMAX_DEBUG    = 0
 ifeq ($(MACHTYPE),aarch64)
 CFLAGS        = -O2 -fsigned-char
 LDFLAGS       =
@@ -12,6 +13,11 @@ else
 CFLAGS        = -O2 -m32 -fsigned-char
 LDFLAGS       = -m32
 endif
+
+ifeq ($(IMAX_DEBUG),1)
+CFLAGS        = -g3 -O0 -m32 -fsigned-char
+endif
+
 LIBFLAGS      =
 
 OBJS	      =  \

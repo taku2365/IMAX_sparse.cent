@@ -2657,42 +2657,42 @@ mode_drain_dirty_lmm:
       if (regv[i][j].ea0b_v) {
 	if (id[regv[i][j].ea0b_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0b = %s[%d];\n", c, i, j, id[regv[i][j].ea0b_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0b = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea0b_h].name, c);
 	}
 	else if (regv[i][j].ea0b_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s;\n", i, j, id[regv[i][j].ea0b_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = (Ull)%s;\n", i, j, id[regv[i][j].ea0b_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s[%d];\n", i, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
       }
       if (regv[i][j].ea0o_v) {
 	if (id[regv[i][j].ea0o_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0o = %s[%d];\n", c, i, j, id[regv[i][j].ea0o_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0o = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea0o_h].name, c);
 	}
 	else if (regv[i][j].ea0o_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s;\n", i, j, id[regv[i][j].ea0o_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = (Ull)%s;\n", i, j, id[regv[i][j].ea0o_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s[%d];\n", i, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
       }
       if (regv[i][j].ea1b_v) {
 	if (id[regv[i][j].ea1b_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1b = %s[%d];\n", c, i, j, id[regv[i][j].ea1b_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1b = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea1b_h].name, c);
 	}
 	else if (regv[i][j].ea1b_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s;\n", i, j, id[regv[i][j].ea1b_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = (Ull)%s;\n", i, j, id[regv[i][j].ea1b_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s[%d];\n", i, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
       }
       if (regv[i][j].ea1o_v) {
 	if (id[regv[i][j].ea1o_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1o = %s[%d];\n", c, i, j, id[regv[i][j].ea1o_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1o = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea1o_h].name, c);
 	}
 	else if (regv[i][j].ea1o_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s;\n", i, j, id[regv[i][j].ea1o_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = (Ull)%s;\n", i, j, id[regv[i][j].ea1o_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s[%d];\n", i, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
       }
     }
   }

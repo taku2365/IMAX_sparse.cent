@@ -26,11 +26,17 @@
 ## Makefile-zynq.emax6  (ZYNQ+EMAX6HW  : -DARMZYNQ -DEMAX6) emax6_start->udev_write
 
 PROJTOP	      = ../../
+IMAX_DEBUG    = 0
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
 PROGRAM       =	 test020-csim.emax6+dma test022-csim.emax6+dma
 CPP           = ../../bin/aarch64-elf-cpp -P
 CC            = ../../bin/aarch64-elf-gcc
-CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)
+
+ifeq ($(IMAX_DEBUG),1)
+CFLAGS = -I. -O0 -g3 -Wno-attributes $(OPTION)	
+else 	
+CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
+endif
 AS            = ../../bin/aarch64-elf-as
 ASFLAGS       = 
 LD            = ../../bin/aarch64-elf-ld

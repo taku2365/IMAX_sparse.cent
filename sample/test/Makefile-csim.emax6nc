@@ -25,12 +25,23 @@
 ## Makefile-zynq.emax6nc(ZYNQ+EMAX6NC  : -DARMZYNQ -DEMAX6)
 ## Makefile-zynq.emax6  (ZYNQ+EMAX6HW  : -DARMZYNQ -DEMAX6) emax6_start->udev_write
 
+IMAX_DEBUG    = 0
 PROJTOP	      = ../../
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6
 PROGRAM       =	test000-csim.emax6nc test001-csim.emax6nc test002-csim.emax6nc test003-csim.emax6nc test004-csim.emax6nc test005-csim.emax6nc test006-csim.emax6nc test007-csim.emax6nc test008-csim.emax6nc test009-csim.emax6nc test011-csim.emax6nc test012-csim.emax6nc test013-csim.emax6nc test014-csim.emax6nc test015-csim.emax6nc test016-csim.emax6nc test017-csim.emax6nc test018-csim.emax6nc test019-csim.emax6nc test020-csim.emax6nc test021-csim.emax6nc
 CPP           = aarch64-elf-cpp
 CC            = aarch64-elf-gcc
 CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)
+if [{IMAX_DEBUG}=1]; then\
+  	echo "DEBUG_MODE";\
+	CFLAGS = -I. -O0 -g3 -Wno-attributes $(OPTION)\
+	
+else \
+	CFLAGS = -I. -O3 -Wno-attributes $(OPTION);\
+	
+ 
+  
+
 AS            = aarch64-elf-as
 ASFLAGS       = 
 LD            = aarch64-elf-ld

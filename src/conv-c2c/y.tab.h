@@ -68,20 +68,21 @@ extern int yydebug;
     CGRA_EX4 = 274,
     CGRA_EXE = 275,
     CGRA_MO4 = 276,
-    CGRA_MOP = 277,
-    CGRA_DECR = 278,
-    CGRA_INCR = 279,
-    TRAN_READ = 280,
-    TRAN_WRITE = 281,
-    IMMEDIATE = 282,
-    EXRNO = 283,
-    ALRNO = 284,
-    BDRNO = 285,
-    CHIP = 286,
-    INITNO = 287,
-    LOOPNO = 288,
-    VARIABLE = 289,
-    ASIS = 290
+    CGRA_MO2 = 277,
+    CGRA_MOP = 278,
+    CGRA_DECR = 279,
+    CGRA_INCR = 280,
+    TRAN_READ = 281,
+    TRAN_WRITE = 282,
+    IMMEDIATE = 283,
+    EXRNO = 284,
+    ALRNO = 285,
+    BDRNO = 286,
+    CHIP = 287,
+    INITNO = 288,
+    LOOPNO = 289,
+    VARIABLE = 290,
+    ASIS = 291
   };
 #endif
 /* Tokens.  */
@@ -104,20 +105,21 @@ extern int yydebug;
 #define CGRA_EX4 274
 #define CGRA_EXE 275
 #define CGRA_MO4 276
-#define CGRA_MOP 277
-#define CGRA_DECR 278
-#define CGRA_INCR 279
-#define TRAN_READ 280
-#define TRAN_WRITE 281
-#define IMMEDIATE 282
-#define EXRNO 283
-#define ALRNO 284
-#define BDRNO 285
-#define CHIP 286
-#define INITNO 287
-#define LOOPNO 288
-#define VARIABLE 289
-#define ASIS 290
+#define CGRA_MO2 277
+#define CGRA_MOP 278
+#define CGRA_DECR 279
+#define CGRA_INCR 280
+#define TRAN_READ 281
+#define TRAN_WRITE 282
+#define IMMEDIATE 283
+#define EXRNO 284
+#define ALRNO 285
+#define BDRNO 286
+#define CHIP 287
+#define INITNO 288
+#define LOOPNO 289
+#define VARIABLE 290
+#define ASIS 291
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

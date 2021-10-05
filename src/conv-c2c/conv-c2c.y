@@ -31,7 +31,7 @@ void yyerror(char *s)
 /* CGRA */
 %token  CGRA_ULL     CGRA_UINT     CGRA_SLL   CGRA_SRL
 %token  CGRA_WHILE   CGRA_FOR      CGRA_CEX
-%token	CGRA_EX4     CGRA_EXE      CGRA_MO4   CGRA_MOP
+%token	CGRA_EX4     CGRA_EXE      CGRA_MO4   CGRA_MO2	CGRA_MOP
 %token	CGRA_DECR    CGRA_INCR
 
 /* TRANSACTION */
@@ -220,14 +220,14 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].icex.op      = id[ $3].val;
 	  insn[last_insn].icex.bit0v   = id[$13].type;
 	  insn[last_insn].icex.bit0h   = $13;
-	  insn[last_insn].icex.bit1v   = id[ $11].type;
+	  insn[last_insn].icex.bit1v   = id[$11].type;
 	  insn[last_insn].icex.bit1h   = $11;
 	  insn[last_insn].icex.bit2v   = id[ $9].type;
 	  insn[last_insn].icex.bit2h   = $9;
 	  insn[last_insn].icex.bit3v   = id[ $7].type;
 	  insn[last_insn].icex.bit3h   = $7;
 	  insn[last_insn].icex.table   = id[$15].val;
-	  insn[last_insn].icex.cexdv   = id[$5].type;
+	  insn[last_insn].icex.cexdv   = id[ $5].type;
 	  insn[last_insn].icex.cexdh   = $5;
           last_insn++;
         }
@@ -239,8 +239,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
           }
 	  insn[last_insn].iheader.type = 4; /* EX4 */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val):id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(        -1):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val):id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(        -1):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$19].val;
 	  insn[last_insn].iexe.op3     = id[$23].val;
@@ -250,7 +250,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.src1h   = $7;
 	  insn[last_insn].iexe.src1s   = 4; /* all suffix */
 	  insn[last_insn].iexe.src1e   = id[ $9].val;
-	  insn[last_insn].iexe.src2v   = id[ $11].type;
+	  insn[last_insn].iexe.src2v   = id[$11].type;
 	  insn[last_insn].iexe.src2h   = $11;
 	  insn[last_insn].iexe.src2s   = 4; /* all suffix */
 	  insn[last_insn].iexe.src2e   = id[$13].val;
@@ -276,8 +276,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
           }
 	  insn[last_insn].iheader.type = 4; /* EX4 */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$19].val;
 	  insn[last_insn].iexe.op3     = id[$23].val;
@@ -286,7 +286,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.src1v   = id[ $7].type;
 	  insn[last_insn].iexe.src1h   = $7;
 	  insn[last_insn].iexe.src1e   = id[ $9].val;
-	  insn[last_insn].iexe.src2v   = id[ $11].type;
+	  insn[last_insn].iexe.src2v   = id[$11].type;
 	  insn[last_insn].iexe.src2h   = $11;
 	  insn[last_insn].iexe.src2s   = 4; /* all suffix */
 	  insn[last_insn].iexe.src2e   = id[$13].val;
@@ -315,12 +315,12 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
 	  }
 	  if ($9 != $11) {
-	    fprintf(stderr, "in %s: exe(INIT0?src1:src1) should be specified\n", id[current_prefix].name);
+	    fprintf(stderr, "in %s: exe(INIT0?src1:src1) src1 should be the same\n", id[current_prefix].name);
             exit(1);
 	  }
 	  insn[last_insn].iheader.type = 4; /* EX4 */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$23].val;
 	  insn[last_insn].iexe.op3     = id[$27].val;
@@ -354,8 +354,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
           }
 	  insn[last_insn].iheader.type = 5; /* EXE */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$19].val;
 	  insn[last_insn].iexe.op3     = id[$23].val;
@@ -364,7 +364,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.src1v   = id[ $7].type;
 	  insn[last_insn].iexe.src1h   = $7;
 	  insn[last_insn].iexe.src1e   = id[ $9].val;
-	  insn[last_insn].iexe.src2v   = id[ $11].type;
+	  insn[last_insn].iexe.src2v   = id[$11].type;
 	  insn[last_insn].iexe.src2h   = $11;
 	  insn[last_insn].iexe.src2e   = id[$13].val;
 	  insn[last_insn].iexe.src3v   = id[$15].type;
@@ -395,8 +395,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
 	  }
 	  insn[last_insn].iheader.type = 5; /* EXE */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$23].val;
 	  insn[last_insn].iexe.op3     = id[$27].val;
@@ -404,8 +404,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.init    = 1; /* activate INIT0?src1 */
 	  insn[last_insn].iexe.src1v   = id[ $9].type;
 	  insn[last_insn].iexe.src1h   = $9;
-	  insn[last_insn].iexe.src1e   = id[ $13].val;
-	  insn[last_insn].iexe.src2v   = id[ $15].type;
+	  insn[last_insn].iexe.src1e   = id[$13].val;
+	  insn[last_insn].iexe.src2v   = id[$15].type;
 	  insn[last_insn].iexe.src2h   = $15;
 	  insn[last_insn].iexe.src2e   = id[$17].val;
 	  insn[last_insn].iexe.src3v   = id[$19].type;
@@ -436,8 +436,8 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
 	  }
 	  insn[last_insn].iheader.type = 5; /* EXE */
-	  insn[last_insn].iheader.row  = id[$5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.row  = id[ $5].type==T_ALRNO?(id[$5].val)                :id[$5].type==T_BDRNO?(id[$5].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $5].type==T_ALRNO?(insn[last_insn].iexe.exeds):id[$5].type==T_BDRNO?(id[$5].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].iexe.op1     = id[ $3].val;
 	  insn[last_insn].iexe.op2     = id[$23].val;
 	  insn[last_insn].iexe.op3     = id[$27].val;
@@ -446,7 +446,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.src1v   = id[ $7].type;
 	  insn[last_insn].iexe.src1h   = $7;
 	  insn[last_insn].iexe.src1e   = id[ $9].val;
-	  insn[last_insn].iexe.src2v   = id[ $13].type;
+	  insn[last_insn].iexe.src2v   = id[$13].type;
 	  insn[last_insn].iexe.src2h   = $13;
 	  insn[last_insn].iexe.src2e   = id[$17].val;
 	  insn[last_insn].iexe.src3v   = id[$19].type;

@@ -20,7 +20,8 @@
 			"param.h": "c",
 			"yacc_lex_util.h": "c",
 			"emax6.h": "c",
-			"mman.h": "c"
+			"mman.h": "c",
+			"*.def": "c"
 		}
 	}
 }
