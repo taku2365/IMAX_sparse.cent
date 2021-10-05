@@ -355,6 +355,7 @@ emax6_sparse2* sparse_format3(int nnz,Ull* val,const Uint* const val_tmp, int* c
     // free(val_debug);
 
 
+
     return sparse_info;
 
 //Cは書き込みながら転置？
