@@ -28,7 +28,8 @@
 PROJTOP	      = ../../
 IMAX_DEBUG    = 0
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
-PROGRAM       =	 test020-csim.emax6+dma test022-csim.emax6+dma
+PROGRAM       =	 test024-csim.emax6+dma
+#PROGRAM       =	 test022-csim.emax6+dma
 CPP           = ../../bin/aarch64-elf-cpp -P
 CC            = ../../bin/aarch64-elf-gcc
 
@@ -43,22 +44,25 @@ LD            = ../../bin/aarch64-elf-ld
 LDFLAGS       =	-static -M $(PROJTOP)/lib/asim64-lib/_map
 LIBS          =	-lgcc -lm -lc
 LIBFLAGS      = -L$(PROJTOP)/lib/gcc/aarch64-elf/4.8.2/ -L$(PROJTOP)/aarch64-elf/lib/
-OBJS          = test020-emax6.o test022-emax6.o
-SRCS          = test020.c test022.c
-
+OBJS          = test024-emax6.o 
+SRCS          = test024.c
+#OBJS          = test022-emax6.o
+#SRCS          = test022.c
+EMAX_SPARSE_LIB = ../../src/emax6_sparselib/sparse_lib.a
+INCLUDE = -I../../src/emax6_sparselib/Include
 all:		$(PROGRAM)
 
 clean:;		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c
 
-test020-csim.emax6+dma:        test020-emax6.o
+test024-csim.emax6+dma:        test024-emax6.o
 		$(LD) $(LDFLAGS) -o $@ $(PROJTOP)/lib/asim64-lib/_start.o $< $(LIBFLAGS) --start-group $(LIBS) --end-group
 
-test020-emax6.o: test020-emax6.c
-		$(CC) $(CFLAGS) -c $<
+test024-emax6.o: test024-emax6.c sparse_lib
+		$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
-test020-emax6.c: test020.c
+test024-emax6.c: test024.c sparse_lib
 		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
+		$(CPP) $(OPTION) $(INCLUDE) $<-mark.c > $<-cppo.c
 		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
 
 
@@ -77,5 +81,10 @@ test020-emax6.c: test020.c
 ###
 
 
-test020-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test022-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
+test024-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/include/emax6_sparselib.h
+#test022-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
+
+
+sparse_lib:
+	(cd ../../src/emax6_sparselib; $(MAKE) static)
+# $(MAKE)はマクロも引き継がれる

@@ -24,7 +24,6 @@ typedef struct {Ull u[2];} Dll;
 #include <time.h>
 #include <fcntl.h>
 #include <math.h>
-#include <malloc.h>
 #ifndef ARMSIML
 #include <unistd.h>
 #include <sys/times.h>
@@ -37,7 +36,6 @@ typedef struct {Ull u[2];} Dll;
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xdbe.h>
 #endif
-
 
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 
@@ -65,14 +63,8 @@ sysinit(memsize, alignment) Uint memsize, alignment;
   {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
 #else
   membase = (void*)malloc(memsize+alignment);
-  printf("malloc size %d \n",malloc_usable_size(membase));
-  printf("membase_before_align: %08.8x\n", (Uint)membase);
-  if ((Ull)membase & (Ull)(alignment-1))
-  membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
-  // 32byte = 16byte*2 = 0x20
-  printf("membase_after_align: %08.8x\n", (Uint)membase);
-
-  
+  if ((int)membase & (alignment-1))
+    membase = (void*)(((int)membase & ~(alignment-1))+alignment);
 #endif
 
 #if !defined(ARMZYNQ) && defined(EMAX5)
@@ -116,9 +108,9 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 /* A A                 C C C C C C */
 /* L=2, M1=4, M2=6     L<M1,M2     */
 
-#define L  120LL
-#define M1 120LL
-#define M2 120LL
+#define L  480LL
+#define M1 480LL
+#define M2 480LL
 #define RMGRP 15
 /*#define NCHIP 4*/
 #define NCHIP 4
@@ -128,9 +120,6 @@ Uint *A;  /*[M1][L];*/
 Uint *B;  /*[L][M2];*/
 Uint *C0; /*[M1][M2];*/
 Uint *C1; /*[M1][M2];*/
-Uint *A_debug; /*[M1][L];*/
-Uint *B_debug; /*[L][M2];*/
-Uint *C_debug; /*[M1][M2];*/
 int row, col, n;
 int top, blk;
 int w, h;
@@ -153,21 +142,12 @@ main()
   sysinit((Uint)(M1*L*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
-                +M1*M2*sizeof(Uint)
-                +M1*L*sizeof(Uint)
-                +L*M2*sizeof(Uint)
-                +M1*M2*sizeof(Uint)
-                ),32);
+                +M1*M2*sizeof(Uint)),32);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
   B  = (Uint*)((Uchar*)A  + M1*L*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
-
-  A_debug = (Uint*)((Uchar*)C1 + M1*M2*sizeof(Uint));
-  B_debug  = (Uint*)((Uchar*)A_debug  + M1*L*sizeof(Uint));
-  C_debug = (Uint*)((Uchar*)B_debug  + L*M2*sizeof(Uint));
-  
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
@@ -175,52 +155,26 @@ main()
 
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++)
-      *(float*)&A[row*L+col] = (1+row)+(1+col)*0.001;
+      *(float*)&A[row*L+col] = row%120+1;
   }
   for (row=0; row<L; row++) {
     for (col=0; col<M2; col++)
-      *(float*)&B[row*M2+col] = (1+row)+(1+col)*0.001;
+      *(float*)&B[row*M2+col] = col%120+1;
   }
 
-  for (row=0; row<M1; row++) {
-    for (col=0; col<L; col++)
-      *(float*)&A_debug[row*L+col] = 0.0;
-  }
-  for (row=0; row<L; row++) {
-    for (col=0; col<M2; col++)
-      *(float*)&B[row*M2+col] = 0.0;
-  }
+#if !defined(ARMSIML)
+  x11_open(0);
+#endif
 
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++)
-      *(float*)&C_debug[row*M1+col] = 0.0;
-  }
-
-// #if !defined(ARMSIML)
-//   x11_open(0);
-// #endif
-
-  // reset_nanosec();
-  // size_t Dll_size = sizeof(Dll);
+  reset_nanosec();
   orig();
-  // get_nanosec(0);
-  // show_nanosec();
+  get_nanosec(0);
+  show_nanosec();
 
-  // reset_nanosec();
-  imax_debug();
-  // get_nanosec(0);
-  // show_nanosec();
-
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row*M2+col]) {
-        count2++;
-        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row*M2+col]);
-      }
-    }
-  }
-  exit(1);
+  reset_nanosec();
+  imax();
+  get_nanosec(0);
+  show_nanosec();
 
 #ifdef ARMSIML
   copy_Z(0, C1); _copyX(0, Z);
@@ -264,10 +218,6 @@ main()
   while (!x11_checkevent());
 #endif
 }
-
-
-
-
 
 copy_Z(id, from)
      int id; /* 0 .. 11 */
@@ -459,8 +409,7 @@ imax() {
 
 #else
 
-
-imax_debug() {
+imax() {
   Ull  CHIP;
   Ull  LOOP1, LOOP0;
   Ull  INIT1, INIT0;
@@ -483,28 +432,20 @@ imax_debug() {
   for (top=0; top<M1/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
     for (blk=0; blk<L; blk+=H) { /* 3重ループ展開の外側対象 */
       typedef struct {Uint i[8]} Ui8;
-      Uint *a0[NCHIP],*a0_debug[NCHIP];
-      Uint *a[H][NCHIP],*a_debug[H][NCHIP];
+      Uint *a0[NCHIP];
+      Uint *a[H][NCHIP];
       Ui8  *b[H], *b0[H], *b1[H], *b2[H], *b3[H];
-      Ui8  *b_debug[H], *b0_debug[H], *b1_debug[H], *b2_debug[H], *b3_debug[H];
-      Ui8  *c0[NCHIP],*c0_debug[NCHIP];
+      Ui8  *c0[NCHIP];
       Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
-      Ui8  *c00_debug[NCHIP], *c01_debug[NCHIP], *c02_debug[NCHIP], *c03_debug[NCHIP];
       for (k=0; k<H; k++) {
-	      b[k] = B+(blk+k)*M2; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
-	      b_debug[k] = B_debug+(blk+k)*M2; b0_debug[k] = b_debug[k]; b1_debug[k] = (Uint*)b_debug[k]+2; b2_debug[k] = (Uint*)b_debug[k]+4;  b3_debug[k] = (Uint*)b_debug[k]+6; 
+	b[k] = B+(blk+k)*M2; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
       }
       for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-	      a0[CHIP] = A+(CHIP*M1/NCHIP+top)*L;
-	      a0_debug[CHIP] = A_debug+(CHIP*M1/NCHIP+top)*L;
-
-	      for (k=0; k<H; k++) a[k][CHIP] = a0[CHIP]+blk+k;
-	      for (k=0; k<H; k++) a_debug[k][CHIP] = a0_debug[CHIP]+blk+k;
-
-	      c0[CHIP] = C1+(CHIP*M1/NCHIP+top)*M2;
-	      c0_debug[CHIP] = C_debug+(CHIP*M1/NCHIP+top)*M2;
-    	  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
-    	  c00_debug[CHIP]= (Uint*)c0_debug[CHIP]+0; c01_debug[CHIP]= (Uint*)c0_debug[CHIP]+2; c02_debug[CHIP]= (Uint*)c0_debug[CHIP]+4; c03_debug[CHIP]= (Uint*)c0_debug[CHIP]+6;
+	a0[CHIP] = A+(CHIP*M1/NCHIP+top)*L;
+	for (k=0; k<H; k++)
+	  a[k][CHIP] = a0[CHIP]+blk+k;
+	c0[CHIP] = C1+(CHIP*M1/NCHIP+top)*M2;
+	c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
       }
 
 #define sgemm00_core1(r, rm1, rp1) \
@@ -513,11 +454,6 @@ imax_debug() {
 	    mop(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\
 	    mop(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\
 	    mop(OP_LDUWR,1, &BR[r][2][1],  (Ull)a[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP);\
-      mop_debug(OP_LDR,  3, &BR[r][0][1],  (Ull)b0_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[rm1], M2, 0, 0, (Ull)NULL, M2);\
-	    mop_debug(OP_LDR,  3, &BR[r][0][0],  (Ull)b1_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[rm1], M2, 0, 0, (Ull)NULL, M2);\
-	    mop_debug(OP_LDR,  3, &BR[r][1][1],  (Ull)b2_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[rm1], M2, 0, 0, (Ull)NULL, M2);\
-	    mop_debug(OP_LDR,  3, &BR[r][1][0],  (Ull)b3_debug[rm1], (Ull)cofs, MSK_W1, (Ull)b_debug[rm1], M2, 0, 0, (Ull)NULL, M2);\
-	    mop_debug(OP_LDUWR,1, &BR[r][2][1],  (Ull)a_debug[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0_debug[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP);\
 	    exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -528,10 +464,6 @@ imax_debug() {
 	    mop(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
 	    mop(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
 	    mop(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-      mop_debug(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00_debug[CHIP], (Ull)oofs, MSK_W0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01_debug[CHIP], (Ull)oofs, MSK_W0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02_debug[CHIP], (Ull)oofs, MSK_W0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03_debug[CHIP], (Ull)oofs, MSK_W0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
 	    exe(OP_FAD, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[rp1][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[rp1][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[rp1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -539,11 +471,7 @@ imax_debug() {
 	    mop(OP_STR,  3, &AR[rp1][0],     (Ull)oofs, (Ull)c00[CHIP], MSK_D0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
 	    mop(OP_STR,  3, &AR[rp1][1],     (Ull)oofs, (Ull)c01[CHIP], MSK_D0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
 	    mop(OP_STR,  3, &AR[rp1][2],     (Ull)oofs, (Ull)c02[CHIP], MSK_D0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-      mop_debug(OP_STR,  3, &AR[rp1][0],     (Ull)oofs, (Ull)c00_debug[CHIP], MSK_D0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_STR,  3, &AR[rp1][1],     (Ull)oofs, (Ull)c01_debug[CHIP], MSK_D0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_STR,  3, &AR[rp1][2],     (Ull)oofs, (Ull)c02_debug[CHIP], MSK_D0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
-	    mop_debug(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03_debug[CHIP], MSK_D0, (Ull)c0_debug[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP)
+	    mop(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP)
 
 //EMAX5A begin mm mapdist=0
 /*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
@@ -558,11 +486,6 @@ imax_debug() {
             mop(OP_LDR,  3, &BR[1][1][1],  (Ull)b2[0], (Ull)cofs, MSK_W1, (Ull)b[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
             mop(OP_LDR,  3, &BR[1][1][0],  (Ull)b3[0], (Ull)cofs, MSK_W1, (Ull)b[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 2KB */
             mop(OP_LDUWR,1, &BR[1][2][1],  (Ull)a[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP); /* stage#1 16KB */
-            mop_debug(OP_LDR,  3, &BR[1][0][1],  (Ull)b0_debug[0], (Ull)cofs, MSK_W1, (Ull)b_debug[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
-            mop_debug(OP_LDR,  3, &BR[1][0][0],  (Ull)b1_debug[0], (Ull)cofs, MSK_W1, (Ull)b_debug[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
-            mop_debug(OP_LDR,  3, &BR[1][1][1],  (Ull)b2_debug[0], (Ull)cofs, MSK_W1, (Ull)b_debug[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
-            mop_debug(OP_LDR,  3, &BR[1][1][0],  (Ull)b3_debug[0], (Ull)cofs, MSK_W1, (Ull)b_debug[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 2KB */
-            mop_debug(OP_LDUWR,1, &BR[1][2][1],  (Ull)a_debug[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0_debug[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP); /* stage#1 16KB */
             exe(OP_FML, &AR[2][0], BR[1][0][1], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
             exe(OP_FML, &AR[2][1], BR[1][0][0], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
             exe(OP_FML, &AR[2][2], BR[1][1][1], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
@@ -637,7 +560,4 @@ imax_debug() {
   }
 //EMAX5A drain_dirty_lmm
 }
-
 #endif
-
-

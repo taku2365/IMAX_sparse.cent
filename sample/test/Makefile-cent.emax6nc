@@ -30,8 +30,10 @@ export CC      = gcc
 export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 
 export LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
-PROGRAM	      = test023-cent.emax6nc
-OBJS          =	test023.o
+PROGRAM	      = test024-cent.emax6nc
+OBJS          =	test024.o
+#PROGRAM	      = test023-cent.emax6nc
+#OBJS          =	test023.o
 SRCS          =	($(OBJS:.o=.c))
 #HEADERS       =	../../src/emax6_sparselib/include/emax6_sparselib.h
 INCLUDE = -I../../src/emax6_sparselib/Include
