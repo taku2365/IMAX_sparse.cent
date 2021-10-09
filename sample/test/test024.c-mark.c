@@ -1,4 +1,3 @@
-
 static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_lf/RCS/mm.c,v 1.4 2018/02/04 10:28:53 nakashim Exp nakashim $";
 
 /*                          Copyright (C) 2013- by NAIST */
@@ -123,13 +122,13 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 // #define L  120LL
 // #define M1 120LL
 // #define M2 120LL
-#define L  768LL
-#define M1 768LL
-#define M2 768LL
-#define A_row_size 768LL
-#define A_col_size 768LL
-#define B_row_size 768LL
-#define B_col_size 768LL
+#define L  736LL
+#define M1 736LL
+#define M2 736LL
+#define A_row_size 736LL
+#define A_col_size 736LL
+#define B_row_size 736LL
+#define B_col_size 736LL
 
 // #define RMGRP 60
 #define RMGRP 16
@@ -137,7 +136,7 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 /*#define NCHIP 4*/
 #define NCHIP 2
 #define W  4LL
-#define H  48
+#define H  46
 Uint *A;  /*[M1][L];*/
 Uint *B;  /*[L][M2];*/
 Uint *C0; /*[M1][M2];*/
@@ -378,87 +377,12 @@ main()
     }
   }
   
-exit(1);
 
 
-
-#ifdef ARMSIML
-  copy_Z(0, C1); _copyX(0, Z);
-  copy_Z(1, C1); _copyX(1, Z);
-  copy_Z(4, C1); _copyX(4, Z);
-  copy_Z(5, C1); _copyX(5, Z);
-  copy_Z(8, C1); _copyX(8, Z);
-  copy_Z(9, C1); _copyX(9, Z);
-  _updateX();
-#endif
-#if !defined(ARMSIML)
-  copy_Z(0, C1); BGR_to_X(0, Z);
-  copy_Z(1, C1); BGR_to_X(1, Z);
-  copy_Z(4, C1); BGR_to_X(5, Z);
-  copy_Z(5, C1); BGR_to_X(6, Z);
-  copy_Z(8, C1); BGR_to_X(10,Z);
-  copy_Z(9, C1); BGR_to_X(11,Z);
-  x11_update();
-#endif
-
-  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
-
-  if (count2)
-    printf("Num of diffs: %d\n", count2);
-  else
-    printf("Results are equal\n");
-
-  show_nanosec();
-
-#if !defined(ARMSIML)
-  printf("==== Normal end. Type any in ImageWin ====\n");
-  while (!x11_checkevent());
-#endif
 }
 
 
- 
 
-
-copy_Z(id, from)
-     int id; /* 0 .. 11 */
-     unsigned int *from;
-{
-  int i, j;
-  volatile unsigned int *to = Z;
-  unsigned int *offs;
-
-  switch (id) {
-  case 0:  offs = from;               break;
-  case 1:  offs = from + WD;          break;
-  case 2:  offs = from + WD*2;        break;
-  case 3:  offs = from + WD*3;        break;
-  case 4:  offs = from + M2*HT;        break;
-  case 5:  offs = from + M2*HT+WD;     break;
-  case 6:  offs = from + M2*HT+WD*2;   break;
-  case 7:  offs = from + M2*HT+WD*3;   break;
-  case 8:  offs = from + M2*HT*2;      break;
-  case 9:  offs = from + M2*HT*2+WD;   break;
-  case 10: offs = from + M2*HT*2+WD*2; break;
-  case 11: offs = from + M2*HT*2+WD*3; break;
-  case 12: offs = from + M2*HT*3;      break;
-  case 13: offs = from + M2*HT*3+WD;   break;
-  case 14: offs = from + M2*HT*3+WD*2; break;
-  case 15: offs = from + M2*HT*3+WD*3; break;
-  }
-  for (i=0; i<HT; i++, offs+=M2) {
-    if (offs<from+M1*M2) {
-      for (j=0; j<WD; j++) {
-	if (j+(id%4)*WD<M2) *to++ = (*(offs+j))>>0;
-	else                *to++ = 0;
-      }
-    }
-    else {
-      for (j=0; j<WD; j++)
-	*to++ = 0;
-    }
-  }
-}
 
 orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
   printf("<<<ORIG>>>\n");
@@ -657,6 +581,7 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
   Ull* A_margin = A_sparse->margin;
   Ull* val_index_set = A_sparse->val_index_set;
   Uint* A_sort_index= A_sparse->sort_index;
+  Ull x,y,z,t;
 //   Ull A_row_size = M1;
 //   Ull A_col_size = L;
 //   Ull B_row_size = L;
@@ -719,7 +644,7 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 
 
 #define sparse_core1(ar,ar_pre,br,br_pre,a_val,A_index1,A_index2,index_MSK) \
-        exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+      exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -727,6 +652,17 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 	    mop(OP_LDR,  3, &BR[br][0][0],  (Ull)b1[CHIP],(Ull)AR[A_index1][A_index2], index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
 	    mop(OP_LDR,  3, &BR[br][1][1],  (Ull)b2[CHIP],(Ull)AR[A_index1][A_index2], index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
 	    mop(OP_LDR,  3, &BR[br][1][0],  (Ull)b3[CHIP],(Ull)AR[A_index1][A_index2], index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mop(OP_LDWR, 1, &BR[br][2][1],  (Ull)a[a_val],  (Ull)rofs, MSK_W0, (Ull)a[a_val], A_row_size, 0, 0, (Ull)NULL, A_row_size)
+
+#define sparse_core1_1(ar,ar_pre,br,br_pre,a_val,index_val,index_MSK) \
+      exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    mop(OP_LDR,  3, &BR[br][0][1],  (Ull)b0[CHIP],(Ull)index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mop(OP_LDR,  3, &BR[br][0][0],  (Ull)b1[CHIP],(Ull)index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mop(OP_LDR,  3, &BR[br][1][1],  (Ull)b2[CHIP],(Ull)index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
+	    mop(OP_LDR,  3, &BR[br][1][0],  (Ull)b3[CHIP],(Ull)index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);\
 	    mop(OP_LDWR, 1, &BR[br][2][1],  (Ull)a[a_val],  (Ull)rofs, MSK_W0, (Ull)a[a_val], A_row_size, 0, 0, (Ull)NULL, A_row_size)
 
 
@@ -740,6 +676,17 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
         mop(OP_LDR,3, &BR[br][2][1],  (Ull)a_index[a_index3], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);\
         mop(OP_LDR,3, &BR[br][2][0],  (Ull)a_index[a_index4], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4)
 
+#define sparse_core2_1(ar,ar_pre,br,br_pre,a_index1,a_index2,a_index3)\
+        exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        mop(OP_LDR,3, &BR[br][1][1],  (Ull)a_index[a_index1], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);\
+        mop(OP_LDR,3, &BR[br][1][0],  (Ull)a_index[a_index2], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);\
+        mop(OP_LDR,3, &BR[br][2][1],  (Ull)a_index[a_index3], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);\
+        mop(OP_LDR,3, &BR[br][2][0],  (Ull)a_index[a_index3], (Ull)rofs, MSK_W1, (Ull)a_index[a_index1], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4)\
+    
+
 #define sparse_core3(ar,ar_pre,br,br_pre,a_val,A_index1,A_index2,index_MSK)\
         exe(OP_ADD, &AR[ar][0], BR[br_pre][1][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
         exe(OP_ADD, &AR[ar][1], BR[br_pre][1][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -751,6 +698,17 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
         mop(OP_LDR,  3, &BR[br][1][0], (Ull)b3[CHIP], AR[A_index1][A_index2], index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
         mop(OP_LDWR, 1, &BR[br][2][1], (Ull)a[a_val], (Ull)rofs, MSK_W0, (Ull)a[a_val], A_row_size, 0, 0, (Ull)NULL, A_row_size)
 
+#define sparse_core3_1(ar,ar_pre,br,br_pre,a_val,index_val1,index_val2,index_val3,index_val4,index_val,index_MSK)\
+        exe(OP_ADD, &index_val1, BR[br_pre][1][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_ADD, &index_val2, BR[br_pre][1][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_ADD, &index_val3, BR[br_pre][2][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        exe(OP_ADD, &index_val4, BR[br_pre][2][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+        mop(OP_LDR,  3, &BR[br][0][1], (Ull)b0[CHIP], index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+        mop(OP_LDR,  3, &BR[br][0][0], (Ull)b1[CHIP], index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+        mop(OP_LDR,  3, &BR[br][1][1], (Ull)b2[CHIP], index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+        mop(OP_LDR,  3, &BR[br][1][0], (Ull)b3[CHIP], index_val, index_MSK, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);\
+        mop(OP_LDWR, 1, &BR[br][2][1], (Ull)a[a_val], (Ull)rofs, MSK_W0, (Ull)a[a_val], A_row_size, 0, 0, (Ull)NULL, A_row_size)
+
 
 #define sparse_core4(ar,ar_pre,br,br_pre) \
         exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -759,7 +717,7 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
         exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210,  BR[br_pre][2][1], EXP_H3210, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
         mop(OP_LDWR, 1, &BR[br][0][1], (Ull)A_sort_index, (Ull)rofs, MSK_W0, (Ull)A_sort_index, A_row_size, 0, 0, (Ull)NULL, A_row_size)
 
-
+// sparse_final1(61,59,60,61,59,x);
 
 #define sparse_final(ar,ar_pre,ar_pre1,br,br_pre) \
 	    mop(OP_LDR,  3, &BR[br][0][1],  (Ull)c00[CHIP],(Ull)AR[ar_pre1][0], MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
@@ -775,6 +733,22 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 	    mop(OP_STR, 3, &AR[ar][2], (Ull)c02[CHIP], (Ull)AR[ar_pre1][0], MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
 	    mop(OP_STR, 3, &AR[ar][3], (Ull)c03[CHIP], (Ull)AR[ar_pre1][0], MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP)
 
+#define sparse_final1(ar,ar_pre,ar_pre1,br,br_pre,index_val) \
+	    mop(OP_LDR,  3, &BR[br][0][1],  (Ull)c00[CHIP],(Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_LDR,  3, &BR[br][1][1],  (Ull)c01[CHIP],(Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_LDR,  3, &BR[br][2][1],  (Ull)c02[CHIP],(Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_LDR,  3, &BR[br][3][1],  (Ull)c03[CHIP],(Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    exe(OP_FAD, &AR[ar][0], AR[ar_pre][0], EXP_H3210,  BR[br][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FAD, &AR[ar][1], AR[ar_pre][1], EXP_H3210,  BR[br][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FAD, &AR[ar][2], AR[ar_pre][2], EXP_H3210,  BR[br][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FAD, &AR[ar][3], AR[ar_pre][3], EXP_H3210,  BR[br][3][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    mop(OP_STR, 3, &AR[ar][0], (Ull)c00[CHIP], (Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_STR, 3, &AR[ar][1], (Ull)c01[CHIP], (Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_STR, 3, &AR[ar][2], (Ull)c02[CHIP], (Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP);\
+	    mop(OP_STR, 3, &AR[ar][3], (Ull)c03[CHIP], (Ull)index_val, MSK_W1, (Ull)c0[CHIP], A_row_size*RMGRP, 0, 1, (Ull)NULL, A_row_size*RMGRP)
+
+
+
 
 #define printf(format,...)
 /-EMAX5AB-/ mm 0
@@ -789,98 +763,95 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 /-EMAX5AS-/             mop(OP_LDR,3, &BR[1][2][1],  (Ull)a_index[2], (Ull)rofs, MSK_W1, (Ull)a_index[0], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);             /* stage#1 */
 /-EMAX5AS-/             mop(OP_LDR,3, &BR[1][2][0],  (Ull)a_index[3], (Ull)rofs, MSK_W1, (Ull)a_index[0], A_row_size*2*4, 0, 0, (Ull)NULL, A_row_size*2*4);             /* stage#1 */
 /-EMAX5AS-/ 
-/-EMAX5AS-/             exe(OP_ADD, &AR[2][0], BR[1][1][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
-/-EMAX5AS-/             exe(OP_ADD, &AR[2][1], BR[1][1][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
-/-EMAX5AS-/             exe(OP_ADD, &AR[2][2], BR[1][2][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
-/-EMAX5AS-/             exe(OP_ADD, &AR[2][3], BR[1][2][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[2][0][1], (Ull)b0[CHIP], AR[2][0], MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[2][0][0], (Ull)b1[CHIP], AR[2][0], MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[2][1][1], (Ull)b2[CHIP], AR[2][0], MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[2][1][0], (Ull)b3[CHIP], AR[2][0], MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 2KB */
-/-EMAX5AS-/             mop(OP_LDWR, 1, &BR[2][2][1], (Ull)a[0], (Ull)rofs, MSK_W0, (Ull)a[0], A_row_size, 0, 0, (Ull)NULL, A_row_size); /* stage#2 16KB */
+/-EMAX5AS-/             exe(OP_ADD, &x, BR[1][1][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
+/-EMAX5AS-/             exe(OP_ADD, &y, BR[1][1][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
+/-EMAX5AS-/             exe(OP_ADD, &z, BR[1][2][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
+/-EMAX5AS-/             exe(OP_ADD, &t, BR[1][2][0], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);                                /* stage#2 */
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][0][1], (Ull)b0[CHIP], x, MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][0][0], (Ull)b1[CHIP], x, MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][1][1], (Ull)b2[CHIP], x, MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 */
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][1][0], (Ull)b3[CHIP], x, MSK_W0, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL, RMGRP*B_row_size);             /* stage#2 2KB */
+/-EMAX5AS-/             mop(OP_LDWR, 1, &BR[3][2][1], (Ull)a[0], (Ull)rofs, MSK_W0, (Ull)a[0], A_row_size, 0, 0, (Ull)NULL, A_row_size); /* stage#2 16KB */
 /-EMAX5AS-/ 
-/-EMAX5AS-/             exe(OP_FML, &AR[3][0], BR[2][0][1], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-/-EMAX5AS-/             exe(OP_FML, &AR[3][1], BR[2][0][0], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-/-EMAX5AS-/             exe(OP_FML, &AR[3][2], BR[2][1][1], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-/-EMAX5AS-/             exe(OP_FML, &AR[3][3], BR[2][1][0], EXP_H3210,  BR[2][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][0][1],  (Ull)b0[CHIP],(Ull)AR[2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][0][0],  (Ull)b1[CHIP],(Ull)AR[2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][1][1],  (Ull)b2[CHIP],(Ull)AR[2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
-/-EMAX5AS-/             mop(OP_LDR,  3, &BR[3][1][0],  (Ull)b3[CHIP],(Ull)AR[2][0], MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
-/-EMAX5AS-/             mop(OP_LDWR, 1, &BR[3][2][1],  (Ull)a[1],    (Ull)rofs, MSK_W0, (Ull)a[1], A_row_size, 0, 0, (Ull)NULL, A_row_size);
+/-EMAX5AS-/             exe(OP_FML, &AR[4][0], BR[3][0][1], EXP_H3210,  BR[3][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+/-EMAX5AS-/             exe(OP_FML, &AR[4][1], BR[3][0][0], EXP_H3210,  BR[3][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+/-EMAX5AS-/             exe(OP_FML, &AR[4][2], BR[3][1][1], EXP_H3210,  BR[3][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+/-EMAX5AS-/             exe(OP_FML, &AR[4][3], BR[3][1][0], EXP_H3210,  BR[3][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[4][0][1],  (Ull)b0[CHIP],(Ull)x, MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[4][0][0],  (Ull)b1[CHIP],(Ull)x, MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[4][1][1],  (Ull)b2[CHIP],(Ull)x, MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
+/-EMAX5AS-/             mop(OP_LDR,  3, &BR[4][1][0],  (Ull)b3[CHIP],(Ull)x, MSK_W1, (Ull)b[CHIP], RMGRP*B_row_size, 0, 0, (Ull)NULL,  RMGRP*B_row_size);
+/-EMAX5AS-/             mop(OP_LDWR, 1, &BR[4][2][1],  (Ull)a[1],    (Ull)rofs, MSK_W0, (Ull)a[1], A_row_size, 0, 0, (Ull)NULL, A_row_size);
 /-EMAX5AS-/             
 /-EMAX5AS-/             // #define sparse_core1(ar,ar_pre,br,br_pre,a_val,A_index1,A_index2,index_MSK) 
-/-EMAX5AS-/             sparse_core1(4,  3,  4,  3,  2,  2, 1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(5,  4,  5,  4,  3,  2, 1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(6,  5,  6,  5,  4,  2, 2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(7,  6,  7,  6,  5,  2, 2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(8,  7,  8,  7,  6,  2, 3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(9,  8,  9,  8,  7,  2, 3,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(5,  4,  5,  4,     2,           y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(6,  5,  6,  5,     3,           y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(7,  6,  7,  6,     4,           z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(8,  7,  8,  7,     5,           z,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(9,  8,  9,  8,     6,           t,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(10, 9,  10, 9,     7,           t,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core2(10, 9,  10, 9,4,5,6,7);
-/-EMAX5AS-/             sparse_core3(11, 10, 11, 10, 8,  11,0,MSK_W0);
+/-EMAX5AS-/             sparse_core2(  11, 10, 11, 10,        4,5,6,7);
+/-EMAX5AS-/             sparse_core3_1(12, 11, 13, 11,    8,  x,y,z,t, x,MSK_W0);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(12, 10, 12, 11, 9,  11,0,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(14, 11, 14, 13,    9,           x,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(13, 12, 13, 12, 10, 11,1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(14, 13, 14, 13, 11, 11,1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(15, 14, 15, 14, 12, 11,2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(16, 15, 16, 15, 13, 11,2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(17, 16, 17, 16, 14, 11,3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(18, 17, 18, 17, 15, 11,3,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(15, 14, 15, 14,    10,          y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(16, 15, 16, 15,    11,          y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(17, 16, 17, 16,    12,          z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(18, 17, 18, 17,    13,          z,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(19, 18, 19, 18,    14,          t,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(20, 19, 20, 19,    15,          t,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core2(19, 18, 19, 18,8,9,10,11);
-/-EMAX5AS-/             sparse_core3(20, 19, 20, 19, 16, 20,0,MSK_W0);
+/-EMAX5AS-/             sparse_core2(  21, 20, 21, 20,        8,9,10,11);
+/-EMAX5AS-/             sparse_core3_1(22, 21, 23, 21,    16, x,y,z,t, x,MSK_W0);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(21, 19, 21, 20, 17, 20,0,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(24, 21, 24, 23,    17,          x,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(22, 21, 22, 21, 18, 20,1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(23, 22, 23, 22, 19, 20,1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(24, 23, 24, 23, 20, 20,2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(25, 24, 25, 24, 21, 20,2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(26, 25, 26, 25, 22, 20,3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(27, 26, 27, 26, 23, 20,3,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(25, 24, 25, 24,    18,          y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(26, 25, 26, 25,    19,          y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(27, 26, 27, 26,    20,          z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(28, 27, 28, 27,    21,          z,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(29, 28, 29, 28,    22,          t,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(30, 29, 30, 29,    23,          t,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core2(28, 27, 28, 27,12,13,14,15);
-/-EMAX5AS-/             sparse_core3(29, 28, 29, 28, 24, 29,0,MSK_W0);
+/-EMAX5AS-/             sparse_core2(  31, 30, 31, 30,        12,13,14,15);
+/-EMAX5AS-/             sparse_core3_1(32, 31, 33, 31,    24, x,y,z,t, x,MSK_W0);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(30, 28, 30, 29, 25, 29,0,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(34, 31, 34, 33,    25,          x,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(31, 30, 31, 30, 26, 29,1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(32, 31, 32, 31, 27, 29,1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(33, 32, 33, 32, 28, 29,2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(34, 33, 34, 33, 29, 29,2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(35, 34, 35, 34, 30, 29,3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(36, 35, 36, 35, 31, 29,3,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(35, 34, 35, 34,    26,          y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(36, 35, 36, 35,    27,          y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(37, 36, 37, 36,    28,          z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(38, 37, 38, 37,    29,          z,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(39, 38, 39, 38,    30,          t,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(40, 39, 40, 39,    31,          t,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core2(37, 36, 37, 36,16,17,18,19);
-/-EMAX5AS-/             sparse_core3(38, 37, 38, 37, 32, 38,0,MSK_W0);
+/-EMAX5AS-/             sparse_core2(  41, 40, 41, 40,        16,17,18,19);
+/-EMAX5AS-/             sparse_core3_1(42, 41, 43, 41,    32, x,y,z,t, x,MSK_W0);
 /-EMAX5AS-/    
-/-EMAX5AS-/             sparse_core1(39, 37, 39, 38, 33, 38,0,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(44, 41, 44, 43,    33,          x,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(40, 39, 40, 39, 34, 38,1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(41, 40, 41, 40, 35, 38,1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(42, 41, 42, 41, 36, 38,2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(43, 42, 43, 42, 37, 38,2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(44, 43, 44, 43, 38, 38,3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(45, 44, 45, 44, 39, 38,3,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(45, 44, 45, 44,    34,          y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(46, 45, 46, 45,    35,          y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(47, 46, 47, 46,    36,          z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(48, 47, 48, 47,    37,          z,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(49, 48, 49, 48,    38,          t,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(50, 49, 50, 49,    39,          t,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core2(46, 45, 46, 45,20,21,22,23);
-/-EMAX5AS-/             sparse_core3(47, 46, 47, 46, 40, 47,0,MSK_W0);
+/-EMAX5AS-/             sparse_core2_1(51, 50, 51, 50,        20,21,22);
+/-EMAX5AS-/             sparse_core3_1(52, 51, 53, 51,    40, x,y,z,t, x,MSK_W0);
 /-EMAX5AS-/    
-/-EMAX5AS-/             sparse_core1(48, 46, 48, 47, 41, 47,0,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(54, 51, 54, 53,    41,           x,MSK_W1);
 /-EMAX5AS-/ 
-/-EMAX5AS-/             sparse_core1(49, 48, 49, 48, 42, 47,1,MSK_W0);
-/-EMAX5AS-/             sparse_core1(50, 49, 50, 49, 43, 47,1,MSK_W1);
-/-EMAX5AS-/             sparse_core1(51, 50, 51, 50, 44, 47,2,MSK_W0);
-/-EMAX5AS-/             sparse_core1(52, 51, 52, 51, 45, 47,2,MSK_W1);
-/-EMAX5AS-/             sparse_core1(53, 52, 53, 52, 46, 47,3,MSK_W0);
-/-EMAX5AS-/             sparse_core1(54, 53, 54, 53, 47, 47,3,MSK_W1);
-/-EMAX5AS-/             sparse_core4(55, 54, 55, 54);
-/-EMAX5AS-/ 
-/-EMAX5AS-/             exe(OP_ADD, &AR[56][0], BR[55][0][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);
+/-EMAX5AS-/             sparse_core1_1(55, 54, 55, 54,    42,             y,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(56, 55, 56, 55,    43,             y,MSK_W1);
+/-EMAX5AS-/             sparse_core1_1(57, 56, 57, 56,    44,             z,MSK_W0);
+/-EMAX5AS-/             sparse_core1_1(58, 57, 58, 57,    45,             z,MSK_W1);
+/-EMAX5AS-/             sparse_core4(  59, 58, 59, 58);
+/-EMAX5AS-/             exe(OP_ADD, &x, BR[59][0][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);
 /-EMAX5AS-/             
-/-EMAX5AS-/             sparse_final(57,55,56,57,55);
+/-EMAX5AS-/             sparse_final1(62,59,60,61,59,x);
 /-EMAX5AS-/           }
 /-EMAX5AS-/         }
 /-EMAX5AS-/       }
@@ -892,5 +863,3 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 }
 
 #endif
-
-

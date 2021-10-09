@@ -38,7 +38,7 @@ SRCS          =	($(OBJS:.o=.c))
 #HEADERS       =	../../src/emax6_sparselib/include/emax6_sparselib.h
 INCLUDE = -I../../src/emax6_sparselib/Include
 
-EMAX_SPARSE_LIB = ../../src/emax6_sparselib/sparse_lib.a
+EMAX_SPARSE_LIB = ../../src/emax6_sparselib/libsparse.a
 
 
 

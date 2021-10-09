@@ -6,11 +6,21 @@
 
 ARCHIVE = $(AR) $(ARFLAGS)
 EMAX6_SPARSE_LIB = sparse_format.o sparse_multiply.o
-AR_TARGET = sparse_lib.a
+AR_TARGET = libsparse.a
+ARM_CORSS_COMPILE = 0
+
+ifeq ($(ARM_CORSS_COMPILE),1)
+CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
+CPP           = ../../bin/aarch64-elf-cpp -P
+CC            = ../../bin/aarch64-elf-gcc
+ARCHIVE       = ../../bin/aarch64-elf-ar $(ARFLAGS)
+endif
+
+
 
 all: static
 
-
+static: $(AR_TARGET)
 
 $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(ARCHIVE)  $@ $^
@@ -20,7 +30,6 @@ $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
 
-static: $(AR_TARGET)
 
 clean:
 	$(RM) *.o *.a
