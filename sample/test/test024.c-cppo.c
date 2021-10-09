@@ -876,8 +876,6 @@ extern int _malloc_trim_r (struct _reent *, size_t);
 extern void mstats (char *);
 extern void _mstats_r (struct _reent *, char *);
 extern void cfree (void *);
-void __assert (const char *, int, const char *) __attribute__ ((__noreturn__));
-void __assert_func (const char *, int, const char *, const char *) __attribute__ ((__noreturn__));
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
 void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
@@ -2643,7 +2641,10 @@ main()
         sum1 += *(float*)&B[col*736LL +row];
     }
   }
-  ((sum == sum1) ? (void)0 : __assert_func ("test024.c-mark.c", 262, __FUNCTION__, "sum == sum1"));
+  if((int)sum != (int)sum1) {
+    fprintf((_impure_ptr->_stderr),"sum != sum\n");
+    exit(1);
+  }
   start = clock();
   orig(A_tmp,B_debug,C0);
   end = clock();
@@ -2725,10 +2726,10 @@ orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
   for (row=0; row<736LL; row++) {
     for (col=0,col1=0; col<736LL/2; col++,col1+=2) {
       for (n=0,n1=0; n<736LL; n+=1,n1+=2) {
-        ((((row*736LL +col1)<736LL*736LL)) ? (void)0 : __assert_func ("test024.c-mark.c", 413, __FUNCTION__, "((row*M2+col1)<M1*M2)"));
-        (((row+n*736LL) < 736LL*736LL) ? (void)0 : __assert_func ("test024.c-mark.c", 414, __FUNCTION__, "(row+n*M1) < M1*L"));
-        (((n1+col*(2*736LL)) <736LL*736LL) ? (void)0 : __assert_func ("test024.c-mark.c", 415, __FUNCTION__, "(n1+col*(2*L)) <M2*L"));
-        (((n1+1+col*(2*736LL)) < 736LL*736LL) ? (void)0 : __assert_func ("test024.c-mark.c", 416, __FUNCTION__, "(n1+1+col*(2*L)) < M2*L"));
+          if(!(((row*736LL +col1)<736LL*736LL)&&((row+n*736LL) < 736LL*736LL)&&((n1+col*(2*736LL)) <736LL*736LL)&&((n1+1+col*(2*736LL)) < 736LL*736LL))) {
+           fprintf((_impure_ptr->_stderr),"simd debug error\n");
+           exit(1);
+        }
         if (n==0) {
           *(float*)&C_orig_simd[row*736LL +col1] = *(float*)&A_orig_simd[row+n*736LL] * *(float*)&B_orig_simd[n1+col*(2*736LL)];
           *(float*)&C_orig_simd[row*736LL +col1+1] = *(float*)&A_orig_simd[row+n*736LL] * *(float*)&B_orig_simd[n1+1+col*(2*736LL)];

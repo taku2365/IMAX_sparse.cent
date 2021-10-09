@@ -36,7 +36,7 @@ CC            = ../../bin/aarch64-elf-gcc
 ifeq ($(IMAX_DEBUG),1)
 CFLAGS = -I. -O0 -g3 -Wno-attributes $(OPTION)	
 else 	
-CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
+CFLAGS = -I. -O3 -Wno-attributes $(OPTION) -fno-exceptions
 endif
 AS            = ../../bin/aarch64-elf-as
 ASFLAGS       = 
