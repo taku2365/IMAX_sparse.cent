@@ -321,7 +321,6 @@ int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, con
   
   Ull CHIP;
   Ull rofs,cofs;
-  printf("<<<IMAX>>>\n");
   // AもBも縦方向に格納している
   for (top=0; top<B_col_size/NCHIP; top+=RMGRP) { //RMGRPごとに計算するBの列を動かす
     for (blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { //blk_iterをmarginに入れたら次のHに飛ばしてくれる

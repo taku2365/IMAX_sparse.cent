@@ -90,5 +90,5 @@ sparse_lib:
 
 
 clean:		
-		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c 
+		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c test024-csim.emax6+dma
 		(cd ../../src/emax6_sparselib; $(MAKE) clean)

@@ -222,7 +222,8 @@ main()
 
   clock_t start,end;
   start = clock();
-  A_sparse = sparse_format4(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params);
+ 
+  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params,"sparse_data.wb",1);
   end = clock();
   printf("format %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
   
@@ -275,10 +276,10 @@ main()
   end = clock();
   printf("orig %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
   // orig_simd(A_tmp,B,C1);
-  start = clock();
-  count1 = sparse_multiply_imax3(nnz_A,A_sparse,B,C1,M2,params);
-  end = clock();
-  printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
+  // start = clock();
+  // count1 = sparse_multiply_imax3(nnz_A,A_sparse,B,C1,M2,params);
+  // end = clock();
+  // printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
   
 
  
@@ -323,20 +324,20 @@ main()
   // printf("count_normal %d count_sparse %d \n",count0,count1);
   // exit(1);
   
-    for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
-      for (row=0,row1=0; row1<L; row+=2,row1+=1) {
-        if ((C0[col1+row1*L] != C1[col*2*M2+row])||(C0[(col1+1)+row1*L] != C1[col*2*M2+row+1])) {
-          count2++;
-          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1, (double)*(float*)&C0[col1+row1*L],
-                                                  row, col*2, (double)*(float*)&C1[col*2*M2+row]);
-          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1+1, (double)*(float*)&C0[(col1+1)+row1*L],
-                                                  row+1, col*2, (double)*(float*)&C1[col*2*M2+row+1]);  
-          exit(1);       
-      }
-    }
-  }
+  //   for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
+  //     for (row=0,row1=0; row1<L; row+=2,row1+=1) {
+  //       if ((C0[col1+row1*L] != C1[col*2*M2+row])||(C0[(col1+1)+row1*L] != C1[col*2*M2+row+1])) {
+  //         count2++;
+  //         printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1, (double)*(float*)&C0[col1+row1*L],
+  //                                                 row, col*2, (double)*(float*)&C1[col*2*M2+row]);
+  //         printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1+1, (double)*(float*)&C0[(col1+1)+row1*L],
+  //                                                 row+1, col*2, (double)*(float*)&C1[col*2*M2+row+1]);  
+  //         exit(1);       
+  //     }
+  //   }
+  // }
 
-  printf("count_normal %d count_sparse %d  normal/sparse = %d\n",count0,count1,count0/count1);
+  // printf("count_normal %d count_sparse %d  normal/sparse = %d\n",count0,count1,count0/count1);
 
 
   // get_nanosec(0);
@@ -383,6 +384,7 @@ main()
     }
   }
   
+free(A_tmp);
 
 
 }
@@ -440,7 +442,7 @@ orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
 
 
 
-void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C1) {
+void imax_debug(const emax6_sparse2* const A_sparse,const Uint* const B, Uint* C1) {
   Ull  CHIP;
   Ull  LOOP1, LOOP0;
   Ull  INIT1, INIT0;
