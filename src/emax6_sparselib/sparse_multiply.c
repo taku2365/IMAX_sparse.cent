@@ -315,7 +315,7 @@ int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, con
     int A_col_H_div = A_col_size/H; // Aの列をHで何分割するか
     int pad_index;
     int count=0;
-    memset(C, 0, sizeof(Uint)*A_row_size*B_col_size);
+    // memset(C, 0, sizeof(Uint)*A_row_size*B_col_size);
 
  int top,blk,h,w,blk_iter;
   
@@ -348,7 +348,6 @@ int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, con
                 //(h+1)があるのは実際のIMAXがUll単位で読み出すのに合わせるため
                 // IMAXの実際のコードに対応するために*4しているので、こちらでは/4する
                 //+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_sizeでsimdのために2をかけないのはw+=2ですでに実現しているから。
-
                   *(float*)&C[(A_sort_index[rofs])/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  += *(float*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[A_val_index_set[h*A_row_size+2*rofs+blk*A_row_size+A_row_size*A_col_size]/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                   *(float*)&C[(A_sort_index[rofs])/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  += *(float*)&A_val_index_set[h*A_row_size+rofs+blk*A_row_size]**(float*)&B[A_val_index_set[h*A_row_size+2*rofs+blk*A_row_size+A_row_size*A_col_size]/4+1+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];
                   *(float*)&C[(A_sort_index[rofs])/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]  += *(float*)&A_val_index_set[(h+1)*A_row_size+rofs+blk*A_row_size]**(float*)&B[A_val_index_set[h*A_row_size+2*rofs+blk*A_row_size+A_row_size*A_col_size+1]/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size];

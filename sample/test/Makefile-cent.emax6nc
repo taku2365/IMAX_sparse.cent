@@ -30,8 +30,8 @@ export CC      = gcc
 export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 
 export LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
-PROGRAM	      = test024-cent.emax6nc
-OBJS          =	test024.o
+PROGRAM	      = test025-cent.emax6nc test024-cent.emax6nc
+OBJS          =	test025.o test024.o
 #PROGRAM	      = test023-cent.emax6nc
 #OBJS          =	test023.o
 SRCS          =	($(OBJS:.o=.c))
@@ -44,8 +44,13 @@ EMAX_SPARSE_LIB = ../../src/emax6_sparselib/libsparse.a
 
 all: $(PROGRAM) 
 
-$(PROGRAM):	sparse_lib $(OBJS)
-		$(CC)  $(OBJS) -o $(PROGRAM) $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
+test024-cent.emax6nc:	sparse_lib test024.o
+		$(CC)  test024.o -o test024-cent.emax6nc $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
+
+
+test025-cent.emax6nc:	sparse_lib test025.o 
+		$(CC)  test025.o  -o test025-cent.emax6nc $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
+
 
 sparse_lib:
 	(cd ../../src/emax6_sparselib; $(MAKE) static)

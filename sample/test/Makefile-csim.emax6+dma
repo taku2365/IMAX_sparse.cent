@@ -28,7 +28,7 @@
 PROJTOP	      = ../../
 IMAX_DEBUG    = 0
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
-PROGRAM       =	 test024-csim.emax6+dma
+PROGRAM       =	 test024-csim.emax6+dma test025-csim.emax6+dma
 #PROGRAM       =	 test022-csim.emax6+dma
 CPP           = ../../bin/aarch64-elf-cpp -P
 CC            = ../../bin/aarch64-elf-gcc
@@ -44,8 +44,8 @@ LD            = ../../bin/aarch64-elf-ld
 LDFLAGS       =	-static -M $(PROJTOP)/lib/asim64-lib/_map
 LIBS          =	-lgcc -lm -lc -lsparse
 LIBFLAGS      = -L$(PROJTOP)/lib/gcc/aarch64-elf/4.8.2/ -L$(PROJTOP)/aarch64-elf/lib/ -L../../src/emax6_sparselib/
-OBJS          = test024-emax6.o 
-SRCS          = test024.c
+OBJS          = test024-emax6.o test025-emax6.o 
+SRCS          = test024.c test025.c
 #OBJS          = test022-emax6.o
 #SRCS          = test022.c
 INCLUDE = -I../../src/emax6_sparselib/Include
@@ -65,6 +65,17 @@ test024-emax6.c: test024.c
 		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
 
 
+test025-csim.emax6+dma:		test025-emax6.o
+		$(LD) $(INCLUDE) $(LDFLAGS) -o $@ $(PROJTOP)/lib/asim64-lib/_start.o $< $(LIBFLAGS) --start-group $(LIBS) --end-group
+
+test025-emax6.o: test025-emax6.c sparse_lib
+		$(CC) $(CFLAGS) $(INCLUDE) -c $<
+
+test025-emax6.c: test025.c 
+		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
+		$(CPP) $(OPTION) $(INCLUDE) $<-mark.c > $<-cppo.c
+		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
+
 
 #test022-csim.emax6+dma:        test022-emax6.o
 #		$(LD) $(LDFLAGS) -o $@ $(PROJTOP)/lib/asim64-lib/_start.o $< $(LIBFLAGS) --start-group $(LIBS) --end-group
@@ -81,6 +92,7 @@ test024-emax6.c: test024.c
 
 
 test024-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
+test025-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 #test022-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
 
 
@@ -90,5 +102,5 @@ sparse_lib:
 
 
 clean:		
-		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c test024-csim.emax6+dma
+		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c test024-csim.emax6+dma test025-csim.emax6+dma
 		(cd ../../src/emax6_sparselib; $(MAKE) clean)

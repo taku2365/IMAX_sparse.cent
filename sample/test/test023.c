@@ -266,7 +266,7 @@ main()
   start = clock();
   count1 = sparse_multiply_imax1(A_sparse,B,C1,M2,params);
   end = clock();
-  printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC)
+  printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
  
 
 

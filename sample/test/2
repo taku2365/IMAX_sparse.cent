@@ -1,1 +1,14 @@
-make: *** No rule to make target '1'.  Stop.
+malloc size 10846192 
+membase_before_align: 0e69e010
+membase_after_align: 0e69e020
+membase: 0e69e020
+A : 0e69e020
+B : 0eac1720
+C0: 0ecd2720
+C1: 0eee3720
+format 1.03
+<<<ORIG>>>
+jjjjjj
+nanosec: ARM:1459469625 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1459469625
+<<<IMAX>>>
+nanosec: ARM:1369394824 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1369394824

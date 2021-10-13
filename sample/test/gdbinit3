@@ -67,7 +67,6 @@ end
 
 b main
 b main:202
-b imax_debug
-b test024.c:555
+b imax
 run
 

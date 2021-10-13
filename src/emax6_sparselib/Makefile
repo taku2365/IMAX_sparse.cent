@@ -8,6 +8,7 @@ ARCHIVE = $(AR) $(ARFLAGS)
 EMAX6_SPARSE_LIB = sparse_format.o sparse_multiply.o
 AR_TARGET = libsparse.a
 ARM_CORSS_COMPILE = 0
+ARM_COMPILE = 0
 
 ifeq ($(ARM_CORSS_COMPILE),1)
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
@@ -15,7 +16,17 @@ CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
 CPP           = ../../bin/aarch64-elf-cpp -P
 CC            = ../../bin/aarch64-elf-gcc
 ARCHIVE       = ../../bin/aarch64-elf-ar $(ARFLAGS)
+
 endif
+
+ifeq ($(ARM_COMPILE),1)
+OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
+CPP           = cpp -P
+CC            = gcc
+CFLAGS        = -I. -O2 $(OPTION)
+
+endif
+
 
 
 

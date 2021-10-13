@@ -1,5 +1,5 @@
 #ifndef EMAX_SPARSE
-
+#define EMAX_SPARSE 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

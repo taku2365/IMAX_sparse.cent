@@ -470,7 +470,6 @@ emax6_sparse2* sparse_format4(int nnz,Ull* val,const Uint* const val_tmp, int* c
       *(Uint*)&val_index_set[col*2*row_size+row+1+row_size*col_size] = *(Uint*)&val_index_set_tmp[(col1+1)*row_size+row1];
     }
   }
-  printf("hhhh\n");
 //   Uint sum=0,sum1=0;
 
 //     for (int col=0; col<col_size; col+=1){
@@ -549,8 +548,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         sparse_info->row_normal_size = row_size;
         sparse_info->col_normal_size = col_size;
         fread(&sparse_info->nnz,                     sizeof(int),  1,     file);
-        val_index_set = (Uint*) val;
-        fread(val_index_set,     sizeof(Uint), 2*((col_size+1)*row_size), file);
+        fread(val,     sizeof(Uint), 2*((col_size+1)*row_size), file);
         sparse_info->val_index_set = val_index_set;
         int* col_count = calloc((col_size+1),sizeof(int)); 
         fread(col_count,         sizeof(int),  col_size+1,                file);

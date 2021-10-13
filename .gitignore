@@ -12,4 +12,5 @@ sample/4dimage/472.pnm
 sample/deeppose/data/wfc6
 sample/graph-data/web-BerkStan.edges
 sample/mm_cnn_lf/472.ini
-sample/test/test022-csim.emax6+dma.log
+sample/test/*.log
+sample/test/*.tmp

@@ -21,7 +21,18 @@
 			"yacc_lex_util.h": "c",
 			"emax6.h": "c",
 			"mman.h": "c",
-			"*.def": "c"
+			"*.def": "c",
+			"pthread.h": "c",
+			"random": "c",
+			"*.tcc": "c",
+			"cstdlib": "c",
+			"cwchar": "c",
+			"exception": "c",
+			"system_error": "c",
+			"initializer_list": "c",
+			"vector": "c",
+			"array": "c",
+			"typeinfo": "c"
 		}
 	}
 }
