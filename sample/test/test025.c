@@ -41,9 +41,10 @@ typedef struct {Ull u[2];} Dll;
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 
 #if defined(EMAX6)
-#include "../../src/conv-c2c/emax6.h"
-#include "../../src/conv-c2c/emax6lib.c"
-#include "emax6_sparselib.h"
+// #include "../../src/conv-c2c/emax6.h"
+// #include "../../src/conv-c2c/emax6lib.c"
+#include "../../src/emax6_sparselib/Include/emax6_sparselib.h"
+#include "./../../conv-c2c/emax6lib.c"
 #endif
 #if !defined(ARMSIML)
 #include "./xdisp.c"

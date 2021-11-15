@@ -32,7 +32,10 @@
 			"initializer_list": "c",
 			"vector": "c",
 			"array": "c",
-			"typeinfo": "c"
+			"typeinfo": "c",
+			"gemm.h": "c",
+			"sparse_gemm.h": "c",
+			"string.h": "c"
 		}
 	}
 }

@@ -5827,6 +5827,101 @@ extern XdbeBackBufferAttributes *XdbeGetBackBufferAttributes(
     XdbeBackBuffer
 );
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
+extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+       size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memmove (void *__dest, const void *__src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memccpy (void *__restrict __dest, const void *__restrict __src,
+        int __c, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int memcmp (const void *__s1, const void *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memchr (const void *__s, int __c, size_t __n)
+      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strncpy (char *__restrict __dest,
+        const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strcat (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strncat (char *__restrict __dest, const char *__restrict __src,
+        size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strcmp (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strncmp (const char *__s1, const char *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strcoll (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern size_t strxfrm (char *__restrict __dest,
+         const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int strcoll_l (const char *__s1, const char *__s2, __locale_t __l)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2, 3)));
+extern size_t strxfrm_l (char *__dest, const char *__src, size_t __n,
+    __locale_t __l) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
+extern char *strdup (const char *__s)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
+extern char *strndup (const char *__string, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
+extern char *strchr (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strrchr (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern size_t strcspn (const char *__s, const char *__reject)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern size_t strspn (const char *__s, const char *__accept)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strpbrk (const char *__s, const char *__accept)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strstr (const char *__haystack, const char *__needle)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strtok (char *__restrict __s, const char *__restrict __delim)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern char *__strtok_r (char *__restrict __s,
+    const char *__restrict __delim,
+    char **__restrict __save_ptr)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern char *strtok_r (char *__restrict __s, const char *__restrict __delim,
+         char **__restrict __save_ptr)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern size_t strlen (const char *__s)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern size_t strnlen (const char *__string, size_t __maxlen)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strerror (int __errnum) __attribute__ ((__nothrow__ , __leaf__));
+extern int strerror_r (int __errnum, char *__buf, size_t __buflen) __asm__ ("" "__xpg_strerror_r") __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern char *strerror_l (int __errnum, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern void __bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern void bcopy (const void *__src, void *__dest, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int bcmp (const void *__s1, const void *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *index (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *rindex (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern int ffs (int __i) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern int strcasecmp (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strncasecmp (const char *__s1, const char *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strsep (char **__restrict __stringp,
+       const char *__restrict __delim)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strsignal (int __sig) __attribute__ ((__nothrow__ , __leaf__));
+extern char *__stpcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *stpcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *__stpncpy (char *__restrict __dest,
+   const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *stpncpy (char *__restrict __dest,
+        const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
 void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
 void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
 int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
@@ -6143,6 +6238,48 @@ struct tconf {
   Ull op_val;
   Ull reg;
 } tconf[16];
+typedef struct {
+    int nnz;
+    int col_normal_size;
+    int row_normal_size;
+    int* row_p;
+    int* col_index;
+    Uint* val;
+    int* paddings;
+} emax6_sparse;
+typedef struct {
+    int nnz;
+    int col_normal_size;
+    int row_normal_size;
+    int* col_p;
+    int* col_index;
+    Ull* val_index_set;
+    Uint* sort_index;
+    int* col_num;
+    int* paddings;
+    Ull* margin;
+} emax6_sparse1;
+typedef struct {
+    int nnz;
+    int col_normal_size;
+    int row_normal_size;
+    int* col_p;
+    int* col_index;
+    Uint* val_index_set;
+    Uint* sort_index;
+    int* col_num;
+    int* paddings;
+    Ull* margin;
+} emax6_sparse2;
+typedef struct {
+    int H_param;
+    int W_param;
+    int RMGRP_param;
+    int NCHIP_param;
+} emax6_param;
+emax6_sparse2* sparse_format4(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
+emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
+int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 enum { NANOS_ARM, NANOS_DRAIN, NANOS_CONF, NANOS_REGV, NANOS_RANGE, NANOS_LOAD, NANOS_EXEC, NANOS_TOTAL, NANOS_CLASS };
 typedef struct {
   Uint f : 23;
@@ -6344,101 +6481,6 @@ typedef unsigned long int uint_fast64_t;
 typedef unsigned long int uintptr_t;
 typedef long int intmax_t;
 typedef unsigned long int uintmax_t;
-extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
-       size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memmove (void *__dest, const void *__src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memccpy (void *__restrict __dest, const void *__restrict __src,
-        int __c, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int memcmp (const void *__s1, const void *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memchr (const void *__s, int __c, size_t __n)
-      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strncpy (char *__restrict __dest,
-        const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strcat (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strncat (char *__restrict __dest, const char *__restrict __src,
-        size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strcmp (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strncmp (const char *__s1, const char *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strcoll (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern size_t strxfrm (char *__restrict __dest,
-         const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int strcoll_l (const char *__s1, const char *__s2, __locale_t __l)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2, 3)));
-extern size_t strxfrm_l (char *__dest, const char *__src, size_t __n,
-    __locale_t __l) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
-extern char *strdup (const char *__s)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
-extern char *strndup (const char *__string, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
-extern char *strchr (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strrchr (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern size_t strcspn (const char *__s, const char *__reject)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern size_t strspn (const char *__s, const char *__accept)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strpbrk (const char *__s, const char *__accept)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strstr (const char *__haystack, const char *__needle)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strtok (char *__restrict __s, const char *__restrict __delim)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern char *__strtok_r (char *__restrict __s,
-    const char *__restrict __delim,
-    char **__restrict __save_ptr)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern char *strtok_r (char *__restrict __s, const char *__restrict __delim,
-         char **__restrict __save_ptr)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern size_t strlen (const char *__s)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern size_t strnlen (const char *__string, size_t __maxlen)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strerror (int __errnum) __attribute__ ((__nothrow__ , __leaf__));
-extern int strerror_r (int __errnum, char *__buf, size_t __buflen) __asm__ ("" "__xpg_strerror_r") __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern char *strerror_l (int __errnum, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
-extern void __bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern void bcopy (const void *__src, void *__dest, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int bcmp (const void *__s1, const void *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *index (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *rindex (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern int ffs (int __i) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern int strcasecmp (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strncasecmp (const char *__s1, const char *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strsep (char **__restrict __stringp,
-       const char *__restrict __delim)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strsignal (int __sig) __attribute__ ((__nothrow__ , __leaf__));
-extern char *__stpcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *stpcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *__stpncpy (char *__restrict __dest,
-   const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *stpncpy (char *__restrict __dest,
-        const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
 struct dirent
   {
     __ino_t d_ino;
@@ -7730,48 +7772,6 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
     break;
   }
 }
-typedef struct {
-    int nnz;
-    int col_normal_size;
-    int row_normal_size;
-    int* row_p;
-    int* col_index;
-    Uint* val;
-    int* paddings;
-} emax6_sparse;
-typedef struct {
-    int nnz;
-    int col_normal_size;
-    int row_normal_size;
-    int* col_p;
-    int* col_index;
-    Ull* val_index_set;
-    Uint* sort_index;
-    int* col_num;
-    int* paddings;
-    Ull* margin;
-} emax6_sparse1;
-typedef struct {
-    int nnz;
-    int col_normal_size;
-    int row_normal_size;
-    int* col_p;
-    int* col_index;
-    Uint* val_index_set;
-    Uint* sort_index;
-    int* col_num;
-    int* paddings;
-    Ull* margin;
-} emax6_sparse2;
-typedef struct {
-    int H_param;
-    int W_param;
-    int RMGRP_param;
-    int NCHIP_param;
-} emax6_param;
-emax6_sparse2* sparse_format4(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param);
-emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,const char* file_name,int read_or_write);
-int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 extern int *__errno_location (void) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
 struct iovec
   {
@@ -9012,298 +9012,298 @@ volatile emax6_conf_mm();
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[0] = (((4LL)*(8))<<(32))|((4LL)*(8));
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[1] = rofs;
 	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[2] = (((736LL)*(4))<<(32))|((736LL)*(4));
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea0b = (Ull)b1[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea1b = (Ull)b0[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea0b = (Ull)b3[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea1b = (Ull)b2[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][2].ea1b = (Ull)a[0][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[1][2].ea1b = (Ull)a[0][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0b = (Ull)b1[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1b = (Ull)b0[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea0b = (Ull)b3[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea1b = (Ull)b2[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][2].ea1b = (Ull)a[1][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[2][2].ea1b = (Ull)a[1][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0b = (Ull)b1[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1b = (Ull)b0[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea0b = (Ull)b3[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea1b = (Ull)b2[2];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][2].ea1b = (Ull)a[2][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[3][2].ea1b = (Ull)a[2][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0b = (Ull)b1[3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1b = (Ull)b0[3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea0b = (Ull)b3[3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea1b = (Ull)b2[3];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][2].ea1b = (Ull)a[3][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[4][2].ea1b = (Ull)a[3][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0b = (Ull)b1[4];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1b = (Ull)b0[4];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea0b = (Ull)b3[4];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea1b = (Ull)b2[4];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][2].ea1b = (Ull)a[4][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[5][2].ea1b = (Ull)a[4][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea0b = (Ull)b1[5];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea1b = (Ull)b0[5];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea0b = (Ull)b3[5];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea1b = (Ull)b2[5];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][2].ea1b = (Ull)a[5][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[6][2].ea1b = (Ull)a[5][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea0b = (Ull)b1[6];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea1b = (Ull)b0[6];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea0b = (Ull)b3[6];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea1b = (Ull)b2[6];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][2].ea1b = (Ull)a[6][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[7][2].ea1b = (Ull)a[6][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea0b = (Ull)b1[7];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea1b = (Ull)b0[7];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea0b = (Ull)b3[7];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea1b = (Ull)b2[7];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][2].ea1b = (Ull)a[7][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[8][2].ea1b = (Ull)a[7][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea0b = (Ull)b1[8];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea1b = (Ull)b0[8];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea0b = (Ull)b3[8];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea1b = (Ull)b2[8];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][2].ea1b = (Ull)a[8][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[9][2].ea1b = (Ull)a[8][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea0b = (Ull)b1[9];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea1b = (Ull)b0[9];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea0b = (Ull)b3[9];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea1b = (Ull)b2[9];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][2].ea1b = (Ull)a[9][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[10][2].ea1b = (Ull)a[9][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea0b = (Ull)b1[10];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea1b = (Ull)b0[10];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea0b = (Ull)b3[10];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea1b = (Ull)b2[10];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][2].ea1b = (Ull)a[10][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[11][2].ea1b = (Ull)a[10][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea0b = (Ull)b1[11];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea1b = (Ull)b0[11];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea0b = (Ull)b3[11];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea1b = (Ull)b2[11];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][2].ea1b = (Ull)a[11][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[12][2].ea1b = (Ull)a[11][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea0b = (Ull)b1[12];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea1b = (Ull)b0[12];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea0b = (Ull)b3[12];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea1b = (Ull)b2[12];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][2].ea1b = (Ull)a[12][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[13][2].ea1b = (Ull)a[12][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea0b = (Ull)b1[13];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea1b = (Ull)b0[13];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea0b = (Ull)b3[13];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea1b = (Ull)b2[13];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][2].ea1b = (Ull)a[13][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[14][2].ea1b = (Ull)a[13][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea0b = (Ull)b1[14];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea1b = (Ull)b0[14];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea0b = (Ull)b3[14];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea1b = (Ull)b2[14];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][2].ea1b = (Ull)a[14][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[15][2].ea1b = (Ull)a[14][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea0b = (Ull)b1[15];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea1b = (Ull)b0[15];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea0b = (Ull)b3[15];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea1b = (Ull)b2[15];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][2].ea1b = (Ull)a[15][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[16][2].ea1b = (Ull)a[15][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea0b = (Ull)b1[16];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea1b = (Ull)b0[16];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea0b = (Ull)b3[16];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea1b = (Ull)b2[16];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][2].ea1b = (Ull)a[16][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[17][2].ea1b = (Ull)a[16][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea0b = (Ull)b1[17];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea1b = (Ull)b0[17];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea0b = (Ull)b3[17];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea1b = (Ull)b2[17];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][2].ea1b = (Ull)a[17][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[18][2].ea1b = (Ull)a[17][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea0b = (Ull)b1[18];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea1b = (Ull)b0[18];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea0b = (Ull)b3[18];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea1b = (Ull)b2[18];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][2].ea1b = (Ull)a[18][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[19][2].ea1b = (Ull)a[18][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea0b = (Ull)b1[19];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea1b = (Ull)b0[19];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea0b = (Ull)b3[19];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea1b = (Ull)b2[19];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][2].ea1b = (Ull)a[19][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[20][2].ea1b = (Ull)a[19][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea0b = (Ull)b1[20];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea1b = (Ull)b0[20];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea0b = (Ull)b3[20];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea1b = (Ull)b2[20];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][2].ea1b = (Ull)a[20][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[21][2].ea1b = (Ull)a[20][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea0b = (Ull)b1[21];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea1b = (Ull)b0[21];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea0b = (Ull)b3[21];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea1b = (Ull)b2[21];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][2].ea1b = (Ull)a[21][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[22][2].ea1b = (Ull)a[21][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea0b = (Ull)b1[22];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea1b = (Ull)b0[22];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea0b = (Ull)b3[22];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea1b = (Ull)b2[22];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][2].ea1b = (Ull)a[22][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[23][2].ea1b = (Ull)a[22][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea0b = (Ull)b1[23];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea1b = (Ull)b0[23];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea0b = (Ull)b3[23];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea1b = (Ull)b2[23];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][2].ea1b = (Ull)a[23][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[24][2].ea1b = (Ull)a[23][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea0b = (Ull)b1[24];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea1b = (Ull)b0[24];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea0b = (Ull)b3[24];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea1b = (Ull)b2[24];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][2].ea1b = (Ull)a[24][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[25][2].ea1b = (Ull)a[24][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea0b = (Ull)b1[25];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea1b = (Ull)b0[25];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea0b = (Ull)b3[25];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea1b = (Ull)b2[25];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][2].ea1b = (Ull)a[25][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[26][2].ea1b = (Ull)a[25][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea0b = (Ull)b1[26];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea1b = (Ull)b0[26];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea0b = (Ull)b3[26];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea1b = (Ull)b2[26];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][2].ea1b = (Ull)a[26][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[27][2].ea1b = (Ull)a[26][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea0b = (Ull)b1[27];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea1b = (Ull)b0[27];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea0b = (Ull)b3[27];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea1b = (Ull)b2[27];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][2].ea1b = (Ull)a[27][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[28][2].ea1b = (Ull)a[27][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea0b = (Ull)b1[28];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea1b = (Ull)b0[28];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea0b = (Ull)b3[28];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea1b = (Ull)b2[28];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][2].ea1b = (Ull)a[28][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[29][2].ea1b = (Ull)a[28][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea0b = (Ull)b1[29];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea1b = (Ull)b0[29];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea0b = (Ull)b3[29];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea1b = (Ull)b2[29];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][2].ea1b = (Ull)a[29][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[30][2].ea1b = (Ull)a[29][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea0b = (Ull)b1[30];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea1b = (Ull)b0[30];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea0b = (Ull)b3[30];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea1b = (Ull)b2[30];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][2].ea1b = (Ull)a[30][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[31][2].ea1b = (Ull)a[30][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea0b = (Ull)b1[31];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea1b = (Ull)b0[31];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea0b = (Ull)b3[31];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea1b = (Ull)b2[31];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][2].ea1b = (Ull)a[31][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[32][2].ea1b = (Ull)a[31][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea0b = (Ull)b1[32];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea1b = (Ull)b0[32];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea0b = (Ull)b3[32];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea1b = (Ull)b2[32];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][2].ea1b = (Ull)a[32][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[33][2].ea1b = (Ull)a[32][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea0b = (Ull)b1[33];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea1b = (Ull)b0[33];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea0b = (Ull)b3[33];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea1b = (Ull)b2[33];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][2].ea1b = (Ull)a[33][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[34][2].ea1b = (Ull)a[33][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea0b = (Ull)b1[34];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea1b = (Ull)b0[34];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea0b = (Ull)b3[34];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea1b = (Ull)b2[34];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][2].ea1b = (Ull)a[34][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[35][2].ea1b = (Ull)a[34][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea0b = (Ull)b1[35];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea1b = (Ull)b0[35];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea0b = (Ull)b3[35];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea1b = (Ull)b2[35];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][2].ea1b = (Ull)a[35][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[36][2].ea1b = (Ull)a[35][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea0b = (Ull)b1[36];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea1b = (Ull)b0[36];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea0b = (Ull)b3[36];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea1b = (Ull)b2[36];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][2].ea1b = (Ull)a[36][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[37][2].ea1b = (Ull)a[36][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea0b = (Ull)b1[37];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea1b = (Ull)b0[37];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea0b = (Ull)b3[37];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea1b = (Ull)b2[37];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][2].ea1b = (Ull)a[37][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[38][2].ea1b = (Ull)a[37][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea0b = (Ull)b1[38];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea1b = (Ull)b0[38];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea0b = (Ull)b3[38];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea1b = (Ull)b2[38];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][2].ea1b = (Ull)a[38][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[39][2].ea1b = (Ull)a[38][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea0b = (Ull)b1[39];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea1b = (Ull)b0[39];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea0b = (Ull)b3[39];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea1b = (Ull)b2[39];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][2].ea1b = (Ull)a[39][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[40][2].ea1b = (Ull)a[39][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea0b = (Ull)b1[40];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea1b = (Ull)b0[40];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea0b = (Ull)b3[40];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea1b = (Ull)b2[40];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][2].ea1b = (Ull)a[40][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[41][2].ea1b = (Ull)a[40][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea0b = (Ull)b1[41];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea1b = (Ull)b0[41];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea0b = (Ull)b3[41];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea1b = (Ull)b2[41];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][2].ea1b = (Ull)a[41][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[42][2].ea1b = (Ull)a[41][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea0b = (Ull)b1[42];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea1b = (Ull)b0[42];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea0b = (Ull)b3[42];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea1b = (Ull)b2[42];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][2].ea1b = (Ull)a[42][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[43][2].ea1b = (Ull)a[42][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea0b = (Ull)b1[43];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea1b = (Ull)b0[43];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea0b = (Ull)b3[43];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea1b = (Ull)b2[43];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][2].ea1b = (Ull)a[43][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[44][2].ea1b = (Ull)a[43][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea0b = (Ull)b1[44];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea1b = (Ull)b0[44];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea0b = (Ull)b3[44];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea1b = (Ull)b2[44];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][2].ea1b = (Ull)a[44][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[45][2].ea1b = (Ull)a[44][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea0b = (Ull)b1[45];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea1b = (Ull)b0[45];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea0b = (Ull)b3[45];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea1b = (Ull)b2[45];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][2].ea1b = (Ull)a[45][0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[46][2].ea1b = (Ull)a[45][1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea0o = (Ull)c00[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][0].ea0o = (Ull)c00[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea1b = (Ull)c00[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][0].ea1b = (Ull)c00[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea0o = (Ull)c01[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][1].ea0o = (Ull)c01[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea1b = (Ull)c01[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][1].ea1b = (Ull)c01[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea0o = (Ull)c02[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][2].ea0o = (Ull)c02[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea1b = (Ull)c02[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][2].ea1b = (Ull)c02[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][3].ea0o = (Ull)c03[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][3].ea0o = (Ull)c03[1];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][3].ea1b = (Ull)c03[0];
-	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][3].ea1b = (Ull)c03[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea0b = b1[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea1b = b0[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea0b = b3[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea1b = b2[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][2].ea1b = a[0][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[1][2].ea1b = a[0][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0b = b1[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1b = b0[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea0b = b3[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea1b = b2[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][2].ea1b = a[1][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[2][2].ea1b = a[1][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0b = b1[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1b = b0[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea0b = b3[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea1b = b2[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][2].ea1b = a[2][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[3][2].ea1b = a[2][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0b = b1[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1b = b0[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea0b = b3[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea1b = b2[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][2].ea1b = a[3][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[4][2].ea1b = a[3][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0b = b1[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1b = b0[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea0b = b3[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea1b = b2[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][2].ea1b = a[4][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[5][2].ea1b = a[4][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea0b = b1[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea1b = b0[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea0b = b3[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea1b = b2[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][2].ea1b = a[5][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[6][2].ea1b = a[5][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea0b = b1[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea1b = b0[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea0b = b3[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea1b = b2[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][2].ea1b = a[6][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[7][2].ea1b = a[6][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea0b = b1[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea1b = b0[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea0b = b3[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea1b = b2[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][2].ea1b = a[7][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[8][2].ea1b = a[7][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea0b = b1[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea1b = b0[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea0b = b3[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea1b = b2[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][2].ea1b = a[8][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[9][2].ea1b = a[8][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea0b = b1[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea1b = b0[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea0b = b3[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea1b = b2[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][2].ea1b = a[9][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[10][2].ea1b = a[9][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea0b = b1[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea1b = b0[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea0b = b3[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea1b = b2[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][2].ea1b = a[10][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[11][2].ea1b = a[10][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea0b = b1[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea1b = b0[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea0b = b3[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea1b = b2[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][2].ea1b = a[11][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[12][2].ea1b = a[11][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea0b = b1[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea1b = b0[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea0b = b3[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea1b = b2[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][2].ea1b = a[12][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[13][2].ea1b = a[12][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea0b = b1[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea1b = b0[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea0b = b3[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea1b = b2[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][2].ea1b = a[13][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[14][2].ea1b = a[13][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea0b = b1[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea1b = b0[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea0b = b3[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea1b = b2[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][2].ea1b = a[14][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[15][2].ea1b = a[14][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea0b = b1[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea1b = b0[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea0b = b3[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea1b = b2[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][2].ea1b = a[15][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[16][2].ea1b = a[15][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea0b = b1[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea1b = b0[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea0b = b3[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea1b = b2[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][2].ea1b = a[16][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[17][2].ea1b = a[16][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea0b = b1[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea1b = b0[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea0b = b3[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea1b = b2[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][2].ea1b = a[17][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[18][2].ea1b = a[17][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea0b = b1[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea1b = b0[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea0b = b3[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea1b = b2[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][2].ea1b = a[18][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[19][2].ea1b = a[18][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea0b = b1[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea1b = b0[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea0b = b3[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea1b = b2[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][2].ea1b = a[19][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[20][2].ea1b = a[19][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea0b = b1[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea1b = b0[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea0b = b3[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea1b = b2[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][2].ea1b = a[20][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[21][2].ea1b = a[20][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea0b = b1[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea1b = b0[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea0b = b3[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea1b = b2[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][2].ea1b = a[21][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[22][2].ea1b = a[21][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea0b = b1[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea1b = b0[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea0b = b3[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea1b = b2[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][2].ea1b = a[22][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[23][2].ea1b = a[22][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea0b = b1[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea1b = b0[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea0b = b3[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea1b = b2[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][2].ea1b = a[23][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[24][2].ea1b = a[23][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea0b = b1[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea1b = b0[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea0b = b3[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea1b = b2[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][2].ea1b = a[24][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[25][2].ea1b = a[24][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea0b = b1[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea1b = b0[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea0b = b3[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea1b = b2[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][2].ea1b = a[25][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[26][2].ea1b = a[25][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea0b = b1[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea1b = b0[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea0b = b3[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea1b = b2[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][2].ea1b = a[26][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[27][2].ea1b = a[26][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea0b = b1[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea1b = b0[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea0b = b3[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea1b = b2[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][2].ea1b = a[27][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[28][2].ea1b = a[27][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea0b = b1[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea1b = b0[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea0b = b3[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea1b = b2[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][2].ea1b = a[28][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[29][2].ea1b = a[28][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea0b = b1[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea1b = b0[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea0b = b3[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea1b = b2[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][2].ea1b = a[29][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[30][2].ea1b = a[29][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea0b = b1[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea1b = b0[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea0b = b3[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea1b = b2[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][2].ea1b = a[30][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[31][2].ea1b = a[30][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea0b = b1[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea1b = b0[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea0b = b3[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea1b = b2[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][2].ea1b = a[31][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[32][2].ea1b = a[31][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea0b = b1[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea1b = b0[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea0b = b3[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea1b = b2[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][2].ea1b = a[32][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[33][2].ea1b = a[32][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea0b = b1[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea1b = b0[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea0b = b3[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea1b = b2[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][2].ea1b = a[33][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[34][2].ea1b = a[33][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea0b = b1[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea1b = b0[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea0b = b3[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea1b = b2[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][2].ea1b = a[34][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[35][2].ea1b = a[34][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea0b = b1[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea1b = b0[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea0b = b3[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea1b = b2[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][2].ea1b = a[35][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[36][2].ea1b = a[35][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea0b = b1[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea1b = b0[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea0b = b3[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea1b = b2[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][2].ea1b = a[36][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[37][2].ea1b = a[36][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea0b = b1[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea1b = b0[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea0b = b3[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea1b = b2[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][2].ea1b = a[37][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[38][2].ea1b = a[37][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea0b = b1[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea1b = b0[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea0b = b3[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea1b = b2[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][2].ea1b = a[38][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[39][2].ea1b = a[38][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea0b = b1[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea1b = b0[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea0b = b3[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea1b = b2[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][2].ea1b = a[39][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[40][2].ea1b = a[39][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea0b = b1[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea1b = b0[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea0b = b3[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea1b = b2[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][2].ea1b = a[40][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[41][2].ea1b = a[40][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea0b = b1[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea1b = b0[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea0b = b3[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea1b = b2[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][2].ea1b = a[41][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[42][2].ea1b = a[41][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea0b = b1[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea1b = b0[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea0b = b3[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea1b = b2[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][2].ea1b = a[42][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[43][2].ea1b = a[42][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea0b = b1[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea1b = b0[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea0b = b3[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea1b = b2[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][2].ea1b = a[43][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[44][2].ea1b = a[43][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea0b = b1[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea1b = b0[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea0b = b3[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea1b = b2[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][2].ea1b = a[44][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[45][2].ea1b = a[44][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea0b = b1[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea1b = b0[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea0b = b3[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea1b = b2[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][2].ea1b = a[45][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[46][2].ea1b = a[45][1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea0o = c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][0].ea0o = c00[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea1b = c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][0].ea1b = c00[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea0o = c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][1].ea0o = c01[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea1b = c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][1].ea1b = c01[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea0o = c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][2].ea0o = c02[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea1b = c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][2].ea1b = c02[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][3].ea0o = c03[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][3].ea0o = c03[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][3].ea1b = c03[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[1].addr[48][3].ea1b = c03[1];
 	get_nanosec(NANOS_REGV);
 	emax6.status = STATUS_RANGE;
 	{struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
