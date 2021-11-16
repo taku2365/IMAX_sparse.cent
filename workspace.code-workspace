@@ -35,7 +35,8 @@
 			"typeinfo": "c",
 			"gemm.h": "c",
 			"sparse_gemm.h": "c",
-			"string.h": "c"
+			"string.h": "c",
+			"xlib.h": "c"
 		}
 	}
 }

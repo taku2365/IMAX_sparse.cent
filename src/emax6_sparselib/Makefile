@@ -24,6 +24,7 @@ SHARED_TARGET = libsparse.so
 SHARED_FLAG = -shared -fPIC
 ARM_CORSS_COMPILE = 0
 ARM_COMPILE = 0
+LINK_FORMAT = shared
 
 ifeq ($(ARM_CORSS_COMPILE),1)
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
@@ -72,14 +73,21 @@ endif
 	$(warning $(CC) $(CFLAGS) -c ${INCLUDE} $< -o $@)
 
 ifeq ($(ARM_COMPILE),1)
-./kernel/%-emax6.o: ./kernel/%-emax6.c  ./Include/emax6_sparselib.h 
-	$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
+ifeq ($(LINK_FORMAT),shared)
 ./kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h 
 	perl ./../conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
 	./../../conv-c2c-20210801/conv-c2c $<-cppo.c
+else
+./kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h 
+	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
+	./../../conv-c2c-20210801/conv-c2c $<-cppo.c
+	$(CC) $(CFLAGS) -c ${INCLUDE} $(basename $<)-emax6.c -o $(basename $<)-emax6.o
+endif
 else 
+
 /kernel/%.o: /kernel/%.c ./Include/emax6_sparselib.h ./Include/sparse_gemm.h
 	$(warning $(CC) $(CFLAGS) -c ${INCLUDE} $< -o $@)
 endif

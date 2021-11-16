@@ -7291,12 +7291,13 @@ double sum=0,sum1=0;
 Uint Z[(320*240)];
 main()
 {
-  Uchar* membase = sysinit((Uint)(2*((736LL +1)*736LL)*sizeof(Uint)
+  Uchar* membase;
+  sysinit((Uint)(2*((736LL +1)*736LL)*sizeof(Uint)
                 +736LL*736LL*sizeof(Uint)
                 +736LL*736LL*sizeof(Uint)
                 +736LL*736LL*sizeof(Uint)
                 +736LL*sizeof(Uint)
-                ),32);
+                ),32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A = (Uint*)membase;
   B = (Uint*)((Uchar*)A + 2*((736LL +1)*736LL)*sizeof(Uint));

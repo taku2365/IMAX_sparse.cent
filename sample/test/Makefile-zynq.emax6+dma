@@ -42,7 +42,7 @@ INCLUDE = -I../../src/emax6_sparselib/Include
 all:		$(PROGRAM)
 SHARED_LINK = 0
 SHARED_PATH =
-LINK_FORMAT = shared
+LINK_FORMAT = static
 
 
 
@@ -79,7 +79,7 @@ test025-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-202108
 test024-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 
 sparse_lib:
-	(cd ../../src/emax6_sparselib; $(MAKE) ARM_COMPILE=1 $(LINK_FORMAT))
+	(cd ../../src/emax6_sparselib; $(MAKE) ARM_COMPILE=1 LINK_FORMAT=$(LINK_FORMAT) $(LINK_FORMAT))
 # $(MAKE)はマクロも引き継がれる
 
 

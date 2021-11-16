@@ -44,7 +44,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 // #include "../../src/conv-c2c/emax6.h"
 //includeの順番が逆やとエラー
 #include "../../src/emax6_sparselib/Include/emax6_sparselib.h"
-#include "./../../conv-c2c/emax6lib.c"
+// #include "./../../conv-c2c/emax6lib.c"
 #endif
 #if !defined(ARMSIML)
 #include "./xdisp.c"
@@ -112,84 +112,90 @@ Uint Z[CSIMBM];
 #define abs(a) (((a)<0)?-(a):(a))
 
 
-Uchar* sysinit(Uint memsize,Uint alignment)
-{
+// Uchar* sysinit(Uint memsize,Uint alignment)
+// {
  
-  Uchar* membase;
-  #if defined(ARMZYNQ) && defined(EMAX5)
-    if (emax5_open() == NULL)
-      exit(1);
-    membase = emax_info.hpp_mmap;
-    {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
-  #elif defined(ARMZYNQ) && defined(EMAX6)
-    if (emax6_open() == NULL)
-      exit(1);
-    membase = emax_info.ddr_mmap;
-    {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
-  #else
-    membase = (Uchar*)malloc(memsize+alignment);
-    printf("malloc size %d \n",malloc_usable_size(membase));
-    printf("membase_before_align: %08.8x\n", (Uint)membase);
-    if ((Ull)membase & (Ull)(alignment-1))
-    membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
-    // memset(membase, 0, memsize+alignment);
-    int i;
-    for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)membase+i) = (Uint)0;
+//   Uchar* membase;
+//   #if defined(ARMZYNQ) && defined(EMAX5)
+//     if (emax5_open() == NULL)
+//       exit(1);
+//     membase = emax_info.hpp_mmap;
+//     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
+//   #elif defined(ARMZYNQ) && defined(EMAX6)
+//     if (emax6_open() == NULL)
+//       exit(1);
+//     membase = emax_info.ddr_mmap;
+//     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
+//   #else
+//     membase = (Uchar*)malloc(memsize+alignment);
+//     printf("malloc size %d \n",malloc_usable_size(membase));
+//     printf("membase_before_align: %08.8x\n", (Uint)membase);
+//     if ((Ull)membase & (Ull)(alignment-1))
+//     membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
+//     memset(membase, 0, memsize+alignment);
+//     int i;
+//     for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)membase+i) = (Uint)0;
 
 
     
-    // 32byte = 16byte*2 = 0x20
-    printf("membase_after_align: %08.8x\n", (Uint)membase);
+//     32byte = 16byte*2 = 0x20
+//     printf("membase_after_align: %08.8x\n", (Uint)membase);
 
     
-  #endif
+//   #endif
 
-  #if !defined(ARMZYNQ) && defined(EMAX5)
-    emax_info.hpp_phys = membase;
-    emax_info.hpp_mmap = emax_info.hpp_phys;
-    emax_info.acp_phys = ACP_BASE2_PHYS; /* defined in emax5lib.h >= ALOCLIMIT */
-    emax_info.acp_mmap = emax_info.acp_phys;
-  #endif
-  #if defined(EMAX5)
-    acp_conf = emax_info.acp_mmap; /* 8KB * 256sets */
-    acp_lmmi = emax_info.acp_mmap + 0x200000;
-    acp_regv = emax_info.acp_mmap + 0x304000;
-  #endif
+//   #if !defined(ARMZYNQ) && defined(EMAX5)
+//     emax_info.hpp_phys = membase;
+//     emax_info.hpp_mmap = emax_info.hpp_phys;
+//     emax_info.acp_phys = ACP_BASE2_PHYS; /* defined in emax5lib.h >= ALOCLIMIT */
+//     emax_info.acp_mmap = emax_info.acp_phys;
+//   #endif
+//   #if defined(EMAX5)
+//     acp_conf = emax_info.acp_mmap; /* 8KB * 256sets */
+//     acp_lmmi = emax_info.acp_mmap + 0x200000;
+//     acp_regv = emax_info.acp_mmap + 0x304000;
+//   #endif
 
-  #if !defined(ARMZYNQ) && defined(EMAX6)
-    emax_info.dma_phys = DMA_BASE2_PHYS; /* defined in emax6lib.h */
-    emax_info.dma_mmap = emax_info.dma_phys;
-    emax_info.reg_phys = REG_BASE2_PHYS; /* defined in emax6lib.h */
-    emax_info.reg_mmap = emax_info.reg_phys;
-    emax_info.lmm_phys = LMM_BASE2_PHYS;
-    emax_info.lmm_mmap = emax_info.lmm_phys;
-    emax_info.ddr_phys = membase;
-    emax_info.ddr_mmap = emax_info.ddr_phys;
-  #endif
-  #if (defined(ARMSIML) || defined(ARMZYNQ)) && defined(EMAX6)
-    emax6.dma_ctrl  = emax_info.dma_mmap;
-    emax6.reg_ctrl  = emax_info.reg_mmap;
-    ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].cmd = CMD_RESET;  // ★★★ RESET
-  #if defined(ARMZYNQ)
-    usleep(1);
-  #endif
-    ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
-    ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
-  #endif
+//   #if !defined(ARMZYNQ) && defined(EMAX6)
+//     emax_info.dma_phys = DMA_BASE2_PHYS; /* defined in emax6lib.h */
+//     emax_info.dma_mmap = emax_info.dma_phys;
+//     emax_info.reg_phys = REG_BASE2_PHYS; /* defined in emax6lib.h */
+//     emax_info.reg_mmap = emax_info.reg_phys;
+//     emax_info.lmm_phys = LMM_BASE2_PHYS;
+//     emax_info.lmm_mmap = emax_info.lmm_phys;
+//     emax_info.ddr_phys = membase;
+//     emax_info.ddr_mmap = emax_info.ddr_phys;
+//   #endif
+//   #if (defined(ARMSIML) || defined(ARMZYNQ)) && defined(EMAX6)
+//     emax6.dma_ctrl  = emax_info.dma_mmap;
+//     emax6.reg_ctrl  = emax_info.reg_mmap;
+//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].cmd = CMD_RESET;  // ★★★ RESET
+//   #if defined(ARMZYNQ)
+//     usleep(1);
+//   #endif
+//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
+//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
+//   #endif
 
-  return membase;
-}
+//   return membase;
+// }
 
 
 main()
 { //pointerでないので普通に足される。
-  Uchar* membase = sysinit((Uint)(2*((M1+1)*L)*sizeof(Uint)
+  // char* val;
+  // Uchar* membases = (Uchar*)malloc_test(sizeof(int)*10,&val);
+  // val = malloc_test(sizeof(int)*10);
+  // printf("malloc 10 %c \n",val[0]);
+  // printf("malloc size %d \n",malloc_usable_size(val));
+
+  Uchar* membase;
+  sysinit((Uint)(2*((M1+1)*L)*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
                 +M1*sizeof(Uint)
-                ),32);
-  printf("malloc size %d \n",malloc_usable_size(membase));
+                ),32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
   B  = (Uint*)((Uchar*)A  + 2*((M1+1)*L)*sizeof(Uint));
@@ -294,6 +300,8 @@ main()
 // nanosec: ARM:152969 DRAIN:3738010 CONF:80459 REGV:6775409 RANGE:2385811 LOAD:29399387 EXEC:4009696      total:46541741 %7
 // nanosec: ARM:154852 DRAIN:3737772 CONF:81778 REGV:6785112 RANGE:2377742 LOAD:29789329 EXEC:3514694      total:46441279 //3.02 %8
 // nanosec: ARM:161484 DRAIN:3740919 CONF:80551 REGV:6781150 RANGE:2391537 LOAD:29382167 EXEC:3101214      total:45639022 %9
+// nanosec: ARM:104578 DRAIN:5207871 CONF:73289 REGV:6516141 RANGE:1944812 LOAD:16307317 EXEC:1545583      total:31699591
+// nanosec: ARM:80258 DRAIN:5209217 CONF:72478 REGV:6516916 RANGE:1970062 LOAD:16281524  EXEC:1546550      total:31677005
 // nanosec: ARM:9881990142 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:9881990142
 
 
