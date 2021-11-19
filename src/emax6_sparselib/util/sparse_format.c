@@ -449,9 +449,9 @@ emax6_sparse2* sparse_format4(int nnz,Ull* val,const Uint* const val_tmp, int* c
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
         //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
         //indexを1からスタートする。0は下段にindexを伝播するためだけに使う
-        //Aが次のUnitに伝搬するのを表現するためにどの列かを特定+1
-        //*((Uint*)&val_index_set[どの行かを特定+(どの列かを特定+1)]) = Aの値  
-        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)*2(simd)*4(実際のIMAXコードはUllのアドレス演算なので4byteかける)
+        //*((Uint*)&val_index_set[どの行かを特定+(どの列かを特定)]) = Aの値  
+        //index読み出しunitと演算unitは独立しているので、前のversionみたいに前の段から伝播みたいなindexを用意しなくていい
+        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所*2(simd)*4(実際のIMAXコードはUllのアドレス演算なので4byteかける)
         val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = val_tmp[row_index[k]+col_index[k]*row_size];
         val_index_set_tmp[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k]*2*4;
         // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
@@ -523,6 +523,9 @@ emax6_sparse2* sparse_format4(int nnz,Ull* val,const Uint* const val_tmp, int* c
 //CCR base
 emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
 
+    // arg read_or_write 0 none 1 read 2 write
+
+
     FILE *file;
     emax6_sparse2* sparse_info = (emax6_sparse2 *) malloc(1*sizeof(emax6_sparse2));
     Uint* val_index_set = (Uint*) val;
@@ -548,10 +551,10 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         sparse_info->row_normal_size = row_size;
         sparse_info->col_normal_size = col_size;
         fread(&sparse_info->nnz,                     sizeof(int),  1,     file);
-        fread(val,     sizeof(Uint), 2*((col_size+1)*row_size), file);
+        fread(val,     sizeof(Uint), 2*((col_size)*row_size), file);
         sparse_info->val_index_set = val_index_set;
-        int* col_count = calloc((col_size+1),sizeof(int)); 
-        fread(col_count,         sizeof(int),  col_size+1,                file);
+        int* col_count = calloc((col_size),sizeof(int)); 
+        fread(col_count,         sizeof(int),  col_size,                file);
         sparse_info->col_p = col_count;
         int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
         fread(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
@@ -563,7 +566,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         int* paddings = (int*) calloc(row_size,sizeof(int));
         fread(paddings,          sizeof(int),  row_size,                  file);
         sparse_info->paddings = paddings;
-        Ull* margin = (Ull*) calloc((row_size/H),sizeof(Ull));
+        Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
         fread(margin,            sizeof(Ull),  row_size/H,                file);
         sparse_info->margin = margin;
         fclose(file); 
@@ -576,15 +579,15 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
 
 
     // int W = emax6_param->W_param;
-    int* count = (int*) calloc(col_size,sizeof(int));
-    int* count_tmp = (int*) calloc((col_size+1),sizeof(int));
+    int* count = (int*) calloc(row_size,sizeof(int));
+    int* count_tmp = (int*) calloc((row_size+1),sizeof(int));
     int* count_sort_index_inverse = (int*) calloc(row_size,sizeof(int));
     Uint* count_sort_index= sort_index;
-    int* row_count = (int*) calloc((row_size+1),sizeof(int));
-    int* col_count = (int*) calloc((col_size+1),sizeof(int));
+    int* row_count = (int*) calloc((row_size),sizeof(int));
+    int* col_count = (int*) calloc((col_size),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
-    Ull* margin = (Ull*) calloc((row_size/H),sizeof(Ull));
+    Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
     int iter_num = 0,margin_tmp;
     int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp;
     // if ((fpr = fopen(argv[1], "rb")) == NULL){
@@ -597,39 +600,56 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
 
     for(row=0; row<row_size; row++){
         count_tmp[count[row]]++; //  {[0] = 0, [1] = 1, [2] = 2, [3] = 1, [4] = 4, [5] = 1, [6] = 1, [7] = 0, [8] = 0, [9] = 0, [10] = 0} 
-    }
+    }                                                                                                                     //row_nnz=2が3つ   row_nnz=3が4つ
     for(row=0; row<row_size; row++) count_tmp[row+1] += count_tmp[row];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
     for(row=0; row<row_size; row++){
-        count_tmp1 = --count_tmp[count[row]]; // ex count[row]=3  --count_tmp[count[row]]=3  --は0から始めるため
+        count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
         
         // count_sort_indexと count_sort_index_inverseは逆の関係
-        //count_sort_indexは並べ替えた後、該当のrow(index)に入るべき、並べ替え後のrow(index)を表していていて、count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
+        //count_sort_indexは並べ替えた後、該当のrow(index)に入るべき、並べ替え前のrow(index)を返してくれて、count_sort_index_inverseはindex(row)を代入したら並べ替え後の場所を教えてくれる。
+        //上の例が続いている 降順に表示  9番目がrow=5で一番少ないnnz=1
         //{[0] = 7, [1] = 9, [2] = 3, [3] = 4, [4] = 6, [5] = 8, [6] = 0, [7] = 1, [8] = 2, [9] = 5}
         // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
+        //Cが元の場所に戻すためにつかう
         count_sort_index[(row_size-1)-count_tmp1] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
 
         //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
         // row_size-1は0から始めるために引く1している。            
-        // ex row=0 count_sort_index_inverse[row]=6 row_size-1=9 count_tmp1=3　0行目は3番目に小さいの0列目の7-1番目に入る
+        //count_sort_indexの逆                                             row7番目は一番nnzが多いので0に移動する
         //{[0] = 6, [1] = 7, [2] = 8, [3] = 2, [4] = 3, [5] = 9, [6] = 4, [7] = 0, [8] = 5, [9] = 1}
+        //元の場所から並べ替えの先に移動するために使う
         count_sort_index_inverse[row] = (row_size-1) - count_tmp1;
          //アライメントのために次の手段は使えない 倍数の時のみ可(count[row] + (H-1))~(H-1);
          // sortされた後のrowごとのpaddings
-         //降順
+         //降順   上が一番nnzが長いrow
+         // count[row]/H(IMAXが何回full(H)で計算いるか)+(int)(count[row]%H != 0) (Hで割り切れなかったら、もう一回H分の計算がpad付きで必要)
          paddings[(row_size-1) - count_tmp1] = count[row]/H + (int)(count[row]%H != 0); 
 
     }
  
 
     //paddingsは最低でも1
-    //最小のpaddingsではAを一番下まで確保するので、row_size
+    //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
+    //最小のpaddingsではAを一番下まで確保するので、row_size+1
+    //ex paddings[row_size-1]=7 (row+1)  一番下のArowでもH分を6回計算  H*6回分のA_colはA_rowの一番下まで計算　よってrow_sizeを6回、marginに入れる 　  
     for(iter=0;iter<paddings[row_size-1]; iter++){
         margin[iter_num++] = row_size; //row+1
     }
-    for(row=row_size-2,tmp=paddings[row_size-1]; row>=0; row--){
+    // row_size回 for分を回す
+    for(row=row_size-1,tmp=paddings[row_size-1]; row>=0; row--){
         //前回からの変化があれば変化の差分を埋める
+        //  定義部分　Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
+        // ex col_size/H 736/46=16
+        //H*7は735がA_row方向のnnzの最後 H*8は365が最大
+        // marginが決まったら、そのH区間はその値を使う
+        //p margin[0]@16 $2 = {[0] = 736, [1] = 736, [2] = 736, [3] = 736, [4] = 736, [5] = 736, [6] = 736, [7] = 735, [8] = 365, [9] = 0, [10] = 0, [11] = 0, [12] = 0, [13] = 0, [14] = 0, [15] = 0}
         if(tmp != paddings[row]){
-            //row+1が入っているので、margin[iter_num-1]-1
+            //row+1が入っているので、margin[iter_num-1]-1 
+            //iter_numはmargin[iter_num++]とされているの、iter_num-1は前回のiter_numを表している
+            // A_rowの一番最後のrow_size-1から始める  marginを埋めるのは0から
+            // tmp != paddings[row] 変化した次のrowを代入している
+            // ex margin[iter_num-1]-1 == 736-1 = 735  paddings[margin[iter_num-1]-1]=2
+            // 4 -> 2のようにいきなりpaddingが二個飛びで変化するケースに対応している。
             for(iter=paddings[margin[iter_num-1]-1];iter<paddings[row]; iter++){
                 //row+1が入る multiplyのfor文で扱いやすくするため。 for (rofs=0; rofs<A_margin[blk_iter]; rofs++) 
                 margin[iter_num++] = row+1;
@@ -651,24 +671,23 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         // row_countは最初すべて0 row_countがふえると格納する行が右にずれて格納先が次のLMMになる
         //count_sort_index_inverse[row_index[k]]でどの行かを特定
         //row_count[1+row_index[k]]*row_sizeでどの列かを特定
-        //CSRのpのようにrow_countを0から使うために1+row_index[k]にしている
         count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
-        //count_sort_index_inverseは並べ替え後にindex(row)を代入したら並べ替え後の場所を教えてくれる。
-        //indexを1からスタートする。0は下段にindexを伝播するためだけに使う
-        //Aが次のUnitに伝搬するのを表現するためにどの列かを特定+1
-        //*((Uint*)&val_index_set[どの行かを特定+(どの列かを特定+1)]) = Aの値  
-        //*((Uint*)&val_index_set[前の行+どの列かを特定]+1) = Bの対応箇所(下段Unit)*2(simd)*4(実際のIMAXコードはUllのアドレス演算なので4byteかける)
-        val_index_set[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = val_tmp[row_index[k]+col_index[k]*row_size];
-        val_index_set_tmp[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k]*2*4;
-        // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[1+row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
+        //count_sort_index_inverseはindex(row)を代入したら並べ替え後の場所を教えてくれる。
+        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  
+        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Bの対応箇所*2(simd)*4(実際のIMAXコードはUllのアドレス演算なのでpoiterの足し算ではないので4byteかける)
+        val_index_set[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size] = val_tmp[row_index[k]+col_index[k]*row_size];
+        val_index_set_tmp[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size] = col_index[k]*2*4;
+        // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
          //rowを左詰めしているので、colの位置が値ごとに必要
-        col_index_sparse[count_sort_index_inverse_tmp+row_count[1+row_index[k]]*row_size] = col_index[k];
+        col_index_sparse[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size] = col_index[k];
         row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
-        row_count[1+row_index[k]]++;
-        col_count[1+col_index[k]]++;
+        //そのrowに何個nonzeroがあるか
+        row_count[row_index[k]]++;
+        col_count[col_index[k]]++;
 
     }
 
+    //32bit*2でindexを伝搬するためにAのindexをこのように格納
     for (col=0,col1=0; col<col_size/2; col+=1,col1+=2){
       for (row=0,row1=0; row1<row_size; row+=2,row1+=1) {
         
@@ -717,12 +736,12 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         fwrite(&row_size,         sizeof(int),  1,                         file);
         fwrite(&col_size,         sizeof(int),  1,                         file);
         fwrite(&nnz,              sizeof(int),  1,                         file);
-        fwrite(val_index_set,     sizeof(Uint), 2*((col_size+1)*row_size), file);
-        fwrite(col_count,         sizeof(int),  col_size+1,                file);
+        fwrite(val_index_set,     sizeof(Uint), 2*((col_size)*row_size),   file);
+        fwrite(col_count,         sizeof(int),  col_size,                  file);
         fwrite(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
         fwrite(count_sort_index,  sizeof(Uint), row_size,                  file);
         fwrite(paddings,          sizeof(int),  row_size,                  file);
-        fwrite(margin,            sizeof(Ull),  row_size/H,                file);
+        fwrite(margin,            sizeof(Ull),  col_size/H,                file);
 
         fclose(file);   
     }

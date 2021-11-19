@@ -57,13 +57,10 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 /* A A   B B B B B B   C C C C C C */
 /* A A                 C C C C C C */
 /* A A                 C C C C C C */
-/* L=2, M1=4, M2=6     L<M1,M2     */
+/* L=2, A_row_size=4, B_col_size=6     L<A_row_size,B_col_size     */
 
 
-#define L  736LL
-#define M1 736LL
-#define M2 736LL
-#define A_row_size 736LL
+#define A_row_size 768LL
 #define A_col_size 736LL
 #define B_row_size 736LL
 #define B_col_size 736LL
@@ -76,14 +73,14 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 #define H  46
 
 
-Uint *A;  /*[M1][L];*/
-Uint *B;  /*[L][M2];*/
-Uint *C0; /*[M1][M2];*/
-Uint *C1; /*[M1][M2];*/
+Uint *A;  /*[A_row_size][L];*/
+Uint *B;  /*[L][B_col_size];*/
+Uint *C0; /*[A_row_size][B_col_size];*/
+Uint *C1; /*[A_row_size][B_col_size];*/
 Uint *sort_index;
-Uint *A_debug; /*[M1][L];*/
-Uint *B_debug; /*[L][M2];*/
-Uint *C_debug; /*[M1][M2];*/
+Uint *A_debug; /*[A_row_size][L];*/
+Uint *B_debug; /*[L][B_col_size];*/
+Uint *C_debug; /*[A_row_size][B_col_size];*/
 emax6_sparse2* A_sparse;
 emax6_param* params;
 int blk_iter;
@@ -91,7 +88,7 @@ int row,row1, col, col1, n, n1;
 int top, blk;
 int w, h;
 int count0, count1, count2;
-int nnz_A,nnz_B,nnz_B_debug;
+int nnz_A=0,nnz_B=0,nnz_B_debug=0;
 double sum=0,sum1=0;
 
 
@@ -112,73 +109,6 @@ Uint Z[CSIMBM];
 #define abs(a) (((a)<0)?-(a):(a))
 
 
-// Uchar* sysinit(Uint memsize,Uint alignment)
-// {
- 
-//   Uchar* membase;
-//   #if defined(ARMZYNQ) && defined(EMAX5)
-//     if (emax5_open() == NULL)
-//       exit(1);
-//     membase = emax_info.hpp_mmap;
-//     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
-//   #elif defined(ARMZYNQ) && defined(EMAX6)
-//     if (emax6_open() == NULL)
-//       exit(1);
-//     membase = emax_info.ddr_mmap;
-//     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
-//   #else
-//     membase = (Uchar*)malloc(memsize+alignment);
-//     printf("malloc size %d \n",malloc_usable_size(membase));
-//     printf("membase_before_align: %08.8x\n", (Uint)membase);
-//     if ((Ull)membase & (Ull)(alignment-1))
-//     membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
-//     memset(membase, 0, memsize+alignment);
-//     int i;
-//     for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)membase+i) = (Uint)0;
-
-
-    
-//     32byte = 16byte*2 = 0x20
-//     printf("membase_after_align: %08.8x\n", (Uint)membase);
-
-    
-//   #endif
-
-//   #if !defined(ARMZYNQ) && defined(EMAX5)
-//     emax_info.hpp_phys = membase;
-//     emax_info.hpp_mmap = emax_info.hpp_phys;
-//     emax_info.acp_phys = ACP_BASE2_PHYS; /* defined in emax5lib.h >= ALOCLIMIT */
-//     emax_info.acp_mmap = emax_info.acp_phys;
-//   #endif
-//   #if defined(EMAX5)
-//     acp_conf = emax_info.acp_mmap; /* 8KB * 256sets */
-//     acp_lmmi = emax_info.acp_mmap + 0x200000;
-//     acp_regv = emax_info.acp_mmap + 0x304000;
-//   #endif
-
-//   #if !defined(ARMZYNQ) && defined(EMAX6)
-//     emax_info.dma_phys = DMA_BASE2_PHYS; /* defined in emax6lib.h */
-//     emax_info.dma_mmap = emax_info.dma_phys;
-//     emax_info.reg_phys = REG_BASE2_PHYS; /* defined in emax6lib.h */
-//     emax_info.reg_mmap = emax_info.reg_phys;
-//     emax_info.lmm_phys = LMM_BASE2_PHYS;
-//     emax_info.lmm_mmap = emax_info.lmm_phys;
-//     emax_info.ddr_phys = membase;
-//     emax_info.ddr_mmap = emax_info.ddr_phys;
-//   #endif
-//   #if (defined(ARMSIML) || defined(ARMZYNQ)) && defined(EMAX6)
-//     emax6.dma_ctrl  = emax_info.dma_mmap;
-//     emax6.reg_ctrl  = emax_info.reg_mmap;
-//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].cmd = CMD_RESET;  // ★★★ RESET
-//   #if defined(ARMZYNQ)
-//     usleep(1);
-//   #endif
-//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
-//     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
-//   #endif
-
-//   return membase;
-// }
 
 
 main()
@@ -190,23 +120,23 @@ main()
   // printf("malloc size %d \n",malloc_usable_size(val));
 
   Uchar* membase;
-  sysinit((Uint)(2*((M1+1)*L)*sizeof(Uint)
-                +L*M2*sizeof(Uint)
-                +M1*M2*sizeof(Uint)
-                +M1*M2*sizeof(Uint)
-                +M1*sizeof(Uint)
+  sysinit((Uint)(2*(A_row_size*A_col_size)*sizeof(Uint)
+                +B_row_size*B_col_size*sizeof(Uint)
+                +A_row_size*B_col_size*sizeof(Uint)
+                +A_row_size*B_col_size*sizeof(Uint)
+                +A_row_size*sizeof(Uint)
                 ),32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*((M1+1)*L)*sizeof(Uint));
-  C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
-  C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
-  sort_index = (Uint*)((Uchar*)C1 + M1*M2*sizeof(Uint));
+  B  = (Uint*)((Uchar*)A  + 2*(A_row_size*A_col_size)*sizeof(Uint));
+  C0 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
+  C1 = (Uint*)((Uchar*)C0 + A_row_size*B_col_size*sizeof(Uint));
+  sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
   
 
-  A_debug = (Uint*)calloc(M1*M2,sizeof(Uint));
-  B_debug  = (Uint*)calloc(2*((M1+1)*L),sizeof(Uint));
-  C_debug = (Uint*)calloc(M1*M2,sizeof(Uint));
+  A_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
+  B_debug  = (Uint*)calloc(2*A_row_size*A_col_size,sizeof(Uint));
+  C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
@@ -219,19 +149,19 @@ main()
   printf("C0: %08.8x\n", C0);
   printf("C1: %08.8x\n", C1);
   int tmp = 0,num = 0;
-  int* col_index_A = (int *)calloc(M1*L,sizeof(int));
-  int* row_index_A = (int *)calloc(M1*L,sizeof(int));
-  Uint* A_tmp = (Uint *)calloc(M1*L,sizeof(Uint));
-  for (row=0; row<M1; row++) {
-    for (col=0; col<L; col++){
+  int* col_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
+  int* row_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
+  Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
+  for (row=0; row<A_row_size; row++) {
+    for (col=0; col<A_col_size; col++){
       tmp = (int) tmp;
-      tmp = (int) (rand()%9 == 0);
+      tmp = (int) (rand()%2 == 0);
 
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A_tmp[row+col*M2] = (float) tmp;
-      *(float*)&A_debug[row*L+col] = (float) tmp;
+      *(float*)&A_tmp[row+col*A_row_size] = (float) tmp;
+      *(float*)&A_debug[row*A_col_size+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
-      if(!((-LIMIT <= *(float*)&A_tmp[row+col*M2]) && (*(float*)&A_tmp[row+col*M2] <= LIMIT))){
+      if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
           row_index_A[nnz_A] = row;
           nnz_A += 1;
@@ -242,7 +172,7 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,M1,L,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   
@@ -250,36 +180,36 @@ main()
   show_nanosec();
 
 
-  for (row=0; row<L; row++) {
-    for (col=0; col<M2; col++){
+  for (row=0; row<B_row_size; row++) {
+    for (col=0; col<B_col_size; col++){
       float tmp = row+col;
-      // *(float*)&B[col*M2+row] = (float) tmp;
+      // *(float*)&B[col*B_col_size+row] = (float) tmp;
       if(col%4 == 0){
-      *(float*)&B_debug[col*M2+row] = (float)1;
+      *(float*)&B_debug[col*B_col_size+row] = (float)1;
       }
       else{
-        *(float*)&B_debug[col*M2+row] = (float)0;
+        *(float*)&B_debug[col*B_col_size+row] = (float)0;
       }
-      // if(!((-LIMIT <= *(float*)&B[col*M2+row]) && (*(float*)&B[col*M2+row] <= LIMIT))) nnz_B += 1; 
-      // if(!((-LIMIT <= *(float*)&B_debug[col*M2+row]) && (*(float*)&B_debug[col*M2+row] <= LIMIT))) nnz_B_debug += 1; 
+      // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
+      // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
     }
   }
 
 
 
-    for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
-      for (row=0,row1=0; row1<L; row+=2,row1+=1) {
+    for (col=0,col1=0; col<B_col_size/2; col+=1,col1+=2){
+      for (row=0,row1=0; row1<B_row_size; row+=2,row1+=1) {
         // simdを使うため
-      *(float*)&B[col*2*L+row] = *(float*)&B_debug[col1*L+row1];
-      *(float*)&B[col*2*L+row+1] = *(float*)&B_debug[(col1+1)*L+row1];
+      *(float*)&B[col*2*B_row_size+row] = *(float*)&B_debug[col1*B_row_size+row1];
+      *(float*)&B[col*2*B_row_size+row+1] = *(float*)&B_debug[(col1+1)*B_row_size+row1];
     }
   }
   
-    for (col=0; col<M2; col++){
-      for (row=0; row<L; row++) {
+    for (col=0; col<B_col_size; col++){
+      for (row=0; row<B_row_size; row++) {
         // simdを使うため
-        sum += *(float*)&B_debug[col*L+row];
-        sum1 += *(float*)&B[col*L+row];
+        sum += *(float*)&B_debug[col*B_row_size+row];
+        sum1 += *(float*)&B[col*B_row_size+row];
     }
   }
 
@@ -316,27 +246,57 @@ main()
   reset_nanosec();
   // imax();
   sparse_gemm_736(C1, A, B, A_sparse);
-  // sparse_multiply_imax3(nnz_A,A_sparse,B,C1,M2,params);
+  // sparse_multiply_imax3(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
 
+  //   sum = 0;
+  //   sum1 = 0;
 
+  //   for (col=0,col1=0; col<B_col_size; col+=1,col1+=2){
+  //     for (row=0,row1=0; row1<A_row_size; row+=1,row1+=1) {
+  //         count2++;
+  //         sum += *(float*)&C0[col+row*B_col_size];
+  //         sum1 += *(float*)&C1[col+row*B_col_size];
+  //         // printf("C0[%d][%d]=%f \n", row, col, (double)*(float*)&C0[col+row*B_col_size]);
+     
+  //   }
+  // }
+  // printf("sum %f \n",sum);
+  // printf("sum1 %f \n",sum1);
+  // count2 = 0;
 
-
-    for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
-      for (row=0,row1=0; row1<L; row+=2,row1+=1) {
-        if ((C0[col1+row1*L] != C1[col*2*M2+row])||(C0[(col1+1)+row1*L] != C1[col*2*M2+row+1])) {
+    for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+      for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
           count2++;
-          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1, (double)*(float*)&C0[col1+row1*L],
-                                                  row, col*2, (double)*(float*)&C1[col*2*M2+row]);
-          printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1+1, (double)*(float*)&C0[(col1+1)+row1*L],
-                                                  row+1, col*2, (double)*(float*)&C1[col*2*M2+row+1]);  
+           *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+           *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+          // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+     
+    }
+  }
+  printf("count2 %d \n",count2);
+
+
+    for (col=0; col<B_col_size; col+=1){
+      for (row=0; row<A_row_size; row+=1) {
+        if ((C0[col*A_row_size+row] != C_debug[col*A_row_size+row])) {
+          count2++;
+          // sum += *(float*)&C0[col+row*B_col_size];
+          // sum1 += *(float*)&C_debug[col*A_row_size+row];
+          printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
+                                                  row, col, *(float*)&C_debug[col*A_row_size+row]); 
           // exit(1);       
       }
     }
   }
+
+  // printf("sum %f \n",sum);
+  // printf("sum1 %f \n",sum1);
   
 free(A_tmp);
+
+
 
 
 }
@@ -346,11 +306,11 @@ free(A_tmp);
 
 orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
   printf("<<<ORIG>>>\n");
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++) {
-      for (n=0; n<L; n++) {
-        if (n==0) *(float*)&C_orig[row*M2+col]  = *(float*)&A_orig[row+n*M1] * *(float*)&B_orig[n+col*L];
-        else      *(float*)&C_orig[row*M2+col] += *(float*)&A_orig[row+n*M1] * *(float*)&B_orig[n+col*L];
+  for (row=0; row<A_row_size; row++) {
+    for (col=0; col<B_col_size; col++) {
+      for (n=0; n<A_col_size; n++) {
+        if (n==0) *(float*)&C_orig[row+col*A_row_size]  = *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
+        else      *(float*)&C_orig[row+col*A_row_size] += *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
         count0++;
         /*printf("[%d %d %d]", row, col, n);*/
       }
@@ -360,27 +320,27 @@ orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
 }
 
 
-//watch (row*M2+col1)>M1*M2
-//watch (row+n*M1) > M1*L
-// watch (n1+col*(2*L)) > M2*L
-// watch (n1+1+col*(2*L)) > M2*L
+//watch (row*B_col_size+col1)>A_row_size*B_col_size
+//watch (row+n*A_row_size) > A_row_size*A_col_size
+// watch (n1+col*(2*L)) > B_col_size*L
+// watch (n1+1+col*(2*L)) > B_col_size*L
 orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
   printf("<<<ORIG_simd>>>\n");
-  for (row=0; row<M1; row++) {
-    for (col=0,col1=0; col<M2/2; col++,col1+=2) {
-      for (n=0,n1=0; n<L; n+=1,n1+=2) {
+  for (row=0; row<A_row_size; row++) {
+    for (col=0,col1=0; col<B_col_size/2; col++,col1+=2) {
+      for (n=0,n1=0; n<A_col_size; n+=1,n1+=2) {
         // printf("n %d  n1 %d  col %d col1 %d row %d\n",n,n1,col,col1,row);
-          if(!(((row*M2+col1)<M1*M2)&&((row+n*M1) < M1*L)&&((n1+col*(2*L)) <M2*L)&&((n1+1+col*(2*L)) < M2*L))) {
+          if(!(((row*B_col_size+col1)<A_row_size*B_col_size)&&((row+n*A_row_size) < A_row_size*A_col_size)&&((n1+col*(2*B_row_size)) <B_col_size*B_row_size)&&((n1+1+col*(2*B_row_size)) < B_col_size*B_row_size))) {
            fprintf(stderr,"simd debug error\n");
            exit(1);
         }
         if (n==0) {
-          *(float*)&C_orig_simd[row*M2+col1]  = *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+col*(2*L)];
-          *(float*)&C_orig_simd[row*M2+col1+1]  = *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+1+col*(2*L)];
+          *(float*)&C_orig_simd[row*B_col_size+col1]  = *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+col*(2*B_row_size)];
+          *(float*)&C_orig_simd[row*B_col_size+col1+1]  = *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+1+col*(2*B_row_size)];
         }
         else{      
-          *(float*)&C_orig_simd[row*M2+col1]  += *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+col*(2*L)];
-          *(float*)&C_orig_simd[row*M2+col1+1]  += *(float*)&A_orig_simd[row+n*M1] * *(float*)&B_orig_simd[n1+1+col*(2*L)];
+          *(float*)&C_orig_simd[row*B_col_size+col1]  += *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+col*(2*B_row_size)];
+          *(float*)&C_orig_simd[row*B_col_size+col1+1]  += *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+1+col*(2*B_row_size)];
         }  
         count0++;
 
