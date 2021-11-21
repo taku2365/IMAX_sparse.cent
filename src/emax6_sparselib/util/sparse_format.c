@@ -580,7 +580,8 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
 
     // int W = emax6_param->W_param;
     int* count = (int*) calloc(row_size,sizeof(int));
-    int* count_tmp = (int*) calloc((row_size+1),sizeof(int));
+    // そのrowのnnz maxはcol_sizeなのでcout_tmpはcol_sizeを確保する。
+    int* count_tmp = (int*) calloc((col_size+1),sizeof(int));
     int* count_sort_index_inverse = (int*) calloc(row_size,sizeof(int));
     Uint* count_sort_index= sort_index;
     int* row_count = (int*) calloc((row_size),sizeof(int));
@@ -597,11 +598,12 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     
     // }
     for(k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
-
+    // count max = col_size
     for(row=0; row<row_size; row++){
         count_tmp[count[row]]++; //  {[0] = 0, [1] = 1, [2] = 2, [3] = 1, [4] = 4, [5] = 1, [6] = 1, [7] = 0, [8] = 0, [9] = 0, [10] = 0} 
-    }                                                                                                                     //row_nnz=2が3つ   row_nnz=3が4つ
-    for(row=0; row<row_size; row++) count_tmp[row+1] += count_tmp[row];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
+    }
+    // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
+    for(col=0; col<col_size; col++) count_tmp[col+1] += count_tmp[col];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
     for(row=0; row<row_size; row++){
         count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
         

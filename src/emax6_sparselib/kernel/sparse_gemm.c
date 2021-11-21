@@ -110,10 +110,10 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
   #undef H  
 
 
-  #define A_row_size 768LL
+  #define A_row_size 200LL
   #define A_col_size 736LL
   #define B_row_size 736LL
-  #define B_col_size 736LL
+  #define B_col_size 768LL
 
   // #define RMGRP 16
   #define RMGRP 8
@@ -200,7 +200,8 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
         mop(OP_LDR,3, &BR[br][2][0],  (Ull)a_index[a_index3], (Ull)rofs, MSK_W1, (Ull)a_index[a_index_base], A_row_size*2*4*2, 0, 0, (Ull)NULL, A_row_size*2*4*2)\
     
 
-
+// a_sort_indexにCのofffsetもぶちこむ
+// w*2*4単位で管理して、分離？
 
 #define sparse_core3_1(ar,ar_pre,br,br_pre,a_val,index_val1,index_val2,index_val3,index_val4,index_val,index_MSK)\
         exe(OP_ADD, &index_val1, BR[br_pre][1][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -242,7 +243,7 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
 
 //EMAX5A begin mm mapdist=0
 /*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-        //LOOP1--はLOOP1==1で終了するので、LOOP0はrow+1がよい
+        //LOOP1--はLOOP1==1で終了するので、LOOP1はrow+1がよい
   /*2*/ for (INIT1=1,LOOP1=A_margin_tmp,rofs=(0-(Ull)1*8)<<32|((0-(Ull)1*4)&0xffffffff); LOOP1--; INIT1=0) {  /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
     /*1*/ for (INIT0=1,LOOP0=RMGRP/(W*2),cofs=(0-W*4*2*B_row_size)<<32|((0-W*4*2*B_row_size)&0xffffffff); LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
             exe(OP_ADD,    &cofs, INIT0?cofs:cofs, EXP_H3210, (W*4*2*B_row_size)<<32|(W*4*2*B_row_size), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */

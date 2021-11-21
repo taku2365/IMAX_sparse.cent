@@ -60,10 +60,10 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 /* L=2, A_row_size=4, B_col_size=6     L<A_row_size,B_col_size     */
 
 
-#define A_row_size 768LL
+#define A_row_size 200LL
 #define A_col_size 736LL
 #define B_row_size 736LL
-#define B_col_size 736LL
+#define B_col_size 768LL
 
 // #define RMGRP 16
 #define RMGRP 8
@@ -134,8 +134,7 @@ main()
   sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
   
 
-  A_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-  B_debug  = (Uint*)calloc(2*A_row_size*A_col_size,sizeof(Uint));
+  B_debug  = (Uint*)calloc(2*B_row_size*B_col_size,sizeof(Uint));
   C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
   params->RMGRP_param = RMGRP;
@@ -159,7 +158,6 @@ main()
 
       // tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A_tmp[row+col*A_row_size] = (float) tmp;
-      *(float*)&A_debug[row*A_col_size+col] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -185,10 +183,10 @@ main()
       float tmp = row+col;
       // *(float*)&B[col*B_col_size+row] = (float) tmp;
       if(col%4 == 0){
-      *(float*)&B_debug[col*B_col_size+row] = (float)1;
+      *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       else{
-        *(float*)&B_debug[col*B_col_size+row] = (float)0;
+        *(float*)&B_debug[col*B_row_size+row] = (float)0;
       }
       // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
       // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
@@ -277,13 +275,15 @@ main()
   }
   printf("count2 %d \n",count2);
 
-
+    sum = 0;
+    sum1 = 0;
     for (col=0; col<B_col_size; col+=1){
       for (row=0; row<A_row_size; row+=1) {
-        if ((C0[col*A_row_size+row] != C_debug[col*A_row_size+row])) {
+        sum += *(float*)&C0[col+row*B_col_size];
+        sum1 += *(float*)&C_debug[col*A_row_size+row];
+        if (abs(C0[col*A_row_size+row] - C_debug[col*A_row_size+row])>1) {
           count2++;
-          // sum += *(float*)&C0[col+row*B_col_size];
-          // sum1 += *(float*)&C_debug[col*A_row_size+row];
+
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                   row, col, *(float*)&C_debug[col*A_row_size+row]); 
           // exit(1);       
@@ -291,8 +291,8 @@ main()
     }
   }
 
-  // printf("sum %f \n",sum);
-  // printf("sum1 %f \n",sum1);
+  printf("sum %f \n",sum);
+  printf("sum1 %f \n",sum1);
   
 free(A_tmp);
 
