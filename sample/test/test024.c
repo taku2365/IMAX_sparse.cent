@@ -60,10 +60,11 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 /* L=2, A_row_size=4, B_col_size=6     L<A_row_size,B_col_size     */
 
 
-#define A_row_size 200LL
-#define A_col_size 736LL
-#define B_row_size 736LL
-#define B_col_size 768LL
+
+  #define A_row_size 768LL
+  #define A_col_size 96LL
+  #define B_row_size 96LL
+  #define B_col_size 768LL
 
 // #define RMGRP 16
 #define RMGRP 8
@@ -120,7 +121,10 @@ main()
   // printf("malloc size %d \n",malloc_usable_size(val));
 
   Uchar* membase;
-  sysinit((Uint)(2*(A_row_size*A_col_size)*sizeof(Uint)
+  //A_colがHで割れないときのpadding
+  int A_H_pad = 0;
+  if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
+  sysinit((Uint)(2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
                 +B_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*B_col_size*sizeof(Uint)
@@ -128,7 +132,7 @@ main()
                 ),32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*(A_row_size*A_col_size)*sizeof(Uint));
+  B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + A_row_size*B_col_size*sizeof(Uint));
   sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
@@ -147,15 +151,15 @@ main()
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
   printf("C1: %08.8x\n", C1);
-  int tmp = 0,num = 0;
+  int tmp = 1,num = 0;
   int* col_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
   int* row_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
   Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
   for (row=0; row<A_row_size; row++) {
     for (col=0; col<A_col_size; col++){
       tmp = (int) tmp;
-      tmp = (int) (rand()%2 == 0);
-
+      // tmp = (int) (rand()%2 == 0);
+      // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A_tmp[row+col*A_row_size] = (float) tmp;
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
@@ -216,10 +220,15 @@ main()
     exit(1);
   }
 
-                                     //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:14476178 //format
+                                     //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0  total:14476178 //format
+// nanosec: ARM:428330 DRAIN:5347764 CONF:103059 REGV:15701836 RANGE:10177188 LOAD:42058397 EXEC:10241348 total:84057922 4chip 密
 // nanosec: ARM:643720 DRAIN:3900830 CONF:139645 REGV:22034423 RANGE:12112945 LOAD:81180395 EXEC:20458796  total:140470754  密
-// nanosec: ARM:697759 DRAIN:3912415 CONF:144105 REGV:36137979 RANGE:12767833 LOAD:144809961 EXEC:21722040 total:220192092 そのまま計算
+// nanosec: ARM:284607 DRAIN:5347242 CONF:104924 REGV:34797322 RANGE:10362789 LOAD:74936785 EXEC:10831409  total:136665078
+// nanosec: ARM:697759 DRAIN:3912415 CONF:144105 REGV:36137979 RANGE:12767833 LOAD:144809961　EXEC:21722040 total:220192092 そのまま計算
+// nanosec: ARM:228882 DRAIN:1898495 CONF:96632 REGV:27163829 RANGE:8146254 LOAD:28577880 EXEC:7937346     total:74049318
 // nanosec: ARM:523872 DRAIN:3860935 CONF:124981 REGV:27126625 RANGE:9538279 LOAD:109312336 EXEC:15392081  total:165879109  2/3
+// nanosec: ARM:179727 DRAIN:5271546 CONF:87108 REGV:19541144 RANGE:5845150 LOAD:43363760 EXEC:5812181     total:80100616 4chip %2
+// nanosec: ARM:183810 DRAIN:5271064 CONF:87208 REGV:19602317 RANGE:5766538 LOAD:43357904 EXEC:5827063     total:80095904 4chip  %2 forの順番入れ替え
 // nanosec: ARM:406986 DRAIN:3818889 CONF:110080 REGV:20350376 RANGE:7143744 LOAD:82684247 EXEC:11680525   total:126194847 %2
 // nanosec: ARM:318687 DRAIN:3793709 CONF:100085 REGV:15827467 RANGE:5573393 LOAD:64865556 EXEC:8321523    total:98800420 %3
 // nanosec: ARM:197559 DRAIN:3747668 CONF:85619 REGV:9034281 RANGE:3180254 LOAD:38802744 EXEC:5216107      total:60264232 //2.33 %4
@@ -281,7 +290,7 @@ main()
       for (row=0; row<A_row_size; row+=1) {
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C_debug[col*A_row_size+row];
-        if (abs(C0[col*A_row_size+row] - C_debug[col*A_row_size+row])>1) {
+        if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
           count2++;
 
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],

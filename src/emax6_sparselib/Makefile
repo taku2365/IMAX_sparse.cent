@@ -55,6 +55,7 @@ shared: $(SHARED_TARGET)
 ifeq ($(ARM_COMPILE),1)
 $(AR_TARGET):  $(EMAX6_SPARSE_ARM_LIB) 
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_ARM_LIB)
+	$(RM) kernel/*-*.c
 else
 $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_LIB)

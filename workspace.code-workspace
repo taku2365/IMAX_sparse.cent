@@ -36,7 +36,8 @@
 			"gemm.h": "c",
 			"sparse_gemm.h": "c",
 			"string.h": "c",
-			"xlib.h": "c"
+			"xlib.h": "c",
+			"emax6lib.h": "c"
 		}
 	}
 }

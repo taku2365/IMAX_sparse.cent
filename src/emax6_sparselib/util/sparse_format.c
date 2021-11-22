@@ -530,6 +530,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     emax6_sparse2* sparse_info = (emax6_sparse2 *) malloc(1*sizeof(emax6_sparse2));
     Uint* val_index_set = (Uint*) val;
     int H = emax6_param->H_param;
+    int H_pad = 0;
 
     if(!val || !col_index || !row_index ) {
         fprintf(stderr,"sparse_format NULL error! \n");
@@ -566,7 +567,8 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         int* paddings = (int*) calloc(row_size,sizeof(int));
         fread(paddings,          sizeof(int),  row_size,                  file);
         sparse_info->paddings = paddings;
-        Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
+        if((col_size%H) != 0) H_pad = -col_size%H + H;
+        Ull* margin = (Ull*) calloc((col_size/H+H_pad),sizeof(Ull));
         fread(margin,            sizeof(Ull),  row_size/H,                file);
         sparse_info->margin = margin;
         fclose(file); 
@@ -588,7 +590,11 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     int* col_count = (int*) calloc((col_size),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
-    Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
+    //A_colがHで割れないときのpadding
+     //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
+    //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
+    if((col_size%H) != 0) H_pad = -col_size%H + H;
+    Ull* margin = (Ull*) calloc((col_size+H_pad)/H,sizeof(Ull));
     int iter_num = 0,margin_tmp;
     int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp;
     // if ((fpr = fopen(argv[1], "rb")) == NULL){
@@ -743,7 +749,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         fwrite(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
         fwrite(count_sort_index,  sizeof(Uint), row_size,                  file);
         fwrite(paddings,          sizeof(int),  row_size,                  file);
-        fwrite(margin,            sizeof(Ull),  col_size/H,                file);
+        fwrite(margin,            sizeof(Ull),  col_size/H+H_pad,     file);
 
         fclose(file);   
     }

@@ -53,29 +53,23 @@ test024-zynq.emax6+dma:     test024.o
 test024.o:	test024.c sparse_lib
 		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
-#test024-emax6.c:	test024.c
-#		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-#		$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-#		$(PROJTOP)/conv-c2c-20210801/conv-c2c $<-cppo.c
+
+test025-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
+
+test025-zynq.emax6+dma:     test025-emax6.o
+		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
+
+test025-emax6.o:	test025-emax6.c sparse_lib
+		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
+
+test025-emax6.c:	test025.c
+		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
+		$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
+		$(PROJTOP)/conv-c2c-20210801/conv-c2c $<-cppo.c
 
 
 
-#test025-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
-#
-#test025-zynq.emax6+dma:     test025-emax6.o
-#		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-#
-#test025-emax6.o:	test025-emax6.c sparse_lib
-#		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
-#
-#test025-emax6.c:	test025.c
-#		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-#		$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-#		$(PROJTOP)/conv-c2c-20210801/conv-c2c $<-cppo.c
-
-
-
-#test025-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
+test025-emax6.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 test024.o: $(PROJTOP)/conv-c2c-20210801/emax6.h $(PROJTOP)/conv-c2c-20210801/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 
 sparse_lib:

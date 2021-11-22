@@ -137,7 +137,7 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 // #define RMGRP 16
 #define RMGRP 8
 /*#define NCHIP 4*/
-#define NCHIP 2
+#define NCHIP 4
 #define W  4LL
 #define H  46
 
@@ -184,7 +184,7 @@ main()
                 ),32);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*((M1+1)*L)*sizeof(Uint));
+  B  = (Uint*)((Uchar*)A  + 2*((M1)*L)*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
 
@@ -211,16 +211,16 @@ main()
 
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++)
-    fprintf(stderr,"aaaa\n");
+    // fprintf(stderr,"aaaa\n");
       *(float*)&A[row*L+col] = row%120+1;
   }
   for (row=0; row<L; row++) {
-    fprintf(stderr,"bbbb\n");
+    // fprintf(stderr,"bbbb\n");
     for (col=0; col<M2; col++)
       *(float*)&B[row*M2+col] = col%120+1;
   }
 
-  // orig();
+  orig();
   reset_nanosec();
   imax();
   get_nanosec(0);
