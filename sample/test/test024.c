@@ -67,7 +67,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
   #define B_col_size 768LL
 
 // #define RMGRP 16
-#define RMGRP 8
+#define RMGRP 16
 /*#define NCHIP 4*/
 #define NCHIP 4
 #define W  4LL

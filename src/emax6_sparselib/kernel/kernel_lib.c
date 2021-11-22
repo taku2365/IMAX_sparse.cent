@@ -117,7 +117,7 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
   #define B_col_size 768LL
 
   // #define RMGRP 16
-  #define RMGRP 8
+  #define RMGRP 16
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
@@ -245,9 +245,9 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
         //LOOP1--はLOOP1==1で終了するので、LOOP1はrow+1がよい
    /*1*/ for (INIT1=1,LOOP1=RMGRP/(W*2),cofs=(0-W*4*2*B_row_size)<<32|((0-W*4*2*B_row_size)&0xffffffff); LOOP1--; INIT1=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
   /*2*/    for (INIT0=1,LOOP0=A_margin_tmp,rofs=(0-(Ull)1*8)<<32|((0-(Ull)1*4)&0xffffffff); LOOP0--; INIT0=0) {  /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
-            exe(OP_ADD,    &rofs, INIT0?rofs:rofs, EXP_H3210, ((Ull)1*8)<<32|(((Ull)1*4)&0xffffffff), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
             exe(OP_ADD,    &cofs, cofs, EXP_H3210, INIT0? (W*4*2*B_row_size)<<32|(W*4*2*B_row_size):0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
-
+            exe(OP_ADD,    &rofs, INIT0?rofs:rofs, EXP_H3210, ((Ull)1*8)<<32|(((Ull)1*4)&0xffffffff), EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
+            exe(OP_ADD,    &oofs, cofs, EXP_H3210, 0, EXP_H3210, 0, EXP_H3210, OP_NOP, 0LL, OP_SLL, 3LL);            /* stage#1 */
             mop(OP_LDR,3, &BR[1][1][1],  (Ull)a_index[0], (Ull)rofs, MSK_W1, (Ull)a_index[0], A_row_size*2*4*2, 0, 0, (Ull)NULL, A_row_size*2*4*2);             /* stage#1 */
             mop(OP_LDR,3, &BR[1][1][0],  (Ull)a_index[1], (Ull)rofs, MSK_W1, (Ull)a_index[0], A_row_size*2*4*2, 0, 0, (Ull)NULL, A_row_size*2*4*2);             /* stage#1 */
             mop(OP_LDR,3, &BR[1][2][1],  (Ull)a_index[2], (Ull)rofs, MSK_W1, (Ull)a_index[0], A_row_size*2*4*2, 0, 0, (Ull)NULL, A_row_size*2*4*2);             /* stage#1 */
@@ -338,7 +338,7 @@ void sparse_gemm_736(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_spa
             sparse_core1_1(57, 56, 57, 56,    44,             z,MSK_W0);
             sparse_core1_1(58, 57, 58, 57,    45,             z,MSK_W1);
             sparse_core4(  59, 58, 59, 58);
-            exe(OP_ADD, &x, BR[59][0][1], EXP_H3210, cofs, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff,  OP_NOP, 0LL);
+            exe(OP_ADD, &x, BR[59][0][1], EXP_H3210, oofs, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff,  OP_NOP, 0LL);
             
             sparse_final1(62,59,62,59,x);
 
