@@ -59,6 +59,7 @@ typedef struct {
     int* col_num;  // The number of calculations per H in row
     int* paddings; // pad operation  ex H=60 num=150 -> 150/60=2+1  120/60=2+0
     Ull* margin;   // A row per AcolH   0:omission of calculation else:Depth of A to be obtained 
+    Ull* margin_sum;   // sum A row per AcolH   0:omission of calculation else:Depth of A to be obtained 
 } emax6_sparse2;
 
 typedef struct {

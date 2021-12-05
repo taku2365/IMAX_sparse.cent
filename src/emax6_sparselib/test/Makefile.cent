@@ -35,10 +35,10 @@ OBJS          =	test_chipB_div.o test_chipA_div.o
 SRCS          =	($(OBJS:.o=.c))
 #HEADERS       =	../../src/emax6_sparselib/include/emax6_sparselib.h
 INCLUDE = -I../Include
-SHARED_LINK = 0
+SHARED_LINK = static
 SHARED_PATH =
 
-ifeq ($(SHARED_LINK),1)
+ifeq ($(SHARED_LINK),shared)
 	SHARED_PATH=..
 	
 	EMAX_SPARSE_LIB = -L.. -lsparse
@@ -50,9 +50,9 @@ endif
 all: $(PROGRAM) 
 
 
-test_chipA_div:	test_chipA_div.o 
+test_chipA_div:	test_chipA_div.o libsparse
 		$(CC)  test_chipA_div.o -o test_chipA_div  $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
-test_chipB_div:	test_chipB_div.o 
+test_chipB_div:	test_chipB_div.o libsparse
 		$(CC)  test_chipB_div.o -o test_chipB_div  $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
 
 
@@ -60,6 +60,11 @@ test_chipB_div:	test_chipB_div.o
 		$(CC) $(CFLAGS) -c ${INCLUDE} $<
 
 
+ifeq ($(SHARED_LINK),shared)
+libsparse:	../libsparse.so 
+else
+libsparse:	../libsparse.a
+endif
 
 clean:  		
 	rm -rf *.o *~ $(basename $(PROGRAM))

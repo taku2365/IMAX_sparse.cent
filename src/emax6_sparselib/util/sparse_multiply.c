@@ -111,6 +111,7 @@ int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, con
     int* A_col_num= A_sparse->col_num;
     int* A_paddings = A_sparse->paddings;
     Ull* A_margin = A_sparse->margin;
+    Ull* A_margin_sum = A_sparse->margin_sum;
     int B_row_size = A_sparse->col_normal_size;
     int A_judge=0;
     int B_row_min,B_row_max;
@@ -155,10 +156,10 @@ int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, con
                 //(h+1)があるのは実際のIMAXがUll単位でindex読み出すのに合わせるため つぎのunitの計算を表している
                 // IMAXの実際のコードに対応するために*4しているので、こちらでは/4する
                 //+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_sizeでsimdのために2をかけないのはw+=2ですでに実現しているから
-                  *(float*)&C[rofs*B_col_size+(cofs+w)+CHIP*A_row_size/NCHIP]        += *(float*)&A_val_index_set[h*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin[CHIP]*H+A_row_size*A_col_size]/4+(top+cofs+w)*B_row_size];
-                  *(float*)&C[rofs*B_col_size+1+(top+cofs+w)+CHIP*A_row_size/NCHIP]  += *(float*)&A_val_index_set[h*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin[CHIP]*H+A_row_size*A_col_size]/4+1+(top+cofs+w)*B_row_size];
-                  *(float*)&C[rofs*B_col_size+(top+cofs+w)+CHIP*A_row_size/NCHIP]    += *(float*)&A_val_index_set[(h+1)*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin[CHIP]*H+1+A_row_size*A_col_size]/4+(top+cofs+w)*B_row_size];
-                  *(float*)&C[rofs*B_col_size+1+(top+cofs+w)+CHIP*A_row_size/NCHIP]  += *(float*)&A_val_index_set[(h+1)*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin[CHIP]*H+1+A_row_size*A_col_size]/4+1+(top+cofs+w)*B_row_size];
+                  *(float*)&C[rofs*B_col_size+(top+cofs+w)+CHIP*(A_row_size/NCHIP)*B_col_size]    += *(float*)&A_val_index_set[h*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin_sum[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin_sum[CHIP]*H+A_row_size*A_col_size]/4+(top+cofs+w)*B_row_size];
+                  *(float*)&C[rofs*B_col_size+1+(top+cofs+w)+CHIP*(A_row_size/NCHIP)*B_col_size]  += *(float*)&A_val_index_set[h*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin_sum[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin_sum[CHIP]*H+A_row_size*A_col_size]/4+1+(top+cofs+w)*B_row_size];
+                  *(float*)&C[rofs*B_col_size+(top+cofs+w)+CHIP*(A_row_size/NCHIP)*B_col_size]    += *(float*)&A_val_index_set[(h+1)*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin_sum[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin_sum[CHIP]*H+1+A_row_size*A_col_size]/4+(top+cofs+w)*B_row_size];
+                  *(float*)&C[rofs*B_col_size+1+(top+cofs+w)+CHIP*(A_row_size/NCHIP)*B_col_size]  += *(float*)&A_val_index_set[(h+1)*A_margin[CHIP]+rofs_blk*(A_row_size/NCHIP)+rofs+A_margin_sum[CHIP]*H]**(float*)&B[A_val_index_set[h*A_margin[CHIP]+2*rofs_blk*(A_row_size/NCHIP)+2*rofs+A_margin_sum[CHIP]*H+1+A_row_size*A_col_size]/4+1+(top+cofs+w)*B_row_size];
 
                 /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
               }

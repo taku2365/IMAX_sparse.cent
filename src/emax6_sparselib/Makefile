@@ -27,6 +27,12 @@ ARM = 0
 LINK_FORMAT = static
 SHARED_LINK = 0
 
+CPP     = cpp -P
+CC      = gcc
+CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DDEBUG
+LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
+
+
 ifeq ($(ARM_CORSS),1)
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
 CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
@@ -48,10 +54,10 @@ endif
 
 ifeq ($(ARM),1)
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.arm )
+	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT))
 else
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.cent)
+	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT))
 endif
 
 

@@ -250,8 +250,8 @@ main()
 
     sum = 0;
     sum1 = 0;
-    for (col=0; col<B_col_size; col+=1){
-      for (row=0; row<A_row_size; row+=1) {
+    for (row=0; row<A_row_size; row+=1) {
+        for (col=0; col<B_col_size; col+=1){
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C1[col+row*B_col_size];
         if (abs(*(float*)&C0[col+row*B_col_size] - *(float*)&C1[col+row*B_col_size])>1) {
@@ -277,13 +277,15 @@ free(A_tmp);
 
 
 
-orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
+orig(Uint* A_orig,Uint* B_orig,Uint* C_orig){
+  // A fortran cont
+  // B fortran cont
   printf("<<<ORIG>>>\n");
   for (row=0; row<A_row_size; row++) {
     for (col=0; col<B_col_size; col++) {
       for (n=0; n<A_col_size; n++) {
-        if (n==0) *(float*)&C_orig[row+col*A_row_size]  = *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
-        else      *(float*)&C_orig[row+col*A_row_size] += *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
+        if (n==0) *(float*)&C_orig[col+row*B_col_size]  = *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
+        else      *(float*)&C_orig[col+row*B_col_size] += *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
         count0++;
         /*printf("[%d %d %d]", row, col, n);*/
       }

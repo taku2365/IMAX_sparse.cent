@@ -857,6 +857,7 @@ emax6_sparse2* sparse_format6(int nnz,Ull* val,const Uint* const val_tmp, int* c
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
     if((col_size%H) != 0) H_pad = -col_size%H + H;
     Ull* margin = (Ull*) calloc(NCHIP,sizeof(Ull));
+    Ull* margin_sum = (Ull*) calloc(NCHIP+1,sizeof(Ull));
     int iter_num = 0,margin_tmp;
     int k,h,row,chip,row_blk_prev,row1,blk,blk4,col,col1,row_blk,col_blk,iter,row_div_NHCHIP,count_sort_index_inverse_tmp,tmp,sum,sum1,index_sum,margin_index,margin_index1;
     double sum_double,sum1_double;
@@ -886,9 +887,12 @@ emax6_sparse2* sparse_format6(int nnz,Ull* val,const Uint* const val_tmp, int* c
         if(count_chip[chip]%H != 0){
             count_chip[chip] = count_chip[chip] - count_chip[chip]%H + H;
         }
-        // count_chip[chip]/H(A_colがなんかいHを必要とするか)　*(row_size/NCHIP) (変形後の必要なA_rowの長さに変換)
+        // count_chip[chip+1]/H(A_colがなんかいHを必要とするか count_chip[0]が0になるために+1)　*(row_size/NCHIP) (変形後の必要なA_rowの長さに変換)
         margin[chip] = (Ull)(count_chip[chip]/H)*(row_size/NCHIP); 
     }
+
+    // marginがCHIPごとに増えていく
+    for(chip=0;chip<NCHIP;chip++) margin_sum[chip+1] = margin[chip] + margin_sum[chip];
     // Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
 
     Uint* val_index_set_tmp = (Uint*) calloc(2*row_size*col_size,sizeof(Uint));
@@ -994,6 +998,7 @@ emax6_sparse2* sparse_format6(int nnz,Ull* val,const Uint* const val_tmp, int* c
     sparse_info->col_normal_size = col_size;
     sparse_info->paddings = paddings;
     sparse_info->margin = margin;
+    sparse_info->margin_sum = margin_sum;
 
        
    
