@@ -14,3 +14,4 @@ sample/graph-data/web-BerkStan.edges
 sample/mm_cnn_lf/472.ini
 sample/test/*.log
 sample/test/*.tmp
+proj-arm64/

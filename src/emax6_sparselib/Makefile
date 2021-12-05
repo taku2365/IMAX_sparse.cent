@@ -22,11 +22,12 @@ EMAX6_SPARSE_ARM_LIB = $(EMAX6_SPARSE_KERNEL_ARM_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
 AR_TARGET = libsparse.a
 SHARED_TARGET = libsparse.so
 SHARED_FLAG = -shared -fPIC
-ARM_CORSS_COMPILE = 0
-ARM_COMPILE = 0
-LINK_FORMAT = shared
+ARM_CORSS = 0
+ARM = 0
+LINK_FORMAT = static
+SHARED_LINK = 0
 
-ifeq ($(ARM_CORSS_COMPILE),1)
+ifeq ($(ARM_CORSS),1)
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
 CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
 CPP           = ../../bin/aarch64-elf-cpp -P
@@ -35,7 +36,7 @@ ARCHIVE       = ../../bin/aarch64-elf-ar $(ARFLAGS)
 
 endif
 
-ifeq ($(ARM_COMPILE),1)
+ifeq ($(ARM),1)
 OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
 CPP           = cpp -P
 CC            = gcc
@@ -45,14 +46,28 @@ endif
 
 
 
-all: static shared
+ifeq ($(ARM),1)
+test: binary
+	(cd ./test; $(MAKE) -f Makefile.arm )
+else
+test: binary
+	(cd ./test; $(MAKE) -f Makefile.cent)
+endif
+
+
+ifeq ($(LINK_FORMAT),shared)
+binary: shared 
+else
+binary: static
+endif
+
 
 static: $(AR_TARGET)
 shared: $(SHARED_TARGET)
 
 
 
-ifeq ($(ARM_COMPILE),1)
+ifeq ($(ARM),1)
 $(AR_TARGET):  $(EMAX6_SPARSE_ARM_LIB) 
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_ARM_LIB)
 	$(RM) kernel/*-*.c
@@ -62,7 +77,7 @@ $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 endif
 
 
-ifeq ($(ARM_COMPILE),1)
+ifeq ($(ARM),1)
 $(SHARED_TARGET): $(EMAX6_SPARSE_ARM_SRC) 
 	$(CC) $(SHARED_FLAG) $(CFLAGS) -o $@ $^
 else
@@ -73,7 +88,7 @@ endif
 /util/%.o: /util/%.c ./Include/emax6_sparselib.h 
 	$(warning $(CC) $(CFLAGS) -c ${INCLUDE} $< -o $@)
 
-ifeq ($(ARM_COMPILE),1)
+ifeq ($(ARM),1)
 
 ifeq ($(LINK_FORMAT),shared)
 ./kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h 
@@ -96,4 +111,5 @@ endif
 
 clean:
 	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-*
+	(cd ./test; $(MAKE) -f Makefile.cent clean)
 

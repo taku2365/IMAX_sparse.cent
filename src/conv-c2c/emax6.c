@@ -1359,7 +1359,7 @@ int emit_emax6a(int mode) /* 0:array, 1:drain */
         if (row < *rdep) { /* 指定rowには配置困難 */
           printf("in %s: mop cannot locate destination ALRNO/BDRNO (row=%d)\n", id[current_prefix].name, row);
           exit(1);
-        }
+        }       
         else if (row < last_row) {
           printf("in %s: mop found violation of sequence (row=%d < last_row=%d)\n", id[current_prefix].name, row, last_row);
           exit(1);

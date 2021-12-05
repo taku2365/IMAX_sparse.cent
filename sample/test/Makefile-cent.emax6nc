@@ -27,7 +27,7 @@
 
 export CPP     = cpp -P
 export CC      = gcc
-export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 
+export CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DDEBUG
 export LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
 PROGRAM	      = test024-cent.emax6nc

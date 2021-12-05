@@ -27,7 +27,7 @@
 
 PROJTOP	      = /home/takuya-s/IMAX_sparse.cent/
 OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-PROGRAM       = test024-zynq.emax6+dma test025-zynq.emax6+dma
+PROGRAM       = test024-zynq.emax6+dma 
 CPP           = cpp -P
 CC            = gcc
 CFLAGS        = -I. -O2 $(OPTION)

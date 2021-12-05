@@ -61,17 +61,18 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-  #define A_row_size 768LL
-  #define A_col_size 96LL
-  #define B_row_size 96LL
-  #define B_col_size 768LL
-
-// #define RMGRP 16
-#define RMGRP 16
-/*#define NCHIP 4*/
-#define NCHIP 4
-#define W  4LL
-#define H  46
+  #define A_row_size 736LL
+  #define A_col_size 736LL
+  #define B_row_size 736LL
+  #define B_col_size 736LL
+  #define DIMENTION  2LL
+  // #define RMGRP 16
+  #define RMGRP 8
+  /*#define NCHIP 4*/
+  #define NCHIP 4
+  #define W  4LL
+  #define H  46
+  #define OOFS_SHIFT 3LL
 
 
 Uint *A;  /*[A_row_size][L];*/
@@ -155,13 +156,13 @@ main()
   int* col_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
   int* row_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
   Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-  for (row=0; row<A_row_size; row++) {
     for (col=0; col<A_col_size; col++){
+      for (row=0; row<A_row_size; row++) {
       tmp = (int) tmp;
       // tmp = (int) (rand()%2 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A_tmp[row+col*A_row_size] = (float) tmp;
+      *(float*)&A_tmp[row+col*A_row_size] = (float) (row+1);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -174,7 +175,7 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format6(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   
@@ -242,9 +243,8 @@ main()
 // nanosec: ARM:9881990142 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:9881990142
 
 
-// nanosec: ARM:340371 DRAIN:3700385 CONF:101603 REGV:11022509 RANGE:6211888 LOAD:41737707 EXEC:18581238 total:81695701
-// nanosec: ARM:213895 DRAIN:3655417 CONF:87268 REGV:10172598 RANGE:3572451 LOAD:43506825  EXEC:10257497 total:71465951
-
+// nanosec: ARM:46525 DRAIN:5433830 CONF:69457 REGV:3404251 RANGE:1016464 LOAD:8883664 EXEC:1945807 total:20799998 [736][96][96][736] sparse_gemm_736_1_ver
+// nanosec: ARM:46333 DRAIN:5437919 CONF:69627 REGV:3404969 RANGE:1011242 LOAD:8888286 EXEC:1945960 total:20804336 同じ　　　　　　　　 sparse_gemm_736_2_ver
   reset_nanosec();
   orig(A_tmp,B_debug,C0);
   get_nanosec(0);
@@ -252,8 +252,8 @@ main()
 
   reset_nanosec();
   // imax();
-  sparse_gemm_736(C1, A, B, A_sparse);
-  // sparse_multiply_imax3(nnz_A,A_sparse,B,C1,B_col_size,params);
+  // sparse_gemm_768_96_96_768_1(C1, A, B, A_sparse);
+  sparse_multiply_imax4(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
 
@@ -329,35 +329,5 @@ orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
 }
 
 
-//watch (row*B_col_size+col1)>A_row_size*B_col_size
-//watch (row+n*A_row_size) > A_row_size*A_col_size
-// watch (n1+col*(2*L)) > B_col_size*L
-// watch (n1+1+col*(2*L)) > B_col_size*L
-orig_simd(Uint* A_orig_simd,Uint* B_orig_simd,Uint* C_orig_simd) {
-  printf("<<<ORIG_simd>>>\n");
-  for (row=0; row<A_row_size; row++) {
-    for (col=0,col1=0; col<B_col_size/2; col++,col1+=2) {
-      for (n=0,n1=0; n<A_col_size; n+=1,n1+=2) {
-        // printf("n %d  n1 %d  col %d col1 %d row %d\n",n,n1,col,col1,row);
-          if(!(((row*B_col_size+col1)<A_row_size*B_col_size)&&((row+n*A_row_size) < A_row_size*A_col_size)&&((n1+col*(2*B_row_size)) <B_col_size*B_row_size)&&((n1+1+col*(2*B_row_size)) < B_col_size*B_row_size))) {
-           fprintf(stderr,"simd debug error\n");
-           exit(1);
-        }
-        if (n==0) {
-          *(float*)&C_orig_simd[row*B_col_size+col1]  = *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+col*(2*B_row_size)];
-          *(float*)&C_orig_simd[row*B_col_size+col1+1]  = *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+1+col*(2*B_row_size)];
-        }
-        else{      
-          *(float*)&C_orig_simd[row*B_col_size+col1]  += *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+col*(2*B_row_size)];
-          *(float*)&C_orig_simd[row*B_col_size+col1+1]  += *(float*)&A_orig_simd[row+n*A_row_size] * *(float*)&B_orig_simd[n1+1+col*(2*B_row_size)];
-        }  
-        count0++;
-
-        /*printf("[%d %d %d]", row, col, n);*/
-      }
-      /*printf("\n");*/
-    }
-  }
-}
 
 
