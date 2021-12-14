@@ -149,10 +149,10 @@ main()
     for (col=0; col<A_col_size; col++){
       for (row=0; row<A_row_size; row++) {
       tmp = (int) tmp;
-      // tmp = (int) (rand()%2 == 0);
+      tmp = (int) (rand()%2 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A_tmp[row+col*A_row_size] = (float) (row+1);
+      *(float*)&A_tmp[row+col*A_row_size] = (float) (1);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -165,13 +165,12 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format6(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format7(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   
   get_nanosec(0);
   show_nanosec();
-
 
   for (row=0; row<B_row_size; row++) {
     for (col=0; col<B_col_size; col++){
@@ -210,11 +209,12 @@ main()
     fprintf(stderr,"sum != sum\n");
     exit(1);
   }
-
+                                                                                                                                                                                                                                                     
                                      //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0  total:14476178 //format
 // nanosec: ARM:428330 DRAIN:5347764 CONF:103059 REGV:15701836 RANGE:10177188 LOAD:42058397 EXEC:10241348 total:84057922 4chip 密
 // nanosec: ARM:643720 DRAIN:3900830 CONF:139645 REGV:22034423 RANGE:12112945 LOAD:81180395 EXEC:20458796  total:140470754  密
 // nanosec: ARM:284607 DRAIN:5347242 CONF:104924 REGV:34797322 RANGE:10362789 LOAD:74936785 EXEC:10831409  total:136665078
+                                                                                                                  
 // nanosec: ARM:697759 DRAIN:3912415 CONF:144105 REGV:36137979 RANGE:12767833 LOAD:144809961　EXEC:21722040 total:220192092 そのまま計算
 // nanosec: ARM:228882 DRAIN:1898495 CONF:96632 REGV:27163829 RANGE:8146254 LOAD:28577880 EXEC:7937346     total:74049318
 // nanosec: ARM:523872 DRAIN:3860935 CONF:124981 REGV:27126625 RANGE:9538279 LOAD:109312336 EXEC:15392081  total:165879109  2/3
@@ -230,7 +230,7 @@ main()
 // nanosec: ARM:161484 DRAIN:3740919 CONF:80551 REGV:6781150 RANGE:2391537 LOAD:29382167 EXEC:3101214      total:45639022 %9
 // nanosec: ARM:104578 DRAIN:5207871 CONF:73289 REGV:6516141 RANGE:1944812 LOAD:16307317 EXEC:1545583      total:31699591
 // nanosec: ARM:80258 DRAIN:5209217 CONF:72478 REGV:6516916 RANGE:1970062 LOAD:16281524  EXEC:1546550      total:31677005
-// nanosec: ARM:9881990142 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:9881990142
+// nanosec: ARM:9881990142 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:9881990142                          
 
 
 // nanosec: ARM:46525 DRAIN:5433830 CONF:69457 REGV:3404251 RANGE:1016464 LOAD:8883664 EXEC:1945807 total:20799998 [736][96][96][736] sparse_gemm_736_1_ver
@@ -243,7 +243,7 @@ main()
   reset_nanosec();
   // imax();
 //   sparse_gemm_768_96_96_768_1(C1, A, B, A_sparse);
-  sparse_multiply_imax4(nnz_A,A_sparse,B,C1,B_col_size,params);
+  sparse_multiply_imax5(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
 
@@ -254,13 +254,13 @@ main()
         for (col=0; col<B_col_size; col+=1){
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C1[col+row*B_col_size];
-        if (abs(*(float*)&C0[col+row*B_col_size] - *(float*)&C1[col+row*B_col_size])>1) {
+        // if (abs(*(float*)&C0[col+row*B_col_size] - *(float*)&C1[col+row*B_col_size])>1) {
           count2++;
 
           printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[col+row*B_col_size],
                                                   row, col, *(float*)&C1[col+row*B_col_size]); 
           // exit(1);       
-      }
+      // }
     }
   }
 

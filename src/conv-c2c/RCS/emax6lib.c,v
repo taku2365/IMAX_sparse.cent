@@ -1,10 +1,35 @@
-head	1.154;
+head	1.159;
 access;
 symbols;
 locks
-	nakashim:1.154; strict;
+	nakashim:1.159; strict;
 comment	@ * @;
 
+
+1.159
+date	2021.12.08.00.59.00;	author nakashim;	state Exp;
+branches;
+next	1.158;
+
+1.158
+date	2021.11.01.00.00.50;	author nakashim;	state Exp;
+branches;
+next	1.157;
+
+1.157
+date	2021.10.31.23.04.40;	author nakashim;	state Exp;
+branches;
+next	1.156;
+
+1.156
+date	2021.10.31.09.44.08;	author nakashim;	state Exp;
+branches;
+next	1.155;
+
+1.155
+date	2021.09.21.07.42.15;	author nakashim;	state Exp;
+branches;
+next	1.154;
 
 1.154
 date	2021.08.11.04.45.48;	author nakashim;	state Exp;
@@ -781,7 +806,7 @@ desc
 @@
 
 
-1.154
+1.159
 log
 @*** empty log message ***
 @
@@ -1649,6 +1674,7 @@ ex4(Uint op_ex1, Ull *d, Ull *r1, Uint exp1, Ull *r2, Uint exp2, Ull *r3, Uint e
     exe(op_ex1, (d+0), *(d+0),  exp1, *(r2+3), exp2, *(r3+3), exp3, OP_NOP, (Ull)r4, OP_NOP, (Ull)r5);
     break;
   case OP_NOP:
+  case OP_CFMA: /* [idx|32bit]*2 3in =(idx2==idx3)?r1+r2*r3:r1 */
   case OP_FMA:  /* 32bit*2 3in floating-point r1+r2*r3 */
   case OP_FMS:  /* 32bit*2 3in floating-point r1-r2*r3 */
   case OP_FAD:  /* 32bit*2 2in floating-point r1+r2 */
@@ -1889,11 +1915,25 @@ int softu64(int stage, Ull *o1, Ull *o2, Ull *o3, Ull r1, Ull r2, Ull r3, Ull r4
   return (0);
 }
 
+Ull __attribute__((always_inline))
+exm(Ull s, Uchar exp)
+{
+  switch (exp) {
+  case EXP_H3210: return ( s );
+  case EXP_H1010: return ((s<<32&0xffffffff00000000LL) | (s    &0x00000000ffffffffLL));
+  case EXP_H3232: return ((s    &0xffffffff00000000LL) | (s>>32&0x00000000ffffffffLL));
+  case EXP_B7632: return ((s>> 8&0x00ff000000ff0000LL) | (s>>16&0x000000ff000000ffLL));
+  case EXP_B5410: return ((s<< 8&0x00ff000000ff0000LL) | (s    &0x000000ff000000ffLL));
+  default:        return ( s );
+  }
+}
+
 int  /*__attribute__((always_inline))*/
-exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3, Uint op_ex2, Ull r4, Uint op_ex3, Ull r5)
+exe(Uint op_ex1, Ull *d, Ull s1, Uint exp1, Ull s2, Uint exp2, Ull s3, Uint exp3, Uint op_ex2, Ull r4, Uint op_ex3, Ull r5)
 {
   /* return 0:normal, 1:OP_WHILE breaks */
   union { Uint i; float f; } f3, f2, f1, f0;
+  Ull r1, r2, r3;
   Ull t3, t2, t1, t0;
   Ull c1, c0;
   Ull ex1_outd;
@@ -1901,21 +1941,9 @@ exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3
   Ull ex2_outd;
   int retval = 0;
 
-  switch (exp1) {
-  case EXP_H3210:                                                                    break;
-  case EXP_B7632: r1 = (r1>>8&0x00ff000000ff0000LL) | (r1>>16&0x000000ff000000ffLL); break;
-  case EXP_B5410: r1 = (r1<<8&0x00ff000000ff0000LL) | (r1    &0x000000ff000000ffLL); break;
-  }
-  switch (exp2) {
-  case EXP_H3210:                                                                    break;
-  case EXP_B7632: r2 = (r2>>8&0x00ff000000ff0000LL) | (r2>>16&0x000000ff000000ffLL); break;
-  case EXP_B5410: r2 = (r2<<8&0x00ff000000ff0000LL) | (r2    &0x000000ff000000ffLL); break;
-  }
-  switch (exp3) {
-  case EXP_H3210:                                                                    break;
-  case EXP_B7632: r3 = (r3>>8&0x00ff000000ff0000LL) | (r3>>16&0x000000ff000000ffLL); break;
-  case EXP_B5410: r3 = (r3<<8&0x00ff000000ff0000LL) | (r3    &0x000000ff000000ffLL); break;
-  }
+  r1 = exm(s1, exp1);
+  r2 = exm(s2, exp2);
+  r3 = exm(s3, exp3);
 
   switch (op_ex1) {
   case OP_NOP:
@@ -1935,6 +1963,21 @@ exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3
     break;
   case OP_SFMA: /* 8bit*8  3in stochastic r1+r2*r3 -> 8bit */
     softu64(1, ex1_outd_sfma, NULL, NULL, r1, r2, r3, r4);
+    break;
+  case OP_CFMA: /* [idx|32bit]*2 3in =(idx2==idx3)?r1+r2*r3:r1 */
+    f1.i = (Uint)(r1);
+    f2.i = (Uint)(r2>>32);
+    f3.i = (Uint)(r3>>32);
+    if (f2.i != -1 && f2.i == f3.i) {
+      f2.i = (Uint)(r2);
+      f3.i = (Uint)(r3);
+      f0.f = f1.f + (f2.f * f3.f);
+    }
+    else {
+      f0.f = f1.f;
+    }
+    t0 = f0.i;
+    ex1_outd = t0;
     break;
   case OP_FMA: /* 32bit*2 3in floating-point r1+r2*r3 */
   case OP_FMS: /* 32bit*2 3in floating-point r1-r2*r3 */
@@ -2352,76 +2395,74 @@ exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3
 }
 
 void /*__attribute__((always_inline))*/
-eag(Ull *adr, Ull base, Ull offset, Uchar msk)
+mex(Uint op_mx, Uchar **d, Uchar *base, Ull ofs, Ull s2, Ull s1)
 {
-  switch (msk) {
-  case  MSK_D0:
+  Uint ss2 = s2>>32;
+  Uint ss1 = s1>>32;
+
+  switch (op_mx) {
+  case OP_NOP:
+    *d = base;
     break;
-  case  MSK_W1:		
-    offset = offset>>32;
+  case OP_CMPA_LE:
+    *d = base + ((ss1!=0xffffffff && ss2<=ss1) ? ofs:0); /* sparse matrix */
     break;
-  case  MSK_W0:
-    offset = offset&0x00000000ffffffffLL;
+  case OP_CMPA_GE:
+    *d = base + ((ss2!=0xffffffff && ss2>=ss1) ? ofs:0); /* sparse matrix */
     break;
-  case  MSK_H3:
-    offset = offset>>48&0x000000000000ffffLL;
-    break;
-  case  MSK_H2:
-    offset = offset>>32&0x000000000000ffffLL;
-    break;
-  case  MSK_H1:
-    offset = offset>>16&0x000000000000ffffLL;
-    break;
-  case  MSK_H0:
-    offset = offset&0x000000000000ffffLL;
-    break;
-  case  MSK_B7:
-    offset = offset>>56&0x00000000000000ffLL;
-    break;
-  case  MSK_B6:
-    offset = offset>>48&0x00000000000000ffLL;
-    break;
-  case  MSK_B5:
-    offset = offset>>40&0x00000000000000ffLL;
-    break;
-  case  MSK_B4:
-    offset = offset>>32&0x00000000000000ffLL;
-    break;
-  case  MSK_B3:
-    offset = offset>>24&0x00000000000000ffLL;
-    break;
-  case  MSK_B2:
-    offset = offset>>16&0x00000000000000ffLL;
-    break;
-  case  MSK_B1:
-    offset = offset>>8&0x00000000000000ffLL;
-    break;
-  case  MSK_B0:
-    offset = offset&0x00000000000000ffLL;
+  case OP_ALWAYS: /* base++ ÂÐ±þ */
+    *d = base + ofs;
     break;
   default:
-    printf("emax6lib: eag: undefined msk=%d\n", msk);
+    printf("emax6lib: mex: undefined op_mx=%d\n", op_mx);
     break;
-  }
+  }  
+}
 
-  *adr = base + offset;
+Ull __attribute__((always_inline))
+eam(Ull ofs, Uchar msk)
+{
+  switch (msk) {
+  case  MSK_D0: return (ofs);
+  case  MSK_W1: return (ofs>>32);
+  case  MSK_W0: return (ofs&0x00000000ffffffffLL);
+  case  MSK_H3: return (ofs>>48&0x000000000000ffffLL);
+  case  MSK_H2: return (ofs>>32&0x000000000000ffffLL);
+  case  MSK_H1: return (ofs>>16&0x000000000000ffffLL);
+  case  MSK_H0: return (ofs&0x000000000000ffffLL);
+  case  MSK_B7: return (ofs>>56&0x00000000000000ffLL);
+  case  MSK_B6: return (ofs>>48&0x00000000000000ffLL);
+  case  MSK_B5: return (ofs>>40&0x00000000000000ffLL);
+  case  MSK_B4: return (ofs>>32&0x00000000000000ffLL);
+  case  MSK_B3: return (ofs>>24&0x00000000000000ffLL);
+  case  MSK_B2: return (ofs>>16&0x00000000000000ffLL);
+  case  MSK_B1: return (ofs>>8&0x00000000000000ffLL);
+  case  MSK_B0: return (ofs&0x00000000000000ffLL);
+  default: printf("emax6lib: eag: undefined msk=%d\n", msk); return (0LL);;
+  }
+}
+
+void /*__attribute__((always_inline))*/
+eag(Ull *adr, Ull base, Ull ofs)
+{
+  *adr = base + ofs;
 }
 
 void /*__attribute__((always_inline))*/
 mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
-  Ull adr;
+  Ull adr, ofs;
 
-  eag(&adr, base, offset, msk);
+  eag(&adr, base, eam(offset, msk));
   mmp(op_mm, ex, d, adr, top, len, blk);
 }
 
 void /*__attribute__((always_inline))*/
 mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
 {
-  Ull adr;
+  Ull adr, ofs;
 
-  eag(&adr, base, offset, msk);
+  eag(&adr, base, eam(offset, msk));
   mmp(op_mm, ex, d, adr, top, len, blk);
 }
 
@@ -2438,10 +2479,10 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
   top &= (1LL<<32)-1;
 #endif  
 
-  if (!adr || !top) return; /* NULL skip DMA */
-  
-#define CHECK_MMP_MARGINE 12
-  if (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGINE) {
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (!adr || !top)) return; /* NULL skip DMA */
+
+#define CHECK_MMP_MARGIN 12
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
   }
@@ -2560,6 +2601,169 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
   }
 }
 #endif
+@
+
+
+1.158
+log
+@*** empty log message ***
+@
+text
+@d1105 13
+d1119 1
+a1119 1
+exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3, Uint op_ex2, Ull r4, Uint op_ex3, Ull r5)
+d1123 1
+d1131 3
+a1133 15
+  switch (exp1) {
+  case EXP_H3210:                                                                    break;
+  case EXP_B7632: r1 = (r1>>8&0x00ff000000ff0000LL) | (r1>>16&0x000000ff000000ffLL); break;
+  case EXP_B5410: r1 = (r1<<8&0x00ff000000ff0000LL) | (r1    &0x000000ff000000ffLL); break;
+  }
+  switch (exp2) {
+  case EXP_H3210:                                                                    break;
+  case EXP_B7632: r2 = (r2>>8&0x00ff000000ff0000LL) | (r2>>16&0x000000ff000000ffLL); break;
+  case EXP_B5410: r2 = (r2<<8&0x00ff000000ff0000LL) | (r2    &0x000000ff000000ffLL); break;
+  }
+  switch (exp3) {
+  case EXP_H3210:                                                                    break;
+  case EXP_B7632: r3 = (r3>>8&0x00ff000000ff0000LL) | (r3>>16&0x000000ff000000ffLL); break;
+  case EXP_B5410: r3 = (r3<<8&0x00ff000000ff0000LL) | (r3    &0x000000ff000000ffLL); break;
+  }
+d1609 2
+a1610 2
+void /*__attribute__((always_inline))*/
+eam(Ull *ofs, Ull offset, Uchar msk)
+d1613 16
+a1628 47
+  case  MSK_D0:
+    break;
+  case  MSK_W1:		
+    offset = offset>>32;
+    break;
+  case  MSK_W0:
+    offset = offset&0x00000000ffffffffLL;
+    break;
+  case  MSK_H3:
+    offset = offset>>48&0x000000000000ffffLL;
+    break;
+  case  MSK_H2:
+    offset = offset>>32&0x000000000000ffffLL;
+    break;
+  case  MSK_H1:
+    offset = offset>>16&0x000000000000ffffLL;
+    break;
+  case  MSK_H0:
+    offset = offset&0x000000000000ffffLL;
+    break;
+  case  MSK_B7:
+    offset = offset>>56&0x00000000000000ffLL;
+    break;
+  case  MSK_B6:
+    offset = offset>>48&0x00000000000000ffLL;
+    break;
+  case  MSK_B5:
+    offset = offset>>40&0x00000000000000ffLL;
+    break;
+  case  MSK_B4:
+    offset = offset>>32&0x00000000000000ffLL;
+    break;
+  case  MSK_B3:
+    offset = offset>>24&0x00000000000000ffLL;
+    break;
+  case  MSK_B2:
+    offset = offset>>16&0x00000000000000ffLL;
+    break;
+  case  MSK_B1:
+    offset = offset>>8&0x00000000000000ffLL;
+    break;
+  case  MSK_B0:
+    offset = offset&0x00000000000000ffLL;
+    break;
+  default:
+    printf("emax6lib: eag: undefined msk=%d\n", msk);
+    break;
+a1629 2
+
+  *ofs = offset;
+d1643 1
+a1643 2
+  eam(&ofs, offset, msk);
+  eag(&adr, base, ofs);
+d1652 1
+a1652 2
+  eam(&ofs, offset, msk);
+  eag(&adr, base, ofs);
+@
+
+
+1.157
+log
+@*** empty log message ***
+@
+text
+@d1702 1
+a1702 1
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ) && (!adr || !top)) return; /* NULL skip DMA */
+d1705 1
+a1705 1
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
+@
+
+
+1.156
+log
+@*** empty log message ***
+@
+text
+@d1702 1
+a1702 1
+  if (!adr || !top) return; /* NULL skip DMA */
+d1705 1
+a1705 1
+  if (!(op_mm==OP_LDRQ && blk) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
+@
+
+
+1.155
+log
+@*** empty log message ***
+@
+text
+@d1703 3
+a1705 3
+  
+#define CHECK_MMP_MARGINE 12
+  if (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGINE) {
+@
+
+
+1.154
+log
+@*** empty log message ***
+@
+text
+@d864 1
+d1152 15
+d1583 26
+a1608 1
+eag(Ull *adr, Ull base, Ull offset, Uchar msk)
+d1660 7
+a1666 1
+  *adr = base + offset;
+d1672 1
+a1672 1
+  Ull adr;
+d1674 2
+a1675 1
+  eag(&adr, base, offset, msk);
+d1682 1
+a1682 1
+  Ull adr;
+d1684 2
+a1685 1
+  eag(&adr, base, offset, msk);
 @
 
 

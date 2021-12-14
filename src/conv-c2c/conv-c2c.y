@@ -6,32 +6,16 @@
 
 /* conv-a2c.y   2012/6/15 */
 
-%{
-
-#include "yacc_lex_util.h"
-#include "lex.yy.c"
-void yyerror(char *s)
-{
-  if (++y_errornum == 1)
-    fprintf(stderr, "\n");
-#if 0
-  fprintf(stderr, "line %d: \"%s\": %s.\n", y_lineno, yytext, s);
-#endif
-  /* lex -l により,yylinenoが使える */
-  fprintf(stderr, "err%d: line %d: \"%s\": %s.\n", y_errornum, yylineno, yytext, s);
-}
-
-%}
-
 %token  EOL
 %token  ARMV8
 %token  EMAX6ABEGIN  EMAX6ASTATEM  EMAX6AEND  EMAX6ADRAIN
 %token  EMAX6TBEGIN  EMAX6TSTATEM  EMAX6TEND
 
 /* CGRA */
-%token  CGRA_ULL     CGRA_UINT     CGRA_SLL   CGRA_SRL
-%token  CGRA_WHILE   CGRA_FOR      CGRA_CEX
-%token	CGRA_EX4     CGRA_EXE      CGRA_MO4   CGRA_MO2	CGRA_MOP
+%token  CGRA_ULL     CGRA_UINT    CGRA_SLL   CGRA_SRL
+%token  CGRA_WHILE   CGRA_FOR
+%token  CGRA_CEX     CGRA_EX4     CGRA_EXE
+%token  CGRA_MEX     CGRA_MO4     CGRA_MOP
 %token	CGRA_DECR    CGRA_INCR
 
 /* TRANSACTION */
@@ -55,12 +39,12 @@ program : program line
         ;
 
 line :  EOL {
-		printf("reading line %d\n",y_lineno);
         }
         | ARMV8 {
           fprintf(ofile, "%s\n", yytext);
         }
         | EMAX6ABEGIN VARIABLE expr { /* reset conf[][] */
+	  int c;
           printf("==EMAX6AB reading line=%d name=%s\n", y_lineno, id[$2].name);
           current_prefix  = $2;
           current_mapdist = id[$3].val;
@@ -74,7 +58,15 @@ line :  EOL {
 	  bzero(&lmmi, sizeof(lmmi));
 	  bzero(&lmmx, sizeof(lmmx));
 	  bzero(&regv, sizeof(regv));
+	  fprintf(ofile, "#ifndef EMAXSC\n");
           fprintf(ofile, "volatile emax6_conf_%s();\n", id[current_prefix].name);
+	  fprintf(ofile, "#endif\n");
+	  forinit_cidx[0] = 0;
+          forinit_cidx[1] = 0;
+          for (c=0; c<EMAX_NCHIP; c++) {
+            forinit[0][c][0]='\0';
+            forinit[1][c][0]='\0';
+          }
 #if 0
           fprintf(ofile, "volatile struct { struct regv_breg breg[%d][%d] ;} *emax6_breg_%s  = emax6.reg_breg;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
           fprintf(ofile, "volatile struct { struct regv_addr addr[%d][%d] ;} *emax6_addr_%s  = emax6.reg_addr;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
@@ -113,7 +105,7 @@ EMAX6ABODY : EMAX6AUNIT {
         }
         ;
 
-EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
+EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
             exit(1);
@@ -137,7 +129,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exeds   = -1; /* no suffix */
           last_insn++;
 	}
-        | CGRA_FOR '(' CHIP '=' expr ';' CHIP '<' expr ';' CHIP CGRA_INCR ')' '{' {
+        | CGRA_FOR "(" CHIP "=" expr ";" CHIP "<" expr ";" CHIP CGRA_INCR ")" "\{" {
 	  if (id[$5].val != 0) {
 	    fprintf(stderr, "in %s: for(CHIP=0;;) should be specified\n", id[current_prefix].name);
             exit(1);
@@ -147,9 +139,11 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	    fprintf(stderr, "in %s: for(;CHIP<NCHIP;) NCHIP(%d) should be <= EMAX_NCHIP(%d)\n", id[current_prefix].name, current_nchip, EMAX_NCHIP);
             exit(1);
 	  }
+	  fprintf(ofile, "#ifndef EMAXSC\n");
 	  fprintf(ofile, "\t  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = %d; // NCHIP-1\n", current_nchip-1);
+	  fprintf(ofile, "#endif\n");
 	}
-        | CGRA_FOR '(' INITNO '=' expr ',' LOOPNO '=' ASIS ',' XVARIABLE '=' ASIS ';' LOOPNO CGRA_DECR ';' INITNO '=' expr ')' '{' {
+        | CGRA_FOR "(" INITNO "=" expr "," LOOPNO "=" ASIS "," XVARIABLE "=" ASIS ";" LOOPNO CGRA_DECR ";" INITNO "=" expr ")" "\{" {
 	  int loop_no = id[$3].val;
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
@@ -160,7 +154,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
             exit(1);
 	  }
 	  if (loop_no != id[ $7].val || loop_no != id[$15].val || loop_no != id[$18].val || loop_no != id[$7].val) {
-	    fprintf(stderr, "in %s: for() includes INIT#/LOOP# mismatch\n", id[current_prefix].name);
+	    fprintf(stderr, "in %s: for() INIT#/LOOP# mismatch\n", id[current_prefix].name);
             exit(1);
 	  }
 	  if (id[$5].val != 1 || id[$20].val != 0) {
@@ -184,12 +178,21 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 		  i += 4;
 		}
 	      }
+	      fprintf(ofile, "#ifndef EMAXSC\n");
 	      fprintf(ofile, "\t%s[%d] = %s;\n", id[$11].name, c, buf);
+	      fprintf(ofile, "#endif\n");
+	      snprintf(forinit[loop_no][c], BUF_MAXLEN, "%s[%d] = %s", id[$11].name, c, buf);
 	    }
+	    forinit_cidx[loop_no] = 1; /* CHIP */
 	    free(buf);
 	  }
-	  else
+	  else {
+	    fprintf(ofile, "#ifndef EMAXSC\n");
 	    fprintf(ofile, "\t%s = %s;\n", id[$11].name, id[$13].name);
+	    fprintf(ofile, "#endif\n");
+	    snprintf(forinit[loop_no][0], BUF_MAXLEN, "%s = %s", id[$11].name, id[$13].name);
+            forinit_cidx[loop_no] = 0; /* !CHIP */
+	  }
 	  insn[last_insn].iheader.type = 2; /* FOR */
 	  insn[last_insn].iheader.row  = 0; /* top */
 	  insn[last_insn].iheader.col  = loop_no;
@@ -209,7 +212,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exeds   = -1; /* no suffix */
           last_insn++;
 	}
-        | CGRA_CEX '(' expr ',' cex_dst ',' cex_src ',' cex_src ',' cex_src ',' cex_src ',' expr ')' ';' {
+        | CGRA_CEX "(" expr "," cex_dst "," cex_src "," cex_src "," cex_src "," cex_src "," expr ")" ";" {
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
             exit(1);
@@ -231,7 +234,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].icex.cexdh   = $5;
           last_insn++;
         }
-        | CGRA_EX4 '(' expr ',' ex4_dstd ',' ex4_src ',' expr ',' ex4_src ',' expr ',' ex4_src ',' expr ',' expr ',' ex4_src ',' expr ',' ex4_src ')' ';' {
+        | CGRA_EX4 "(" expr "," ex4_dstd "," ex4_src "," expr "," ex4_src "," expr "," ex4_src "," expr "," expr "," ex4_src "," expr "," ex4_src ")" ";" {
 	  /* ex4(op1, &BR[r-1][c1], &BR[r-1][c2], &BR[r-1][c3], op2, IMM, op3, IMM, &BR[r][c], NULL); followed by next ex */
 	  /* ex4(op1, &BR[r-1][c1], &BR[r-1][c2], &BR[r-1][c3], op2, IMM, op3, IMM, &AR[r],    NULL); followed by store(automatic allocating) */
           if (last_insn >= INSN_DEPTH) {
@@ -269,7 +272,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exeds   = 4; /* all suffix */
           last_insn++;
         }
-        | CGRA_EX4 '(' expr ',' exe_dstd ',' exe_src1 ',' expr ',' ex4_src ',' expr ',' ex4_src ',' expr ',' expr ',' ex4_src ',' expr ',' exe_src5 ')' ';' {
+        | CGRA_EX4 "(" expr "," exe_dstd "," exe_src1 "," expr "," ex4_src "," expr "," ex4_src "," expr "," expr "," ex4_src "," expr "," exe_src5 ")" ";" {
 	  /* ex4(OP_SFMA, &b00, b00, EXP_H3210, BR[r][1], EXP_H3210, BR[r][2], EXP_H3210, OP_NOP, 0LL, OP_NOP, 32LL) */
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
@@ -303,7 +306,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exedh   = $5;
           last_insn++;
         }
-        | CGRA_EX4 '(' expr ',' exe_dstd ',' INITNO '?' exe_src1 ':' exe_src1 ',' expr ',' ex4_src ',' expr ',' ex4_src ',' expr ',' expr ',' ex4_src ',' expr ',' exe_src5 ')' ';' {
+        | CGRA_EX4 "(" expr "," exe_dstd "," INITNO "?" exe_src1 ":" exe_src1 "," expr "," ex4_src "," expr "," ex4_src "," expr "," expr "," ex4_src "," expr "," exe_src5 ")" ";" {
 	  /* ex4(OP_SFMA, &b00, INIT0?b00:b00, EXP_H3210, BR[r][1], EXP_H3210, BR[r][2], EXP_H3210, OP_NOP, 0LL, OP_NOP, 32LL) */
 	  int loop_no0 = id[$7].val;
           if (last_insn >= INSN_DEPTH) {
@@ -346,7 +349,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exedh   = $5;
           last_insn++;
         }
-        | CGRA_EXE '(' expr ',' exe_dstd ',' exe_src1 ',' expr ',' exe_src2 ',' expr ',' exe_src3 ',' expr ',' expr ',' exe_src4 ',' expr ',' exe_src5 ')' ';' {
+        | CGRA_EXE "(" expr "," exe_dstd "," exe_src1 "," expr "," exe_src2 "," expr "," exe_src3 "," expr "," expr "," exe_src4 "," expr "," exe_src5 ")" ";" {
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
           if (last_insn >= INSN_DEPTH) {
@@ -378,7 +381,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exedh   = $5;
           last_insn++;
         }
-        | CGRA_EXE '(' expr ',' exe_dstd ',' INITNO '?' exe_src1 ':' exe_src1 ',' expr ',' exe_src2 ',' expr ',' exe_src3 ',' expr ',' expr ',' exe_src4 ',' expr ',' exe_src5 ')' ';' {
+        | CGRA_EXE "(" expr "," exe_dstd "," INITNO "?" exe_src1 ":" exe_src1 "," expr "," exe_src2 "," expr "," exe_src3 "," expr "," expr "," exe_src4 "," expr "," exe_src5 ")" ";" {
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
 	  int loop_no0 = id[$7].val;
@@ -419,7 +422,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exedh   = $5;
           last_insn++;
         }
-        | CGRA_EXE '(' expr ',' exe_dstd ',' exe_src1 ',' expr ',' INITNO '?' exe_src2 ':' expr ',' expr ',' exe_src3 ',' expr ',' expr ',' exe_src4 ',' expr ',' exe_src5 ')' ';' {
+        | CGRA_EXE "(" expr "," exe_dstd "," exe_src1 "," expr "," INITNO "?" exe_src2 ":" expr "," expr "," exe_src3 "," expr "," expr "," exe_src4 "," expr "," exe_src5 ")" ";" {
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
 	  int loop_no0 = id[$11].val;
@@ -460,16 +463,71 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].iexe.exedh   = $5;
           last_insn++;
         }
-        | CGRA_MO4 '(' expr ',' mop_ex ',' mo4_srcdst ',' mop_base ',' mop_offset ',' expr ',' mop_top ',' mop_len ',' expr ',' force ',' mop_top ',' mop_len ')' ';' {
+        | CGRA_MEX "(" expr "," mex_dst "," INITNO "?" XVARIABLE ":" XVARIABLE "," INITNO "?" expr ":" expr "," mex_src3 "," mex_src4 ")" ";" {
+	  /* mex(OP_CMPA_LE, &b0[h],       INIT0?b:b0[h],                INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
+	  /* mex(OP_CMPA_GE, &a0[h][CHIP], INIT0?a[h][CHIP]:a0[h][CHIP], INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
+	  /* mop(OP_LDR, 3,  &BR[r][2][1], b0[h],       bofs, MSK_W1, b,          2*LP*RMGRP,  0, 0, NULL, 2*LP*RMGRP); */
+	  /* mop(OP_LDR, 3,  &BR[r][2][0], a0[h][CHIP], cofs, MSK_W1, a[h][CHIP], 2*LP,        0, 0, NULL, 2*LP); */
+	  int loop_no0 = id[$7].val;
+          if (last_insn >= INSN_DEPTH) {
+	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
+            exit(1);
+          }
+	  if (loop_no0 != 0) {
+	    fprintf(stderr, "in %s: mex(INIT0) should be specified\n", id[current_prefix].name);
+            exit(1);
+	  }
+	  if ($5 != $11) {
+	    fprintf(stderr, "in %s: exe(dst,INIT0?src1:src2) dst and src2 should be the same\n", id[current_prefix].name);
+            exit(1);
+	  }
+	  if (loop_no0 != id[$13].val) {
+	    fprintf(stderr, "in %s: mex() INIT# mismatch\n", id[current_prefix].name);
+            exit(1);
+	  }
+	  if (id[$15].val != 0) {
+	    fprintf(stderr, "in %s: mex(INIT0?expr1:expr2) expr1 should be zero\n", id[current_prefix].name);
+            exit(1);
+	  }
+	  if (id[$19].val != id[$21].val) {
+	    fprintf(stderr, "in %s: mex(src3[%d][%d],src4[%d][%d]) should be the same row/col\n", id[current_prefix].name, (Uint)id[$19].val/EMAX_WIDTH, (Uint)id[$19].val%EMAX_WIDTH, (Uint)id[$21].val/EMAX_WIDTH, (Uint)id[$21].val%EMAX_WIDTH);
+            exit(1);
+	  }
+	  if (insn[last_insn].imex.src3s != 1 || insn[last_insn].imex.src4s != 0) {
+	    fprintf(stderr, "in %s: mex(src3[%d][%d][%d],src4[%d][%d][%d]) should be src3[][][1] and src4[][][0]\n", id[current_prefix].name, (Uint)id[$19].val/EMAX_WIDTH, (Uint)id[$19].val%EMAX_WIDTH, insn[last_insn].imex.src3s, (Uint)id[$21].val/EMAX_WIDTH, (Uint)id[$21].val%EMAX_WIDTH, insn[last_insn].imex.src4s);
+            exit(1);
+	  }
+	  insn[last_insn].iheader.type = 6; /* MEX */
+	  insn[last_insn].iheader.row  = id[$19].type==T_BDRNO?(id[$19].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[$19].type==T_BDRNO?(id[$19].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].imex.op      = id[ $3].val; /* activate self_update */
+	  insn[last_insn].imex.init    = 1;           /* activate INIT0?src1 */
+	  insn[last_insn].imex.src1v   = id[ $9].type;
+	  insn[last_insn].imex.src1h   = $9;
+	  insn[last_insn].imex.src1s   = -1;
+	  insn[last_insn].imex.src2v   = id[$11].type;
+	  insn[last_insn].imex.src2h   = $11;
+	  insn[last_insn].imex.src2s   = -1;
+	  insn[last_insn].imex.distv   = id[$17].type;
+	  insn[last_insn].imex.disth   = $17;
+	  insn[last_insn].imex.src3v   = id[$19].type;
+	  insn[last_insn].imex.src3h   = $19;
+	  insn[last_insn].imex.src4v   = id[$21].type;
+	  insn[last_insn].imex.src4h   = $21;
+	  insn[last_insn].imex.mexdv   = id[ $5].type;
+	  insn[last_insn].imex.mexdh   = $5;
+          last_insn++;
+        }
+        | CGRA_MO4 "(" expr "," mop_ex "," mo4_srcdst "," mop_base "," mop_offset "," expr "," mop_top "," mop_len "," expr "," force "," mop_top "," mop_len ")" ";" {
 	  /* mop(load,  ex, BR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); load requires target regs */
 	  /* mop(store, ex, AR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); store requires current ex */
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
             exit(1);
           }
-	  insn[last_insn].iheader.type = 6; /* MO4 */
-	  insn[last_insn].iheader.row  = id[$7].type==T_ALRNO?(id[$7].val):id[$7].type==T_BDRNO?(id[$7].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$7].type==T_ALRNO?(        -1):id[$7].type==T_BDRNO?(id[$7].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.type = 7; /* MO4 */
+	  insn[last_insn].iheader.row  = id[ $7].type==T_ALRNO?(id[$7].val):id[$7].type==T_BDRNO?(id[$7].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $7].type==T_ALRNO?(        -1):id[$7].type==T_BDRNO?(id[$7].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].imop.op      = id[ $3].val;
 	  insn[last_insn].imop.mtype   = get_mop_type(id[ $3].val);
 	  insn[last_insn].imop.exv     = id[ $5].type;
@@ -497,8 +555,9 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 		exit(1);
 	      }
 	      /* one_shotを使用し,アドレス計算の初回は,immediateを０として扱う */
-	      insn[last_insn].imop.offsv   = T_IMMEDIATE;
-	      insn[last_insn].imop.offsh   = hash_reg_immediate(size);
+	      insn[last_insn].imex.op      = OP_ALWAYS;
+	      insn[last_insn].imex.distv   = T_IMMEDIATE;
+	      insn[last_insn].imex.disth   = hash_reg_immediate(size);
 	    }
 	  }
 	  else if (insn[last_insn].imop.op == OP_LDDMQ) {
@@ -511,9 +570,9 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	    insn[last_insn].imop.basev   = T_IMMEDIATE;
 	    insn[last_insn].imop.baseh   = hash_reg_immediate(0LL); /* start from lmm_0 */
 	    insn[last_insn].imop.bases   = -1;
-	    insn[last_insn].imop.offsv   = T_IMMEDIATE;
-	    insn[last_insn].imop.offsh   = hash_reg_immediate(32LL);
-	    insn[last_insn].imop.offss   = -1;
+	    insn[last_insn].imex.op      = OP_ALWAYS;
+	    insn[last_insn].imex.distv   = T_IMMEDIATE;
+	    insn[last_insn].imex.disth   = hash_reg_immediate(32LL);
 	  }
 	  insn[last_insn].imop.offsm   = id[$13].val;
 	  insn[last_insn].imop.topv    = id[$15].type;
@@ -529,16 +588,16 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].imop.plenh   = $25;
           last_insn++;
         }
-        | CGRA_MOP '(' expr ',' mop_ex ',' mop_srcdst ',' mop_base ',' mop_offset ',' expr ',' mop_top ',' mop_len ',' expr ',' force ',' mop_top ',' mop_len ')' ';' {
+        | CGRA_MOP "(" expr "," mop_ex "," mop_srcdst "," mop_base "," mop_offset "," expr "," mop_top "," mop_len "," expr "," force "," mop_top "," mop_len ")" ";" {
 	  /* mop(load,  ex, BR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); load requires target regs */
 	  /* mop(store, ex, AR[r][c][s], single_reg, offset, offset_mask, stream_top, length, , blockforce, ptop, plen); store requires current ex */
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
             exit(1);
           }
-	  insn[last_insn].iheader.type = 7; /* MOP */
-	  insn[last_insn].iheader.row  = id[$7].type==T_ALRNO?(id[$7].val)                :id[$7].type==T_BDRNO?(id[$7].val/EMAX_WIDTH):-1; /* adr/bdr */
-	  insn[last_insn].iheader.col  = id[$7].type==T_ALRNO?(insn[last_insn].imop.mopds):id[$7].type==T_BDRNO?(id[$7].val%EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.type = 8; /* MOP */
+	  insn[last_insn].iheader.row  = id[ $7].type==T_ALRNO?(id[$7].val)                :id[$7].type==T_BDRNO?(id[$7].val/EMAX_WIDTH):-1; /* adr/bdr */
+	  insn[last_insn].iheader.col  = id[ $7].type==T_ALRNO?(insn[last_insn].imop.mopds):id[$7].type==T_BDRNO?(id[$7].val%EMAX_WIDTH):-1; /* adr/bdr */
 	  insn[last_insn].imop.op      = id[ $3].val;
 	  insn[last_insn].imop.mtype   = get_mop_type(id[ $3].val);
 	  insn[last_insn].imop.exv     = id[ $5].type;
@@ -570,8 +629,9 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 		exit(1);
 	      }
 	      /* one_shotを使用し,アドレス計算の初回は,immediateを０として扱う */
-	      insn[last_insn].imop.offsv   = T_IMMEDIATE;
-	      insn[last_insn].imop.offsh   = hash_reg_immediate(size);
+	      insn[last_insn].imex.op      = OP_ALWAYS;
+	      insn[last_insn].imex.distv   = T_IMMEDIATE;
+	      insn[last_insn].imex.disth   = hash_reg_immediate(size);
 	    }
 	  }
 	  insn[last_insn].imop.offsm   = id[$13].val;
@@ -588,7 +648,7 @@ EMAX6AUNIT : CGRA_WHILE '(' VARIABLE CGRA_DECR ')' '{' {
 	  insn[last_insn].imop.plenh   = $25;
           last_insn++;
         }
-        | '}' {
+        | "\}" {
         }
 	| {
         }
@@ -605,7 +665,7 @@ cex_src : expr {
 	}
 	; 
 
-cex_dst : '&' EXRNO {
+cex_dst : "\&" EXRNO {
           $$ = $2;
         }
 	;
@@ -647,11 +707,11 @@ exe_src1 : expr {
 	  insn[last_insn].iexe.src1s = -1;
           $$ = $2;
 	}
-        | ALRNO '[' expr ']' { /* AR[r][s] */
+        | ALRNO "\[" expr "\]" { /* AR[r][s] */
 	  insn[last_insn].iexe.src1s = id[$3].val;
           $$ = $1;
 	}
-        | BDRNO '[' expr ']' { /* BR[r][c][s] */
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
 	  insn[last_insn].iexe.src1s = id[$3].val;
           $$ = $1;
 	}
@@ -669,11 +729,11 @@ exe_src2 : expr {
 	  insn[last_insn].iexe.src2s = -1;
           $$ = $2;
 	}
-        | ALRNO '[' expr ']' { /* AR[r][s] */
+        | ALRNO "\[" expr "\]" { /* AR[r][s] */
 	  insn[last_insn].iexe.src2s = id[$3].val;
           $$ = $1;
 	}
-        | BDRNO '[' expr ']' { /* BR[r][c][s] */
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
 	  insn[last_insn].iexe.src2s = id[$3].val;
           $$ = $1;
 	}
@@ -691,11 +751,11 @@ exe_src3 : expr {
 	  insn[last_insn].iexe.src3s = -1;
           $$ = $2;
 	}
-        | ALRNO '[' expr ']' { /* AR[r][s] */
+        | ALRNO "\[" expr "\]" { /* AR[r][s] */
 	  insn[last_insn].iexe.src3s = id[$3].val;
           $$ = $1;
 	}
-        | BDRNO '[' expr ']' { /* BR[r][c][s] */
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
 	  insn[last_insn].iexe.src3s = id[$3].val;
           $$ = $1;
 	}
@@ -713,11 +773,11 @@ exe_src4 : expr {
 	  insn[last_insn].iexe.src4s = -1;
           $$ = $2;
 	}
-        | ALRNO '[' expr ']' { /* AR[r][s] */
+        | ALRNO "\[" expr "\]" { /* AR[r][s] */
 	  insn[last_insn].iexe.src4s = id[$3].val;
           $$ = $1;
 	}
-        | BDRNO '[' expr ']' { /* BR[r][c][s] */
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
 	  insn[last_insn].iexe.src4s = id[$3].val;
           $$ = $1;
 	}
@@ -735,22 +795,60 @@ exe_src5 : expr {
 	  insn[last_insn].iexe.src5s = -1;
           $$ = $2;
 	}
-        | ALRNO '[' expr ']' { /* AR[r][s] */
+        | ALRNO "\[" expr "\]" { /* AR[r][s] */
 	  insn[last_insn].iexe.src5s = id[$3].val;
           $$ = $1;
 	}
-        | BDRNO '[' expr ']' { /* BR[r][c][s] */
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
 	  insn[last_insn].iexe.src5s = id[$3].val;
           $$ = $1;
 	}
 	;
 
-exe_dstd : '&' XVARIABLE { /* &var */
+exe_dstd : "\&" XVARIABLE { /* &var */
 	  insn[last_insn].iexe.exeds = -1;
           $$ = $2;
         }
-        | '&' ALRNO '[' expr ']' { /* &AR[r][s] */
+        | "\&" ALRNO "\[" expr "\]" { /* &AR[r][s] */
 	  insn[last_insn].iexe.exeds = id[$4].val;
+          $$ = $2;
+	}
+	;
+
+mex_src1 : XVARIABLE {
+	  insn[last_insn].imex.src1s = -1;
+          $$ = $1;
+        }
+        ;
+
+mex_src2 : XVARIABLE {
+	  insn[last_insn].imex.src2s = -1;
+          $$ = $1;
+        }
+        ;
+
+mex_src3 : expr {
+	  insn[last_insn].iexe.src3s = -1;
+          $$ = $1;
+        }
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
+	  insn[last_insn].imex.src3s = id[$3].val;
+          $$ = $1;
+        }
+        ;
+
+mex_src4 : expr {
+	  insn[last_insn].iexe.src4s = -1;
+          $$ = $1;
+        }
+        | BDRNO "\[" expr "\]" { /* BR[r][c][s] */
+	  insn[last_insn].imex.src4s = id[$3].val;
+          $$ = $1;
+        }
+        ;
+
+mex_dst : "\&" XVARIABLE {
+	  insn[last_insn].imex.mexds = -1;
           $$ = $2;
 	}
 	;
@@ -774,15 +872,15 @@ mo4_srcdst : XVARIABLE { /* for load/store */
         }
 	;
 
-mop_srcdst : '&' XVARIABLE { /* for load/store */
+mop_srcdst : "\&" XVARIABLE { /* for load/store */
 	  insn[last_insn].imop.mopds = -1;
           $$ = $2;
 	}
-        | '&' ALRNO '[' expr ']' { /* for store */
+        | "\&" ALRNO "\[" expr "\]" { /* for store */
 	  insn[last_insn].imop.mopds = id[$4].val;
           $$ = $2;
 	}
-        | '&' BDRNO '[' expr ']' { /* for load */
+        | "\&" BDRNO "\[" expr "\]" { /* for load */
 	  insn[last_insn].imop.mopds = id[$4].val;
           $$ = $2;
         }
@@ -801,16 +899,16 @@ mop_base : expr {
           $$ = $2;
 	}
         | XVARIABLE CGRA_INCR {
-	  insn[last_insn].imop.updt = 1;
+	  insn[last_insn].imop.updt  = 1;
 	  insn[last_insn].imop.bases = -1;
           $$ = $1;
 	}
-        | CGRA_ULL '(' XVARIABLE CGRA_INCR ')' {
-	  insn[last_insn].imop.updt = 1;
+        | CGRA_ULL "(" XVARIABLE CGRA_INCR ")" {
+	  insn[last_insn].imop.updt  = 1;
 	  insn[last_insn].imop.bases = -1;
           $$ = $3;
 	}
-        | BDRNO '[' expr ']' {
+        | BDRNO "\[" expr "\]" {
 	  insn[last_insn].imop.bases = id[$3].val;
           $$ = $1;
 	}
@@ -828,7 +926,7 @@ mop_offset : expr {
 	  insn[last_insn].imop.offss = -1;
           $$ = $2;
 	}
-        | BDRNO '[' expr ']' {
+        | BDRNO "\[" expr "\]" {
 	  insn[last_insn].imop.offss = id[$3].val;
           $$ = $1;
 	}
@@ -871,7 +969,7 @@ XVARIABLE : CHIP {
           /*id[$1].chip = 1;*/
           $$ = $1;
         }
-        | VARIABLE '[' CHIP ']' {
+        | VARIABLE "[" CHIP "]" {
 	  id[$1].cidx = 1;
           $$ = $1;
 	}
@@ -882,7 +980,7 @@ XVARIABLE : CHIP {
 expr : term {
           $$ = $1;
         }
-        | expr '+' term {
+        | expr "\+" term {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -895,7 +993,7 @@ expr : term {
 	  }
           $$ = hashval;
         }
-        | expr '-' term {
+        | expr "\-" term {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -934,7 +1032,7 @@ expr : term {
 	  }
           $$ = hashval;
         }
-        | expr '&' term {
+        | expr "\&" term {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -947,7 +1045,7 @@ expr : term {
 	  }
           $$ = hashval;
         }
-        | expr '^' term {
+        | expr "\^" term {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -960,7 +1058,7 @@ expr : term {
 	  }
           $$ = hashval;
         }
-        | expr '|' term {
+        | expr "\|" term {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -978,7 +1076,7 @@ expr : term {
 term : factor {
           $$ = $1;
         }
-        | '~' factor {
+        | "\~" factor {
           int hashval;
 	  strncpy(buf, "~(",        BUF_MAXLEN-1);
 	  strncat(buf, id[$2].name, BUF_MAXLEN-strlen(buf)-1);
@@ -989,7 +1087,7 @@ term : factor {
 	  }
           $$ = hashval;
         }
-        | '-' factor {
+        | "-" factor {
           int hashval;
 	  strncpy(buf, "-(",        BUF_MAXLEN-1);
 	  strncat(buf, id[$2].name, BUF_MAXLEN-strlen(buf)-1);
@@ -1000,7 +1098,7 @@ term : factor {
 	  }
           $$ = hashval;
         }
-        | term '*' factor {
+        | term "\*" factor {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -1013,7 +1111,7 @@ term : factor {
 	  }
           $$ = hashval;
         }
-        | term '/' factor {
+        | term "\/" factor {
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
 	  strncat(buf, id[$1].name, BUF_MAXLEN-strlen(buf)-1);
@@ -1028,7 +1126,7 @@ term : factor {
         }
         ;
 
-factor : '(' expr ')' {
+factor : "(" expr ")" {
           $$ = $2;
         }
         | number {
@@ -1057,4 +1155,85 @@ EMAX6TBODY : TRAN_READ {
 
 %%
 
+#include "conv-c2c.h"
+#include "emax6.h"
+#include "lex.yy.c"
 
+hash(s) register char *s;
+{
+  register int    hashval;
+
+  for (hashval=0; *s!=0;)
+    hashval += *s++;
+  return(hashval % ID_NUM+1);
+}
+
+hash_clear()
+{
+  register int    i;
+
+  for (i=0; i<ID_NUM; i++) {
+    id[i].name  = NULL;
+    id[i].type  = 0;
+    id[i].itype = 0;
+    id[i].row   = 0;
+    id[i].col   = 0;
+  }
+}
+
+hash_search(buf, reth) char *buf; int *reth;
+{
+  /* return 0 ... new id[reth] is assigned */
+  /* return 1 ... old id[reth] is found */
+  char *bufptr;
+  int  hashval, hashsave, buflen;
+
+  /* hash */
+  hashval = hashsave = hash(buf);
+  while (id[hashval].name != NULL) {
+    if (!strncmp(buf, id[hashval].name, BUF_MAXLEN)) {
+      *reth = hashval;
+      return (1);
+    }
+    hashval = rehash(hashval);
+    if (hashval == hashsave)
+      break;
+  }
+  if (id[hashval].name != NULL) {
+    yyerror("too many IDs");
+    fprintf(stderr, "current ID_NUM is %d\n", ID_NUM);
+    exit(1);
+  }
+
+  /* new number */
+  buflen = strlen(buf)+1;
+  id[hashval].name = bufptr = malloc(buflen);
+  id[hashval].row = -1; /* init */
+  id[hashval].col = -1; /* init */
+  strncpy(bufptr, buf, buflen);
+  *reth = hashval;
+  return(0);
+}
+
+hash_reg_immediate(imm) Ull imm;
+{
+  int hashval;
+  /* return hashval */
+  snprintf(buf, BUF_MAXLEN, "%lldLL", imm);
+  if (!hash_search(buf, &hashval)) { /* not found */
+    id[hashval].type = T_IMMEDIATE;
+    id[hashval].val = imm;
+  }
+  return (hashval);
+}
+
+yyerror(s) char *s;
+{
+  if (++y_errornum == 1)
+    fprintf(stderr, "\n");
+#if 0
+  fprintf(stderr, "line %d: \"%s\": %s.\n", y_lineno, yytext, s);
+#endif
+  /* lex -l により,yylinenoが使える */
+  fprintf(stderr, "err%d: line %d: \"%s\": %s.\n", y_errornum, yylineno, yytext, s);
+}

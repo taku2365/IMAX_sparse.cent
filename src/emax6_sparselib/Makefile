@@ -43,10 +43,10 @@ ARCHIVE       = ../../bin/aarch64-elf-ar $(ARFLAGS)
 endif
 
 ifeq ($(ARM),1)
-OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-CPP           = cpp -P
+OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
+CPP           = cpp -P 
 CC            = gcc
-CFLAGS        = -I. -O2 $(OPTION)
+CFLAGS        = -I. -O0 -g3 $(OPTION)
 
 endif
 
@@ -54,10 +54,10 @@ endif
 
 ifeq ($(ARM),1)
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT))
+	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT) )
 else
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT))
+	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT) )
 endif
 
 
@@ -76,7 +76,7 @@ shared: $(SHARED_TARGET)
 ifeq ($(ARM),1)
 $(AR_TARGET):  $(EMAX6_SPARSE_ARM_LIB) 
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_ARM_LIB)
-	$(RM) kernel/*-*.c
+	#$(RM) kernel/*-*.c
 else
 $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_LIB)
@@ -100,12 +100,12 @@ ifeq ($(LINK_FORMAT),shared)
 ./kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h 
 	perl ./../conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./../../conv-c2c-20210801/conv-c2c $<-cppo.c
+	./../conv-c2c/conv-c2c $<-cppo.c
 else
 ./kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h 
 	perl ./../conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./../../conv-c2c-20210801/conv-c2c $<-cppo.c
+	./..//conv-c2c/conv-c2c $<-cppo.c
 	$(CC) $(CFLAGS) -c ${INCLUDE} $(basename $<)-emax6.c -o $(basename $<)-emax6.o
 endif
 else 

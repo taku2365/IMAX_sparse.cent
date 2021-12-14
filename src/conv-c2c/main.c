@@ -8,8 +8,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/R
 
 /* main.c: emin assembler 2012/3/16 */ 
 
-#include "yacc_lex_util.h"
-
+#include "conv-c2c.h"
 
 extern FILE *yyin;
 
@@ -58,7 +57,6 @@ main(argc, argv) int argc; char **argv;
   /* ASM読み込み */
   y_lineno = 1;
   y_errornum = 0;
-  yydebug = 1;
   while (yyparse());
   fclose(yyin);
   fclose(ofile);

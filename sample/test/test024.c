@@ -159,7 +159,7 @@ main()
     for (col=0; col<A_col_size; col++){
       for (row=0; row<A_row_size; row++) {
       tmp = (int) tmp;
-      // tmp = (int) (rand()%2 == 0);
+      tmp = (int) (rand()%2 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A_tmp[row+col*A_row_size] = (float) (row+1);
@@ -191,7 +191,7 @@ main()
       *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       else{
-        *(float*)&B_debug[col*B_row_size+row] = (float)0;
+        *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
       // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
@@ -220,7 +220,7 @@ main()
     fprintf(stderr,"sum != sum\n");
     exit(1);
   }
-
+                                                                                                                  
                                      //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0  total:14476178 //format
 // nanosec: ARM:428330 DRAIN:5347764 CONF:103059 REGV:15701836 RANGE:10177188 LOAD:42058397 EXEC:10241348 total:84057922 4chip 密
 // nanosec: ARM:643720 DRAIN:3900830 CONF:139645 REGV:22034423 RANGE:12112945 LOAD:81180395 EXEC:20458796  total:140470754  密

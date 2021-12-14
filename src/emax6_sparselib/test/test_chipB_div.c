@@ -73,6 +73,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
   #define W  4LL
   #define H  46
   #define OOFS_SHIFT 3LL
+  #define A_col_blk 2
 
 
 Uint *A;  /*[A_row_size][L];*/
@@ -146,6 +147,7 @@ main()
   params->NCHIP_param = NCHIP;
   params->H_param = H;
   params->W_param= W;
+  params->A_col_blk_param = A_col_blk;
   
   // params->W_param= W*2;
   printf("A : %08.8x\n", A);
@@ -159,7 +161,7 @@ main()
     for (col=0; col<A_col_size; col++){
       for (row=0; row<A_row_size; row++) {
       tmp = (int) tmp;
-      // tmp = (int) (rand()%2 == 0);
+      tmp = (int) (rand()%4 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
       *(float*)&A_tmp[row+col*A_row_size] = (float) (row+1);
@@ -175,7 +177,7 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format9(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   
@@ -191,7 +193,7 @@ main()
       *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       else{
-        *(float*)&B_debug[col*B_row_size+row] = (float)0;
+      *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
       // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
@@ -200,21 +202,23 @@ main()
 
 
 
-    for (col=0,col1=0; col<B_col_size/2; col+=1,col1+=2){
-      for (row=0,row1=0; row1<B_row_size; row+=2,row1+=1) {
+  for (col=0,col1=0; col<B_col_size/2; col+=1,col1+=2){
+    for (row=0,row1=0; row1<B_row_size; row+=2,row1+=1) {
         // simdを使うため
       *(float*)&B[col*2*B_row_size+row] = *(float*)&B_debug[col1*B_row_size+row1];
       *(float*)&B[col*2*B_row_size+row+1] = *(float*)&B_debug[(col1+1)*B_row_size+row1];
     }
   }
   
-    for (col=0; col<B_col_size; col++){
-      for (row=0; row<B_row_size; row++) {
+  #ifdef DEBUG
+  for (col=0; col<B_col_size; col++){
+    for (row=0; row<B_row_size; row++) {
         // simdを使うため
         sum += *(float*)&B_debug[col*B_row_size+row];
         sum1 += *(float*)&B[col*B_row_size+row];
     }
   }
+  #endif
 
   if((int)sum != (int)sum1) {
     fprintf(stderr,"sum != sum\n");
@@ -252,8 +256,8 @@ main()
 
   reset_nanosec();
   // imax();
-  sparse_gemm_768_96_96_768_1(C1, A, B, A_sparse);
-  // sparse_multiply_imax4(nnz_A,A_sparse,B,C1,B_col_size,params);
+  sparse_gemm_736_736_736_CHIP_div_B_3(C1, A, B, A_sparse);
+  // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
 
@@ -290,13 +294,13 @@ main()
       for (row=0; row<A_row_size; row+=1) {
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C_debug[col*A_row_size+row];
-        if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+        // if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
           count2++;
 
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                   row, col, *(float*)&C_debug[col*A_row_size+row]); 
           // exit(1);       
-      }
+      // }
     }
   }
 
