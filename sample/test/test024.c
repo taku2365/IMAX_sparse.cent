@@ -61,7 +61,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-  #define A_row_size 736LL
+  #define A_row_size 786LL
   #define A_col_size 736LL
   #define B_row_size 736LL
   #define B_col_size 736LL
@@ -162,7 +162,7 @@ main()
       tmp = (int) (rand()%2 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A_tmp[row+col*A_row_size] = (float) (row+1);
+      *(float*)&A_tmp[row+col*A_row_size] = (float) (1);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;

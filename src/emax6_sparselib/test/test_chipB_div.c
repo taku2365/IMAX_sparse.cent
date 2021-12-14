@@ -61,13 +61,13 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-  #define A_row_size 736LL
-  #define A_col_size 736LL
-  #define B_row_size 736LL
-  #define B_col_size 736LL
+  #define A_row_size 736LL   // 縛りなし
+  #define A_col_size 10LL    // 縛りなし　H_padのおかげ
+  #define B_row_size 10LL    // 縛りなし
+  #define B_col_size 768LL   // RMGRP*NCHIP縛り
   #define DIMENTION  2LL
   // #define RMGRP 16
-  #define RMGRP 8
+  #define RMGRP 16
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
@@ -177,7 +177,8 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format9(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  // A_sparse = sparse_format9(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   
@@ -193,7 +194,7 @@ main()
       *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       else{
-      *(float*)&B_debug[col*B_row_size+row] = (float)1;
+      *(float*)&B_debug[col*B_row_size+row] = (float)0;
       }
       // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
       // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
@@ -294,13 +295,13 @@ main()
       for (row=0; row<A_row_size; row+=1) {
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C_debug[col*A_row_size+row];
-        // if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+        if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
           count2++;
 
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                   row, col, *(float*)&C_debug[col*A_row_size+row]); 
           // exit(1);       
-      // }
+      }
     }
   }
 

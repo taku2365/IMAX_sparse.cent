@@ -524,7 +524,7 @@
 emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
 
     // arg read_or_write 0 none 1 read 2 write
-    //BをCHIP分割バージョン
+    //BをCHIP分割バージョン 1,2,3
 
 
     FILE *file;
@@ -1566,7 +1566,7 @@ emax6_sparse2* sparse_format8(int nnz,Ull* val,const Uint* const val_tmp, int* c
 emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
 
     // arg read_or_write 0 none 1 read 2 write
-    //BをCHIP分割バージョン
+    //BをCHIP分割バージョン ver4
 
 
     FILE *file;
