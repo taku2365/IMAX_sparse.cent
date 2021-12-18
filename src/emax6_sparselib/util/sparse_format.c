@@ -604,6 +604,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     // else{
     
     // }
+    printf("1\n");
     for(k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
     // count max = col_size
     for(row=0; row<row_size; row++){
@@ -635,7 +636,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
          paddings[(row_size-1) - count_tmp1] = count[row]/H + (int)(count[row]%H != 0); 
 
     }
- 
+    
 
     //paddingsは最低でも1
     //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
@@ -667,7 +668,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
         tmp = paddings[row];
     }
 
-  
+    
     // Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
 
     Uint* val_index_set_tmp = (Uint*) calloc(row_size*col_size,sizeof(Uint));
@@ -699,12 +700,14 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     //32bit*2でindexを伝搬するためにAのindexをこのように格納
     for (col=0,col1=0; col<col_size/2; col+=1,col1+=2){
       for (row=0,row1=0; row1<row_size; row+=2,row1+=1) {
-        
+        #ifdef DEBUG
+        printf("format\n");
+        #endif
       *(Uint*)&val_index_set[col*2*row_size+row+row_size*col_size] = *(Uint*)&val_index_set_tmp[col1*row_size+row1];
       *(Uint*)&val_index_set[col*2*row_size+row+1+row_size*col_size] = *(Uint*)&val_index_set_tmp[(col1+1)*row_size+row1];
     }
   }
-
+  
 //   Uint sum=0,sum1=0;
 
 //     for (int col=0; col<col_size; col+=1){
@@ -732,6 +735,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     sparse_info->paddings = paddings;
     sparse_info->margin = margin;
 
+    
        
    
    if(read_or_write==2){

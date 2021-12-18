@@ -4,13 +4,16 @@
 ##         Primary writer: Y.Nakashima ##
 ##                nakashim@is.naist.jp ##
 
-PROGRAM	      = conv-c2c
+
 ifeq ($(MACHTYPE),aarch64)
+PROGRAM	      = conv-c2c.arm
 CFLAGS        = -O2 -fsigned-char
 LDFLAGS       =
 else
+PROGRAM	      = conv-c2c.csim
 CFLAGS        = -O2 -m32 -fsigned-char
 LDFLAGS       = -m32
+
 endif
 LIBFLAGS      =
 

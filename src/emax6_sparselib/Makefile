@@ -22,7 +22,8 @@ EMAX6_SPARSE_ARM_LIB = $(EMAX6_SPARSE_KERNEL_ARM_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
 AR_TARGET = libsparse.a
 SHARED_TARGET = libsparse.so
 SHARED_FLAG = -shared -fPIC
-ARM_CORSS = 0
+CENT = 1
+ARM_CROSS = 0
 ARM = 0
 LINK_FORMAT = static
 SHARED_LINK = 0
@@ -33,16 +34,22 @@ CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local
 LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
 
-ifeq ($(ARM_CORSS),1)
+ifeq ($(ARM_CROSS),1)
+CENT          = 0
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
-CFLAGS = -I. -O3 -Wno-attributes $(OPTION)
-CPP           = ../../bin/aarch64-elf-cpp -P
-CC            = ../../bin/aarch64-elf-gcc
-ARCHIVE       = ../../bin/aarch64-elf-ar $(ARFLAGS)
+CPP           = aarch64-elf-cpp -P
+CC            = aarch64-elf-gcc
+CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)
+AS            = aarch64-elf-as
+ASFLAGS       = 
+LD            = aarch64-elf-ld
+ARCHIVE = aarch64-elf-ar $(ARFLAGS)
 
 endif
 
+
 ifeq ($(ARM),1)
+CENT          = 0
 OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
 CPP           = cpp -P 
 CC            = gcc
@@ -54,10 +61,19 @@ endif
 
 ifeq ($(ARM),1)
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT) )
-else
+	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
+endif
+
+ifeq ($(CENT),1)
 test: binary
-	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT) )
+	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
+endif
+
+#./../csim/csim -x test/test_chipB_div+dma
+# xdisp系をcsimから消した
+ifeq ($(ARM_CROSS),1)
+test: binary
+	(cd ./test; $(MAKE) -f Makefile.csim LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
 endif
 
 
@@ -76,42 +92,74 @@ shared: $(SHARED_TARGET)
 ifeq ($(ARM),1)
 $(AR_TARGET):  $(EMAX6_SPARSE_ARM_LIB) 
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_ARM_LIB)
-	#$(RM) kernel/*-*.c
-else
+	$(RM) kernel/*-*.c
+endif
+ifeq ($(CENT),1)
 $(AR_TARGET): $(EMAX6_SPARSE_LIB)
 	$(ARCHIVE)  $@ $(EMAX6_SPARSE_LIB)
 endif
+ifeq ($(ARM_CROSS),1)
+$(AR_TARGET):  $(EMAX6_SPARSE_ARM_LIB) 
+	$(ARCHIVE)  $@ $(EMAX6_SPARSE_ARM_LIB)
+	$(RM) kernel/*-*.c
+endif
+
 
 
 ifeq ($(ARM),1)
 $(SHARED_TARGET): $(EMAX6_SPARSE_ARM_SRC) 
 	$(CC) $(SHARED_FLAG) $(CFLAGS) -o $@ $^
-else
+endif
+
+ifeq ($(CENT),1)
 $(SHARED_TARGET): $(EMAX6_SPARSE_SRC)
+	$(CC) $(SHARED_FLAG) $(CFLAGS) -o $@ $^
+endif
+
+ifeq ($(ARM_CROSS),1)
+$(SHARED_TARGET): $(EMAX6_SPARSE_ARM_SRC) 
 	$(CC) $(SHARED_FLAG) $(CFLAGS) -o $@ $^
 endif
 
 /util/%.o: /util/%.c ./Include/emax6_sparselib.h 
 	$(warning $(CC) $(CFLAGS) -c ${INCLUDE} $< -o $@)
 
-ifeq ($(ARM),1)
 
+ifeq ($(ARM),1)
 ifeq ($(LINK_FORMAT),shared)
 ./kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h 
 	perl ./../conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./../conv-c2c/conv-c2c $<-cppo.c
+	./../conv-c2c/conv-c2c.arm $<-cppo.c
 else
 ./kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h 
 	perl ./../conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./..//conv-c2c/conv-c2c $<-cppo.c
+	./..//conv-c2c/conv-c2c.arm $<-cppo.c
 	$(CC) $(CFLAGS) -c ${INCLUDE} $(basename $<)-emax6.c -o $(basename $<)-emax6.o
 endif
-else 
+endif
 
+
+ifeq ($(CENT),1) 
 /kernel/%.o: /kernel/%.c ./Include/emax6_sparselib.h ./Include/sparse_gemm.h
 	$(warning $(CC) $(CFLAGS) -c ${INCLUDE} $< -o $@)
+endif
+
+
+ifeq ($(ARM_CROSS),1)
+ifeq ($(LINK_FORMAT),shared)
+./kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h 
+	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
+	./../conv-c2c/conv-c2c.csim $<-cppo.c
+else
+./kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h 
+	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
+	./..//conv-c2c/conv-c2c.csim $<-cppo.c
+	$(CC) $(CFLAGS) -c ${INCLUDE} $(basename $<)-emax6.c -o $(basename $<)-emax6.o
+endif
 endif
 
 

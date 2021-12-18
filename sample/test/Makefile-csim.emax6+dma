@@ -97,7 +97,7 @@ test025-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c ../../
 
 
 sparse_lib:
-	(cd ../../src/emax6_sparselib; $(MAKE) ARM_CORSS_COMPILE=1 static)
+	(cd ../../src/emax6_sparselib; $(MAKE) ARM_CROSS=1 static)
 # $(MAKE)はマクロも引き継がれる
 
 
