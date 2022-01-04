@@ -131,11 +131,8 @@ void /*__attribute__((always_inline))*/ mmp(Uint, Ull,     Ull*, Ull, Ull, Uint,
 
 #define OP_LDR          0x01
 #define OP_LDWR         0x02
-#define OP_LDUWR        0x03
-//#define OP_LDHR       0x04
-//#define OP_LDUHR      0x05
-#define OP_LDBR         0x06
-#define OP_LDUBR        0x07
+//#define OP_LDHR       0x03
+#define OP_LDBR         0x04
 #define OP_LDRQ         0x08
 #define OP_IM_BUFRD     0x0e
 #define OP_IM_DRAIN     0x0f
@@ -144,9 +141,9 @@ void /*__attribute__((always_inline))*/ mmp(Uint, Ull,     Ull*, Ull, Ull, Uint,
 #define OP_STWR         0x12
 //#define OP_STHR       0x13
 #define OP_STBR         0x14
-#define OP_STRQ         0x15
-#define OP_LDDMQ        0x18
-#define OP_TR           0x19
+#define OP_STRQ         0x18
+#define OP_LDDMQ        0x19
+#define OP_TR           0x1a
 #define OP_IM_BUFWR     0x1e
 #define OP_IM_PREF      0x1f
 

@@ -1668,7 +1668,7 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
 
   if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (!adr || !top)) return; /* NULL skip DMA */
 
-#define CHECK_MMP_MARGIN 12
+#define CHECK_MMP_MARGIN 0
   if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
@@ -1696,23 +1696,14 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
       *d = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;
     }
     break;
-  case OP_LDWR: /* s32bit lmm LMM is preloaded, random-access */
-    *d = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);
+  case OP_LDWR: /* u32bit lmm LMM is preloaded, random-access */
+    *d = (Ull)*(Uint*)(adr&~3LL);
     break;
-  case OP_LDUWR: /* u32bit lmm LMM is preloaded, random-access */
-    *d = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);
-    break;
-//case OP_LDHR: /* s16bit lmm LMM is preloaded, random-access */
-//  *d = (Ull)(Uint)(int)*(short*)(adr&~1LL)<<32 | (Ull)(Uint)(int)*(short*)(adr&~1LL);
+//case OP_LDHR: /* u16bit lmm LMM is preloaded, random-access */
+//  *d = (Ull)(Uint)*(Ushort*)(adr&~1LL);
 //  break;
-//case OP_LDUHR: /* u16bit lmm LMM is preloaded, random-access */
-//  *d = (Ull)(Uint)*(Ushort*)(adr&~1LL)<<32 | (Ull)(Uint)*(Ushort*)(adr&~1LL);
-//  break;
-  case OP_LDBR: /* s8bit lmm LMM is preloaded, random-access */
-    *d = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;
-    break;
-  case OP_LDUBR: /* u8bit lmm LMM is preloaded, random-access */
-    *d = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;
+  case OP_LDBR: /* u8bit lmm LMM is preloaded, random-access */
+    *d = (Ull)(Uint)*(Uchar*)adr;
     break;
   case OP_STR: /* 64bit lmm LMM is drained. random-access */
     if (c1) *((Uint*)(adr&~7LL)+1) = *d>>32;

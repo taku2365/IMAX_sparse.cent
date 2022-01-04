@@ -67,3 +67,10 @@ end
 
 b main
 run -x test/test_chipB_div+dma
+#b emax6.c:2914
+#b emax6lib.c:1123 if op_ex1 == 0x13
+#c
+#display/x s1
+#display/x s2
+#display/f (Uint)s2
+#display/f (Uint)(s2>>32)

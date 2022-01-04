@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.5 2021/06/06 06:24:28 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.6 2021/12/21 04:00:00 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*        Copyright (C) 2012 by NAIST. */
@@ -48,9 +48,19 @@ main(argc, argv) int argc; char **argv;
       break;
     }
   }
-
   if ((ofile = fopen(objprog, "w")) == NULL) {
-    fprintf(stderr, "can't open object:\"%s\"\n", objprog);
+    fprintf(stderr, "can't open output:\"%s\"\n", objprog);
+    exit(1);
+  }
+  strncpy(pthprog = (char*)malloc(strlen(srcprog)+strlen(PTHSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  for (i=0; i<strlen(srcprog); i++) {
+    if (pthprog[i] == '.' || pthprog[i] == '\0' ) {
+      strncpy(pthprog+i, PTHSUFX, strlen(PTHSUFX)+1);
+      break;
+    }
+  }
+  if ((pfile = fopen(pthprog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", pthprog);
     exit(1);
   }
 
@@ -60,6 +70,7 @@ main(argc, argv) int argc; char **argv;
   while (yyparse());
   fclose(yyin);
   fclose(ofile);
+  fclose(pfile);
 
   if (y_errornum) exit(1);
 

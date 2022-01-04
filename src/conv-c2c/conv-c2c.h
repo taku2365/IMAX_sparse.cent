@@ -18,12 +18,15 @@
 #include <string.h>
 
 #define         OBJSUFX "-emax6.c"
+#define         PTHSUFX "-emax6pt.c"
 #define         FIGSUFX "-emax6.obj"
 
 char            *srcprog;
 char            *objprog;
+char            *pthprog;
 char            *figfile;
 FILE            *ofile; /* object file */
+FILE            *pfile; /* pthread file */
 FILE            *ffile; /* tgif file */
 
 #define YY_SKIP_YYWRAP

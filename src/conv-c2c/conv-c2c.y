@@ -44,7 +44,6 @@ line :  EOL {
           fprintf(ofile, "%s\n", yytext);
         }
         | EMAX6ABEGIN VARIABLE expr { /* reset conf[][] */
-	  int c;
           printf("==EMAX6AB reading line=%d name=%s\n", y_lineno, id[$2].name);
           current_prefix  = $2;
           current_mapdist = id[$3].val;
@@ -61,12 +60,6 @@ line :  EOL {
 	  fprintf(ofile, "#ifndef EMAXSC\n");
           fprintf(ofile, "volatile emax6_conf_%s();\n", id[current_prefix].name);
 	  fprintf(ofile, "#endif\n");
-	  forinit_cidx[0] = 0;
-          forinit_cidx[1] = 0;
-          for (c=0; c<EMAX_NCHIP; c++) {
-            forinit[0][c][0]='\0';
-            forinit[1][c][0]='\0';
-          }
 #if 0
           fprintf(ofile, "volatile struct { struct regv_breg breg[%d][%d] ;} *emax6_breg_%s  = emax6.reg_breg;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
           fprintf(ofile, "volatile struct { struct regv_addr addr[%d][%d] ;} *emax6_addr_%s  = emax6.reg_addr;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
@@ -140,7 +133,7 @@ EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
             exit(1);
 	  }
 	  fprintf(ofile, "#ifndef EMAXSC\n");
-	  fprintf(ofile, "\t  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = %d; // NCHIP-1\n", current_nchip-1);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = %d; // NCHIP-1\n", current_nchip-1);
 	  fprintf(ofile, "#endif\n");
 	}
         | CGRA_FOR "(" INITNO "=" expr "," LOOPNO "=" ASIS "," XVARIABLE "=" ASIS ";" LOOPNO CGRA_DECR ";" INITNO "=" expr ")" "\{" {
@@ -181,17 +174,13 @@ EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
 	      fprintf(ofile, "#ifndef EMAXSC\n");
 	      fprintf(ofile, "\t%s[%d] = %s;\n", id[$11].name, c, buf);
 	      fprintf(ofile, "#endif\n");
-	      snprintf(forinit[loop_no][c], BUF_MAXLEN, "%s[%d] = %s", id[$11].name, c, buf);
 	    }
-	    forinit_cidx[loop_no] = 1; /* CHIP */
 	    free(buf);
 	  }
 	  else {
 	    fprintf(ofile, "#ifndef EMAXSC\n");
 	    fprintf(ofile, "\t%s = %s;\n", id[$11].name, id[$13].name);
 	    fprintf(ofile, "#endif\n");
-	    snprintf(forinit[loop_no][0], BUF_MAXLEN, "%s = %s", id[$11].name, id[$13].name);
-            forinit_cidx[loop_no] = 0; /* !CHIP */
 	  }
 	  insn[last_insn].iheader.type = 2; /* FOR */
 	  insn[last_insn].iheader.row  = 0; /* top */
@@ -617,12 +606,12 @@ EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
 	    else {
 	      Ull size;
 	      switch (insn[last_insn].imop.op) {
-	      case OP_LDR:  case OP_STR:                 size =  8LL; break;
-	      case OP_LDWR: case OP_LDUWR: case OP_STWR: size =  4LL; break;
+	      case OP_LDR:  case OP_STR:  size =  8LL; break;
+	      case OP_LDWR: case OP_STWR: size =  4LL; break;
 #if 0
-	      case OP_LDHR: case OP_LDUHR: case OP_STHR: size =  2LL; break;
+	      case OP_LDHR: case OP_STHR: size =  2LL; break;
 #endif
-	      case OP_LDBR: case OP_LDUBR: case OP_STBR: size =  1LL; break;
+	      case OP_LDBR: case OP_STBR: size =  1LL; break;
 	      default:
 		fprintf(stderr, "in %s: incremental base=%s is available with OP_LD*R and OP_ST*R\n",
 			id[current_prefix].name, id[insn[last_insn].imop.baseh].name);

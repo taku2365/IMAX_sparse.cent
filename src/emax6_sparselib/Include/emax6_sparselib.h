@@ -64,11 +64,15 @@ typedef struct {
 } emax6_sparse2;
 
 typedef struct {
-    int  H_param;
-    int  W_param;
-    int  RMGRP_param;
-    int  NCHIP_param;
-    int A_col_blk_param;
+    Sll H_param;
+    Sll W_param;
+    Sll RMGRP_param;
+    Sll NCHIP_param;
+    Sll A_col_blk_param;
+    Sll A_row_size_param;
+    Sll A_col_size_param;
+    Sll B_row_size_param;
+    Sll B_col_size_param;  
 } emax6_param;
 
 

@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	nakashim:1.5; strict;
+	nakashim:1.6; strict;
 comment	@ * @;
 
+
+1.6
+date	2021.12.21.04.00.00;	author nakashim;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2021.06.06.06.24.28;	author nakashim;	state Exp;
@@ -36,13 +41,13 @@ desc
 @@
 
 
-1.5
+1.6
 log
 @*** empty log message ***
 @
 text
 @
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.4 2017/04/28 01:03:01 nakashim Exp $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.5 2021/06/06 06:24:28 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*        Copyright (C) 2012 by NAIST. */
@@ -91,9 +96,19 @@ main(argc, argv) int argc; char **argv;
       break;
     }
   }
-
   if ((ofile = fopen(objprog, "w")) == NULL) {
-    fprintf(stderr, "can't open object:\"%s\"\n", objprog);
+    fprintf(stderr, "can't open output:\"%s\"\n", objprog);
+    exit(1);
+  }
+  strncpy(pthprog = (char*)malloc(strlen(srcprog)+strlen(PTHSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  for (i=0; i<strlen(srcprog); i++) {
+    if (pthprog[i] == '.' || pthprog[i] == '\0' ) {
+      strncpy(pthprog+i, PTHSUFX, strlen(PTHSUFX)+1);
+      break;
+    }
+  }
+  if ((pfile = fopen(pthprog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", pthprog);
     exit(1);
   }
 
@@ -103,6 +118,7 @@ main(argc, argv) int argc; char **argv;
   while (yyparse());
   fclose(yyin);
   fclose(ofile);
+  fclose(pfile);
 
   if (y_errornum) exit(1);
 
@@ -120,6 +136,23 @@ version()
   for (           ; *i && *i==' '; i++);
   return (i);
 }
+@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.4 2017/04/28 01:03:01 nakashim Exp $";
+a50 1
+
+d52 12
+a63 1
+    fprintf(stderr, "can't open object:\"%s\"\n", objprog);
+d73 1
 @
 
 

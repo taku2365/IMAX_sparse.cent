@@ -310,10 +310,9 @@ int sparse_multiply_imax6(const int nnz,const emax6_sparse2* const A_sparse, con
                 // C simdかどうかを選べるようにする　今は普通に格納　future work  
                 //A_sort_index[rofs]で適切なl位置に並べ替えているが、実際のIMAXでは後処理でする
                 //A_sort_indexを59段目でmopで読めるかもしれない。　その場合並べ替え不要
-                //*(float*)&C[(A_sort_index[rofs])*B_col_size(並べ替え後のCの行)+CHIP*B_col_size/NCHIP(CHIPごとの列)+top(RMGRPごとのグループ)+cofs(wごとにRMGRPが終わるまでcolに進む)+w(colに進む)]
-                //*(float*)&A_val_index_set[h*A_row_size(Aの列 Unitごとに入っている)+rofs(Aの行  AcolHごとにArowをどれだけ進めるか)+(blk)*A_row_size(HごとのAcol marginが0の時はおわり)]
-                //*(float*)&B[A_val_index_set[h*A_row_size+2*rofs+blk*A_row_size+A_row_size*A_col_size]/4(実際のIMAXに合わせるために割る4 IMAXがAのアドレスをULLで読むのでsimdみたいに格納している)+1(simdの1)+(CHIP*B_col_size/NCHIP(CHIP分割)+top(RMGRPごとに縦分割)+cofs(Bcol Wごとに更新)+w(Bcol 横幅))*B_row_size(かたまり全体でBのcol)]
-                //*(float*)&B[A_val_index_set[h*A_row_size+2*rofs+blk*A_row_size+A_row_size*A_col_size+1(A_indexで隣のcolとセットで読み出すようにA_indexを格納している　+1は実質的に隣のcolを表している)]/4+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size]
+                // *(float*)&C[(A_sort_index[rofs])/4(並べ替え後のCの行)+(CHIP*B_col_size/NCHIP+top+cofs+w)*A_row_size(Cの列)] 
+                //*(float*)&A_val_index_set[((h+A_col_blk_tmp)*A_row_size(UnitごとのA要素)+rofs(UnitごとのA row)+blk*A_row_size(連続転送ごと))*2]
+                //*(float*)&B[A_val_index_set[((h+A_col_blk_tmp)*A_row_size+rofs+blk*A_row_size)*2+1]/4(どのrowか)+1(index+val構成)+(CHIP*B_col_size/NCHIP+top+cofs+w)*B_row_size(CHIP分割を含むBcol)]
                 //A_sort_indexにsimdの×2が含まれている
                 // C = Aの行×Bの列
                 // Bsimdのためにw+=2

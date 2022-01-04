@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.90 2021/12/08 00:58:43 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.97 2021/12/21 03:59:49 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*         Copyright (C) 2012 by NAIST */
@@ -563,7 +563,7 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
       /*          ¨¢                --row#6--  */
       /*          exe                          */
       /*          ¢¢AR6                        *//*    mm+rmm.c¤ÎÎã                                    */
-      /*          ¨¢                           *//* (1)mop(OP_LDUWR, &BR[7][0][1])                     */
+      /*          ¨¢                           *//* (1)mop(OP_LDWR,  &BR[7][0][1])                     */
       /*          ¢¢BR6                        *//* (2)exe(OP_FAD,   &AR[7][0], AR[6][0], BR[7][0][1]) */
       /*  (1)     ¨¢      (2)   (3) --row#7--  *//*    ¡údst:row¤ÎAR,src:row¤ÎBR¤Î¾ì¹ç,                */
       /*  eag ¨£¨¡¨¢¨¡¨¨¨¤exe   eag            *//*      src¤Ø¤Î¥Ñ¥¹¤Ï°ìÃ¶row¤ÎBR¤Þ¤Ç·Ò¤®,             */
@@ -1382,12 +1382,9 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         current_lmmwb = 1; /* mark as dirty L1 shold be flushed+cleared before starting EMAX */
         get_valid_row(ITYPE_MOP, 1, insn[i].imop.mopdv, insn[i].imop.mopdh, rdep);
       case OP_LDR:  /* 64bit */
-      case OP_LDWR: /* 32bit signed */
-      case OP_LDUWR:/* 32bit unsigned */
-//    case OP_LDHR: /* 16bit signed */
-//    case OP_LDUHR:/* 16bit unsigned */
-      case OP_LDBR: /*  8bit signed */
-      case OP_LDUBR:/*  8bit unsigned */
+      case OP_LDWR: /* 32bit unsigned */
+//    case OP_LDHR: /* 16bit unsigned */
+      case OP_LDBR: /*  8bit unsigned */
         get_valid_row(ITYPE_MOP, 1, insn[i].imop.exv,   insn[i].imop.exh,   rdep);
         get_valid_row(ITYPE_MOP, 0, insn[i].imop.basev, insn[i].imop.baseh, rdep);
         get_valid_row(ITYPE_MOP, 0, insn[i].imop.offsv, insn[i].imop.offsh, rdep);
@@ -2613,78 +2610,80 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
   /**********************************************************************************************************/
   /* Step 7 ... emit EMAX6 SC (soft-CGRA for manycore)                                                      */
   /**********************************************************************************************************/
-  fprintf(ofile, "#ifdef EMAXSC\n");
-  fprintf(ofile, "/* EMAXSC start */\n");
-  fprintf(ofile, "#define EMAX_NCHIP %d\n", EMAX_NCHIP);
-  fprintf(ofile, "#define EMAX_DEPTH %d\n", EMAX_DEPTH);
-  fprintf(ofile, "#define EMAX_WIDTH %d\n", EMAX_WIDTH);
-  fprintf(ofile, "#define UNIT_WIDTH %d\n", UNIT_WIDTH);
-  fprintf(ofile, "struct {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM0[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag0 */
-  fprintf(ofile, "struct {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM1[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag1 */
-  fprintf(ofile, "struct {Ull r[EMAX_NCHIP][EMAX_WIDTH];}                                                                                     SCAR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* alu  */
-  fprintf(ofile, "struct {Ull r[EMAX_NCHIP][2][EMAX_WIDTH*UNIT_WIDTH],enq[EMAX_NCHIP],d0[4],deq[EMAX_NCHIP],d1[4];}                           SCBR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* br   */
-  fprintf(ofile, "#undef  EMAX_NCHIP\n");
-  fprintf(ofile, "#undef  EMAX_DEPTH\n");
-  fprintf(ofile, "#undef  EMAX_WIDTH\n");
-  fprintf(ofile, "#undef  UNIT_WIDTH\n");
-  fprintf(ofile, "Uint uLOOP1, uLOOP0;\n");
-    
-  for (i=0; i<last_row; i++) {
+  fprintf(pfile, "#ifdef EMAXSC\n");
+  fprintf(pfile, "/* EMAXSC start */\n");
+  fprintf(pfile, "#ifndef UTYPEDEF\n");
+  fprintf(pfile, "#define UTYPEDEF\n");
+  fprintf(pfile, "typedef unsigned char      Uchar;\n");
+  fprintf(pfile, "typedef unsigned short     Ushort;\n");
+  fprintf(pfile, "typedef unsigned int       Uint;\n");
+  fprintf(pfile, "typedef unsigned long long Ull;\n");
+  fprintf(pfile, "typedef long long int      Sll;\n");
+  fprintf(pfile, "#if __AARCH64EL__ == 1\n");
+  fprintf(pfile, "typedef long double Dll;\n");
+  fprintf(pfile, "#else\n");
+  fprintf(pfile, "typedef struct {Ull u[2];} Dll;\n");
+  fprintf(pfile, "#endif\n");
+  fprintf(pfile, "#endif\n");
+  fprintf(pfile, "#define EMAX_NCHIP %d\n", EMAX_NCHIP);
+  fprintf(pfile, "#define EMAX_DEPTH %d\n", EMAX_DEPTH);
+  fprintf(pfile, "#define EMAX_WIDTH %d\n", EMAX_WIDTH);
+  fprintf(pfile, "#define UNIT_WIDTH %d\n", UNIT_WIDTH);
+  fprintf(pfile, "Uint    uLOOP[EMAX_DEPTH][EMAX_NCHIP];\n");
+  fprintf(pfile, "Ull     INIT1[EMAX_NCHIP], INIT0[EMAX_NCHIP];\n");
+  fprintf(pfile, "struct  {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM0[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag0 */
+  fprintf(pfile, "struct  {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM1[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag1 */
+  fprintf(pfile, "struct  {Ull r[EMAX_NCHIP][EMAX_WIDTH];}                                                                                     SCAR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* alu  */
+  fprintf(pfile, "struct  {Ull r[EMAX_NCHIP][2][EMAX_WIDTH*UNIT_WIDTH],enq[EMAX_NCHIP],d0[4],deq[EMAX_NCHIP],d1[4];}                           SCBR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* br   */
+  fprintf(pfile, "#undef  EMAX_NCHIP\n");
+  fprintf(pfile, "#undef  EMAX_DEPTH\n");
+  fprintf(pfile, "#undef  EMAX_WIDTH\n");
+  fprintf(pfile, "#undef  UNIT_WIDTH\n");
+
+  /* multithreading IMAX2 */
+  for (i=0; i<=last_row; i++) {
     /*********************************************************************************************************/
-    if (conf[0][0].cdw0.op1 == OP_WHILE) {
-      fprintf(ofile, "INIT1=1;\n");
-      fprintf(ofile, "for (INIT0=1,uLOOP0=%s; uLOOP0--; INIT0=0) {\n", id[dec[i][j].dexu.ex1h].name);
-    }
-    else {
-      int c;
-      if (conf[0][1].cdw0.op1 == OP_FOR) {
-	if (forinit_cidx[1]) { /* NCHIP */
-	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t%s;\n", forinit[1][c]);
-	}
-	else
-	  fprintf(ofile, "\t%s;\n", forinit[1][0]);
-	fprintf(ofile, "for (INIT1=1,uLOOP1=LOOP1; uLOOP1--; INIT1=0) {\n");
-      }
-      else
-	fprintf(ofile, "INIT1=1;\n");
-      if (conf[0][0].cdw0.op1 == OP_FOR) {
-	if (forinit_cidx[0]) { /* NCHIP */
-	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t%s;\n", forinit[0][c]);
-	}
-	else
-	  fprintf(ofile, "\t%s;\n", forinit[0][0]);
-	fprintf(ofile, "for (INIT0=1,uLOOP0=LOOP0; uLOOP0--; INIT0=0) {\n");
-      }
-    }
-    fprintf(ofile, "for (CHIP=0; CHIP<%d; CHIP++) {\n", current_nchip); /* ³ÆunitÆâ¤Çsoft-multithreading */
-    fprintf(ofile, "if ((%d && SCBR[%d].enq[CHIP]==SCBR[%d].deq[CHIP]) || SCBR[%d].deq[CHIP]!=SCBR[%d].enq[CHIP]) continue;\n", i, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i);
-    /* BR[i-1][0]                r  r                    r  r                      */
-    /* BR[i-1][1]                            r  r                    r  r          */
-    /* deq-       0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
-    /*                            any0¢¬          ¢¬          ¢¬                   */
-    /* exe[i]                 ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­  (ÀèÆ¬¤«¤Ä deq-==enq0)¤Ê¤é exe³«»Ï.exe¸ådeq-=1-deq-, enq0==deq0¤Ê¤éenq0=1-enq0 */
-    /*                      deq-==enq0   ¢­          ¢­          ¢­          ¢­                */
-    /* enq0          0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0          */
-    /* BR[i][0]                  w  w    /   r  r    /   w  w    /   r  r    /   w  w          */
-    /* BR[i][1]                         /    w  w   /    r  r   /    w  w   /    r  r          */
-    /* deq0          0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
-    /*                                  enq0!=deq0¢¬          ¢¬          ¢¬                   */
-    /* exe[i+1]                           ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­  (enq0!=deq0 && deq0==enq1)¡ú¤Ê¤é exe³«»Ï.exe¸ådeq0=1-deq0, enq1==dec1¤Ê¤éenq1=1-enq1 */
-    /*                                  deq0==enq1   ¢­          ¢­          ¢­          ¢­                */
-    /* enq1          0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0          */
-    /* BR[i+1][0]                            w  w    /   r  r    /   w  w    /   r  r    /   w  w          */
-    /* BR[i+1][1]                                   /    w  w   /    r  r   /    w  w   /    r  r          */
-    /* deq1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
-    /*                                              enq1!=deq1¢¬          ¢¬          ¢¬                   */
-    /* exe[i+2]                                       ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­    ¡ú ¢­ ¢­  (enq1!=deq1 && deq1==enq2)¡ú¤Ê¤é exe³«»Ï.exe¸ådeq1=1-deq1, enq2==dec2¤Ê¤éenq2=1-enq2 */
-    /*                                              deq1==enq2   ¢­          ¢­          ¢­          ¢­                */
-    /* enq2                      0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0             */
+    fprintf(pfile, "void emax6sc_pth_%s_%02.2d(struct pth *param) {\n", id[current_prefix].name, i);
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++) { /* unit%d */\n", current_nchip, i);
+    if (conf[0][0].cdw0.op1 == OP_WHILE)
+      fprintf(pfile, "LOOP1=1;uLOOP[%d][CHIP]=LOOP0=%s;\n", i, id[dec[i][j].dexu.ex1h].name);
+    else if (conf[0][1].cdw0.op1 == OP_FOR)
+      fprintf(pfile, "uLOOP[%d][CHIP]=LOOP1*LOOP0;\n", i);
+    else
+      fprintf(pfile, "LOOP1=1;uLOOP[%d][CHIP]=LOOP0;\n", i);
+    fprintf(pfile, "}\n");
+    fprintf(pfile, "while (1) {\n");
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++)\n", current_nchip);
+    fprintf(pfile, "if (uLOOP[%d][CHIP]) break;\n", i);
+    fprintf(pfile, "if (CHIP==%d) break;\n", current_nchip);
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++) {\n", current_nchip); /* ³ÆunitÆâ¤Çsoft-multithreading */
+    fprintf(pfile, "if (uLOOP[%d][CHIP]==0) continue;\n", i);
+    fprintf(pfile, "if ((%d && SCBR[%d].enq[CHIP]==SCBR[%d].deq[CHIP]) || SCBR[%d].enq[CHIP]!=SCBR[%d].deq[CHIP]) continue;\n", i, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i, i);
+    fprintf(pfile, "INIT1[CHIP]=(uLOOP[%d][CHIP]>LOOP1*LOOP0-LOOP0);\n", i);
+    fprintf(pfile, "INIT0[CHIP]=(uLOOP[%d][CHIP]-(uLOOP[%d][CHIP]/LOOP0*LOOP0)==0);\n", i);
+    fprintf(pfile, "SCBR[%d].deq[CHIP] = 1-SCBR[%d].deq[CHIP];\n", (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH);
+    /* BR[i-1][0]             |  r  r     |           |  r  r     |        */
+    /* BR[i-1][1]             |           |  r  r     |           |  r  r  */
+    /* deq-          0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  */
+    /*                        V           V           V           V        */
+    /* exe[i]                 *  *  * (E) *  *  * (E) *  *  * (E) *  *  *  ((ÀèÆ¬||enq-!=deq-) && enq0==deq0)¤Ê¤é,deq-=1-deq-,exe³«»Ï. exe¸åenq0=1-enq0 */
+    /*                        A  |  |  V  A  |  |  V  A  |  |  V  A  |  |              */
+    /* enq0          0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0  0  */
+    /* BR[i][0]               |  w  w  |  r  r     |     w  w  |  r  r     |     w  w  */
+    /* BR[i][1]               |        |     w  w  |  r  r     |     w  w  |  r  r     */
+    /* deq0          0  0  0  0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  0  */
+    /*                                 V        A  V        A  V        A  V           */
+    /* exe[i+1]                        *  *  * (E) *  *  * (E) *  *  * (E) *  *  * ((ÀèÆ¬||enq0!=deq0) && enq1==deq1)¤Ê¤é,deq0=1-deq0,exe³«»Ï. exe¸åenq1=1-enq1 */
+    /*                                 A  |  |  V  A  |  |  V  A  |  |  V  A  |  |  
+    /* enq1          0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0  0  */
+    /* BR[i+1][0]                      |  w  w  |  r  r     |     w  w  |  r  r     |     w  w  */
+    /* BR[i+1][1]                      |        |     w  w  |  r  r     |     w  w  |  r  r     */
+    /* deq1          0  0  0  0  0  0  0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  0  */
+
     for (j=0; j<EMAX_WIDTH; j++) {
-      fprintf(ofile, "{ Uint adr, mexdist, load64;\n");
-      fprintf(ofile, "  static int emax6_unaligned_load_valid;\n");
-      fprintf(ofile, "  static Ull emax6_unaligned_load_high;\n");
+      fprintf(pfile, "{ Ull adr, mexdist, load64;\n");
+      fprintf(pfile, "  static int emax6_unaligned_load_valid;\n");
+      fprintf(pfile, "  static Ull emax6_unaligned_load_high;\n");
       /*********************************************************************************************************/
       if (conf[i][j].cdw1.ea1op && conf[i][j].cdw1.ea1op < OP_IM_BUFRD) { /* LOAD */
 	int eab   = conf[i][j].cdw1.eabbrs;
@@ -2692,70 +2691,64 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
 	int ea1bs = conf[i][j].cdw1.ea1bs;  /* 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
 	int ea1os = conf[i][j].cdw1.ea1os;  /* 0:ea1or, 1:eaobrs */
 
-	fprintf(ofile, "SCM1[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM1[%d].b[CHIP][%d]) : SCM1[%d].awoo[CHIP][%d];\n", i, j, ea1bs, ea1bs, i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
-	fprintf(ofile, "SCM1[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM1[%d].o[CHIP][%d], %d);\n", i, j, ea1os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea1msk);
-	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex1op, conf[i][j].cdw0.mex1dist==0? 0: conf[i][j].cdw0.mex1dist==1? 1: conf[i][j].cdw0.mex1dist==2? 2:
+	fprintf(pfile, "SCM1[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM1[%d].b[CHIP][%d]) : SCM1[%d].awoo[CHIP][%d];\n", i, j, ea1bs, ea1bs, i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
+	fprintf(pfile, "SCM1[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM1[%d].o[CHIP][%d], %d);\n", i, j, ea1os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea1msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex1op, conf[i][j].cdw0.mex1dist==0? 0: conf[i][j].cdw0.mex1dist==1? 1: conf[i][j].cdw0.mex1dist==2? 2:
                                                                                       conf[i][j].cdw0.mex1dist==3? 4: conf[i][j].cdw0.mex1dist==4? 8: conf[i][j].cdw0.mex1dist==5?16:
                                                                                       conf[i][j].cdw0.mex1dist==6?32:64);
 	switch (conf[i][j].cdw0.mex1op) {
 	case OP_NOP:
-	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
 	  break;
 	case OP_CMPA_LE:
-	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:((SCM1[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)<=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM1[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)<=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
 	  break;
 	case OP_CMPA_GE:
-	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:((SCM1[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)>=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM1[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)>=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
 	  break;
 	case OP_ALWAYS: /* base++ ÂÐ±þ */
-	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].mex1op=%d\n", i, j, conf[i][j].cdw0.mex1op);
+	  printf("EMAXSC:undefined conf[%d][%d].mex1op=%d\n", i, j, conf[i][j].cdw0.mex1op);
 	  break;
 	}  
 
 #if defined(__i386)
-	fprintf(ofile, "adr = (Uint)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Uint)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #else
-	fprintf(ofile, "adr = (Ull)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Ull)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #endif
 
 	switch (conf[i][j].cdw1.ea1op) {
 	case OP_LDR: /* 64bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "load64 = *(Ull*)(adr&~7LL);\n");
-	  fprintf(ofile, "if ((adr&7) == 0)\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64;\n", i, i, j*UNIT_WIDTH+1, i, j);
-	  fprintf(ofile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
-	  fprintf(ofile, "  emax6_unaligned_load_valid = 1;\n");
-	  fprintf(ofile, "  emax6_unaligned_load_high = load64;\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
-	  fprintf(ofile, "}\n");
-	  fprintf(ofile, "else { /* BR[][][0] */\n");
-	  fprintf(ofile, "  emax6_unaligned_load_valid = 0;\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
-	  fprintf(ofile, "}\n");
+	  fprintf(pfile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(pfile, "if ((adr&7) == 0)\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(pfile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else { /* BR[][][0] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "}\n");
 	  break;
-	case OP_LDWR: /* s32bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
+	case OP_LDWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
 	  break;
-	case OP_LDUWR: /* u32bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
-	  break;
-	case OP_LDBR: /* s8bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;\n", i, i, j*UNIT_WIDTH+1);
-	  break;
-	case OP_LDUBR: /* u8bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+1);
+	case OP_LDBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+1);
 	  break;
 	case OP_LDRQ: /* 64bit*4 lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
-          fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].cdw1.ea1op=%d\n", i, j, conf[i][j].cdw1.ea1op);
+	  printf("EMAXSC:undefined conf[%d][%d].cdw1.ea1op=%d\n", i, j, conf[i][j].cdw1.ea1op);
 	  break;
 	}
       }
@@ -2767,78 +2760,72 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
 	int ea0bs = conf[i][j].cdw1.ea0bs;  /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
 	int ea0os = conf[i][j].cdw1.ea0os;  /* 0:ea0or, 1:eaobrs */
 	
-	fprintf(ofile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
-	fprintf(ofile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
-	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+	fprintf(pfile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
+	fprintf(pfile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
                                                                                       conf[i][j].cdw0.mex0dist==3? 4: conf[i][j].cdw0.mex0dist==4? 8: conf[i][j].cdw0.mex0dist==5?16:
                                                                                       conf[i][j].cdw0.mex0dist==6?32:64);
 	switch (conf[i][j].cdw0.mex0op) {
 	case OP_NOP:
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
 	  break;
 	case OP_CMPA_LE:
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:((SCM0[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)<=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM0[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)<=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
 	  break;
 	case OP_CMPA_GE:
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:((SCM0[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)>=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM0[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)>=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
 	  break;
 	case OP_ALWAYS: /* base++ ÂÐ±þ */
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+	  printf("EMAXSC:undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
 	  break;
 	}  
 
 #if defined(__i386)
-	fprintf(ofile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #else
-	fprintf(ofile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #endif
 
 	switch (conf[i][j].cdw1.ea0op) {
 	case OP_LDR: /* 64bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "load64 = *(Ull*)(adr&~7LL);\n");
-	  fprintf(ofile, "if ((adr&7) == 0)\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64;\n", i, i, j*UNIT_WIDTH+0, i, j);
-	  fprintf(ofile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
-	  fprintf(ofile, "  emax6_unaligned_load_valid = 1;\n");
-	  fprintf(ofile, "  emax6_unaligned_load_high = load64;\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
-	  fprintf(ofile, "}\n");
-	  fprintf(ofile, "else { /* BR[][][0] */\n");
-	  fprintf(ofile, "  emax6_unaligned_load_valid = 0;\n");
-	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
-	  fprintf(ofile, "}\n");
+	  fprintf(pfile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(pfile, "if ((adr&7) == 0)\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(pfile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else { /* BR[][][0] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "}\n");
 	  break;
-	case OP_LDWR: /* s32bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
+	case OP_LDWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
 	  break;
-	case OP_LDUWR: /* u32bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
-	  break;
-	case OP_LDBR: /* s8bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;\n", i, i, j*UNIT_WIDTH+0);
-	  break;
-	case OP_LDUBR: /* u8bit lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+0);
+	case OP_LDBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+0);
 	  break;
 	case OP_LDRQ: /* 64bit*4 lmm LMM is preloaded, random-access */
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
-          fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
-	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].cdw1.ea0op=%d\n", i, j, conf[i][j].cdw1.ea0op);
+	  printf("EMAXSC:undefined conf[%d][%d].cdw1.ea0op=%d\n", i, j, conf[i][j].cdw1.ea0op);
 	  break;
 	}
       }
-      fprintf(ofile, "}\n");
+      fprintf(pfile, "}\n");
     }
 
     for (j=0; j<EMAX_WIDTH; j++) {
-      fprintf(ofile, "{ union { Uint i; float f; } f3, f2, f1, f0; Ull t3, t2, t1, t0, ex1, ex2, ex3, ex4, ex5, c1, c0, ex1_outd, ex2_outd;\n");
+      fprintf(pfile, "{ union { Uint i; float f; } f3, f2, f1, f0; Ull t3, t2, t1, t0, ex1, ex2, ex3, ex4, ex5, c1, c0, ex1_outd, ex2_outd;\n");
       /*********************************************************************************************************/
       if (conf[i][j].cdw0.op1 || conf[i][j].cdw0.op2 || conf[i][j].cdw0.op3) {
 	int ex1brs = conf[i][j].cdw0.ex1brs; /* 0:br0_0, 1:br0_1, ... 15:3_3 */
@@ -2858,220 +2845,220 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
 	/* fold¤Î¾ì¹ç¤â,1¥µ¥¤¥¯¥ëÁ÷¤é¤»¤ëÉ¬Í×¤Ï¤Ê¤¯,LD¤ËÂ³¤±¤Æexe-st¤ò¼Â¹Ô¤¹¤ì¤ÐÎÉ¤¤ */
 	switch (conf[i][j].cdw0.op1) {
 	case OP_NOP:
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex1_outd = ex1;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex1_outd = ex1;\n");
 	  break;
 	case OP_WHILE:
 	case OP_FOR:
 	  break;
 	case OP_CFMA: /* [idx|32bit]*2 3in =(idx2==idx3)?r1+r2*r3:r1 */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
-	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
-	  fprintf(ofile, "f3.i = (Uint)(ex3>>32);\n");
-	  fprintf(ofile, "if (f2.i != -1 && f2.i == f3.i) {\n");
-	  fprintf(ofile, "  f2.i = (Uint)(ex2);\n");
-	  fprintf(ofile, "  f3.i = (Uint)(ex3);\n");
-	  fprintf(ofile, "  f0.f = f1.f + (f2.f * f3.f);\n");
-	  fprintf(ofile, "}\n");
-	  fprintf(ofile, "else {\n");
-	  fprintf(ofile, "  f0.f = f1.f;\n");
-	  fprintf(ofile, "}\n");
-	  fprintf(ofile, "t0 = f0.i;\n");
-	  fprintf(ofile, "ex1_outd = t0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(pfile, "if (f2.i != -1 && f2.i == f3.i) {\n");
+	  fprintf(pfile, "  f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "  f3.i = (Uint)(ex3);\n");
+	  fprintf(pfile, "  f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else {\n");
+	  fprintf(pfile, "  f0.f = f1.f;\n");
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = t0;\n");
 	  break;
 	case OP_FMA: /* 32bit*2 3in floating-point r1+r2*r3 */
 	case OP_FMS: /* 32bit*2 3in floating-point r1-r2*r3 */
 	  /* *(double*)&ex1_outd = *(double*)&r1 + (*(double*)&r2 * *(double*)&r3);*/
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
-	  fprintf(ofile, "f1.i = (Uint)(ex1)>>32);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2>>32)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
-	  fprintf(ofile, "f3.i = (Uint)(ex3>>32);\n");
-	  fprintf(ofile, "f0.f = f1.f + (f2.f * f3.f);\n");
-	  fprintf(ofile, "t2 = f0.i;\n");
-	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
-	  fprintf(ofile, "f3.i = (Uint)(ex3);\n");
-	  fprintf(ofile, "f0.f = f1.f + (f2.f * f3.f);\n");
-	  fprintf(ofile, "t0 = f0.i;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(pfile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(pfile, "f3.i = (Uint)(ex3);\n");
+	  fprintf(pfile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_FAD: /* 32bit*2 3in floating-point r1+r2 */
 	  /* *(double*)&ex1_outd = *(double*)&r1 + *(double*)&r2;*/
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "f1.i = (Uint)(ex1>>32);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
-	  fprintf(ofile, "f0.f = f1.f + f2.f;\n");
-	  fprintf(ofile, "t2 = f0.i;\n");
-	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2);\n");
-	  fprintf(ofile, "f0.f = f1.f + f2.f;\n");
-	  fprintf(ofile, "t0 = f0.i;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_FML: /* 32bit*2 3in floating-point r1*r2 */
 	  /* *(double*)&ex1_outd = *(double*)&r1 * *(double*)&r2;*/
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "f1.i = (Uint)(ex1>>32);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
-	  fprintf(ofile, "f0.f = f1.f * f2.f;\n");
-	  fprintf(ofile, "t2 = f0.i;\n");
-	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
-	  fprintf(ofile, "f2.i = (Uint)(ex2);\n");
-	  fprintf(ofile, "f0.f = f1.f * f2.f;\n");
-	  fprintf(ofile, "t0 = f0.i;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_ADD3: /* 32bit*2 3in integer add s1+(s2+s3) */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
-	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)+((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
-	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)+((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
-	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)+((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)+((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_SUB3: /* 32bit*2 3in integer subtract s1-(s2+s3) */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
-	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)-((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
-	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)-((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
-	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)-((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)-((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_ADD: /* 32bit*2 2in integer add s1+s2 */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)+(ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)+(ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)+(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)+(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_SUB: /* 32bit*2 2in integer subtract s1-s2 */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)-(ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)-(ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
-	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)-(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)-(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
 	  break;
 	case OP_CMP_EQ: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) == (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) == (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) == (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) == (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMP_NE: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) != (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) != (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) != (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) != (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMP_LT: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) < (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) < (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) < (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) < (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMP_LE: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) <= (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) <= (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) <= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) <= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMP_GT: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) > (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) > (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) > (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) > (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMP_GE: /* 32bit*2 2in compare and set 1*2bit-CC */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) >= (ex2>>32&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) >= (ex2    &0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) >= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) >= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
 	  break;
 	case OP_CMOV: /* 32bit*2 3in 2bit conditional move */
-	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
-	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
-	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
-	  fprintf(ofile, "c1 = ex1>>32&1;\n");
-	  fprintf(ofile, "c0 = ex1    &1;\n");
-	  fprintf(ofile, "t2 = c1 ? (ex2&0xffffffff00000000LL) : (ex3&0xffffffff00000000LL);\n");
-	  fprintf(ofile, "t0 = c0 ? (ex2&0x00000000ffffffffLL) : (ex3&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "ex1_outd = t2 | t0;\n");
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "c1 = ex1>>32&1;\n");
+	  fprintf(pfile, "c0 = ex1    &1;\n");
+	  fprintf(pfile, "t2 = c1 ? (ex2&0xffffffff00000000LL) : (ex3&0xffffffff00000000LL);\n");
+	  fprintf(pfile, "t0 = c0 ? (ex2&0x00000000ffffffffLL) : (ex3&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = t2 | t0;\n");
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].cdw0.op1=%d\n", i, j, conf[i][j].cdw0.op1);
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op1=%d\n", i, j, conf[i][j].cdw0.op1);
 	  break;
 	}
 
 	switch (conf[i][j].cdw0.op2) {
 	case OP_NOP:
 	  if (conf[i][j].cdw0.op1 != OP_WHILE && conf[i][j].cdw0.op1 != OP_FOR)
-	  fprintf(ofile, "ex2_outd = ex1_outd;\n");
+	  fprintf(pfile, "ex2_outd = ex1_outd;\n");
 	  break;
 	case OP_AND: /* 64bit 2in logical and s1&s2 */
-	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
-	  fprintf(ofile, "ex2_outd = ex1_outd & ex4;\n");
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd & ex4;\n");
 	  break;
 	case OP_OR: /* 64bit 2in logical or s1|s2 */
-	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
-	  fprintf(ofile, "ex2_outd = ex1_outd | ex4;\n");
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd | ex4;\n");
 	  break;
 	case OP_XOR: /* 64bit 2in logical xor s1^s2 */
-	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
-	  fprintf(ofile, "ex2_outd = ex1_outd ^ ex4;\n");
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd ^ ex4;\n");
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].cdw0.op2=%d\n", i, j, conf[i][j].cdw0.op2);
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op2=%d\n", i, j, conf[i][j].cdw0.op2);
 	  break;
 	}
 	
 	switch (conf[i][j].cdw0.op3) {
 	case OP_NOP:
 	  if (conf[i][j].cdw0.op1 != OP_WHILE && conf[i][j].cdw0.op1 != OP_FOR)
-	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = ex2_outd;\n", i, j);
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = ex2_outd;\n", i, j);
 	  break;
 	case OP_SLL: /* 32bit*2 2in 32bit logical shift to left */
-	  fprintf(ofile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
-	  fprintf(ofile, "t1 = (Ull)(ex2_outd     &0xffffffff00000000LL)<<ex5;\n");
-	  fprintf(ofile, "t0 = (Ull)(ex2_outd<<ex5&0x00000000ffffffffLL);\n");
-	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+	  fprintf(pfile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "t1 = (Ull)(ex2_outd     &0xffffffff00000000LL)<<ex5;\n");
+	  fprintf(pfile, "t0 = (Ull)(ex2_outd<<ex5&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
 	  break;
 	case OP_SRL: /* 32bit*2 2in 32bit logical shift to right */
-	  fprintf(ofile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
-	  fprintf(ofile, "t1 = (Ull)(ex2_outd>>ex5&0xffffffff00000000LL);\n");
-	  fprintf(ofile, "t0 = (Ull)(ex2_outd     &0x00000000ffffffffLL)>>ex5;\n");
-	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+	  fprintf(pfile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "t1 = (Ull)(ex2_outd>>ex5&0xffffffff00000000LL);\n");
+	  fprintf(pfile, "t0 = (Ull)(ex2_outd     &0x00000000ffffffffLL)>>ex5;\n");
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].cdw0.op3=%d\n", i, j, conf[i][j].cdw0.op3);
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op3=%d\n", i, j, conf[i][j].cdw0.op3);
 	  break;
 	}
       }
-      fprintf(ofile, "}\n");
+      fprintf(pfile, "}\n");
     }
 
     for (j=0; j<EMAX_WIDTH; j++) {
-      fprintf(ofile, "{ Ull cs0, cs1, cs2, cs3, cex, adr, mexdist;\n");
+      fprintf(pfile, "{ Ull cs0, cs1, cs2, cs3, cex, adr, mexdist;\n");
       /*********************************************************************************************************/
       if (dec[i][j].dcex.op) { /* conf¤ËÂ¸ºß¤·¤Ê¤¤ */
 	int fold    = conf[i][j].cdw0.fold;    /* 0:normal, 1:load-exe-store folding */
@@ -3081,16 +3068,16 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
 	int cs3     = conf[i][j].cdw1.cs3;     /* 0:br0_0, 1:br0_1, ... 15:3_3 */
 	int cex_tab = conf[i][j].cdw1.cex_tab; /* c3.c2.c1.c0¤ÎÁÈ¹ç¤» (cop=NOP¤Î¾ì¹ç,ffff) */
 
-	fprintf(ofile, "cs0 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs0);
-	fprintf(ofile, "cs1 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs1);
-	fprintf(ofile, "cs2 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs2);
-	fprintf(ofile, "cs3 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs3);
-	fprintf(ofile, "cex = ((0x%04.4x>>(((cs3>>32&1)<<3)|((cs2>>32&1)<<2)|((cs1>>32&1)<<1)|(cs0>>32&1))&1)?2:0) | ((0x%04.4x>>(((cs3&1)<<3)|((cs2&1)<<2)|((cs1&1)<<1)|(cs0&1))&1)?1:0);\n", cex_tab, cex_tab);
+	fprintf(pfile, "cs0 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs0);
+	fprintf(pfile, "cs1 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs1);
+	fprintf(pfile, "cs2 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs2);
+	fprintf(pfile, "cs3 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs3);
+	fprintf(pfile, "cex = ((0x%04.4x>>(((cs3>>32&1)<<3)|((cs2>>32&1)<<2)|((cs1>>32&1)<<1)|(cs0>>32&1))&1)?2:0) | ((0x%04.4x>>(((cs3&1)<<3)|((cs2&1)<<2)|((cs1&1)<<1)|(cs0&1))&1)?1:0);\n", cex_tab, cex_tab);
       }
 
       /*********************************************************************************************************/
       if (conf[i][j].cdw1.ea0op > OP_IM_BUFRD) { /* STORE */
-	int fold  = conf[i][j].cdw0.fold;    /* 0:normal, 1:load-exe-store folding */
+	int fold  = conf[i][j].cdw0.fold;   /* 0:normal, 1:load-exe-store folding */
 	int eab   = conf[i][j].cdw1.eabbrs;
 	int eao   = conf[i][j].cdw1.eaobrs;
 	int ea0bs = conf[i][j].cdw1.ea0bs;  /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
@@ -3104,85 +3091,194 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
 	int mws2  = conf[i][j].cdw2.mws2;   /* 0:lmwd2, 1:exdr, 2:ts2 */
 	int mws3  = conf[i][j].cdw2.mws3;   /* 0:lmwd3, 1:exdr, 2:ts3 */
 
-	fprintf(ofile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
-	fprintf(ofile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
-	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+	if (!dec[i][j].dcex.op)
+	  fprintf(pfile, "cex = 3;\n");
+
+	fprintf(pfile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eab, i, j, i, j); /*½é²ó or mexinit¤ÎËèINIT0*/
+	fprintf(pfile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
                                                                                       conf[i][j].cdw0.mex0dist==3? 4: conf[i][j].cdw0.mex0dist==4? 8: conf[i][j].cdw0.mex0dist==5?16:
                                                                                       conf[i][j].cdw0.mex0dist==6?32:64);
 	switch (conf[i][j].cdw0.mex0op) {
 	case OP_NOP:
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
 	  break;
 	case OP_ALWAYS: /* base++ ÂÐ±þ */
-	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
 	  break;
 	default:
-	  printf("undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+	  printf("EMAXSC:undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
 	  break;
 	}  
 
 #if defined(__i386)
-	fprintf(ofile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #else
-	fprintf(ofile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+	fprintf(pfile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
 #endif
 	  
 	switch (conf[i][j].cdw1.ea0op) {
 	case OP_STR: /* 64bit lmm LMM is drained. random-access */
-	  fprintf(ofile, "if (cex>>1&1) *((Uint*)(adr&~7LL)+1) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d])>>32;\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
-	  fprintf(ofile, "if (cex   &1) *((Uint*)(adr&~7LL)  ) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n",     mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "if (cex>>1&1) *((Uint*)(adr&~7LL)+1) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d])>>32;\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "if (cex   &1) *((Uint*)(adr&~7LL)  ) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n",     mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
 	  break;
 	case OP_STWR: /* 32bit lmm LMM is drained. random-access */
-	  fprintf(ofile, "if (cex   &1) *(Uint*)(adr&~3LL) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "if (cex   &1) *(Uint*)(adr&~3LL) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
 	  break;
 	case OP_STBR: /* 8bit lmm LMM is drained. random-access */
-	  fprintf(ofile, "if (cex   &1) *(Uchar*)adr = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "if (cex   &1) *(Uchar*)adr = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
 	  break;
 	case OP_STRQ: /* 64bit*4 lmm LMM is drained. random-access */
-	  fprintf(ofile, "*((Ull*)(adr&~31LL)+0) = (%d==1? SCAR[%d].r[CHIP][0] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
-	  fprintf(ofile, "*((Ull*)(adr&~31LL)+1) = (%d==1? SCAR[%d].r[CHIP][1] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws1, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts1);
-	  fprintf(ofile, "*((Ull*)(adr&~31LL)+2) = (%d==1? SCAR[%d].r[CHIP][2] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws2, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts2);
-	  fprintf(ofile, "*((Ull*)(adr&~31LL)+3) = (%d==1? SCAR[%d].r[CHIP][3] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws3, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts3);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+0) = (%d==1? SCAR[%d].r[CHIP][0] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+1) = (%d==1? SCAR[%d].r[CHIP][1] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws1, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts1);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+2) = (%d==1? SCAR[%d].r[CHIP][2] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws2, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts2);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+3) = (%d==1? SCAR[%d].r[CHIP][3] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws3, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts3);
 	  break;
 	default:
 	  printf("emax6lib: mmp: undefined op_mm=%d\n", dec[i][j].dmop0.op);
 	  break;
 	}
       }
-      fprintf(ofile, "}\n");
+      fprintf(pfile, "}\n");
     }
 
     for (j=0; j<EMAX_WIDTH; j++) {
-      fprintf(ofile, "{\n");
+      fprintf(pfile, "{\n");
       /*********************************************************************************************************/
       if (conf[i][j].cdw2.brs0 == 2) { /* 0:off, 1:mr10, 2:tr0, 3:mr0  */
 	int ts0   = conf[i][j].cdw2.ts0;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
-	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+0, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts0);
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+0, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts0);
       }
       if (conf[i][j].cdw2.brs1 == 2) { /* 0:off, 1:mr10, 2:tr0, 3:mr0  */
 	int ts1   = conf[i][j].cdw2.ts1;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
-	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+1, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts1);
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+1, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts1);
       }
       if (conf[i][j].cdw2.brs2 == 2) { /* 0:off, 1:mr12, 2:tr2, 3:exdr */
 	int ts2   = conf[i][j].cdw2.ts2;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
-	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+2, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts2);
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+2, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts2);
       }
       if (conf[i][j].cdw2.brs2 == 3) { /* 0:off, 1:mr12, 2:tr2, 3:exdr */
-	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCAR[%d].r[CHIP][%d];\n", i, i, j*UNIT_WIDTH+2, i, j);
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCAR[%d].r[CHIP][%d];\n", i, i, j*UNIT_WIDTH+2, i, j);
       }
       if (conf[i][j].cdw2.brs3 == 2) { /* 0:off, 1:mr13, 2:tr3         */
 	int ts3   = conf[i][j].cdw2.ts3;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
-	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+3, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts3);
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+3, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts3);
       }
-      fprintf(ofile, "}\n");
+      fprintf(pfile, "}\n");
     }
-    if (conf[0][0].cdw0.op1 == OP_WHILE)
-      fprintf(ofile, "}}\n");
-    else if (conf[0][1].cdw0.op1 == OP_FOR && conf[0][0].cdw0.op1 == OP_FOR)
-      fprintf(ofile, "}}}\n");
-    else /* if (conf[0][0].cdw0.op1 == OP_FOR) */
-      fprintf(ofile, "}}\n");
+    fprintf(pfile, "uLOOP[%d][CHIP]--;\n", i);
+    fprintf(pfile, "SCBR[%d].enq[CHIP] = 1-SCBR[%d].enq[CHIP];\n", i, i);
+    fprintf(pfile, "}\n"); /* for (CHIP) */
+    fprintf(pfile, "}\n"); /* while (1) */
+    fprintf(pfile, "}\n"); /* pth_func() */
   }
+
+  fprintf(pfile, "/* EMAXSC end */\n");
+  fprintf(pfile, "#endif\n");
+  /**********************************************************************************************************/
+  fprintf(ofile, "#ifdef EMAXSC\n");
+  fprintf(ofile, "/* EMAXSC start */\n");
+    
+  /* init REGV(breg) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      for (k=0; k<UNIT_WIDTH; k++) {
+	if (regv[i][j].br[k].v) {
+	  if (id[regv[i][j].br[k].h].chip) { /* CHIP */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	    }
+	  }
+	  else if (id[regv[i][j].br[k].h].cidx) { /* xxx[CHIP] */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	    }
+	  }
+	  else if (regv[i][j].br[k].s < 0) {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	    }
+	  }
+	  else {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  /* init REGV(eag) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      if (regv[i][j].ea0b_v) {
+	if (id[regv[i][j].ea0b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, c);
+	}
+	else if (regv[i][j].ea0b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+	}
+      }
+      if (regv[i][j].ea0o_v) {
+	if (id[regv[i][j].ea0o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, c);
+	}
+	else if (regv[i][j].ea0o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+	}
+      }
+      if (regv[i][j].ea1b_v) {
+	if (id[regv[i][j].ea1b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, c);
+	}
+	else if (regv[i][j].ea1b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+	}
+      }
+      if (regv[i][j].ea1o_v) {
+	if (id[regv[i][j].ea1o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, c);
+	}
+	else if (regv[i][j].ea1o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+	}
+      }
+    }
+  }
+
+//for (i=0; i<=last_raw; i++)
+//  pthread_create(&th_emax6sc[i], NULL, emax6sc_pth_yyy, param_emax6sc[i]);
+//for (i=0; i<=last_raw; i++)
+//  pthread_join(th_emax6sc[i], NULL);
 
   fprintf(ofile, "/* EMAXSC end */\n");
   fprintf(ofile, "#endif\n");
@@ -3705,11 +3801,8 @@ get_mop_type(int op)
   switch (op) {
   case OP_LDR:
   case OP_LDWR:
-  case OP_LDUWR:
 //case OP_LDHR:
-//case OP_LDUHR:
   case OP_LDBR:
-  case OP_LDUBR:
   case OP_LDRQ:
     retval = MTYPE_RLOAD; /* random_load on mop1->BR (+implicit AXI->mop0->MW) */
     break;
@@ -4762,7 +4855,7 @@ draw_ea0(int e0b_x, int e0b_y,
 #define E0LABELMAX 30
   char opcd[E0LABELMAX];
   int col, thi;
-  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
+  int ea0singleload = (ea0op && (ea0op <= OP_LDBR));
 
   /* EA0 */
   if (ea0op) {
@@ -4885,7 +4978,7 @@ draw_ea1(int e1b_x, int e1b_y,
 #define E1LABELMAX 30
   char opcd[E1LABELMAX];
   int col, thi;
-  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+  int ea1singleload = (ea1op && (ea1op <= OP_LDBR));
 
   /* EA1 */
   if (ea1op) {
@@ -5243,8 +5336,8 @@ draw_bri(int bri_x, int bri_y,
 #define BRLABELMAX 30
   char opcd[BRLABELMAX];
   int col, thi;
-  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
-  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+  int ea0singleload = (ea0op && (ea0op <= OP_LDBR));
+  int ea1singleload = (ea1op && (ea1op <= OP_LDBR));
 
   /* BR0 */
   if (brs0) {

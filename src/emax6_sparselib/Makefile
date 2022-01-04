@@ -35,8 +35,9 @@ LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -
 
 
 ifeq ($(ARM_CROSS),1)
+CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DCSIMDEBUG
 CENT          = 0
-OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
+OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA -DCSIMDEBUG
 CPP           = aarch64-elf-cpp -P
 CC            = aarch64-elf-gcc
 CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)

@@ -1194,11 +1194,15 @@ typedef struct {
     Ull* margin_sum;
 } emax6_sparse2;
 typedef struct {
-    int H_param;
-    int W_param;
-    int RMGRP_param;
-    int NCHIP_param;
-    int A_col_blk_param;
+    Sll H_param;
+    Sll W_param;
+    Sll RMGRP_param;
+    Sll NCHIP_param;
+    Sll A_col_blk_param;
+    Sll A_row_size;
+    Sll A_col_size;
+    Sll B_row_size;
+    Sll B_col_size;  
 } emax6_param;
 emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
 emax6_sparse2* sparse_format6(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);

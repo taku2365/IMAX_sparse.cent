@@ -17,7 +17,6 @@ typedef long double Dll;
 typedef struct {Ull u[2];} Dll;
 #endif
 #endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -44,6 +43,10 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 // #include "../../src/conv-c2c/emax6.h"
 //includeの順番が逆やとエラー
 #include "../Include/emax6_sparselib.h"
+#ifndef NO_EMAX6LIB_BODY
+#define NO_EMAX6LIB_BODY
+#endif
+#include "../Include/kernel_lib.h"
 // #include "./../../conv-c2c/emax6lib.c"
 #endif
 #if !defined(ARMSIML)
@@ -61,20 +64,20 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-  #define A_row_size 16LL   // 縛りなし
-  #define A_col_size 46LL    // 縛りなし　H_padのおかげ
-  #define B_row_size 46LL    // 縛りなし
-  #define B_col_size 32LL   // RMGRP*NCHIP縛り
+  #define A_row_size 768LL   // 縛りなし
+  #define A_col_size 768LL    // 縛りなし　H_padのおかげ
+  #define B_row_size 768LL    // 縛りなし
+  #define B_col_size 768LL   // RMGRP*NCHIP縛り
   #define DIMENTION  2LL
   // #define RMGRP 16
   #define RMGRP 8
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
-  #define H  46
+  #define H  58
+  // #define H  46
   #define OOFS_SHIFT 3LL
-  #define A_col_blk 1
-
+  #define A_col_blk 5
 
 Uint *A;  /*[A_row_size][L];*/
 Uint *B;  /*[L][B_col_size];*/
@@ -129,20 +132,24 @@ main()
   sysinit((Uint)(2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
                 +B_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*B_col_size*sizeof(Uint)
-                +A_row_size*B_col_size*sizeof(Uint)
+                // +A_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*sizeof(Uint)
                 ),32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
   B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
-  C0 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
-  C1 = (Uint*)((Uchar*)C0 + A_row_size*B_col_size*sizeof(Uint));
+  C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
   sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
+  C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   
 
   B_debug  = (Uint*)calloc(2*B_row_size*B_col_size,sizeof(Uint));
   C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+  params->A_row_size_param = A_row_size;
+  params->A_col_size_param = A_col_size;
+  params->B_row_size_param = B_row_size;
+  params->B_col_size_param = B_col_size;
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
@@ -160,11 +167,11 @@ main()
   Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
     for (col=0; col<A_col_size; col++){
       for (row=0; row<A_row_size; row++) {
-      tmp = (int) tmp;
-      tmp = (int) (rand()%4 == 0);
+      tmp = (int) (rand()%2 == 0);
+      // tmp = (int) rand()%3;
+      // tmp = (int) ((tmp == 0)||(tmp == 1));
       // rnad()%x 0~x-1の間の数字をとる
-      // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A_tmp[row+col*A_row_size] = (float) (1);
+      *(float*)&A_tmp[row+col*A_row_size] = (float) (tmp);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -194,7 +201,7 @@ main()
       *(float*)&B_debug[col*B_row_size+row] = (float)1;
       }
       else{
-      *(float*)&B_debug[col*B_row_size+row] = (float)1;
+      *(float*)&B_debug[col*B_row_size+row] = (float)0;
       }
       // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
       // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
@@ -206,7 +213,7 @@ main()
   for (col=0,col1=0; col<B_col_size/2; col+=1,col1+=2){
     for (row=0,row1=0; row1<B_row_size; row+=2,row1+=1) {
         // simdを使うため
-      #ifdef DEBUG
+      #ifdef CSIMDEBUG
        printf("B in\n");
       #endif
       *(float*)&B[col*2*B_row_size+row] = *(float*)&B_debug[col1*B_row_size+row1];
@@ -214,7 +221,7 @@ main()
     }
   }
   
-  #ifdef DEBUG
+  #ifdef CSIMDEBUG
   for (col=0; col<B_col_size; col++){
     for (row=0; row<B_row_size; row++) {
         // simdを使うため
@@ -229,6 +236,11 @@ main()
     exit(1);
   }
 
+//nanosec: ARM:2401635 DRAIN:6224355 CONF:97039 REGV:8770122 RANGE:5750319 LOAD:34852993 EXEC:10689721 total:68786184
+//nanosec: ARM:639792 DRAIN:5798857 CONF:84279 REGV:11193238 RANGE:3365026 LOAD:42099973 EXEC:6050752 total:69231917 4chip ver4 2/3
+// nanosec: ARM:1404416 DRAIN:6463783 CONF:102820 REGV:22823288 RANGE:6852784 LOAD:63949762 EXEC:6507324 total:108104177
+// nanosec: ARM:1222759 DRAIN:6266005 CONF:97750  REGV:22352557 RANGE:6730925 LOAD:62307900 EXEC:5196952 total:104174848
+// nanosec: ARM:479774  DRAIN:5795172 CONF:80298  REGV:8378467  RANGE:2509935 LOAD:57025331 EXEC:5546742 total:79815719
                                      //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0  total:14476178 //format
 // nanosec: ARM:428330 DRAIN:5347764 CONF:103059 REGV:15701836 RANGE:10177188 LOAD:42058397 EXEC:10241348 total:84057922 4chip 密
 // nanosec: ARM:643720 DRAIN:3900830 CONF:139645 REGV:22034423 RANGE:12112945 LOAD:81180395 EXEC:20458796  total:140470754  密
@@ -261,7 +273,7 @@ main()
   reset_nanosec();
   // imax();
   // sparse_gemm_736_736_736_CHIP_div_B_3(C1, A, B, A_sparse);
-  sparse_gemm_736_736_736_CHIP_div_B_4(C1, A, B, A_sparse);
+  sparse_gemm_736_736_736_CHIP_div_B_4(C1, A, B, A_sparse,params);
   // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
@@ -285,7 +297,7 @@ main()
     for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
       for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
           count2++;
-        #ifdef DEBUG
+        #ifdef CSIMDEBUG
          printf("C in\n");
         #endif
            *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
@@ -302,13 +314,13 @@ main()
       for (row=0; row<A_row_size; row+=1) {
         sum += *(float*)&C0[col+row*B_col_size];
         sum1 += *(float*)&C_debug[col*A_row_size+row];
-        // if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+        if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
           count2++;
 
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                   row, col, *(float*)&C_debug[col*A_row_size+row]); 
           // exit(1);       
-      // }
+      }
     }
   }
 

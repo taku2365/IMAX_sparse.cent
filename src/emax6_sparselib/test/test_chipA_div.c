@@ -17,7 +17,6 @@ typedef long double Dll;
 typedef struct {Ull u[2];} Dll;
 #endif
 #endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

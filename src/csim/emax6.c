@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/csim/RCS/emax6.c,v 1.394 2021/12/08 00:59:26 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/csim/RCS/emax6.c,v 1.395 2021/12/21 03:57:50 nakashim Exp nakashim $";
 
 /* EMAX6 Simulator                     */
 /*         Copyright (C) 2012 by NAIST */
@@ -49,7 +49,7 @@ struct axiif { /* axi status of EMAX6 */
   /* work for emax-side */
   Ull   wadr_recv          : 1; /* 0:none, 1:recv for write */
   Ull   radr_recv          : 1; /* 0:none, 1:recv for read */
-  Ull   reqn               :16; /* AXI¢ğ?¢ğ«±ª¡¡à??¢ğ?¢ğ«À¢ğ¢Äon-the-fly req¢Ä«Ô */
+  Ull   reqn               :16; /* AXI¤«¤éÁ÷½Ğ¤µ¤ì¤¿on-the-fly req¿ô */
   Ull   creg               : 1; /* 0:RD unit regs, 1:RD control regs */
   Ull   srw                : 1; /* 0:read, 1:write */
   Ull   sadr               :31; /* adr (internal) */
@@ -76,8 +76,8 @@ struct axiif { /* axi status of EMAX6 */
 } axiif[MAXCORE]; /* used as EMAX_NCHIP */
 
 struct exring { /* ex status of EMAX6 */
-  Ull   cmd_busy        : 1; /* reg_ctrl.stat¢ğª³ª£?ª¢ªäª²¢Ä¡Şª® */
-  Ull   unit_busy       : 1; /* reg_ctrl.stat¢ğª³ª£?ª¢ªäª²¢Ä¡Şª® */
+  Ull   cmd_busy        : 1; /* reg_ctrl.stat¤ËÄ¾ÀÜÈ¿±Ç */
+  Ull   unit_busy       : 1; /* reg_ctrl.stat¤ËÄ¾ÀÜÈ¿±Ç */
   Ull   cycle           : 3;
 
   struct unit { /* hardware status of EMAX6 units */
@@ -85,38 +85,38 @@ struct exring { /* ex status of EMAX6 */
     Ull   cycle         : 3; /* previous unit1_exec/stop is reffered every 4 cycles */
                              /* previous br[0/1] is switched every 4 cycles */
                              /* brout[cycle-4] is updated */
-    Ull   l_row         : 6; /* 0..63 *//* 0¢ğªÂª´¢ìª¿«ò?ªÔ¢ğ??¢´©¡¡ë¢ğªÂ?¢´ª©ª¢ */
+    Ull   l_row         : 6; /* 0..63 *//* 0¤ÎÊªÍı¹Ô¤¬µ¯Æ°¤Îµ¯ÅÀ */
     Ull   scon_count    : 7; /* conf.mapdist*2 */
     Ull   one_shot      : 1; /* reg  *//* self_loop_control 0:init 1:self_loop, keep 0 in first 4 cycles */
     Ull   one_shot2     : 1; /* one_shot for stage2 */
-    Ull   one_shot_fold : 1; /* foldingª¿ªĞ¢ğª³one_shot¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
-    Ull   one_shot_fold2: 1; /* foldingª¿ªĞ¢ğª³one_shot¢ğ?¢ğ«±5¢ÃªÑªªªã¡Ş«£ */
-    Ull   one_shot_fold3: 1; /* foldingª¿ªĞ¢ğª³one_shot¢ğ?¢ğ«±6¢ÃªÑªªªã¡Ş«£ */
-    Ull   one_shot_fold4: 1; /* foldingª¿ªĞ¢ğª³one_shot¢ğ?¢ğ«±7¢ÃªÑªªªã¡Ş«£ */
-    Ull   unit1_exec    : 1; /* ?¢Â¢ğªÂ©¡¡ë¢ë«Â¢ğ«Ò?©¬?¡¯ (cex,exe,eag), 0:wait 1:exec *//* reg_ctrl.stat¢ğª³ª£?ª¢ªäª²¢Ä¡Şª® */
-    Ull   unit1_fold    : 1; /* foldingª¿ªĞ¢ğª³unit1_exec¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
-    Ull   stage_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero stage2¢ğª³¢ğ¢ì¢ğ¢ğ¢ğ©¡ª³«²\?\¢ğ\¢´\«³ª¢¢±ª¢¢î */
-    Ull   unit1_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero 4¢ÃªÑª³«²¢ğª³ª¢¢±ª¢¢î */
+    Ull   one_shot_fold : 1; /* foldingÍÑ¤Ëone_shot¤«¤é4¦ÓÃÙ±ä */
+    Ull   one_shot_fold2: 1; /* foldingÍÑ¤Ëone_shot¤«¤é5¦ÓÃÙ±ä */
+    Ull   one_shot_fold3: 1; /* foldingÍÑ¤Ëone_shot¤«¤é6¦ÓÃÙ±ä */
+    Ull   one_shot_fold4: 1; /* foldingÍÑ¤Ëone_shot¤«¤é7¦ÓÃÙ±ä */
+    Ull   unit1_exec    : 1; /* ¼¡¤ÎÆ°ºî¤ò»Ø¼¨ (cex,exe,eag), 0:wait 1:exec *//* reg_ctrl.stat¤ËÄ¾ÀÜÈ¿±Ç */
+    Ull   unit1_fold    : 1; /* foldingÍÑ¤Ëunit1_exec¤«¤é4¦ÓÃÙ±ä */
+    Ull   stage_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero stage2¤Ë¤ª¤¤¤ÆËè¥µ¥¤¥¯¥ëÀ¸À® */
+    Ull   unit1_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero 4¦ÓËè¤ËÀ¸À® */
     Ull   unit1_forstat2: 2; /* unit1_forstat for stage2 */
     Ull   unit1_forstat_fold:  2; /* forstat+folding for stage1 */
     Ull   unit1_forstat_fold2: 2; /* forstat+folding for stage2 */
     Ull   unit1_forstat_fold3: 2; /* forstat+folding for stage3 */
     Ull   unit1_forstat_fold4: 2; /* forstat+folding for stage4 */
-    Ull   unit1_arbrk   : 1; /* loop¢ëª®?¢ìªÀ¢ÄªÂ«¡¢ğªÂ?ª¤?ªÔ¡­¡ëªÂ?¢ğ«Òª±??¡¯ */
-    Ull   unit1_stop    : 1; /* ?¢Â¢ğªÂ©¡¡ë¢ë«Â¢ğ«Ò?©¬?¡¯ (cex,exe,eag), 0:wait 1:stop */
-    Ull   tr_valid      : 1; /* TR¢ğªÂ?«Øª¤ªÓ¢ğ«Òª±??¡¯ */
-    Ull   unit2_exec    : 1; /* ?¢Â¢ğªÂ©¡¡ë¢ë«Â¢ğ«Ò?©¬?¡¯ (lmm),         0:wait 1:exec *//* reg_ctrl.stat¢ğª³ª£?ª¢ªäª²¢Ä¡Şª® */
-    Ull   unit2_fold    : 1; /* foldingª¿ªĞ¢ğª³unit2_exec¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
+    Ull   unit1_arbrk   : 1; /* loopºÇ½ªÌ¿Îá¤Î¼Â¹Ô´°Î»¤òÉ½¼¨ */
+    Ull   unit1_stop    : 1; /* ¼¡¤ÎÆ°ºî¤ò»Ø¼¨ (cex,exe,eag), 0:wait 1:stop */
+    Ull   tr_valid      : 1; /* TR¤Î¾õÂÖ¤òÉ½¼¨ */
+    Ull   unit2_exec    : 1; /* ¼¡¤ÎÆ°ºî¤ò»Ø¼¨ (lmm),         0:wait 1:exec *//* reg_ctrl.stat¤ËÄ¾ÀÜÈ¿±Ç */
+    Ull   unit2_fold    : 1; /* foldingÍÑ¤Ëunit2_exec¤«¤é4¦ÓÃÙ±ä */
     Ull   unit2_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero */
-    Ull   unit2_stop    : 1; /* ?¢Â¢ğªÂ©¡¡ë¢ë«Â¢ğ«Ò?©¬?¡¯ (lmm),         0:wait 1:stop */
-    Ull   brout_valid   : 1; /* BR¢ğªÂ?«Øª¤ªÓ¢ğ«Òª±??¡¯ ?«Á?©Ğtr_valid¢ğ«Ò1¢ÃªÑ¢±«©¢ğª³ª©ª¡ª²ª¤ */
+    Ull   unit2_stop    : 1; /* ¼¡¤ÎÆ°ºî¤ò»Ø¼¨ (lmm),         0:wait 1:stop */
+    Ull   brout_valid   : 1; /* BR¤Î¾õÂÖ¤òÉ½¼¨ ¾ï»ştr_valid¤ò1¦Ó¸å¤ËÅÁÈÂ */
 
     Ull   stage2_exec   : 1; /* unit1_exec  -> stage2_exec */
-    Ull   stage2_fold   : 1; /* foldingª¿ªĞ¢ğª³stage2_exec¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
+    Ull   stage2_fold   : 1; /* foldingÍÑ¤Ëstage2_exec¤«¤é4¦ÓÃÙ±ä */
     Ull   stage3_exec   : 1; /* stage2_exec -> stage3_exec */
-    Ull   stage3_fold   : 1; /* foldingª¿ªĞ¢ğª³stage3_exec¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
+    Ull   stage3_fold   : 1; /* foldingÍÑ¤Ëstage3_exec¤«¤é4¦ÓÃÙ±ä */
     Ull   stage4_exec   : 1; /* stage3_exec -> stage4_exec */
-    Ull   stage4_fold   : 1; /* foldingª¿ªĞ¢ğª³stage4_exec¢ğ?¢ğ«±4¢ÃªÑªªªã¡Ş«£ */
+    Ull   stage4_fold   : 1; /* foldingÍÑ¤Ëstage4_exec¤«¤é4¦ÓÃÙ±ä */
     Ull   cx[EMAX_WIDTH]   ; /* reg  */
     Ull   cx2dr         : 2; /* reg  *//* bit1: 0:none 1:exec, bit0: 0:none 1:exec */
     Ull   cx3dr         : 2; /* reg  *//* bit1: 0:none 1:exec, bit0: 0:none 1:exec */
@@ -148,42 +148,42 @@ struct exring { /* ex status of EMAX6 */
     Ull   ea0o          :64; /* reg  *//* in for EA0 */
     Ull   ea1b          :18; /* reg  *//* in for EA1 */
     Ull   ea1o          :64; /* reg  *//* in for EA1 */
-    Ull   ea02dofs         ; /* reg  *//* ¢Â«âfor passing eag offset */
+    Ull   ea02dofs         ; /* reg  *//* ¡úfor passing eag offset */
     Ull   ea02dr           ; /* reg  *//* for mex(&addr) pointer */
-    Ull   ea12dofs         ; /* reg  *//* ¢Â«âfor passing eag offset */
+    Ull   ea12dofs         ; /* reg  *//* ¡úfor passing eag offset */
     Ull   ea12dr           ; /* reg  *//* for mex(&addr) pointer */
-    Ull   ea03woofs     :18; /* reg  *//* ¢Â«âfor mex(&addr) feedback */
+    Ull   ea03woofs     :18; /* reg  *//* ¡úfor mex(&addr) feedback */
     Ull   ea03dr           ; /* reg  *//* for eag(&addr) pointer */
-    Ull   ea13woofs     :18; /* reg  *//* ¢Â«âfor mex(&addr) feedback */
+    Ull   ea13woofs     :18; /* reg  *//* ¡úfor mex(&addr) feedback */
     Ull   ea13dr           ; /* reg  *//* for eag(&addr) pointer */
     Ull   ea04_lmask    :18; /* wire *//* offset */
     Ull   ea04_umask    : 2; /* wire *//* partition */
-    Ull   ea04woofs_prev:18; /* reg  *//* ¢Â«âfor siml-loop only */
-    Ull   ea04woofs     :18; /* reg  *//* ¢Â«âfor mex(&addr) feedback */
+    Ull   ea04woofs_prev:18; /* reg  *//* ¡úfor siml-loop only */
+    Ull   ea04woofs     :18; /* reg  *//* ¡úfor mex(&addr) feedback */
     Ull   ea04dr        :18; /* reg  *//* base+mex+ofs */
     Ull   ea14_lmask    :18; /* wire *//* offset */
     Ull   ea14_umask    : 2; /* wire *//* partition */
-    Ull   ea14woofs_prev:18; /* reg  *//* ¢Â«âfor siml-loop only */
-    Ull   ea14woofs     :18; /* reg  *//* ¢Â«âfor mex(&addr) feedback */
+    Ull   ea14woofs_prev:18; /* reg  *//* ¡úfor siml-loop only */
+    Ull   ea14woofs     :18; /* reg  *//* ¡úfor mex(&addr) feedback */
     Ull   ea14dr        :18; /* reg  *//* base+mex+ofs */
     Ull   tx[UNIT_WIDTH]   ; /* reg  */
     Ull   tx2dr[UNIT_WIDTH]; /* reg  */
     Ull   tx3dr[UNIT_WIDTH]; /* reg  */
     Ull   tx4dr[UNIT_WIDTH]; /* reg  */
 
-    Ull   ranger_ok     : 8; /* wire *//* lmringª¿¡ß?«¡¢ğ?read &ty==4&adr[col]<>lmm_range©¡«¤ */
-    Ull   rangew_ok     : 8; /* wire *//* lmringª¿¡ß?«¡¢ğ?write&ty==4&adr[col]<>lmm_range©¡«¤ */
-    Ull   lmranger_ok   : 8; /* wire *//* lmringª¿¡ß?«¡¢ğ?read &ty==4&adr[col]<>lmm_range©¡«¤ */
-    Ull   lmrangew_ok   : 8; /* wire *//* lmringª¿¡ß?«¡¢ğ?write&ty==4&adr[col]<>lmm_range©¡«¤ */
-    Ull   lmlddmqw_ok   : 1; /* wire *//* lmringª¿¡ß?«¡¢ğ?write&ty==3&op1[col]==LDDMQ */
-    Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbrª¤¢±¢ë©Î 4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-    Ull   lmea0strq     : 1; /* wire *//* ea0.strqª¤¢±¢ë©Î      4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-    Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_colª²ªÓ?©Á  4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-    Ull   lmring_ea0bsy : 1; /* wire *//* ea0ª¿?¢±«â */
-    Ull   lmring_ea1bsy : 1; /* wire *//* ea1ª¿?¢±«â */
+    Ull   ranger_ok     : 8; /* wire *//* lmringÍ×µá¤¬read &ty==4&adr[col]<>lmm_rangeÆâ */
+    Ull   rangew_ok     : 8; /* wire *//* lmringÍ×µá¤¬write&ty==4&adr[col]<>lmm_rangeÆâ */
+    Ull   lmranger_ok   : 8; /* wire *//* lmringÍ×µá¤¬read &ty==4&adr[col]<>lmm_rangeÆâ */
+    Ull   lmrangew_ok   : 8; /* wire *//* lmringÍ×µá¤¬write&ty==4&adr[col]<>lmm_rangeÆâ */
+    Ull   lmlddmqw_ok   : 1; /* wire *//* lmringÍ×µá¤¬write&ty==3&op1[col]==LDDMQ */
+    Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbrÂ¸ºß 4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+    Ull   lmea0strq     : 1; /* wire *//* ea0.strqÂ¸ºß      4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+    Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_colÈÖ¹æ  4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+    Ull   lmring_ea0bsy : 1; /* wire *//* ea0Í­¸ú */
+    Ull   lmring_ea1bsy : 1; /* wire *//* ea1Í­¸ú */
     Ull   lmring_ful    : 1; /* wire *//* (ful2==3)|(ful1 & (ful2==2)) */
     Ull   deq_wait      : 1; /* wire *//* lmring_ful|(ranger_ok&ea1)|(rangew_ok&ea0)|(lddmqw_ok&col!=j) */
-    Ull   lmring_ful1   : 1; /* 0:rw/ty/co/sq/a/di/dmªÀ?¢±«â, 1:rw/ty/co/sq/a/di/dmª¿?¢±«â */
+    Ull   lmring_ful1   : 1; /* 0:rw/ty/co/sq/a/di/dmÌµ¸ú, 1:rw/ty/co/sq/a/di/dmÍ­¸ú */
     struct lmring_tr {
       Ull   rw          : 1; /* 0:read, 1:write */
       Ull   ty          : 3; /* 0:reg/conf, 1:reg/breg, 2:reg/addr, 3:lddmq/tr, 4:lmm, 567:-- */
@@ -197,7 +197,7 @@ struct exring { /* ex status of EMAX6 */
     } lmring_tr;             /* reg */
 
     Ull   lmco          : 2; /* wire *//* -> col# */
-    Ull   lmca          :18; /* wire *//* -> ea01dr *//* col#¢ğª³¢ğ«²¢ğ«³2bitª´«£ª¢?ª¡¡ëaddr */
+    Ull   lmca          :18; /* wire *//* -> ea01dr *//* col#¤Ë¤è¤ë2bitÊäÀµÁ°addr */
     Ull   lmwm          :32; /* wire *//* <- axi   */
     Ull   lmwd[UNIT_WIDTH] ; /* wire *//* <- axi   */
     Ull   lmrd[UNIT_WIDTH] ; /* wire *//* -> axi   */
@@ -220,11 +220,11 @@ struct exring { /* ex status of EMAX6 */
     Ull   mr1mux        : 2; /* mr1[3-0] -> brs1     */
     Ull   mr0d             ; /* muxed data for BR[0] */
     Ull   mr1d             ; /* muxed data for BR[1] */
-    Ull   mexmr0d_prev     ; /* ¢Â«âfor mex */
-    Ull   mexmr0d          ; /* ¢Â«âfor mex */
-    Ull   mexmr1d_prev     ; /* ¢Â«âfor mex */
-    Ull   mexmr1d          ; /* ¢Â«âfor mex */
-    struct {Ull r[UNIT_WIDTH];} b[2][EMAX_WIDTH]; /* shadow_breg *//* constant¢ğªÁªÂ?ª´«ò¢ğª³\?\ªª\ª² */
+    Ull   mexmr0d_prev     ; /* ¡úfor mex */
+    Ull   mexmr0d          ; /* ¡úfor mex */
+    Ull   mexmr1d_prev     ; /* ¡úfor mex */
+    Ull   mexmr1d          ; /* ¡úfor mex */
+    struct {Ull r[UNIT_WIDTH];} b[2][EMAX_WIDTH]; /* shadow_breg *//* constant¤ÏÎ¾Êı¤Ë¥»¥Ã¥È */
 
     Ull   lmring_ful2   : 2; /* 0:empty, 3:full */
     Ull   lmring_b_top  : 2; /* to be enqueued next */
@@ -304,27 +304,27 @@ struct reg_ctrl reg_ctrl; /* body of reg_ctrl */
 //application -> emax6_start((Ull*)emax6_conf_x1, (Ull*)emax6_lmmi_x1, (Ull*)emax6_regv_x1);
 //            -> svc 0xf1
 siml_emax6(cid, trace, trace_pipe)
-     /* coreª³«²¢ğª³emax¢ğªÁ1¢ğª£¢ğª´¢ğªÂ¢ğª®,t[cid]¢ğ«Ò?ª²ª¿ªĞ */
-     /* ¢ğ¢Ä¢ğª¢¢ğ?EMAX6¢ğªÂ\?\?\¡Ş¢Â?\ª±ª¢ªäª¤?ª²ª®IMAX¢ğª®¢ğªÁ¢Â¢ğcore[0]¢ğª³ª¡¡­EMAX6¢ğ«Òª¢ªäª¤?. siml¢ğªÂª©ªÔ?«®?«©,EMAX_NCHIP <= MAXCORE */
+     /* coreËè¤Ëemax¤Ï1¤Ä¤Ê¤Î¤Ç,t[cid]¤ò»ÈÍÑ */
+     /* ¤¿¤À¤·EMAX6¤Î¥«¥¹¥±¡¼¥ÉÀÜÂ³ÈÇIMAX¤Ç¤Ï¡¤core[0]¤ËÁ´EMAX6¤òÀÜÂ³. siml¤ÎÅÔ¹ç¾å,EMAX_NCHIP <= MAXCORE */
      Uint cid; Uint trace, trace_pipe;
 {
-  /*¡¯?¡¯¢Â¡¯¢ğ  ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ   */
-  /*¡¯? A¡¯?  ¡¯?awaddr        $1 WR/RD-req      awaddr¡¯?¡¯? A¡¯?¡¯?awaddr        $1 WR/RD-req      awaddr¡¯?   */
-  /*¡¯? R¡¯?  ¡¯?awdata  ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğawdata¡¯?¡¯? R¡¯?¡¯?awdata  ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğawdata¡¯?   */
-  /*¡¯? M¡¯?  ¡¯?araddr  ¡¯?  ¡¯?exring¡¯¢Â??¡¯¢Â¡¯¢ğ  ¡¯?araddr¡¯?¡¯? M¡¯?¡¯?araddr  ¡¯?  ¡¯?exring¡¯¢Â??¡¯¢Â¡¯¢ğ  ¡¯?araddr¡¯?   */
-  /*¡¯?¡¯¢Â¡¯¢í$1¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¡¯?¡¯?¡¯¢ğ¡¯?¡¯¢ğ¡¯?¡¯¢ğ¡¯?  ¡¯?  ¡¯?¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¡¯?¡¯?¡¯¢ğ¡¯?¡¯¢ğ¡¯?¡¯¢ğ¡¯?  ¡¯?  ¡¯?¡¯¢Â¡¯¢í   */
-  /*¡¯? I¡¯¡ø¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â?¢Â¡¯¢Â????????????????¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø¡¯¢Â?¢ì¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â?¢Â¡¯¢Â????????????????¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø?¢ì */
-  /*¡¯? /¡¯?  ¡¯?IM¡¯?SL l¡¯¡ø¡¯¢Â????????????????¡¯¢í  MA¡¯?IM¡¯?¡¯?  ¡¯?¡¯?IM¡¯?SL l¡¯¡ø¡¯¢Â????????????????¡¯¢í  MA¡¯?IM¡¯?   */
-  /*¡¯? O¡¯¡ø¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ m¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø¡¯¢Â??¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ m¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø?? */
-  /*¡¯?¡¯¢Â¡¯¢í$2¡¯¡ø¡¯¢Â¡¯\¡¯? r¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯\¡¯? r¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í   */
-  /*¡¯?#0¡¯?  ¡¯?¢Â¢Â  ¡¯? i¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?¡¯?#1¡¯?¡¯?    ¡¯? i¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?   */
-  /*¡¯?¢Â¢Â¡¯?  ¡¯?  ¢Â¢Â¡¯? n¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¢Â¢Â  ¡¯?¡¯?  ¡¯?¡¯?  ¢Â¢Â¡¯? n¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?¢Â¢Â  ¡¯?   */
-  /*¡¯?¢Â¢Â¡¯?  ¡¯?    ¡¯? g¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?¡¯?  ¡¯?¡¯?    ¡¯? g¡¯¡ø¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?   */
-  /*¡¯?¢Â¢Â¡¯?  ¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?¡¯?  ¡¯?¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â????????????????¡¯¢í  ¡¯?    ¡¯?   */
-  /*¡¯? L¡¯?  ¡¯? ¢Â¢Â ¡¯?      ¡¯¢Ã¡¯\¡¯¢Ã¡¯\¡¯¢Ã¡¯\¡¯¢Ã¡¯\??$4¡¯? ¢Â¢Â ¡¯?¡¯? L¡¯?¡¯? ¢Â¢Â ¡¯?      ¡¯¢Ã¡¯\¡¯¢Ã¡¯\¡¯¢Ã¡¯\¡¯¢Ã¡¯\??$4¡¯? ¢Â¢Â ¡¯?   */
-  /*¡¯? 1¡¯?  ¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â?¢Â¡¯¢Â¡¯\ ¢Â¢Â ¡¯?¡¯? 1¡¯?¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â?¢Â¡¯¢Â¡¯\ ¢Â¢Â ¡¯?   */
-  /*¡¯? $¡¯?  ¡¯?ardata               $4 RD-wait ardata¡¯?¡¯? $¡¯?¡¯?ardata               $4 RD-wait ardata¡¯?   */
-  /*¡¯¢Ã¡¯¢Â¡¯\  ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\   */
+  /*¨£¨¡¨¤  ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨£¨¡¨¤¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤   */
+  /*¨¢ A¨¢  ¨¢awaddr        $1 WR/RD-req      awaddr¨¢¨¢ A¨¢¨¢awaddr        $1 WR/RD-req      awaddr¨¢   */
+  /*¨¢ R¨¢  ¨¢awdata  ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤awdata¨¢¨¢ R¨¢¨¢awdata  ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤awdata¨¢   */
+  /*¨¢ M¨¢  ¨¢araddr  ¨¢  ¨£exring¨¡¢«¨¡¨¤  ¨¢araddr¨¢¨¢ M¨¢¨¢araddr  ¨¢  ¨£exring¨¡¢«¨¡¨¤  ¨¢araddr¨¢   */
+  /*¨¢¨¡¨©$1¨§¨¡¨¤  $3¨¢$3¨¢¨£¨¤¨£¨¤¨£¨¤¨¢  ¨¢  ¨£¨¡¨©¨¢  ¨¢¨§¨¡¨¤  $3¨¢$3¨¢¨£¨¤¨£¨¤¨£¨¤¨¢  ¨¢  ¨£¨¡¨©   */
+  /*¨¢ I¨§¨¡¨©PD¨§¢ª¨¡¢¡¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨¤¨¦¢ª¨©PD¨§¨¡¢ª¨¡¨©PD¨§¢ª¨¡¢¡¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨¤¨¦¢ª¨©PD¨§¢ª */
+  /*¨¢ /¨¢  ¨¢IM¨¢SL l¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  MA¨¢IM¨¢¨¢  ¨¢¨¢IM¨¢SL l¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  MA¨¢IM¨¢   */
+  /*¨¢ O¨§¨¡¨©OA¨§¨¤ m¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨£¨©OA¨§¨¡¢«¨¡¨©OA¨§¨¤ m¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨£¨©OA¨§¢« */
+  /*¨¢¨¡¨©$2¨§¨¡¨¥¨¢ r¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢¨¦¨¡¨©¨¢  ¨¢¨§¨¡¨¥¨¢ r¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢¨¦¨¡¨©   */
+  /*¨¢#0¨¢  ¨¢¡¡  ¨¢ i¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢¨¢#1¨¢¨¢    ¨¢ i¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢   */
+  /*¨¢¡¡¨¢  ¨¢  ¡¡¨¢ n¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢¡¡  ¨¢¨¢  ¨¢¨¢  ¡¡¨¢ n¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢¡¡  ¨¢   */
+  /*¨¢¡¡¨¢  ¨¢    ¨¢ g¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢¨¢  ¨¢¨¢    ¨¢ g¨§¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢   */
+  /*¨¢¡¡¨¢  ¨¢    ¨¢  ¨¦¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢¨¢  ¨¢¨¢    ¨¢  ¨¦¨¡¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¨©  ¨¢    ¨¢   */
+  /*¨¢ L¨¢  ¨¢ ¡¡ ¨¢      ¨¦¨¥¨¦¨¥¨¦¨¥¨¦¨¥¢­$4¨¢ ¡¡ ¨¢¨¢ L¨¢¨¢ ¡¡ ¨¢      ¨¦¨¥¨¦¨¥¨¦¨¥¨¦¨¥¢­$4¨¢ ¡¡ ¨¢   */
+  /*¨¢ 1¨¢  ¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¢¡¨¡¨¥ ¡¡ ¨¢¨¢ 1¨¢¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¢¡¨¡¨¥ ¡¡ ¨¢   */
+  /*¨¢ $¨¢  ¨¢ardata               $4 RD-wait ardata¨¢¨¢ $¨¢¨¢ardata               $4 RD-wait ardata¨¢   */
+  /*¨¦¨¡¨¥  ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨¦¨¡¨¥¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥   */
   /*                               chip#0                             | #1             #2                */
   /* siml_axi_iorq(cid, trace)     c[0].iorq <- axiif[0]       $2     | -              -                 */
   /* siml_iorq_axi(cid, trace)     c[0].iorq -> axiif[0]       $1     | -              -                 */
@@ -336,7 +336,7 @@ siml_emax6(cid, trace, trace_pipe)
   /*   siml_unit_stage4_pre(cid, row)*/
   /* siml_exring_deq_wait(cid)     axiif.exring_deq_wait(axi->lmring) |                                  */
   /* for (row) {                   */
-  /*   siml_unit_stage4(cid, row)  bri: axring/lmringª¢ªâª¤©¬¢ğ¡¯                                              */
+  /*   siml_unit_stage4(cid, row)  bri: axring/lmringÀÚÂØ¤¨                                              */
   /*   siml_unit_stage3(cid, row)  */
   /*   siml_unit_stage2(cid, row)  */
   /*   siml_unit_stage1(cid, row)  */
@@ -362,7 +362,7 @@ siml_emax6(cid, trace, trace_pipe)
 
   /* update LMRING/EXRING */
   prev_stat[cid] =  c[0].iorq.v_stat || reg_ctrl.i[cid].stat;
-  /* \?\ªØ\ª²¢ğ?¢ğ«±¢ğªÂstat¢±¢Â¢ë¢ë?©Ğ¢ğª³(c[cid].iorq.v_stat)¢ğ«Ò¡­©°¢ğ«¡¢ğ«³¢ğª²?«Á¢ğª³busy */
+  /* ¥½¥Õ¥È¤«¤é¤Îstat¸¡ºº»ş¤Ë(c[cid].iorq.v_stat)¤ò´Ş¤á¤ë¤È¾ï¤Ëbusy */
   reg_ctrl.i[cid].stat = (!(axiif[cid].axi_arvalid||axiif[cid].axi_awvalid||axiif[cid].axi_wvalid||axiif[cid].reqn)?LMRING_IDLE:LMRING_BUSY)<<4
                        | (!(exring[cid].cmd_busy||exring[cid].unit_busy)?EXRING_IDLE:EXRING_BUSY);
   if (prev_stat[cid] && !c[0].iorq.v_stat && !reg_ctrl.i[cid].stat)
@@ -374,21 +374,21 @@ siml_emax6(cid, trace, trace_pipe)
   if (!c[0].iorq.v_stat && !emax_stat) return (0);
 #endif
 
-  if (cid == 0) { /* cid#0¢ğªÂ¢ğ©Î */
+  if (cid == 0) { /* cid#0¤Î¤ß */
     siml_axi_iorq(cid, trace);   /* AXI->IORQ */
     siml_iorq_axi(cid, trace);   /* IORQ->AXI */
   }
 
   /* find top_row */
-  for (row0=0; row0<EMAX_DEPTH; row0++)           /* EXRING¢ğªÁªÁª¢ª¿«òrow0¢ğ?¢ğ«±siml¢ğ?¢ğ«³ª±?ª¿¡ß¢ğ?¢ğ?¢ğ«´,LMRING¢ğ«¤?«®¢ğ«Á¢ğ?¢ğ«³ */
-    if (exring[cid].unit[row0].l_row == 0) break; /* LMRING¢ğªÁ?ª¤¢ëªò¢ğª³¢ğªÁª´¢ìª¿«òrow0¢ğ?fsm¢ğª³ª¢ªäª¤?¢ğ?¢ğ«À¢ğ©¡¢ğ¢ğ¢ğ«³¢ğ?,siml?©Ğ¢ğªÁªÁª¢ª¿«òrow0¢ğ?ª¢«²©¡?¢ğª²?ª¿¢ğ¡¯¢ğ©¡ªÀ«£ª¤«´¢ğª´¢ğ¢ğ */
+  for (row0=0; row0<EMAX_DEPTH; row0++)           /* EXRING¤ÏÏÀÍırow0¤«¤ésiml¤¹¤ëÉ¬Í×¤¬¤¢¤ê,LMRING¤â¹ç¤ï¤»¤ë */
+    if (exring[cid].unit[row0].l_row == 0) break; /* LMRING¤Ï¼Âºİ¤Ë¤ÏÊªÍırow0¤¬fsm¤ËÀÜÂ³¤µ¤ì¤Æ¤¤¤ë¤¬,siml»ş¤ÏÏÀÍırow0¤¬ÀèÆ¬¤È¹Í¤¨¤ÆÌäÂê¤Ê¤¤ */
 
   /********************************************************/
   siml_lmring_axi(cid, trace); /* LMRING->AXI */
 
-  /* siml_unit_stage4()¢ğªÂª¡¡ë¢ğª³LMRING_MUX¢±ª£¢ğªÂdeq_wait¢ğ«Ò?¢±ªÀ«Ñ */
-  /* ¢ğª´¢ğ¢ì,ª¡¡­stage5¢ğª²ª¡¡­stage4¢ğ«Ò¢±«Ò¢±©Î¢ğª³siml¢ğ?¢ğ«³¢ğª²,ª³«²\?\¢ğ\¢´\«³lmring¢ğ?2stage¢Äª´¢ğ«¢¢ğ?¢ğª²¢ğª³¢ğª´¢ğ«³ */
-  /* ¢ğ?¢ğ?¢ğ?.lmring_axi¢ğªÁ1stage¢ğ?¢ğ??«²ª¿«ò¢ğ?¢ğª´¢ğ¢ğ¢ğªÂ¢ğª®,ª¢?ª®?¢±?ª¢ªĞ¢ğ«´?«©¢ğªÂª´ª¢??¢ğªÁ¢ğª´¢ğ¢ğ 20190828 */
+  /* siml_unit_stage4()¤ÎÁ°¤ËLMRING_MUX¸Ä¤Îdeq_wait¤ò½¸Ìó */
+  /* ¤Ê¤ª,Á´stage5¤ÈÁ´stage4¤ò¸ò¸ß¤Ësiml¤¹¤ë¤È,Ëè¥µ¥¤¥¯¥ëlmring¤¬2stage¿Ê¤à¤³¤È¤Ë¤Ê¤ë */
+  /* ¤·¤«¤·.lmring_axi¤Ï1stage¤·¤«½èÍı¤·¤Ê¤¤¤Î¤Ç,À­Ç½¸«ÀÑ¤ê¾å¤ÎÊÀ³²¤Ï¤Ê¤¤ 20190828 */
   for (i=(row0+EMAX_DEPTH-1)%EMAX_DEPTH;; i=(i+EMAX_DEPTH-1)%EMAX_DEPTH) { /* for each unit */
     siml_unit_lmm(cid, i);
     siml_unit_stage5(cid, i); /* stage-5 (4DR->BROUT)(LMRING_TR->LMRING_BROUT) */
@@ -416,11 +416,6 @@ siml_emax6(cid, trace, trace_pipe)
   siml_axi_lmring(cid, trace); /* AXI->LMRING */
   /********************************************************/
 
-
-
-
-
-
   busy = 0;
   for (i=0; i<EMAX_DEPTH; i++) { /* for each unit */
     if (exring[cid].unit[i].unit1_exec || exring[cid].unit[i].unit1_fold || exring[cid].unit[i].unit1_stop || exring[cid].unit[i].unit2_exec || exring[cid].unit[i].unit2_fold || exring[cid].unit[i].unit2_stop)
@@ -447,29 +442,29 @@ printf("\n");
 
 siml_axi_iorq(cid, trace) Uint cid, trace;
 {
-  /* LMM¢ğªÂcolumn\©°\«³\ª¡\?\«À\ªª\ª®\¢ğ\«Ñ\¡ë¢ğªÁ,EXRING¢ğ«Òª¿\ª¢«²¢ğ?,LMRING¢ğªÁ?«£¡­ªÓ¢ğª®©¡¡ë¢ë«Â¢ğ?¢ğ?¢ğ«³ */
-  /* LMRING¢ğªÁ?ª¤¢ëªò¢ğª³¢ğªÁª´¢ìª¿«òrow0¢ğ?fsm¢ğª³ª¢ªäª¤?¢ğ?¢ğ«À¢ğ©¡¢ğ¢ğ¢ğ«³¢ğ?,siml?©Ğ¢ğªÁªÁª¢ª¿«òrow0¢ğ?ª¢«²©¡?¢ğª²?ª¿¢ğ¡¯¢ğ©¡ªÀ«£ª¤«´¢ğª´¢ğ¢ğ */
+  /* LMM¤Îcolumn¥Ş¥ë¥Á¥¹¥ì¥Ã¥Ç¥¤¥ó¥°¤Ï,EXRING¤òÍ¥Àè¤·,LMRING¤Ï·ä´Ö¤ÇÆ°ºî¤µ¤»¤ë */
+  /* LMRING¤Ï¼Âºİ¤Ë¤ÏÊªÍırow0¤¬fsm¤ËÀÜÂ³¤µ¤ì¤Æ¤¤¤ë¤¬,siml»ş¤ÏÏÀÍırow0¤¬ÀèÆ¬¤È¹Í¤¨¤ÆÌäÂê¤Ê¤¤ */
 
   /*                                                                                                 *//* axi_write_busy axi_read_busy */
-  /* ªÁª¢ª¿«òª²ªÓ?©Á           ª´¢ìª¿«òª²ªÓ?©Á                     V<--------ENQ (siml_axiif¢ğ?ª¢«²¢ğª³ENQ)             *//* awaddr+awlen+awvalid ^> awready *//* wdata[]+wstrb+wvalid+wlast -> wready->next */
-  /*                              axiif.axring_br =======bri_ful2 ª´¢ìª¿«ò#0¢ğªÂpi¢ğªÁaxring¢ğª³¢ë?¢ğ?ª¤©¬¢ğ¡¯       *//* araddr+arlen+arvalid -> arready */
+  /* ÏÀÍıÈÖ¹æ           ÊªÍıÈÖ¹æ                     V<--------ENQ (siml_axiif¤¬Àè¤ËENQ)             *//* awaddr+awlen+awvalid ^> awready *//* wdata[]+wstrb+wvalid+wlast -> wready->next */
+  /*                              axiif.axring_br =======bri_ful2 ÊªÍı#0¤Îpi¤Ïaxring¤Ëº¹¤·ÂØ¤¨       *//* araddr+arlen+arvalid -> arready */
   /* row0+DEPTH-2              0        |            V^--------waiti(unit[0].deq_wait)               */
-  /*                             unit[].lmring_br -------  ??¢ğ?¢ğ«±siml.deq_wait¢ğ?©¡¡Ş¡ë«À¢ÃªÑ¢ğª³\ª±\©Î\ªÂª©ªò¢ğ?.  */
-  /*                                    |                  ?ª¤?¢Â¢ğª²¡ë«ª¢ğ¢Ã¢ğ?output¢ğªÂ??ª´«ò¢ğªÁ©¡¡Ş¢ğ¢±            */
-  /* row0+DEPTH-1              1        |            V        ??                                     */
-  /*     siml?¢´ª©ª¢(brout¢ğªÁª£«´¢Ä«Ô)   unit[].lmring_br -------  SIML?¢´ª©ª¢(1¢ÃªÑª¡¡ë¢ğªÂ?¢Âªªª´deq_wait¢ğ«Ò?ª²¢ğ¢Ã.ª¢??«Á)  */
-  /* row0                     62        |            V     SIML¢ëª®¢±«©(ª¡¡ëªªª´br¢ğªÂªªª¿¢ğ?1¢ÃªÑªÀ¢ğª¿«²¢ğª³¢ğª´¢ğ«³)       */
-  /*                             unit[].lmring_br -------     ??                                     */
+  /*                             unit[].lmring_br -------  ²¼¤«¤ésiml.deq_wait¤¬Æ±°ì¦Ó¤Ë¥É¥ß¥ÎÅİ¤·.  */
+  /*                                    |                  ¼Âµ¡¤È°ã¤¦¤¬output¤Î½ĞÊı¤ÏÆ±¤¸            */
+  /* row0+DEPTH-1              1        |            V        ¢¬                                     */
+  /*     simlµ¯ÅÀ(brout¤ÏÄê¿ô)   unit[].lmring_br -------  SIMLµ¯ÅÀ(1¦ÓÁ°¤Î¼¡ÃÊdeq_wait¤ò»È¤¦.Àµ¾ï)  */
+  /* row0                     62        |            V     SIMLºÇ¸å(Á°ÃÊbr¤ÎÃÍ¤¬1¦ÓÌ¤Íè¤Ë¤Ê¤ë)       */
+  /*                             unit[].lmring_br -------     ¢¬                                     */
   /* row0+1                   63        |            V                                               */
   /*                             unit[].lmring_br -------bro_ful2                                    */
   /*                                                 |^--------waito(axiif.deq_wait)                 */
-  /*                                                 +-------->DEQ (siml_axiif¢ğ?ª¢«²¢ğª³DEQ)             *//* rdata[]+rvalid+rlast -> rready->next  */
+  /*                                                 +-------->DEQ (siml_axiif¤¬Àè¤ËDEQ)             *//* rdata[]+rvalid+rlast -> rready->next  */
 
   /* iorq.v_stat      : 4; v 0:empty 1:reserve 3:inuse | stat 0:empty 1:busy 3:RD-ok */
   /* iorq.tid         :12;                         */
   /* iorq.type        : 4; type                    */
   /* iorq.opcd        : 6; opcd                    */
-  /* iorq.ADR            ; ¡ëª´ª¡¡ë¢ğªÂADDR¢ğª³ª¤?¡Ş©Ğ        */
+  /* iorq.ADR            ; °ÊÁ°¤ÎADDR¤ËÂĞ±ş        */
   /* iorq.BUF[2]         ; for load/store          */
   /* iorq.rob            ; for DATA                */
 
@@ -483,8 +478,8 @@ siml_axi_iorq(cid, trace) Uint cid, trace;
   /* axring_br.dm     :32; <- lmm wdata            */
   /* axring_br.d[4]      ; <- lmm wdata/rdata      */
 
-  /* read: LMRING?¢ìªª?¢ğ?¢ğ«±¢ğªÂ?«Ñ?«ò bro->axiif->iorq */
-  /*       HOST:AXIIF->IORQ (ARM-restart¢ğª³¢ğ«²¢ğ«´,iorq¢ğª³?¢ëª©«Ó\¡¯\«Ñ\ª²\«´¢ğ?¢ğª´¢ğ¢ğ?«À?«®¢ğ?¢ğ?¢ğ«³) */
+  /* read: LMRING½ªÃ¼¤«¤é¤Î²ó¼ı bro->axiif->iorq */
+  /*       HOST:AXIIF->IORQ (ARM-restart¤Ë¤è¤ê,iorq¤Ë³ºÅö¥¨¥ó¥È¥ê¤¬¤Ê¤¤¾ì¹ç¤¬¤¢¤ë) */
   /************************************************************************************************************************************************************************************************************/
   /*                        |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       | */
   /* clk                   _/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/ */
@@ -541,7 +536,7 @@ siml_axi_iorq(cid, trace) Uint cid, trace;
         axiif[cid].mreq++;
       }
     }
-    else { /* data¡­¡ëªÂ? */
+    else { /* data´°Î» */
       dma_ctrl.ZDMA_CH_STATUS = (dma_ctrl.ZDMA_CH_STATUS & ~3); /* free */
       dma_ctrl.ZDMA_CH_CTRL2  = (dma_ctrl.ZDMA_CH_CTRL2  & ~1); /* free */
       axiif[cid].dma_stat   = 0; /* reset */
@@ -549,9 +544,9 @@ siml_axi_iorq(cid, trace) Uint cid, trace;
     }
   }
 
-  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 3) { /* load *//* emax6_reg()?¢Âª®?¢ğªÁ¢ëª®?¢ìª©¢ì¢ğª³¢ğªÁ?©¡ªª¡­ª©«Óstage¢ğª³ª®ªåªªªÓ */
+  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 3) { /* load *//* emax6_reg()µ¡Ç½¤ÏºÇ½ªÅª¤Ë¤Ï³ÆÃ´Åöstage¤ËÇÛÃÖ */
     /*emax6_reg(c[cid].iorq.tid, c[cid].iorq.type, c[cid].iorq.opcd, c[cid].iorq.ADR, c[cid].iorq.BUF);*/
-    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¢±ª®ª£«´¡ëªÀªªªÓ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
+    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¸ÇÄê°ÌÃÖ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
       switch (c[cid].iorq.opcd) {
       case 2:if (c[cid].iorq.ADR & (sizeof(Uint)-1)) printf("%03.3d:emax6_ctl: dma_space load: opcd=%x adr=%08.8x (should be aligned to Uint)\n", c[cid].iorq.tid, c[cid].iorq.opcd, c[cid].iorq.ADR);
              else                                    c[cid].iorq.BUF[0] = *(Uint*)((Uchar*)&dma_ctrl+(c[cid].iorq.ADR-DMA_BASE2_PHYS)); break;
@@ -611,8 +606,8 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
 {
   int    i, k;
 
-  /* read/write LMRINGª¢«²ªª?¢ğ©¬¢ğªÂª©«´©¡©Ğ   iorq->axiif->bri */
-  /*       HOST:IORQ->AXIIF (ARM-restart¢ğª³¢ğ«²¢ğ«´,iorq¢ğª³?¢ëª©«Ó\¡¯\«Ñ\ª²\«´¢ğ?¢ğª´¢ğ¢ğ?«À?«®¢ğ?¢ğ?¢ğ«³) */
+  /* read/write LMRINGÀèÃ¼¤Ø¤ÎÅêÆş   iorq->axiif->bri */
+  /*       HOST:IORQ->AXIIF (ARM-restart¤Ë¤è¤ê,iorq¤Ë³ºÅö¥¨¥ó¥È¥ê¤¬¤Ê¤¤¾ì¹ç¤¬¤¢¤ë) */
   /************************************************************************************************************************************************************************************************************/
   /*                        |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       | */
   /* clk                   _/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/ */
@@ -626,11 +621,11 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
   /* awaddr    MASTER*  -----<=A=====>---                                                                                                                                                                     */
   /* awlen     MASTER*  -----<=0=====>---                                                                                                                                                                     */
   /* awvalid   MASTER*  _____/~~~~~~~\___ valid=1                                                                                                                                                             */
-  /* awready    SLAVE   ~~~~~~~~~~~~~\___ ready=1?©Ğ¢ğª³?©Ì?«Ø                                                                                                                                                     */
+  /* awready    SLAVE   ~~~~~~~~~~~~~\___ ready=1»ş¤Ë¼ø¼õ                                                                                                                                                     */
   /* wstrb     MASTER*  -----<=M=====>---                                                                                                                                                                     */
   /* wdata[]   MASTER*  -----<=D=====>---                                                                                                                                                                     */
   /* wvalid    MASTER*  _____/~~~~~~~\___                                                                                                                                                                     */
-  /* wlast     MASTER*  _____/~~~~~~~\___ PIO¢ğªÂ?«À?«®,?«Á¢ğª³1                                                                                                                                                     */
+  /* wlast     MASTER*  _____/~~~~~~~\___ PIO¤Î¾ì¹ç,¾ï¤Ë1                                                                                                                                                     */
   /* wready     SLAVE   ~~~~~~~~~~~~~\___                                                                                                                                                                     */
   /* araddr    MASTER*                                  -----<=A=====>---                                                                                                                                     */
   /* arlen     MASTER*                                  -----<=0=====>---                                                                                                                                     */
@@ -659,7 +654,7 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
         printf("%03.3d:DMA WR start ddradr=%08.8x lmmadr=%08.8x len=%04.4x\n",
                cid, axiif[cid].dadr, axiif[cid].madr, axiif[cid].mlen);
       }
-      else if (axiif[cid].axi_awready) { /* adr¡­¡ëªÂ? */
+      else if (axiif[cid].axi_awready) { /* adr´°Î» */
         axiif[cid].wadr_sent    = 1; /* fin */
         /*axiif[cid].mreq       = 0; *//* length */
         axiif[cid].axi_awvalid  = 0; /* off */
@@ -706,7 +701,7 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
         axiif[cid].mreq++;
       }
     }
-    else { /* data¡­¡ëªÂ? */
+    else { /* data´°Î» */
       printf("%03.3d:DMA WR FIN\n", cid);
       dma_ctrl.ZDMA_CH_STATUS = (dma_ctrl.ZDMA_CH_STATUS & ~3); /* free */
       dma_ctrl.ZDMA_CH_CTRL2  = (dma_ctrl.ZDMA_CH_CTRL2  & ~1); /* free */
@@ -726,7 +721,7 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
         printf("%03.3d:DMA RD start lmmadr=%08.8x ddradr=%08.8x len=%04.4x\n",
                cid, axiif[cid].madr, axiif[cid].dadr, axiif[cid].mlen);
       }
-      else if (axiif[cid].axi_arready) { /* adr¡­¡ëªÂ? */
+      else if (axiif[cid].axi_arready) { /* adr´°Î» */
         axiif[cid].radr_sent    = 1; /* fin */
         /*axiif[cid].mreq       = 0; *//* length */
         axiif[cid].axi_arvalid  = 0; /* off */
@@ -734,9 +729,9 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
     }
   }
 
-  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 4) { /* store *//* emax6_reg()?¢Âª®?¢ğªÁ¢ëª®?¢ìª©¢ì¢ğª³¢ğªÁ?©¡ªª¡­ª©«Óstage¢ğª³ª®ªåªªªÓ */
+  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 4) { /* store *//* emax6_reg()µ¡Ç½¤ÏºÇ½ªÅª¤Ë¤Ï³ÆÃ´Åöstage¤ËÇÛÃÖ */
     /*emax6_reg(c[cid].iorq.tid, c[cid].iorq.type, c[cid].iorq.opcd, c[cid].iorq.ADR, c[cid].iorq.BUF);*/
-    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¢±ª®ª£«´¡ëªÀªªªÓ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
+    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¸ÇÄê°ÌÃÖ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
       switch (c[cid].iorq.opcd) {
       case 2:if (c[cid].iorq.ADR & (sizeof(Uint)-1)) printf("%03.3d:emax6_ctl: dma_space store: opcd=%x adr=%08.8x (should be aligned to Uint)\n", c[cid].iorq.tid, c[cid].iorq.opcd, c[cid].iorq.ADR);
              else                                    *(Uint*)((Uchar*)&dma_ctrl+(c[cid].iorq.ADR-DMA_BASE2_PHYS)) = c[cid].iorq.BUF[0]; break;
@@ -792,7 +787,7 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
             printf("%03.3d:IORQ->AXIIF WR opcd=%x adr=%08.8x\n",
                    cid, c[cid].iorq.opcd, (Uint)axiif[cid].axi_awaddr);
         }
-        else if (axiif[cid].axi_awready) { /* adr¡­¡ëªÂ? */
+        else if (axiif[cid].axi_awready) { /* adr´°Î» */
           axiif[cid].wadr_sent    = 1; /* fin */
           axiif[cid].mreq         = 0; /* length */
           axiif[cid].axi_awvalid  = 0; /* off */
@@ -840,7 +835,7 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
 	       (Uint)(axiif[cid].axi_wdata[2]>>32), (Uint)axiif[cid].axi_wdata[2],
 	       (Uint)(axiif[cid].axi_wdata[1]>>32), (Uint)axiif[cid].axi_wdata[1],
 	       (Uint)(axiif[cid].axi_wdata[0]>>32), (Uint)axiif[cid].axi_wdata[0]);
-        if (axiif[cid].axi_wready) { /* data¡­¡ëªÂ? */
+        if (axiif[cid].axi_wready) { /* data´°Î» */
           axiif[cid].mreq++;
         }
       }
@@ -853,21 +848,21 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
     }
   }
 
-  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 3) { /* load *//* emax6_reg()?¢Âª®?¢ğªÁ¢ëª®?¢ìª©¢ì¢ğª³¢ğªÁ?©¡ªª¡­ª©«Óstage¢ğª³ª®ªåªªªÓ */
+  if (c[cid].iorq.v_stat == ((3<<2)|1) && c[cid].iorq.type == 3) { /* load *//* emax6_reg()µ¡Ç½¤ÏºÇ½ªÅª¤Ë¤Ï³ÆÃ´Åöstage¤ËÇÛÃÖ */
     /*emax6_reg(c[cid].iorq.tid, c[cid].iorq.type, c[cid].iorq.opcd, c[cid].iorq.ADR, c[cid].iorq.BUF);*/
-    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¢±ª®ª£«´¡ëªÀªªªÓ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
+    if (c[cid].iorq.ADR < REG_BASE2_PHYS) { /* dma space ... ¸ÇÄê°ÌÃÖ (DMA_BASE2_PHYS-REG_BASE2_PHYS) */
     }
     else if (!axiif[cid].dma_stat) { /* DMA is inactive */
       if (!axiif[cid].radr_sent) {
         if (!axiif[cid].axi_arvalid) {
-          axiif[cid].axi_araddr   = c[cid].iorq.ADR & ~(sizeof(Ull)*UNIT_WIDTH-1); /* ª¡¡­dword©¡ª±¢ğ©Î??¢ğ? */
+          axiif[cid].axi_araddr   = c[cid].iorq.ADR & ~(sizeof(Ull)*UNIT_WIDTH-1); /* Á´dwordÆÉ¤ß½Ğ¤· */
           axiif[cid].axi_arlen    = 0;
           axiif[cid].axi_arvalid  = 1; /* on */
           if (trace)
             printf("%03.3d:IORQ->AXIIF AR opcd=%x adr=%08.8x\n",
                    cid, c[cid].iorq.opcd, (Uint)axiif[cid].axi_araddr);
         }
-        else if (axiif[cid].axi_arready) { /* adr¡­¡ëªÂ? */
+        else if (axiif[cid].axi_arready) { /* adr´°Î» */
           axiif[cid].radr_sent    = 1;
           axiif[cid].mreq         = 0; /* length */
           axiif[cid].axi_arvalid  = 0; /* off */
@@ -883,8 +878,8 @@ siml_exring_deq_wait(cid, trace) Uint cid, trace;
 {
   int i;
 
-  /* axiifwª¤¢Ã¢ğªÂ?«¢ª²¡à */
-  /* ª¢«²©¡?¢ğªÂexring.deq_wait¢ğ«Ò?¢±¢ğ«¡¢ğ©¡¢ğ¢ì¢ğ?,siml_stage4()¢ğªÂª¡¡ë¢ğª³axiif[cid].exring_deq_wait¢ğ«Ò?ªÂª£«´ */
+  /* axiifwÂ¦¤Î½àÈ÷ */
+  /* ÀèÆ¬¤Îexring.deq_wait¤ò½¸¤á¤Æ¤ª¤­,siml_stage4()¤ÎÁ°¤Ëaxiif[cid].exring_deq_wait¤ò³ÎÄê */
   axiif[cid].exring_deq_wait=0;
   for (i=0; i<LMRING_MUX; i++)
     axiif[cid].exring_deq_wait |= exring[cid].unit[EMAX_DEPTH/LMRING_MUX*i].deq_wait;/* top deq_wait */
@@ -892,23 +887,23 @@ siml_exring_deq_wait(cid, trace) Uint cid, trace;
 
 siml_lmring_axi(cid, trace) Uint cid, trace;
 {
-  /* LMM¢ğªÂcolumn\©°\«³\ª¡\?\«À\ªª\ª®\¢ğ\«Ñ\¡ë¢ğªÁ,EXRING¢ğ«Òª¿\ª¢«²¢ğ?,LMRING¢ğªÁ?«£¡­ªÓ¢ğª®©¡¡ë¢ë«Â¢ğ?¢ğ?¢ğ«³ */
-  /* LMRING¢ğªÁ?ª¤¢ëªò¢ğª³¢ğªÁª´¢ìª¿«òrow0¢ğ?fsm¢ğª³ª¢ªäª¤?¢ğ?¢ğ«À¢ğ©¡¢ğ¢ğ¢ğ«³¢ğ?,siml?©Ğ¢ğªÁªÁª¢ª¿«òrow0¢ğ?ª¢«²©¡?¢ğª²?ª¿¢ğ¡¯¢ğ©¡ªÀ«£ª¤«´¢ğª´¢ğ¢ğ */
+  /* LMM¤Îcolumn¥Ş¥ë¥Á¥¹¥ì¥Ã¥Ç¥¤¥ó¥°¤Ï,EXRING¤òÍ¥Àè¤·,LMRING¤Ï·ä´Ö¤ÇÆ°ºî¤µ¤»¤ë */
+  /* LMRING¤Ï¼Âºİ¤Ë¤ÏÊªÍırow0¤¬fsm¤ËÀÜÂ³¤µ¤ì¤Æ¤¤¤ë¤¬,siml»ş¤ÏÏÀÍırow0¤¬ÀèÆ¬¤È¹Í¤¨¤ÆÌäÂê¤Ê¤¤ */
 
   /*                                                                                                 *//* axi_write_busy axi_read_busy */
-  /* ªÁª¢ª¿«òª²ªÓ?©Á           ª´¢ìª¿«òª²ªÓ?©Á                     V<--------ENQ (siml_axiif¢ğ?ª¢«²¢ğª³ENQ)             *//* awaddr+awlen+awvalid ^> awready *//* wdata[]+wstrb+wvalid+wlast -> wready->next */
-  /*                              axiif.axring_br =======bri_ful2 ª´¢ìª¿«ò#0¢ğªÂpi¢ğªÁaxring¢ğª³¢ë?¢ğ?ª¤©¬¢ğ¡¯       *//* araddr+arlen+arvalid -> arready */
+  /* ÏÀÍıÈÖ¹æ           ÊªÍıÈÖ¹æ                     V<--------ENQ (siml_axiif¤¬Àè¤ËENQ)             *//* awaddr+awlen+awvalid ^> awready *//* wdata[]+wstrb+wvalid+wlast -> wready->next */
+  /*                              axiif.axring_br =======bri_ful2 ÊªÍı#0¤Îpi¤Ïaxring¤Ëº¹¤·ÂØ¤¨       *//* araddr+arlen+arvalid -> arready */
   /* row0+DEPTH-2              0        |            V^--------waiti(unit[0].deq_wait)               */
-  /*                             unit[].lmring_br -------  ??¢ğ?¢ğ«±siml.deq_wait¢ğ?©¡¡Ş¡ë«À¢ÃªÑ¢ğª³\ª±\©Î\ªÂª©ªò¢ğ?.  */
-  /*                                    |                  ?ª¤?¢Â¢ğª²¡ë«ª¢ğ¢Ã¢ğ?output¢ğªÂ??ª´«ò¢ğªÁ©¡¡Ş¢ğ¢±            */
-  /* row0+DEPTH-1              1        |            V        ??                                     */
-  /*     siml?¢´ª©ª¢(brout¢ğªÁª£«´¢Ä«Ô)   unit[].lmring_br -------  SIML?¢´ª©ª¢(1¢ÃªÑª¡¡ë¢ğªÂ?¢Âªªª´deq_wait¢ğ«Ò?ª²¢ğ¢Ã.ª¢??«Á)  */
-  /* row0                     62        |            V     SIML¢ëª®¢±«©(ª¡¡ëªªª´br¢ğªÂªªª¿¢ğ?1¢ÃªÑªÀ¢ğª¿«²¢ğª³¢ğª´¢ğ«³)       */
-  /*                             unit[].lmring_br -------     ??                                     */
+  /*                             unit[].lmring_br -------  ²¼¤«¤ésiml.deq_wait¤¬Æ±°ì¦Ó¤Ë¥É¥ß¥ÎÅİ¤·.  */
+  /*                                    |                  ¼Âµ¡¤È°ã¤¦¤¬output¤Î½ĞÊı¤ÏÆ±¤¸            */
+  /* row0+DEPTH-1              1        |            V        ¢¬                                     */
+  /*     simlµ¯ÅÀ(brout¤ÏÄê¿ô)   unit[].lmring_br -------  SIMLµ¯ÅÀ(1¦ÓÁ°¤Î¼¡ÃÊdeq_wait¤ò»È¤¦.Àµ¾ï)  */
+  /* row0                     62        |            V     SIMLºÇ¸å(Á°ÃÊbr¤ÎÃÍ¤¬1¦ÓÌ¤Íè¤Ë¤Ê¤ë)       */
+  /*                             unit[].lmring_br -------     ¢¬                                     */
   /* row0+1                   63        |            V                                               */
   /*                             unit[].lmring_br -------bro_ful2                                    */
   /*                                                 |^--------waito(axiif.deq_wait)                 */
-  /*                                                 +-------->DEQ (siml_axiif¢ğ?ª¢«²¢ğª³DEQ)             *//* rdata[]+rvalid+rlast -> rready->next  */
+  /*                                                 +-------->DEQ (siml_axiif¤¬Àè¤ËDEQ)             *//* rdata[]+rvalid+rlast -> rready->next  */
 
   /* exring.deq_wait  : 1; 0:deq,1:wait            */
   /* axring_ful2      : 2; 0:empty, 2:ful          */
@@ -936,11 +931,11 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
 
   for (i=0, bro_ful2=1, bro_av=0; i<LMRING_MUX; i++) {
     bro_ful2 &= (exring[cid].unit[EMAX_DEPTH/LMRING_MUX*(i+1)-1].lmring_ful2 > 0);
-    bro[i]    = &exring[cid].unit[EMAX_DEPTH/LMRING_MUX*(i+1)-1].lmring_br[exring[cid].unit[EMAX_DEPTH/LMRING_MUX*(i+1)-1].lmring_b_bot]; /* AXI<-EMAXª¤¢Ã */
+    bro[i]    = &exring[cid].unit[EMAX_DEPTH/LMRING_MUX*(i+1)-1].lmring_br[exring[cid].unit[EMAX_DEPTH/LMRING_MUX*(i+1)-1].lmring_b_bot]; /* AXI<-EMAXÂ¦ */
     bro_av   |= bro[i]->av;
   }
 
-  /* read: LMRING?¢ìªª?¢ğ?¢ğ«±¢ğªÂ?«Ñ?«ò bro->axiif->iorq */
+  /* read: LMRING½ªÃ¼¤«¤é¤Î²ó¼ı bro->axiif->iorq */
   /*       EMAX:BRO->AXIIF  */
   /************************************************************************************************************************************************************************************************************/
   /*                        |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       | */
@@ -964,58 +959,58 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
   /* rready    MASTER                                                   ~~~~~~~~~~~~~~~~~                                                                                                                     */
   /************************************************************************************************************************************************************************************************************/
 
-  /* ¡ëª´??,cid<(EMAX_NCHIP-1)¢ğªÂ?«À?«®,?¢Âªªª´IMAX¢ğ?ª¤¢±¢ë©Î */
-  /*¡¯?¡¯¢Â¡¯¢ğ  ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ   */
-  /*¡¯?  ¡¯?  ¡¯?        ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ      ¡¯?¡¯?  ¡¯?¡¯?        ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ      ¡¯?   */
-  /*¡¯?¡¯¢Â¡¯¢í$1¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¢Â¢Â            ¢Â¢Â  ¡¯?  ¡¯?¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¢Â¢Â            ¢Â¢Â  ¡¯?  ¡¯?¡¯¢Â¡¯¢í   */
-  /*¡¯? I¡¯¡ø¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â¢Â©Ğ¡¯¢Â¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø¡¯¢Â?¢ì¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â¢Â©Ğ¡¯¢Â¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø?¢ì */
-  /*¡¯? O¡¯¡ø¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø¡¯¢Â??¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø?? */
-  /*¡¯?¡¯¢Â¡¯¢í$2¡¯¡ø¡¯¢Â¡¯\¡¯?  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯\¡¯?  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í   */
-  /*¡¯?¢Â¢Â¡¯?  ¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢í  ¡¯?    ¡¯?¡¯?  ¡¯?¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢í  ¡¯?    ¡¯?   */
-  /*¡¯?  ¡¯?  ¡¯? ¢Â¢Â ¡¯?                      ??$4¡¯? ¢Â¢Â ¡¯?¡¯?  ¡¯?¡¯? ¢Â¢Â ¡¯?                      ??$4¡¯? ¢Â¢Â ¡¯?   */
-  /*¡¯?  ¡¯?  ¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â?¢Â¡¯¢Â¡¯\ ¢Â¢Â ¡¯?¡¯?  ¡¯?¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â?¢Â¡¯¢Â¡¯\ ¢Â¢Â ¡¯?   */
-  /*¡¯¢Ã¡¯¢Â¡¯\  ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\   */
+  /* °Ê²¼,cid<(EMAX_NCHIP-1)¤Î¾ì¹ç,¼¡ÃÊIMAX¤¬Â¸ºß */
+  /*¨£¨¡¨¤  ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨£¨¡¨¤¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤   */
+  /*¨¢  ¨¢  ¨¢        ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤      ¨¢¨¢  ¨¢¨¢        ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤      ¨¢   */
+  /*¨¢¨¡¨©$1¨§¨¡¨¤  $3¨¢$3¡¡            ¡¡  ¨¢  ¨£¨¡¨©¨¢  ¨¢¨§¨¡¨¤  $3¨¢$3¡¡            ¡¡  ¨¢  ¨£¨¡¨©   */
+  /*¨¢ I¨§¨¡¨©PD¨§¢ª¨¡¡ş¨¡¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨¤¨¦¢ª¨©PD¨§¨¡¢ª¨¡¨©PD¨§¢ª¨¡¡ş¨¡¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨¤¨¦¢ª¨©PD¨§¢ª */
+  /*¨¢ O¨§¨¡¨©OA¨§¨¤  ¨§¨¡¨¢            ¨¢¨©  ¨£¨©OA¨§¨¡¢«¨¡¨©OA¨§¨¤  ¨§¨¡¨¢            ¨¢¨©  ¨£¨©OA¨§¢« */
+  /*¨¢¨¡¨©$2¨§¨¡¨¥¨¢  ¨§¨¡¨¢            ¨¢¨©  ¨¢¨¦¨¡¨©¨¢  ¨¢¨§¨¡¨¥¨¢  ¨§¨¡¨¢            ¨¢¨©  ¨¢¨¦¨¡¨©   */
+  /*¨¢¡¡¨¢  ¨¢    ¨¢  ¨¦¨¡¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨©  ¨¢    ¨¢¨¢  ¨¢¨¢    ¨¢  ¨¦¨¡¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨©  ¨¢    ¨¢   */
+  /*¨¢  ¨¢  ¨¢ ¡¡ ¨¢                      ¢­$4¨¢ ¡¡ ¨¢¨¢  ¨¢¨¢ ¡¡ ¨¢                      ¢­$4¨¢ ¡¡ ¨¢   */
+  /*¨¢  ¨¢  ¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¢¡¨¡¨¥ ¡¡ ¨¢¨¢  ¨¢¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¢¡¨¡¨¥ ¡¡ ¨¢   */
+  /*¨¦¨¡¨¥  ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨¦¨¡¨¥¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥   */
   /*               |  IMAX[cid]                       |  IMAX[cid+1]                                     */
   /*       rready> | <rvalid <deq_wait bro+rw rready> | <rvalid <deq_wait                                */
   /*          x    |    <0       <1      0x     0>    |     x    ... do  nothing           */
   /*          x    |    <0       <0      11     0>    |     x    ... deq bro               */
   /*          0    |    <0       <1      10     0>    |     x    ... wait for left-rready  */
   /*               |                                  |                                    */
-  /*          1    |    <0       <1      10     0>    |     0    ... ??¢ğ©¬ª¡?¡ëªä              */
+  /*          1    |    <0       <1      10     0>    |     0    ... ¢­¤ØÁ«°Ü              */
   /*          1    |    <0       <1      10     1>    |     0    ... wait for right-rready */
   /*          1    |    <1       <0      10     1>    |     1    ... deq bro               */
 
-  if (bro_ful2 && bro[0]->rw==1) { /* WR¢ğªÁªÀ??«Ò?«Á¢ğª³dequeue */
-    /* write¢ğªÂ?«À?«®,UNITª³«²¢ğª³reqnª±«ä??.¢±«©ªªª´¢ğ«Òª¤ªÔ¢ğ¢Ä¢ğª´¢ğ¢ğ */
-    axiif[cid].deq_wait = 0; /* ?«©ªÂ¢îaxi¢ğª³¢ğ«²¢ğ«³deq-OK */
+  if (bro_ful2 && bro[0]->rw==1) { /* WR¤ÏÌµ¾ò·ï¤Ëdequeue */
+    /* write¤Î¾ì¹ç,UNITËè¤ËreqnÉüµ¢.¸åÃÊ¤òÂÔ¤¿¤Ê¤¤ */
+    axiif[cid].deq_wait = 0; /* ¾åÎ®axi¤Ë¤è¤ëdeq-OK */
     axiif[cid].reqn--;
-    axiif[cid].axi_rvalid = 0; /* ?«©ªÂ¢îaxi¢ğªÁreadª±ªÔ?ª£ */
+    axiif[cid].axi_rvalid = 0; /* ¾åÎ®axi¤ÏreadÉÔ²Ä */
     if (cid < EMAX_NCHIP-1)
-      axiif[cid+1].axi_rready = 0; /* ??ªÂ¢îaxi¢ğ?¢ğ«±¢ğªÂ?«Ø?«²ª±ªÔ?ª£ */
+      axiif[cid+1].axi_rready = 0; /* ²¼Î®axi¤«¤é¤Î¼õ¼èÉÔ²Ä */
     if (!bro_av)
       printf("%03.3d:BRO WR no unit covers ty=%x adr=%08.8x(%08.8x) (maybe out-of-order/speculative load)\n", cid, bro[0]->ty, bro[0]->a, bro[0]->a-reg_ctrl.i[cid].adtr);
     if (trace)
       printf("%03.3d:BRO->AXIIF WR reqn--=%d ty=%x adr=%08.8x dm=%08.8x\n",
              cid, axiif[cid].reqn, bro[0]->ty, bro[0]->a, bro[0]->dm);
   }
-  else if (bro_ful2 && bro[0]->rw==0) { /* lmring¢ğª³RDª¿¡ß?«¡ª¿?¢ğ«´ */
-    /* read¢ğªÂ?«À?«®,¢±«©ªªª´¢ğ«Òª¤ªÔ¢ğª¡,?«³?ªÀmerge axiif[cid+1].axi_rdata[UNIT_WIDTH] */
+  else if (bro_ful2 && bro[0]->rw==0) { /* lmring¤ËRDÍ×µáÍ­¤ê */
+    /* read¤Î¾ì¹ç,¸åÃÊ¤òÂÔ¤Á,·ë²Ìmerge axiif[cid+1].axi_rdata[UNIT_WIDTH] */
     /*                                 axiif[cid+1].axi_rvalid            */
     /*                                 axiif[cid+1].axi_rlast             */
     /*                                 axiif[cid+1].axi_rready            */
-    if (!axiif[cid].axi_rready) { /* ?«©ªÂ¢î¢ğ?¢ù«Ø¢ğ¢ğ¢ğ©¡¢ğ¢ğ¢ğª´¢ğ¢ğ */
-      axiif[cid].deq_wait = 1; /* ?«©ªÂ¢îaxi¢ğª³¢ğ«²¢ğ«³deq-ª±ªÔ?ª£ */
-      axiif[cid].axi_rvalid = 0; /* ?«©ªÂ¢îaxi¢ğªÁreadª±ªÔ?ª£ */
+    if (!axiif[cid].axi_rready) { /* ¾åÎ®¤¬¶õ¤¤¤Æ¤¤¤Ê¤¤ */
+      axiif[cid].deq_wait = 1; /* ¾åÎ®axi¤Ë¤è¤ëdeq-ÉÔ²Ä */
+      axiif[cid].axi_rvalid = 0; /* ¾åÎ®axi¤ÏreadÉÔ²Ä */
       if (cid < EMAX_NCHIP-1)
-	axiif[cid+1].axi_rready = 0; /* ??ªÂ¢îaxi¢ğ?¢ğ«±¢ğªÂ?«Ø?«²ª±ªÔ?ª£ */
+	axiif[cid+1].axi_rready = 0; /* ²¼Î®axi¤«¤é¤Î¼õ¼èÉÔ²Ä */
     }
-    else if (cid < reg_ctrl.i[cid].mcid && !axiif[cid+1].axi_rvalid) { /* ??ªÂ¢î¢ğ?¢ğ«±?¢Ä¢ğ«¤¢ğª´¢ğ? */
+    else if (cid < reg_ctrl.i[cid].mcid && !axiif[cid+1].axi_rvalid) { /* ²¼Î®¤«¤é²¿¤â¤Ê¤· */
       printf("%03.3d:BRO waiting for next IMAX[%d]\n", cid, cid+1);
-      axiif[cid].deq_wait = 1; /* ?«©ªÂ¢îaxi¢ğª³¢ğ«²¢ğ«³deq-ª±ªÔ?ª£ */
-      axiif[cid].axi_rvalid = 0; /* ?«©ªÂ¢îaxi¢ğªÁreadª±ªÔ?ª£ */
-      axiif[cid+1].axi_rready = 1; /* ?«Ø¢Ä¢î?ª£ª®?¢ğª³ª´ªĞ?? */
+      axiif[cid].deq_wait = 1; /* ¾åÎ®axi¤Ë¤è¤ëdeq-ÉÔ²Ä */
+      axiif[cid].axi_rvalid = 0; /* ¾åÎ®axi¤ÏreadÉÔ²Ä */
+      axiif[cid+1].axi_rready = 1; /* ¼õ¿®²ÄÇ½¤ËÊÑ¹¹ */
     }
-    else { /* ??ªÂ¢î¢ğ?¢ğ«±?«Ø?«² */
+    else { /* ²¼Î®¤«¤é¼õ¼è */
       for (k=0; k<UNIT_WIDTH; k++) {
 	if (cid < reg_ctrl.i[cid].mcid)
 	  axiif[cid].axi_rdata[k] = axiif[cid+1].axi_rdata[k];
@@ -1026,9 +1021,9 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
 	    axiif[cid].axi_rdata[k] |= bro[i]->d[k];
 	}
       }
-      axiif[cid].deq_wait = 0; /* ?«©ªÂ¢îaxi¢ğª³¢ğ«²¢ğ«³deq-OK */
+      axiif[cid].deq_wait = 0; /* ¾åÎ®axi¤Ë¤è¤ëdeq-OK */
       axiif[cid].reqn--;
-      axiif[cid].axi_rvalid = 1; /* ?«©ªÂ¢îaxi¢ğªÁread-OK */
+      axiif[cid].axi_rvalid = 1; /* ¾åÎ®axi¤Ïread-OK */
       if (cid < EMAX_NCHIP-1)
 	axiif[cid+1].axi_rready = 1;
       if (!bro_av)
@@ -1043,10 +1038,10 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
     }
   }
   else if (axiif[cid].creg) { /* RD control regs */
-    /* CREG¢ğªÁ¢±«©ªªª´IMAX¢ğª³ª¡¡à¢Ä¢î¢ğ?¢ğª´¢ğ¢ğ¢Â\ª¢«²©¡?¢ğªÂ¢ğ©Î¡Ş©Ğª©«â */
+    /* CREG¤Ï¸åÃÊIMAX¤ËÁ÷¿®¤·¤Ê¤¤¡¥ÀèÆ¬¤Î¤ß±şÅú */
     for (k=0; k<UNIT_WIDTH; k++)
       axiif[cid].axi_rdata[k] = *((Ull*)((Uchar*)&reg_ctrl.i[cid]+(axiif[cid].sadr-REG_BASE2_PHYS))+k);
-    axiif[cid].axi_rvalid = 1; /* ?«©ªÂ¢îaxi¢ğªÁread-OK */
+    axiif[cid].axi_rvalid = 1; /* ¾åÎ®axi¤Ïread-OK */
     axiif[cid].creg = 0; /* reset RD control regs */
     printf("%03.3d:PIO RD adr=%08.8x data=%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x\n",
            cid, axiif[cid].sadr,
@@ -1056,10 +1051,10 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
            (Uint)(axiif[cid].axi_rdata[0]>>32), (Uint)axiif[cid].axi_rdata[0]);
   }
   else {
-    axiif[cid].deq_wait = 1; /* ?«©ªÂ¢îaxi¢ğª³¢ğ«²¢ğ«³deq-ª±ªÔ?ª£ */
-    axiif[cid].axi_rvalid = 0; /* ?«©ªÂ¢îaxi¢ğªÁreadª±ªÔ?ª£ */
+    axiif[cid].deq_wait = 1; /* ¾åÎ®axi¤Ë¤è¤ëdeq-ÉÔ²Ä */
+    axiif[cid].axi_rvalid = 0; /* ¾åÎ®axi¤ÏreadÉÔ²Ä */
     if (cid < EMAX_NCHIP-1)
-      axiif[cid+1].axi_rready = 0; /* ??ªÂ¢îaxi¢ğ?¢ğ«±¢ğªÂ?«Ø?«²ª±ªÔ?ª£ */
+      axiif[cid+1].axi_rready = 0; /* ²¼Î®axi¤«¤é¤Î¼õ¼èÉÔ²Ä */
   }
 
   return (0);
@@ -1069,9 +1064,9 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
 {
   int    i, k, mask;
   int    bri_ful2 = axiif[cid].axring_ful2;
-  struct axring_br *bri = &axiif[cid].axring_br[axiif[cid].axring_b_top]; /* AXI->EMAXª¤¢Ã */
+  struct axring_br *bri = &axiif[cid].axring_br[axiif[cid].axring_b_top]; /* AXI->EMAXÂ¦ */
 
-  /* read/write LMRINGª¢«²ªª?¢ğ©¬¢ğªÂª©«´©¡©Ğ   iorq->axiif->bri */
+  /* read/write LMRINGÀèÃ¼¤Ø¤ÎÅêÆş   iorq->axiif->bri */
   /*       EMAX:AXIIF->BRI  */
   /************************************************************************************************************************************************************************************************************/
   /*                        |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       |       | */
@@ -1079,11 +1074,11 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
   /* awaddr    MASTER   -----<=A=====>---                                                                                                                                                                     */
   /* awlen     MASTER   -----<=0=====>---                                                                                                                                                                     */
   /* awvalid   MASTER   _____/~~~~~~~\___ valid=1                                                                                                                                                             */
-  /* awready    SLAVE*  ~~~~~~~~~~~~~\___ ready=1¢ğªÂ?©Ğ¢ğª³?©Ì?«Ø                                                                                                                                                   */
+  /* awready    SLAVE*  ~~~~~~~~~~~~~\___ ready=1¤Î»ş¤Ë¼ø¼õ                                                                                                                                                   */
   /* wstrb     MASTER   -----<=M=====>---                                                                                                                                                                     */
   /* wdata[]   MASTER   -----<=D=====>---                                                                                                                                                                     */
   /* wvalid    MASTER   _____/~~~~~~~\___                                                                                                                                                                     */
-  /* wlast     MASTER   _____/~~~~~~~\___ PIO¢ğªÂ?«À?«®,?«Á¢ğª³1                                                                                                                                                     */
+  /* wlast     MASTER   _____/~~~~~~~\___ PIO¤Î¾ì¹ç,¾ï¤Ë1                                                                                                                                                     */
   /* wready     SLAVE*  ~~~~~~~~~~~^~\___                                                                                                                                                                     */
   /* araddr    MASTER                A                          -----<=A=====>---                                                                                                                             */
   /* arlen     MASTER                |                          -----<=0=====>---                                                                                                                             */
@@ -1105,18 +1100,18 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
   /* deq_waiti 0:dq,1:wait      update axring_b_bot                     update axring_b_bot                                                                                                                   */
   /************************************************************************************************************************************************************************************************************/
 
-  /* ¡ëª´??,cid<(EMAX_NCHIP-1)¢ğªÂ?«À?«®,?¢Âªªª´IMAX¢ğ?ª¤¢±¢ë©Î */
-  /*¡¯?¡¯¢Â¡¯¢ğ  ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢ğ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ   */
-  /*¡¯?  ¡¯?  ¡¯?        ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ      ¡¯?¡¯?  ¡¯?¡¯?        ¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ      ¡¯?   */
-  /*¡¯?¡¯¢Â¡¯¢í$1¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¢Â¢Â            ¢Â¢Â  ¡¯?  ¡¯?¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯¢ğ  $3¡¯?$3¢Â¢Â            ¢Â¢Â  ¡¯?  ¡¯?¡¯¢Â¡¯¢í   */
-  /*¡¯? I¡¯¡ø¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â?¢Â¡¯¢Â¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø¡¯¢Â?¢ì¡¯¢Â¡¯¢íPD¡¯¡ø?¢ì¡¯¢Â?¢Â¡¯¢Â¡¯?¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢ğ¡¯¢ğ¡¯¢Ã?¢ì¡¯¢íPD¡¯¡ø?¢ì */
-  /*¡¯? O¡¯¡ø¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø¡¯¢Â??¡¯¢Â¡¯¢íOA¡¯¡ø¡¯¢ğ  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢íOA¡¯¡ø?? */
-  /*¡¯?¡¯¢Â¡¯¢í$2¡¯¡ø¡¯¢Â¡¯\¡¯?  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í¡¯?  ¡¯?¡¯¡ø¡¯¢Â¡¯\¡¯?  ¡¯¡ø¡¯¢Â¡¯?            ¡¯?¡¯¢í  ¡¯?¡¯¢Ã¡¯¢Â¡¯¢í   */
-  /*¡¯?¢Â¢Â¡¯?  ¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢í  ¡¯?    ¡¯?¡¯?  ¡¯?¡¯?    ¡¯?  ¡¯¢Ã¡¯¢Â¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢í  ¡¯?    ¡¯?   */
-  /*¡¯?  ¡¯?  ¡¯? ¢Â¢Â ¡¯?                      ??$4¡¯? ¢Â¢Â ¡¯?¡¯?  ¡¯?¡¯? ¢Â¢Â ¡¯?                      ??$4¡¯? ¢Â¢Â ¡¯?   */
-  /*¡¯?  ¡¯?  ¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â¢Â©Ğ¡¯¢Â¡¯\ ¢Â¢Â ¡¯?¡¯?  ¡¯?¡¯? ¢Â¢Â ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â??¡¯¢Â¡¯¢Â¢Â©Ğ¡¯¢Â¡¯\ ¢Â¢Â ¡¯?   */
-  /*¡¯¢Ã¡¯¢Â¡¯\  ¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯\¡¯¢Ã¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯¢Â¡¯\   */
-  /* ª¡¡ëªªª´¢ğ©¬¢ğªÂarready/awready¢ğªÁ¢Â¢ğ??axring¢ğª³¢ù«Ø¢ğ?+¢±«©ªªª´¢ğ?arready/awready¢ğªÂ?«À?«®¢ğª³1                            */
+  /* °Ê²¼,cid<(EMAX_NCHIP-1)¤Î¾ì¹ç,¼¡ÃÊIMAX¤¬Â¸ºß */
+  /*¨£¨¡¨¤  ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨£¨¡¨¤¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤   */
+  /*¨¢  ¨¢  ¨¢        ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤      ¨¢¨¢  ¨¢¨¢        ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤      ¨¢   */
+  /*¨¢¨¡¨©$1¨§¨¡¨¤  $3¨¢$3¡¡            ¡¡  ¨¢  ¨£¨¡¨©¨¢  ¨¢¨§¨¡¨¤  $3¨¢$3¡¡            ¡¡  ¨¢  ¨£¨¡¨©   */
+  /*¨¢ I¨§¨¡¨©PD¨§¢ª¨¡¢¡¨¡¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨¤¨¦¢ª¨©PD¨§¨¡¢ª¨¡¨©PD¨§¢ª¨¡¢¡¨¡¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨¤¨¦¢ª¨©PD¨§¢ª */
+  /*¨¢ O¨§¨¡¨©OA¨§¨¤  ¨§¨¡¨¢            ¨¢¨©  ¨£¨©OA¨§¨¡¢«¨¡¨©OA¨§¨¤  ¨§¨¡¨¢            ¨¢¨©  ¨£¨©OA¨§¢« */
+  /*¨¢¨¡¨©$2¨§¨¡¨¥¨¢  ¨§¨¡¨¢            ¨¢¨©  ¨¢¨¦¨¡¨©¨¢  ¨¢¨§¨¡¨¥¨¢  ¨§¨¡¨¢            ¨¢¨©  ¨¢¨¦¨¡¨©   */
+  /*¨¢¡¡¨¢  ¨¢    ¨¢  ¨¦¨¡¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨©  ¨¢    ¨¢¨¢  ¨¢¨¢    ¨¢  ¨¦¨¡¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨©  ¨¢    ¨¢   */
+  /*¨¢  ¨¢  ¨¢ ¡¡ ¨¢                      ¢­$4¨¢ ¡¡ ¨¢¨¢  ¨¢¨¢ ¡¡ ¨¢                      ¢­$4¨¢ ¡¡ ¨¢   */
+  /*¨¢  ¨¢  ¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¡ş¨¡¨¥ ¡¡ ¨¢¨¢  ¨¢¨¢ ¡¡ ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¢«¨¡¨¡¡ş¨¡¨¥ ¡¡ ¨¢   */
+  /*¨¦¨¡¨¥  ¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥¨¦¨¡¨¥¨¦¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¥   */
+  /* Á°ÃÊ¤Ø¤Îarready/awready¤Ï¡¤¼«axring¤Ë¶õ¤­+¸åÃÊ¤¬arready/awready¤Î¾ì¹ç¤Ë1                            */
   axiif[cid].axi_arready = (bri_ful2 < AXRING_BR_BUF && !axiif[cid].radr_recv && (cid<EMAX_NCHIP-1?axiif[cid+1].axi_arready:1));
   axiif[cid].axi_awready = (bri_ful2 < AXRING_BR_BUF && !axiif[cid].wadr_recv && (cid<EMAX_NCHIP-1?axiif[cid+1].axi_awready:1));
   axiif[cid].axi_wready  = (bri_ful2 < AXRING_BR_BUF                          && (cid<EMAX_NCHIP-1?axiif[cid+1].axi_wready :1));
@@ -1138,7 +1133,7 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
     if (cid < EMAX_NCHIP-1 && axiif[cid+1].axi_arvalid && axiif[cid+1].axi_arready)
       axiif[cid+1].axi_arvalid = 0; /* off */
     a = axiif[cid].sadr;
-    if (a < REG_BASE2_PHYS+REG_CONF_OFFS) { /* control space ... ¢±ª®ª£«´¡ëªÀªªªÓ *//* ª³ªäª¿«²¢ğªÁbri_ful2¢ğªÂ¡Ş©¡¢ùª¡¢ğ«Ò?«Ø¢ğ¡Ş¢ğª´¢ğ¢ğ¢ğ?,ª©«ò¡ë«À¡­ª±ª¿«ò¢ğªÂ¢ğ¢Ä¢ğ«¡¢ğª³bri_ful2¢ğ«Ò?ª²ª¿ªĞ */
+    if (a < REG_BASE2_PHYS+REG_CONF_OFFS) { /* control space ... ¸ÇÄê°ÌÃÖ *//* ËÜÍè¤Ïbri_ful2¤Î±Æ¶Á¤ò¼õ¤±¤Ê¤¤¤¬,Åı°ì´ÉÍı¤Î¤¿¤á¤Ëbri_ful2¤ò»ÈÍÑ */
       axiif[cid].radr_recv = 0; /* reset */
       axiif[cid].creg = 1; /* set RD control regs */
       if (trace)
@@ -1188,7 +1183,7 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
     if (cid < EMAX_NCHIP-1 && axiif[cid+1].axi_awvalid && axiif[cid+1].axi_awready)
       axiif[cid+1].axi_awvalid = 0; /* off */
     a = axiif[cid].sadr;
-    if (a < REG_BASE2_PHYS+REG_CONF_OFFS) { /* control space ... ¢±ª®ª£«´¡ëªÀªªªÓ *//* ª³ªäª¿«²¢ğªÁbri_ful2¢ğªÂ¡Ş©¡¢ùª¡¢ğ«Ò?«Ø¢ğ¡Ş¢ğª´¢ğ¢ğ¢ğ?,ª©«ò¡ë«À¡­ª±ª¿«ò¢ğªÂ¢ğ¢Ä¢ğ«¡¢ğª³bri_ful2¢ğ«Ò?ª²ª¿ªĞ */
+    if (a < REG_BASE2_PHYS+REG_CONF_OFFS) { /* control space ... ¸ÇÄê°ÌÃÖ *//* ËÜÍè¤Ïbri_ful2¤Î±Æ¶Á¤ò¼õ¤±¤Ê¤¤¤¬,Åı°ì´ÉÍı¤Î¤¿¤á¤Ëbri_ful2¤ò»ÈÍÑ */
       if (axiif[cid].axi_wvalid && axiif[cid].axi_wready) {
         axiif[cid].wadr_recv = 0; /* reset */
         if      (axiif[cid].axi_wstrb & 0x000000ff) { k=0; mask=axiif[cid].axi_wstrb     & 0xff; }
@@ -1369,7 +1364,7 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
   /* stage_forstat.1(stage2)_______________________________________________________________________________________________________/L1=0~~~~~~~~~~~\_______________________________________ */
   /* unit1_forstat(stage2)_________________________________________________________________________________________________________________________/L1=0~~~\_______________________________ */
   /* unit1_arbrk(stage2)___________________________________________________________________________________________________________/~forstat=3~~~~~\_______________________________________ */
-  /*                                                                                                                                           A?ªÂª£«´                                        */
+  /*                                                                                                                                           A³ÎÄê                                        */
   /* st2ex       __________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________________________ */
   /* st3ex       __________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________________ */
   /* st4ex       __________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________ */
@@ -1406,7 +1401,7 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
   /* stage_forstat.1(stage2)_______/L1=0~~~~~~~~~~~\_______________________________________________________________________ */
   /* unit1_forstat(stage2)_________________________/L1=0~~~\_______________________________________________________________ */
   /* unit1_arbrk(stage2)___________/~forstat=3~~~~~\_______________________________________________________________________ */
-  /*                                           A?ªÂª£«´                                                                        */
+  /*                                           A³ÎÄê                                                                        */
   /* one_shot2   __________________________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________________________ */
   /* st2ex       __________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________________________________________________________ */
   /* st3ex       __________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________________________________________________ */
@@ -1579,8 +1574,8 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
 //  wire [`REG_DATA_BITS-1:0]       ea1os   = (!ea1loop||second)? ( ea1ofromBR ? oi eaoin               :  regv_ea1o) : 0;
 //end
 #endif
-      /* eab/eao¢ğ??«©¢ğ???¢ğ?¢ğªÁ,fold¢ğª²ea0bs/ea0os¢ğªÂ¢ğ©Î¢ğª³¢ğ«²¢ğªª¢ğ©¡?«²¢ğ©°¢ğ«³ */
-      s = reg_ctrl.i[cid].conf[i][k].cdw1.eabbrs; exring[cid].unit[i].eab   = exring[cid].unit[bi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH]; //¢ğ?¢ğ?¢ğ?SFMA+STBR¢ğªÂ?¢´¢±?
+      /* eab/eao¤¬¾å¤«²¼¤«¤Ï,fold¤Èea0bs/ea0os¤Î¤ß¤Ë¤è¤Ã¤Æ·è¤Ş¤ë */
+      s = reg_ctrl.i[cid].conf[i][k].cdw1.eabbrs; exring[cid].unit[i].eab   = exring[cid].unit[bi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH]; //¤³¤³¤¬SFMA+STBR¤Îµ¯¸»
       s = reg_ctrl.i[cid].conf[i][j].cdw1.eaobrs; exring[cid].unit[i].eao   = exring[cid].unit[oi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH];
 
 #if 0
@@ -1596,22 +1591,22 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
 //
 //    offs = pi;
 #endif
-      /* self_loop=0¢ğªÂ?«À?«®¢ğªÂ?«±¡­«äªªª¿¢ğªÁaddr+offs, self_loop=1¢ğ?¢ğª£?«±?«Ñ¢ğªÁaddr,¡ëª´?©Îaddr+offs */
-      /* STRQ/SFMA+STBR¢ğªÁSTR¢ğ«Ò4\?\¢ğ\¢´\«³ª´??«£?ª¤?ªÔ */
-      /* exring[cid].unit[i].lmea0strq ¢ğª² exring[cid].unit[i].lmea0strqcol ¢ğªÁ siml_unit_stage4()¢ğª³¢ğ©¡ª¢«²?ªÔ\?\ªª\ª² */
+      /* self_loop=0¤Î¾ì¹ç¤Î½é´üÃÍ¤Ïaddr+offs, self_loop=1¤«¤Ä½é²ó¤Ïaddr,°Ê¹ßaddr+offs */
+      /* STRQ/SFMA+STBR¤ÏSTR¤ò4¥µ¥¤¥¯¥ëÊ¬³ä¼Â¹Ô */
+      /* exring[cid].unit[i].lmea0strq ¤È exring[cid].unit[i].lmea0strqcol ¤Ï siml_unit_stage4()¤Ë¤ÆÀè¹Ô¥»¥Ã¥È */
       ofs = exring[cid].unit[i].lmea0strq ? (j<<3) : 0;
       sb = reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs; exring[cid].unit[i].ea0b = (!(sb&1)||(!exring[cid].unit[i].one_shot||(reg_ctrl.i[cid].conf[i][j].cdw0.mex0init && (exring[cid].unit[i].unit1_forstat&1))))
 						    ? (((sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][k].ea0b)|ofs)
-						    : exring[cid].unit[i].ea04woofs_prev; /* ¢Â«â */
+						    : exring[cid].unit[i].ea04woofs_prev; /* ¡ú */
       so = reg_ctrl.i[cid].conf[i][k].cdw1.ea0os; exring[cid].unit[i].ea0o = so
 						    ? exring[cid].unit[i].eao
-						    : reg_ctrl.i[cid].addr[i][k].ea0o;    /* ¢Â«â */
+						    : reg_ctrl.i[cid].addr[i][k].ea0o;    /* ¡ú */
       sb = reg_ctrl.i[cid].conf[i][j].cdw1.ea1bs; exring[cid].unit[i].ea1b = (!(sb&1)||(!exring[cid].unit[i].one_shot||(reg_ctrl.i[cid].conf[i][j].cdw0.mex1init && (exring[cid].unit[i].unit1_forstat&1))))
 						    ? ( (sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][j].ea1b     )
-						    : exring[cid].unit[i].ea14woofs_prev; /* ¢Â«â */
+						    : exring[cid].unit[i].ea14woofs_prev; /* ¡ú */
       so = reg_ctrl.i[cid].conf[i][j].cdw1.ea1os; exring[cid].unit[i].ea1o = so
 						    ? exring[cid].unit[i].eao
-						    : reg_ctrl.i[cid].addr[i][j].ea1o;    /* ¢Â«â */
+						    : reg_ctrl.i[cid].addr[i][j].ea1o;    /* ¡ú */
     }
 
     if (exring[cid].unit[i].unit1_exec && (exring[cid].unit[i].l_row==0 || exring[cid].unit[(i+EMAX_DEPTH-1)%EMAX_DEPTH].brout_valid)) /* unit1   active */
@@ -1677,34 +1672,34 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
   /* mo4(OP_LDRQ,  1,  BR[r][2], (Ull)b0,                  (Ull)bofs,        MSK_W1,    (Ull)b,          L*RMGRP,   0,      0,    (Ull)NULL,   L*RMGRP);                                    */
   /* mo4(OP_LDRQ,  1,  BR[r][1], (Ull)a[s][CHIP],          (Ull)cofs,        MSK_W1,    (Ull)a[s][CHIP], L,         0,      0,    (Ull)NULL,   L);                                          */
   /* exe(OP_NOP,      &AR[r][0], 0LL,           EXP_H3210, 0LL,              EXP_H3210, 0LL,             EXP_H3210, OP_NOP, 0LL,  OP_NOP,      0LL);                                        */
-  /* mop(OP_LDUBR, 1, &b00,      (Ull)c0[s][CHIP],         (Ull)oofs,        MSK_W0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4);                                    */
+  /* mop(OP_LDBR,  1, &b00,      (Ull)c0[s][CHIP],         (Ull)oofs,        MSK_W0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4);                                    */
   /* ex4(OP_SFMA,     &b00,      INIT0?b00:b00, EXP_H3210, BR[r][1],         EXP_H3210, BR[r][2],        EXP_H3210, OP_NOP, 32LL, OP_NOP,      0LL);                                        */
   /* mop(OP_STBR,  1, &b00,      (Ull)oofs,                (Ull)c0[s][CHIP], MSK_D0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4)                                     */
   /******************************************************************************************************************************************************************************************/
   /*     SFMA Timing                       LD-B4               LD-A4               LD-C                                                                                                     */
-  /*                  ¢Âªò¢Âªò?¢î?¢î t=3        ¢Âªò¢Âªò?¢î?¢î t=2        ¢Âªò¢Âªò?¢î?¢î t=1        ¢Âªò¢Âªò?¢î?¢î   t=0                                                                                            */
-  /*                  ¢Âª¢¢Â¢Ä?¢Ã?¢Ã            ¢Âª¢¢Â¢Ä?¡ø?¢Ã            ¢Âª¢¢Â¢Ä?¡ø?¢Ã            ¢Âª¢¢Â¢Ä?¡ø?¢Ã                                                                                                  */
-  /*                  ???????? t=4        ???????? t=3        ???????? t=2        ????????   t=1                                                                                            */
-  /*                  ¢Âªò¢Âªò     t=5        ¢Âªò¢ÂªòB4   t=4        ¢Âªò¢ÂªòA4   t=3        ¢Âªò¢ÂªòC      t=2                                                                                            */
-  /*                  |?¢Ã|?¢Ã?¢Ã            |?¢Ã|?¡ø?¢Ã            |?¢Ã|?¡ø?¢Ã            |?¢Ã|?¡ø?¢Ã                                                                                                  */
-  /*                  ???????? t=6        ???????? t=5        ???????? t=4        ????????   t=3                                                                                            */
-  /*                  ¢Âªò¢Âªò                ¢Âªò¢ÂªòB4              ¢Âªò¢ÂªòA4              ¢Âªò¢ÂªòC                                                                                                     */
-  /*                  |?¢Ã|?¢Ã?¢Ã            |?¢Ã|?¡ø?¢Ã            |?¢Ã|?¡ø?¢Ã            |?¢Ã|?¡ø?¢Ã                                                                                                  */
-  /*              ¡¯?¡¯¢Â???????? t=7    ¡¯?¡¯¢Â???????? t=6    ¡¯?¡¯¢Â???????? t=5    ¡¯?¡¯¢Â????????   t=4                                                                                            */
-  /*              ¡¯?  ¢Âªò¢Âªò¢Âªò¢Âªò        ¡¯?  B3B2B1B0        ¡¯?  A3A2A1A0        ¡¯?  ¢Âªò¢ÂªòC ¢Âªò                                                                                                  */
-  /*              ¡¯?B3A3C             ¡¯?B2A2C             ¡¯?B1A1C             ¡¯?B0A0C                                                                                                       */
+  /*                  ¡İ¡İ¢®¢® t=3        ¡İ¡İ¢®¢® t=2        ¡İ¡İ¢®¢® t=1        ¡İ¡İ¢®¢®   t=0                                                                                            */
+  /*                  ¡À¡¿¢¦¢¦            ¡À¡¿¢§¢¦            ¡À¡¿¢§¢¦            ¡À¡¿¢§¢¦                                                                                                  */
+  /*                  ¢¢¢¢¢¢¢¢ t=4        ¢¢¢¢¢£¢¢ t=3        ¢¢¢¢¢£¢¢ t=2        ¢¢¢¢¢£¢¢   t=1                                                                                            */
+  /*                  ¡İ¡İ     t=5        ¡İ¡İB4   t=4        ¡İ¡İA4   t=3        ¡İ¡İC      t=2                                                                                            */
+  /*                  |¢¦|¢¦¢¦            |¢¦|¢§¢¦            |¢¦|¢§¢¦            |¢¦|¢§¢¦                                                                                                  */
+  /*                  ¢¢¢¢¢¢¢¢ t=6        ¢¢¢¢¢£¢¢ t=5        ¢¢¢¢¢£¢¢ t=4        ¢¢¢¢¢£¢¢   t=3                                                                                            */
+  /*                  ¡İ¡İ                ¡İ¡İB4              ¡İ¡İA4              ¡İ¡İC                                                                                                     */
+  /*                  |¢¦|¢¦¢¦            |¢¦|¢§¢¦            |¢¦|¢§¢¦            |¢¦|¢§¢¦                                                                                                  */
+  /*              ¨£¨¡¢¢¢¢¢¢¢¢ t=7    ¨£¨¡¢£¢£¢£¢£ t=6    ¨£¨¡¢£¢£¢£¢£ t=5    ¨£¨¡¢¢¢¢¢£¢¢   t=4                                                                                            */
+  /*              ¨¢  ¡İ¡İ¡İ¡İ        ¨¢  B3B2B1B0        ¨¢  A3A2A1A0        ¨¢  ¡İ¡İC ¡İ                                                                                                  */
+  /*              ¨¢B3A3C             ¨¢B2A2C             ¨¢B1A1C             ¨¢B0A0C                                                                                                       */
   /******************************************************************************************************************************************************************************************/
-  /*              ¡¯?  SFMA            ¡¯?  SFMA            ¡¯?  SFMA            ¡¯?  SFMA  STBR                                                                                                */
-  /*              ¡¯¢Ã?¢ì¢Âªò¢Âªò?¢î?¢î t=11   ¡¯¢Ã?¢ì¢Âªò¢Âªò?¢î?¢î t=10   ¡¯¢Ã?¢ì¢Âªò¢Âªò?¢î?¢î t=9    ¡¯¢Ã?¢ì¢Âªò¢Âªò?¢î?¢î   t=8                                                                                            */
-  /*                  ¢Âª¢¢Â¢Ä?¢Ã?¡ø            ¢Âª¢¢Â¢Ä?¢Ã?¡ø            ¢Âª¢¢Â¢Ä?¢Ã?¡ø            ¢Âª¢¢Â¢Ä???¡ø                                                                                                  */
-  /*                  ???????? t=12       ???????? t=11       ???????? t=10       ????????   t=9                                                                                            */
-  /*                  ¢Âªò¢Âªò     t=13       ¢Âªò¢Âªò     t=12       ¢Âªò¢Âªò     t=11       ¢Âªò¢Âªò  C(st)t=10                                                                                           */
-  /*              ¡¯??¢ì|?¡ø|?¢Ã?¡ø      ??¡¯¡¯?¢ì|?¡ø|?¢Ã?¡ø      ??¡¯¡¯?¢ì|?¡ø|?¢Ã?¡ø      ??¡¯¡¯?¢ì|?¡ø|?¢Ã?¡ø                                                                                                  */
-  /*              ¡¯¢Ã¡¯¢Â???????? t=14   ¡¯¢Ã¡¯¢Â???????? t=13   ¡¯¢Ã¡¯¢Â???????? t=12   ¡¯¢Ã¡¯¢Â????????   t=11                                                                                           */
-  /*                  ¢Âªò¢Âªò¢ÂªòC(st)         ¢Âªò¢Âªò¢ÂªòC(st)         ¢Âªò¢Âªò¢ÂªòC(st)         ¢Âªò¢Âªò¢ÂªòC(st)                                                                                               */
-  /*                  |?¢Ã|?¢Ã?¢Ã            |?¢Ã|?¢Ã?¢Ã            |?¢Ã|?¢Ã?¢Ã            |?¢Ã|?¢Ã?¢Ã                                                                                                  */
-  /*                  ???????? t=15       ???????? t=14       ???????? t=13       ????????   t=12                                                                                           */
-  /*                  ¢Âªò¢Âªò¢Âªò¢Âªò            ¢Âªò¢Âªò¢Âªò¢Âªò            ¢Âªò¢Âªò¢Âªò¢Âªò            ¢Âªò¢Âªò¢Âªò¢Âªò                                                                                                  */
+  /*              ¨¢  SFMA            ¨¢  SFMA            ¨¢  SFMA            ¨¢  SFMA  STBR                                                                                                */
+  /*              ¨¦¢ª¡İ¡İ¢®¢® t=11   ¨¦¢ª¡İ¡İ¢®¢® t=10   ¨¦¢ª¡İ¡İ¢®¢® t=9    ¨¦¢ª¡İ¡İ¢®¢®   t=8                                                                                            */
+  /*                  ¡À¡¿¢¦¢§            ¡À¡¿¢¦¢§            ¡À¡¿¢¦¢§            ¡À¡¿¢¢¢§                                                                                                  */
+  /*                  ¢£¢£¢¢¢£ t=12       ¢£¢£¢¢¢£ t=11       ¢£¢£¢¢¢£ t=10       ¢£¢£¢¢¢£   t=9                                                                                            */
+  /*                  ¡İ¡İ     t=13       ¡İ¡İ     t=12       ¡İ¡İ     t=11       ¡İ¡İ  C(st)t=10                                                                                           */
+  /*              ¨£¢ª|¢§|¢¦¢§      ¢«¨¨¢ª|¢§|¢¦¢§      ¢«¨¨¢ª|¢§|¢¦¢§      ¢«¨¨¢ª|¢§|¢¦¢§                                                                                                  */
+  /*              ¨¦¨¡¢¢¢£¢¢¢£ t=14   ¨¦¨¡¢¢¢£¢¢¢£ t=13   ¨¦¨¡¢¢¢£¢¢¢£ t=12   ¨¦¨¡¢¢¢£¢¢¢£   t=11                                                                                           */
+  /*                  ¡İ¡İ¡İC(st)         ¡İ¡İ¡İC(st)         ¡İ¡İ¡İC(st)         ¡İ¡İ¡İC(st)                                                                                               */
+  /*                  |¢¦|¢¦¢¦            |¢¦|¢¦¢¦            |¢¦|¢¦¢¦            |¢¦|¢¦¢¦                                                                                                  */
+  /*                  ¢¢¢¢¢¢¢¢ t=15       ¢¢¢¢¢¢¢¢ t=14       ¢¢¢¢¢¢¢¢ t=13       ¢¢¢¢¢¢¢¢   t=12                                                                                           */
+  /*                  ¡İ¡İ¡İ¡İ            ¡İ¡İ¡İ¡İ            ¡İ¡İ¡İ¡İ            ¡İ¡İ¡İ¡İ                                                                                                  */
   /******************************************************************************************************************************************************************************************/
 
   int    j = (exring[cid].unit[i].cycle+(EMAX_WIDTH-1)) % EMAX_WIDTH; /* 3,0,1,2,3,0,1,2 */
@@ -1719,10 +1714,10 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
   Uint   ex1_retval;
   Ull    base0, offs0;
   Ull    base1, offs1;
-  Uint   mex0op,   mex1op;   /* ¢Â«â */
-  Uint   mex0init, mex1init; /* ¢Â«â */
-  Uint   mex0dist, mex1dist; /* ¢Â«â */
-  Uint   mex0ofs,  mex1ofs;  /* ¢Â«â */
+  Uint   mex0op,   mex1op;   /* ¡ú */
+  Uint   mex0init, mex1init; /* ¡ú */
+  Uint   mex0dist, mex1dist; /* ¡ú */
+  Uint   mex0ofs,  mex1ofs;  /* ¡ú */
 
   switch (exring[cid].unit[i].cmd) {
   case CMD_NOP:   /* nop */
@@ -1747,9 +1742,9 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
         exring[cid].unit[i].ex2dr_sfma5 = 0LL;
         exring[cid].unit[i].ex2dr_sfma6 = 0LL;
         exring[cid].unit[i].ex2dr_sfma7 = 0LL;
-        exring[cid].unit[i].ea02dofs    = 0; /* ¢Â«â */
+        exring[cid].unit[i].ea02dofs    = 0; /* ¡ú */
         exring[cid].unit[i].ea02dr      = 0;
-        exring[cid].unit[i].ea12dofs    = 0; /* ¢Â«â */
+        exring[cid].unit[i].ea12dofs    = 0; /* ¡ú */
         exring[cid].unit[i].ea12dr      = 0;
         exring[cid].unit[i].tx2dr[0]    = 0LL;
         exring[cid].unit[i].tx2dr[1]    = 0LL;
@@ -1781,7 +1776,7 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
       one_shot2 = exring[cid].unit[i].one_shot2;
       forstat2 = exring[cid].unit[i].unit1_forstat2;
       r1     = exring[cid].unit[i].ex1;
-      r2     = (op_ex1 == OP_FOR && j == 1 && !(exring[cid].unit[i].stage_forstat & 1)) /* LOOP1¢ğªÁ¢Â¢ğLOOP0==0¢ğªÂ?©Ğ¢ğªÂ¢ğ©Î??¢Ä? */
+      r2     = (op_ex1 == OP_FOR && j == 1 && !(exring[cid].unit[i].stage_forstat & 1)) /* LOOP1¤Ï¡¤LOOP0==0¤Î»ş¤Î¤ß¹¹¿· */
              ||((init & 2) && one_shot2 && !(forstat2 & 1)) ? 0LL /* init0 specified && LOOP0-not_end */ : exring[cid].unit[i].ex2;
       r3     = exring[cid].unit[i].ex3;
       r4     = reg_ctrl.i[cid].conf[i][j].cdw0.e2is==0 ? reg_ctrl.i[cid].conf[i][j].cdw3.e2imm
@@ -1826,59 +1821,59 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
       offs0 = exring[cid].unit[i].ea0o;
       base1 = exring[cid].unit[i].ea1b;
       offs1 = exring[cid].unit[i].ea1o;
-      mex0op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex0op;   /* ¢Â«â */
-      mex1op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex1op;   /* ¢Â«â */
-      mex0init = reg_ctrl.i[cid].conf[i][j].cdw0.mex0init; /* ¢Â«â */
-      mex1init = reg_ctrl.i[cid].conf[i][j].cdw0.mex1init; /* ¢Â«â */
-      mex0dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex0dist; /* ¢Â«â */
-      mex1dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex1dist; /* ¢Â«â */
+      mex0op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex0op;   /* ¡ú */
+      mex1op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex1op;   /* ¡ú */
+      mex0init = reg_ctrl.i[cid].conf[i][j].cdw0.mex0init; /* ¡ú */
+      mex1init = reg_ctrl.i[cid].conf[i][j].cdw0.mex1init; /* ¡ú */
+      mex0dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex0dist; /* ¡ú */
+      mex1dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex1dist; /* ¡ú */
 
 //    eag(&exring[cid].unit[i].ea02dr, base0, offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk);
 //    eag(&exring[cid].unit[i].ea12dr, base1, offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk);
 
-      if (mex0op) {  /* ¢Â«â */
-	if ((!one_shot2)||(mex0init && (forstat2 & 1))) /* ¢Â«â */
-	  mex0ofs = 0;        /* ¢Â«â */
-	else {                /* ¢Â«â */
-	  switch (mex0dist) { /* ¢Â«â */
-	  case  0: mex0ofs =  0; break; /* ¢Â«â */
-	  case  1: mex0ofs =  1; break; /* ¢Â«â */
-	  case  2: mex0ofs =  2; break; /* ¢Â«â */
-	  case  3: mex0ofs =  4; break; /* ¢Â«â */
-	  case  4: mex0ofs =  8; break; /* ¢Â«â */
-	  case  5: mex0ofs = 16; break; /* ¢Â«â */
-	  case  6: mex0ofs = 32; break; /* ¢Â«â */
-	  default: mex0ofs = 64; break; /* ¢Â«â */
+      if (mex0op) {  /* ¡ú */
+	if ((!one_shot2)||(mex0init && (forstat2 & 1))) /* ¡ú */
+	  mex0ofs = 0;        /* ¡ú */
+	else {                /* ¡ú */
+	  switch (mex0dist) { /* ¡ú */
+	  case  0: mex0ofs =  0; break; /* ¡ú */
+	  case  1: mex0ofs =  1; break; /* ¡ú */
+	  case  2: mex0ofs =  2; break; /* ¡ú */
+	  case  3: mex0ofs =  4; break; /* ¡ú */
+	  case  4: mex0ofs =  8; break; /* ¡ú */
+	  case  5: mex0ofs = 16; break; /* ¡ú */
+	  case  6: mex0ofs = 32; break; /* ¡ú */
+	  default: mex0ofs = 64; break; /* ¡ú */
 	  }
 	}
       }
-      else           /* ¢Â«â */
-	mex0ofs = 0; /* ¢Â«â */
-      mex(mex0op, &exring[cid].unit[i].ea02dr, base0, mex0ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ¢Â«â */
+      else           /* ¡ú */
+	mex0ofs = 0; /* ¡ú */
+      mex(mex0op, &exring[cid].unit[i].ea02dr, base0, mex0ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ¡ú */
 
-      if (mex1op) {  /* ¢Â«â */
-	if ((!one_shot2)||(mex1init && (forstat2 & 1))) /* ¢Â«â */
-	  mex1ofs = 0;        /* ¢Â«â */
-	else {                /* ¢Â«â */
-	  switch (mex1dist) { /* ¢Â«â */
-	  case  0: mex1ofs =  0; break; /* ¢Â«â */
-	  case  1: mex1ofs =  1; break; /* ¢Â«â */
-	  case  2: mex1ofs =  2; break; /* ¢Â«â */
-	  case  3: mex1ofs =  4; break; /* ¢Â«â */
-	  case  4: mex1ofs =  8; break; /* ¢Â«â */
-	  case  5: mex1ofs = 16; break; /* ¢Â«â */
-	  case  6: mex1ofs = 32; break; /* ¢Â«â */
-	  default: mex1ofs = 64; break; /* ¢Â«â */
+      if (mex1op) {  /* ¡ú */
+	if ((!one_shot2)||(mex1init && (forstat2 & 1))) /* ¡ú */
+	  mex1ofs = 0;        /* ¡ú */
+	else {                /* ¡ú */
+	  switch (mex1dist) { /* ¡ú */
+	  case  0: mex1ofs =  0; break; /* ¡ú */
+	  case  1: mex1ofs =  1; break; /* ¡ú */
+	  case  2: mex1ofs =  2; break; /* ¡ú */
+	  case  3: mex1ofs =  4; break; /* ¡ú */
+	  case  4: mex1ofs =  8; break; /* ¡ú */
+	  case  5: mex1ofs = 16; break; /* ¡ú */
+	  case  6: mex1ofs = 32; break; /* ¡ú */
+	  default: mex1ofs = 64; break; /* ¡ú */
 	  }
 	}
       }
-      else           /* ¢Â«â */
-	mex1ofs = 0; /* ¢Â«â */
-      mex(mex1op, &exring[cid].unit[i].ea12dr, base1, mex1ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ¢Â«â */
+      else           /* ¡ú */
+	mex1ofs = 0; /* ¡ú */
+      mex(mex1op, &exring[cid].unit[i].ea12dr, base1, mex1ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ¡ú */
 
       k = (exring[cid].unit[i].lmea0sfma || exring[cid].unit[i].lmea0strq) ? exring[cid].unit[i].lmea0strqcol : j;
-      exring[cid].unit[i].ea02dofs = eam(offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk); /* ¢Â«â */
-      exring[cid].unit[i].ea12dofs = eam(offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk); /* ¢Â«â */
+      exring[cid].unit[i].ea02dofs = eam(offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk); /* ¡ú */
+      exring[cid].unit[i].ea12dofs = eam(offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk); /* ¡ú */
 
       /* tx -> tx2dr */
       exring[cid].unit[i].tx2dr[0] = exring[cid].unit[i].tx[0];
@@ -1909,9 +1904,9 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
 siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
 {
   int    j = (exring[cid].unit[i].cycle+(EMAX_WIDTH-2)) % EMAX_WIDTH; /* 2,3,0,1,2,3,0,1 */
-  int    k;            /* ¢Â«â */
-  Ull    base0, offs0; /* ¢Â«â */
-  Ull    base1, offs1; /* ¢Â«â */
+  int    k;            /* ¡ú */
+  Ull    base0, offs0; /* ¡ú */
+  Ull    base1, offs1; /* ¡ú */
 
   switch (exring[cid].unit[i].cmd) {
   case CMD_NOP:   /* nop */
@@ -1925,9 +1920,9 @@ siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
         exring[cid].unit[i].ex3passr2 = 0;
         exring[cid].unit[i].ex3passr3 = 0;
         exring[cid].unit[i].ex3dr     = 0LL;
-	exring[cid].unit[i].ea03woofs = 0; /* ¢Â«â */
+	exring[cid].unit[i].ea03woofs = 0; /* ¡ú */
         exring[cid].unit[i].ea03dr    = 0;
-	exring[cid].unit[i].ea13woofs = 0; /* ¢Â«â */
+	exring[cid].unit[i].ea13woofs = 0; /* ¡ú */
         exring[cid].unit[i].ea13dr    = 0;
         exring[cid].unit[i].tx3dr[0]  = 0LL;
         exring[cid].unit[i].tx3dr[1]  = 0LL;
@@ -1945,7 +1940,7 @@ siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
       exring[cid].unit[i].cx3dr = exring[cid].unit[i].cx2dr;
 
       /* ex2dr -> ex3dr */
-      if (reg_ctrl.i[cid].conf[i][j].cdw0.op1 == OP_SFMA) { /* stage3¢ğª®?«²???«³?ªÀ¢ğªÂMAGNIª£¡­ª¢¡ë */
+      if (reg_ctrl.i[cid].conf[i][j].cdw0.op1 == OP_SFMA) { /* stage3¤Ç¾è»»·ë²Ì¤ÎMAGNIÄ´À° */
 	exring[cid].unit[i].ex3passr1 = exring[cid].unit[i].ex2passr1; /* OP_FSMA */
 	exring[cid].unit[i].ex3passr2 = exring[cid].unit[i].ex2passr2; /* OP_FSMA/x11_softu64_dist */
 	exring[cid].unit[i].ex3passr3 = exring[cid].unit[i].ex2passr3; /* OP_FSMA/x11_softu64_dist */
@@ -1957,14 +1952,14 @@ siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
       /* ea2dr -> ea3dr */
 //    exring[cid].unit[i].ea03dr = exring[cid].unit[i].ea02dr;
 //    exring[cid].unit[i].ea13dr = exring[cid].unit[i].ea12dr;
-      exring[cid].unit[i].ea03woofs = exring[cid].unit[i].ea02dr;   /* ¢Â«â */
-      base0                         = exring[cid].unit[i].ea02dr;   /* ¢Â«â */
-      offs0                         = exring[cid].unit[i].ea02dofs; /* ¢Â«â */
-      exring[cid].unit[i].ea13woofs = exring[cid].unit[i].ea12dr;   /* ¢Â«â */
-      base1                         = exring[cid].unit[i].ea12dr;   /* ¢Â«â */
-      offs1                         = exring[cid].unit[i].ea12dofs; /* ¢Â«â */
-      eag(&exring[cid].unit[i].ea03dr, base0, offs0);               /* ¢Â«â */
-      eag(&exring[cid].unit[i].ea13dr, base1, offs1);               /* ¢Â«â */
+      exring[cid].unit[i].ea03woofs = exring[cid].unit[i].ea02dr;   /* ¡ú */
+      base0                         = exring[cid].unit[i].ea02dr;   /* ¡ú */
+      offs0                         = exring[cid].unit[i].ea02dofs; /* ¡ú */
+      exring[cid].unit[i].ea13woofs = exring[cid].unit[i].ea12dr;   /* ¡ú */
+      base1                         = exring[cid].unit[i].ea12dr;   /* ¡ú */
+      offs1                         = exring[cid].unit[i].ea12dofs; /* ¡ú */
+      eag(&exring[cid].unit[i].ea03dr, base0, offs0);               /* ¡ú */
+      eag(&exring[cid].unit[i].ea13dr, base1, offs1);               /* ¡ú */
 
       /* tx2dr -> tx3dr */
       exring[cid].unit[i].tx3dr[0] = exring[cid].unit[i].tx2dr[0];
@@ -2035,20 +2030,20 @@ siml_unit_stage4_pre(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRI
 
   exring[cid].unit[i].lmranger_ok    = (reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axir && br->rw==0 && br->ty==4) ? exring[cid].unit[i].ranger_ok : 0; /* 8bits */
   exring[cid].unit[i].lmrangew_ok    = (reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axiw && br->rw==1 && br->ty==4) ? exring[cid].unit[i].rangew_ok : 0; /* 8bits */
-  exring[cid].unit[i].lmlddmqw_ok    = br->rw==1 && br->ty==3 && reg_ctrl.i[cid].conf[i][br->col].cdw1.ea1op == OP_LDDMQ; /* lmwd[0]->tr *//* LDDMQ¢ğªÁ©¡¡Ş¡ë«Àslot¢ğª³?«¤¢Â?1¢ğ?ª¡¡ëª£«Ñ */
+  exring[cid].unit[i].lmlddmqw_ok    = br->rw==1 && br->ty==3 && reg_ctrl.i[cid].conf[i][br->col].cdw1.ea1op == OP_LDDMQ; /* lmwd[0]->tr *//* LDDMQ¤ÏÆ±°ìslot¤Ë¹â¡¹1¤¬Á°Äó */
   exring[cid].unit[i].lmea0sfma      = reg_ctrl.i[cid].conf[i][0].cdw1.ea0op == OP_STBR && reg_ctrl.i[cid].conf[i][0].cdw0.op1 == OP_SFMA; /* SFMA+STBR */
   exring[cid].unit[i].lmea0strq      = reg_ctrl.i[cid].conf[i][0].cdw1.ea0op == OP_STRQ;                                                   /* STRQ */
   exring[cid].unit[i].lmea0strqcol   = 0; /* default (fixed to 0) */
-                                     /* MEXª£ª±?ªªª¡¡ë: ?ªÔª¡¡­ª¤ªÂ¢ğªÂea0       ¢ğªÁ[i][0].fold=0¢ğª´¢ğ«±stage4_exec, fold=1¢ğª´¢ğ«±stage4_fold¢ğª³??¢ğ¢Ã */
-                                     /* MEXª£ª±?ªª¢±«©: ?ªÔª¡¡­ª¤ªÂ¢ğªÂea0(load) ¢ğªÁstage4_exec¢ğª³??¢ğ¢Ã                                         */
-                                     /*            ?ªÔª¡¡­ª¤ªÂ¢ğªÂea0(store)¢ğªÁ[i][0].fold=0¢ğª´¢ğ«±stage4_exec, fold=1¢ğª´¢ğ«±stage4_fold¢ğª³??¢ğ¢Ã */
-  exring[cid].unit[i].lmring_ea0bsy  = ((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFRD) /* ¢Â«â */
-                                     && exring[cid].unit[i].stage4_exec)/* op0 LD */                                                    /* ¢Â«â */
+                                     /* MEXÄÉ²ÃÁ°: ¹ÔÁ´ÂÎ¤Îea0       ¤Ï[i][0].fold=0¤Ê¤éstage4_exec, fold=1¤Ê¤éstage4_fold¤Ë½¾¤¦ */
+                                     /* MEXÄÉ²Ã¸å: ¹ÔÁ´ÂÎ¤Îea0(load) ¤Ïstage4_exec¤Ë½¾¤¦                                         */
+                                     /*            ¹ÔÁ´ÂÎ¤Îea0(store)¤Ï[i][0].fold=0¤Ê¤éstage4_exec, fold=1¤Ê¤éstage4_fold¤Ë½¾¤¦ */
+  exring[cid].unit[i].lmring_ea0bsy  = ((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFRD) /* ¡ú */
+                                     && exring[cid].unit[i].stage4_exec)/* op0 LD */                                                    /* ¡ú */
                                    || (((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFWR)||(exring[cid].unit[i].lmea0sfma||exring[cid].unit[i].lmea0strq))
                                      &&((!reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_exec) || (reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_fold)));/*op0 ST */
-                                     /*            ?ªÔª¡¡­ª¤ªÂ¢ğªÂea1(load) ¢ğªÁstage4_exec¢ğª³??¢ğ¢Ã */
-  exring[cid].unit[i].lmring_ea1bsy  =  (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op && reg_ctrl.i[cid].conf[i][j].cdw1.ea1op <= OP_IM_BUFRD) /* ¢Â«â */
-                                     && exring[cid].unit[i].stage4_exec;/* op1 LD */                                                    /* ¢Â«â */
+                                     /*            ¹ÔÁ´ÂÎ¤Îea1(load) ¤Ïstage4_exec¤Ë½¾¤¦ */
+  exring[cid].unit[i].lmring_ea1bsy  =  (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op && reg_ctrl.i[cid].conf[i][j].cdw1.ea1op <= OP_IM_BUFRD) /* ¡ú */
+                                     && exring[cid].unit[i].stage4_exec;/* op1 LD */                                                    /* ¡ú */
   exring[cid].unit[i].lmring_ful     =(exring[cid].unit[i].lmring_ful2==LMRING_BR_BUF) || (exring[cid].unit[i].lmring_ful1 && exring[cid].unit[i].lmring_ful2==LMRING_BR_BUF-1); /* assign */
   exring[cid].unit[i].deq_wait       = exring[cid].unit[i].lmring_ful                  || (exring[cid].unit[i].lmranger_ok && exring[cid].unit[i].lmring_ea1bsy)
                                                                                        || (exring[cid].unit[i].lmrangew_ok && exring[cid].unit[i].lmring_ea0bsy)
@@ -2058,10 +2053,10 @@ siml_unit_stage4_pre(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRI
 
 siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_TR) */
 {
-  /* LMM¢ğªÂcolumn\©°\«³\ª¡\?\«À\ªª\ª®\¢ğ\«Ñ\¡ë¢ğªÁ,EXRING¢ğ«Òª¿\ª¢«²¢ğ?,LMRING¢ğªÁ?«£¡­ªÓ¢ğª®©¡¡ë¢ë«Â¢ğ?¢ğ?¢ğ«³ */
-  /* ªÂ«ª¢ğ¡¯¢ğ?STRQ¢ğ?ª¤¢±¢ë©Î¢ğ?¢ğ«³?«À?«®,EXRING¢ğªÁª¡¡­cycle¢ğ«Ò?ª²¢ğªª¢ğ©¡¢ğ?¢ğ©°¢ğ¢Ã¢ğªÂ¢ğª®,?«£¡­ªÓ¢ğ?¢ğª´¢ğ¢´¢ğª´¢ğ«³ */
-  /* ?«£¡­ªÓ¢ğ?¢ğª´¢ğ¢ğ?«À?«®¢ğªÂPLOAD¢ğªÁ,EXRING¡­¡ëªÂ?¢±«©¢ğª³©¡¡ë¢ë«Â???ªÁ¢ğ?¢ğ«³¢ğ?¢ğª²¢ğª³¢ğª´¢ğ«³              */
-  /* ¢ğ?¢ğªÂª©ª¢,TR¢ğ«¤©¡¡Şª¿ª¿¢ğª¢¢ğ?,TR¢ğªÁª£?ª¡¡ë¢ğªÂLDDMQ¢ğª³?«£¡­ªÓ¢ğ???¢ğ«³¢ğªÂ¢ğª®,PLOAD¢ğª²©¡¡Ş?©Ğ©¡¡ë¢ë«Â?ª£ª®?   */
+  /* LMM¤Îcolumn¥Ş¥ë¥Á¥¹¥ì¥Ã¥Ç¥¤¥ó¥°¤Ï,EXRING¤òÍ¥Àè¤·,LMRING¤Ï·ä´Ö¤ÇÆ°ºî¤µ¤»¤ë */
+  /* Îã¤¨¤ĞSTRQ¤¬Â¸ºß¤¹¤ë¾ì¹ç,EXRING¤ÏÁ´cycle¤ò»È¤Ã¤Æ¤·¤Ş¤¦¤Î¤Ç,·ä´Ö¤¬¤Ê¤¯¤Ê¤ë */
+  /* ·ä´Ö¤¬¤Ê¤¤¾ì¹ç¤ÎPLOAD¤Ï,EXRING´°Î»¸å¤ËÆ°ºî³«»Ï¤¹¤ë¤³¤È¤Ë¤Ê¤ë              */
+  /* ¤³¤ÎÅÀ,TR¤âÆ±ÍÍ¤À¤¬,TR¤ÏÄ¾Á°¤ÎLDDMQ¤Ë·ä´Ö¤¬½Ğ¤ë¤Î¤Ç,PLOAD¤ÈÆ±»şÆ°ºî²ÄÇ½   */
 
   /*                        EXEC   NOP               */
   /* lmring_brin                       -> lmring_tr  */
@@ -2148,17 +2143,17 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
 
   /* LMRING_TR */
 #if 0
-  Ull   lmranger_ok   : 4; /* wire *//* lmringª¿¡ß?«¡¢ğ?read &ty==4&adr[col]<>lmm_range©¡«¤ */
-  Ull   lmrangew_ok   : 4; /* wire *//* lmringª¿¡ß?«¡¢ğ?write&ty==4&adr[col]<>lmm_range©¡«¤ */
-  Ull   lmlddmqw_ok   : 1; /* wire *//* lmringª¿¡ß?«¡¢ğ?write&ty==3&op1[col]==LDDMQ */
-  Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbrª¤¢±¢ë©Î 4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-  Ull   lmea0strq     : 1; /* wire *//* ea0.strqª¤¢±¢ë©Î      4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-  Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_colª²ªÓ?©Á  4\?\¢ğ\¢´\«³¢ğª³ª´?¢ğ¡Ş¢ğ©¡?ª¤?ªÔ */
-  Ull   lmring_ea0bsy : 1; /* wire *//* ea0ª¿?¢±«â */
-  Ull   lmring_ea1bsy : 1; /* wire *//* ea1ª¿?¢±«â */
+  Ull   lmranger_ok   : 4; /* wire *//* lmringÍ×µá¤¬read &ty==4&adr[col]<>lmm_rangeÆâ */
+  Ull   lmrangew_ok   : 4; /* wire *//* lmringÍ×µá¤¬write&ty==4&adr[col]<>lmm_rangeÆâ */
+  Ull   lmlddmqw_ok   : 1; /* wire *//* lmringÍ×µá¤¬write&ty==3&op1[col]==LDDMQ */
+  Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbrÂ¸ºß 4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+  Ull   lmea0strq     : 1; /* wire *//* ea0.strqÂ¸ºß      4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+  Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_colÈÖ¹æ  4¥µ¥¤¥¯¥ë¤ËÊ¬¤±¤Æ¼Â¹Ô */
+  Ull   lmring_ea0bsy : 1; /* wire *//* ea0Í­¸ú */
+  Ull   lmring_ea1bsy : 1; /* wire *//* ea1Í­¸ú */
   Ull   lmring_ful    : 1; /* wire *//* (ful2==3)|(ful1 & (ful2==2)) */
   Ull   deq_wait      : 1; /* wire *//* lmring_ful|(ranger_ok&ea1)|(rangew_ok&ea0)|(lddmqw_ok&col!=j) */
-  Ull   lmring_ful1   : 1; /* 0:rw/ty/co/sq/a/di/dmªÀ?¢±«â, 1:rw/ty/co/sq/a/di/dmª¿?¢±«â */
+  Ull   lmring_ful1   : 1; /* 0:rw/ty/co/sq/a/di/dmÌµ¸ú, 1:rw/ty/co/sq/a/di/dmÍ­¸ú */
   struct lmring_tr {
     Ull   rw          : 1; /* 0:read, 1:write */
     Ull   ty          : 3; /* 0:reg/conf, 1:reg/breg, 2:reg/addr, 3:lddmq/tr, 4:lmm, 567:-- */
@@ -2171,7 +2166,7 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
     Ull   merge       : 4; /* wordwise 0:merge_lmm, 1:pass_lmm */
   } lmring_tr;
   Ull   lmco          : 2; /* wire *//* -> col# */
-  Ull   lmca          :18; /* wire *//* -> ea01dr *//* col#¢ğª³¢ğ«²¢ğ«³2bitª´«£ª¢?ª¡¡ëaddr */
+  Ull   lmca          :18; /* wire *//* -> ea01dr *//* col#¤Ë¤è¤ë2bitÊäÀµÁ°addr */
   Ull   lmwm          :32; /* wire *//* <- axi   */
   Ull   lmwd[UNIT_WIDTH] ; /* wire *//* <- axi   */
 #endif
@@ -2181,32 +2176,32 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   /* OP_STR          0x11 ... */
   /* OP_LDDMQ        0x18     */
   /* OP_TR           0x19     */
-  /* OP_IM_BUFWR     0x1e ----¢ğ?¢ğ?¢ğ©°¢ğª®eag¢ğª²¡­??ª£ */
-  /* OP_IM_PREF      0x1f lmring-write©¡¡ë¢ë«Â ??¢Äª²¢ğª´¢ğªÂ¢ğª®¡­??ª£¢ğ?¢ğª´¢ğ¢ğ */
+  /* OP_IM_BUFWR     0x1e ----¤³¤³¤Ş¤Çeag¤È´³¾Ä */
+  /* OP_IM_PREF      0x1f lmring-writeÆ°ºî ¼«¿È¤Ê¤Î¤Ç´³¾Ä¤·¤Ê¤¤ */
 
   /* op1                      */
   /* OP_LDR          0x01 ... */
-  /* OP_IM_BUFRD     0x0e ----¢ğ?¢ğ?¢ğ©°¢ğª®eag¢ğª²¡­??ª£ */
-  /* OP_IM_DRAIN     0x0f lmring-read©¡¡ë¢ë«Â  ??¢Äª²¢ğª´¢ğªÂ¢ğª®¡­??ª£¢ğ?¢ğª´¢ğ¢ğ */
-  /* OP_LDDMQ        0x18 lmring-read©¡¡ë¢ë«Â  ??¢Äª²¢ğª´¢ğªÂ¢ğª®¡­??ª£¢ğ?¢ğª´¢ğ¢ğ */
-  /* OP_TR           0x19 lmring-read©¡¡ë¢ë«Â  ??¢Äª²¢ğª´¢ğªÂ¢ğª®¡­??ª£¢ğ?¢ğª´¢ğ¢ğ */
+  /* OP_IM_BUFRD     0x0e ----¤³¤³¤Ş¤Çeag¤È´³¾Ä */
+  /* OP_IM_DRAIN     0x0f lmring-readÆ°ºî  ¼«¿È¤Ê¤Î¤Ç´³¾Ä¤·¤Ê¤¤ */
+  /* OP_LDDMQ        0x18 lmring-readÆ°ºî  ¼«¿È¤Ê¤Î¤Ç´³¾Ä¤·¤Ê¤¤ */
+  /* OP_TR           0x19 lmring-readÆ°ºî  ¼«¿È¤Ê¤Î¤Ç´³¾Ä¤·¤Ê¤¤ */
 
-  /* lmmi[][]¢ğªÁmerge(copy=1)¢ğªÂ¢ğ©Î¢ğª®splitªÀ?.DMAª¤??ªò¢ğªÁv=1,copy=0¢ğªÂ¢ğ©Î¢ğª¢¢ğ?EXEC¢ğ?block¢ğ?¢ğ©¡¢ğ¢ğ¢ğª´¢ğ¢ğ¢±ª¤¢ğ«´LMM???ª²?ª£ */
-  /* conf.lmm_mode¢ğªÁmerge/splitª¿?.EXEC?©Ğ¢ğª³EA->LMM¢ğªÂ¢ëªò¢ğªÂ\?\ª±\«À\?\©°\?\¢´¢ğ«Òª¢¢í¢±©Á */
+  /* lmmi[][]¤Ïmerge(copy=1)¤Î¤ß¤ÇsplitÌµ.DMAÂĞ¾İ¤Ïv=1,copy=0¤Î¤ß¤À¤¬EXEC¤¬block¤·¤Æ¤¤¤Ê¤¤¸Â¤êLMM»²¾È²Ä */
+  /* conf.lmm_mode¤Ïmerge/splitÍ­.EXEC»ş¤ËEA->LMM¤Îºİ¤Î¥¢¥É¥ì¥¹¥Ş¥¹¥¯¤òÀ©¸æ */
 
-  /*  ¡ëª´??¢ğªÂ¢ğ«²¢ğ¢Ã¢ğª³top/bot¢ğ?32Byte\?\«±\¢ğ\«Ñ¢ğ?¢ğ«À¢ğ©¡¢ğ¢ğ¢ğª´¢ğ¢ğ?«À?«®,stage#2¢ğª³¢ğ«¤stage#3ª¿ªĞ\ª®¢Â?\¢Ä¢ğ??«²¢ğ«´?©Ğ¢ğ©°¢ğ«À¢ğª´¢ğ¢ğ¢ğ¢Ä¢ğ«¡¢ğª³¢ğªÁ,axi_adr¢ğª³?ªª¢ğ¡¯¢ğ©¡mask¢ğªÂ?ª¿ªÂ¢±¢ğ?ª±?ª¿¡ß */
+  /*  °Ê²¼¤Î¤è¤¦¤Ëtop/bot¤¬32Byte¥¢¥é¥¤¥ó¤µ¤ì¤Æ¤¤¤Ê¤¤¾ì¹ç,stage#2¤Ë¤âstage#3ÍÑ¥Ç¡¼¥¿¤¬¼è¤ê¹ş¤Ş¤ì¤Ê¤¤¤¿¤á¤Ë¤Ï,axi_adr¤Ë²Ã¤¨¤Æmask¤Î¹ÍÎ¸¤¬É¬Í× */
   /*  for stage#2            mask=0000000000000000 0000000000000000 FFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFF  axi_adr=00020    */
   /*   bot=0002f,top=00000   data=0003000300030002 0003000100030000 0002000700020006 0002000500020004                   */
   /*  for stage#3            mask=FFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFF 0000000000000000 0000000000000000  axi_adr=00020    */
   /*   bot=0005f,top=00030   data=0003000300030002 0003000100030000 0002000700020006 0002000500020004                   */
 
-  /* ª¡¡­ª¿?¢±«âlmmi[i][j]¢ğª³ª¤?¢ğ?, conf.lmm_mode¢ğªÁ, exring¢ğ?¢ğ«±¢ğªÂLD/ST¢ğ????ª²¢ğ?¢ğªã¢ğ?LMMª²ªÁ¡ëªÁ¢ğ«Òcycle%4ª³«²¢ğª³?©¬?¡¯ */
-  /* ª¡¡­ª¿?¢±«âlmmi[i][j]¢ğª³ª¤?¢ğ?, lmmi.bcas/copy¢ğªÁ¢Â¢ğARM¢ğ?ª©«Ó?¢ëLMMI¢ğ«ÒDMAª¤??ªò¢ğª²¢ğ?¢ğ«³¢ğ?¢ğ«Ò?©¬?¡¯ */
-  /* lmm_mode¢ğª²bcas/copy¢ğªÁªÁ?©¡¡ë¢ğ?¢ğ«³ */
-  /* ª¡¡­ª¿?¢±«âlmmi[i][j]¢ğª³ª¤?¢ğ?, lmm_mode/bcas/copy¢ğª²¢ğªÁ©¡ª²ªÂ¢í¢ğª³, reg_ctrl.addr[i][j].top/bot¢ğ?lmring¢±©Ğ¢ğ¡Ş¢ğª³ª²ªÁ¡ëªÁ¢ğ«Òª£«Ñ?¡¯ */
-  /* top/bot¢ğªÁcycle%4¢ğªÂ¡­ªÓ¢ğª®?ª©ª´?¢ğ?¢ğ«³¢ğ?¢ğª²¢ğ«¤¢ğ?¢ğ«³¢ğ?¢Â¢ğcol¢ğª®?©¬ª£«´¢ğ?¢ğ¢Äcycle%4¢ğªÂtop/bot¢ğª³HIT¢ğ?¢ğ«À¢ğ?lmring¢ğ?¢ğ«±ªÂ¢î¢ğ??©Ğ¢ğ«¡¢ğ?¢ğ«²¢ğ¢ğ. */
-  /* ¢ğ¢Ä¢ğª¢¢ğ?¢Â¢ğ?«Ğ¢ğ??©Ğ¢ğ©Î?©Ğ¢ğª³¢ğªÁLMM¢ğªÂª´??«£¢Ä«Ô¢ğ«Òª²?ª£«´¢ğ?¢ğ«³ª±?ª¿¡ß¢ğ?¢ğ?¢ğ«´,col¢ğª³ª¤?¡Ş©Ğ¢ğ?¢ğ«³conf.lmm_mode¢ğªÂ???ª²¢ğ?ª±?ª¿¡ß */
-  /* ?«©¡ëªÀ2bit¢ğªÂ\©°\?\¢´¢ğªÁ¢Â¢ğEA04DR¢ğª³?«Ğ¢ğ??©Ğ¢ğ«¢¢ëªò¢ğª³ª©?ª¿ªĞ¢ğ?¢ğ«³¢Âª´LMRA/EA1,LMWA/EA0¢ğ??©¡¢Â?¢ù¢Ãª¿?¢Âª³*/
+  /* Á´Í­¸úlmmi[i][j]¤ËÂĞ¤·, conf.lmm_mode¤Ï, exring¤«¤é¤ÎLD/ST¤¬»²¾È¤¹¤Ù¤­LMMÈÏ°Ï¤òcycle%4Ëè¤Ë»Ø¼¨ */
+  /* Á´Í­¸úlmmi[i][j]¤ËÂĞ¤·, lmmi.bcas/copy¤Ï¡¤ARM¤¬Åö³ºLMMI¤òDMAÂĞ¾İ¤È¤¹¤ë¤«¤ò»Ø¼¨ */
+  /* lmm_mode¤Èbcas/copy¤ÏÏ¢Æ°¤¹¤ë */
+  /* Á´Í­¸úlmmi[i][j]¤ËÂĞ¤·, lmm_mode/bcas/copy¤È¤ÏÆÈÎ©¤Ë, reg_ctrl.addr[i][j].top/bot¤¬lmring¸ş¤±¤ËÈÏ°Ï¤òÄó¼¨ */
+  /* top/bot¤Ïcycle%4¤Î´Ö¤Ç½ÅÊ£¤¹¤ë¤³¤È¤â¤¢¤ë¤¬¡¤col¤Ç»ØÄê¤·¤¿cycle%4¤Îtop/bot¤ËHIT¤¹¤ì¤Ğlmring¤«¤éÎ®¤·¹ş¤á¤Ğ¤è¤¤. */
+  /* ¤¿¤À¤·¡¤½ñ¤­¹ş¤ß»ş¤Ë¤ÏLMM¤ÎÊ¬³ä¿ô¤òÈ½Äê¤¹¤ëÉ¬Í×¤¬¤¢¤ê,col¤ËÂĞ±ş¤¹¤ëconf.lmm_mode¤Î»²¾È¤¬É¬Í× */
+  /* ¾å°Ì2bit¤Î¥Ş¥¹¥¯¤Ï¡¤EA04DR¤Ë½ñ¤­¹ş¤àºİ¤ËÅ¬ÍÑ¤¹¤ë¡ÊLMRA/EA1,LMWA/EA0¤¬³Æ¡¹¶¦Í­¡Ë*/
   if (exring[cid].unit[i].cmd == CMD_NOP
       && (exring[cid].unit[i].cycle&3) == 3
       && (reg_ctrl.i[cid].cmd&3) == CMD_RESET) {
@@ -2226,7 +2221,7 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   }
   else if (ful2 && !deq_wait) { /* for next cycle */
     exring[cid].unit[i].lmco    = br->col;  /* wire *//* -> col# */
-    exring[cid].unit[i].lmca    = br->a;    /* wire *//* -> ea01dr *//* col#¢ğª³¢ğ«²¢ğ«³2bitª´«£ª¢?ª¡¡ëaddr */
+    exring[cid].unit[i].lmca    = br->a;    /* wire *//* -> ea01dr *//* col#¤Ë¤è¤ë2bitÊäÀµÁ°addr */
     exring[cid].unit[i].lmwm    = br->dm & (((exring[cid].unit[i].rangew_ok&0x80)?0xf0000000:0) | ((exring[cid].unit[i].rangew_ok&0x40)?0x0f000000:0)
                                           | ((exring[cid].unit[i].rangew_ok&0x20)?0x00f00000:0) | ((exring[cid].unit[i].rangew_ok&0x10)?0x000f0000:0)
                                           | ((exring[cid].unit[i].rangew_ok&0x08)?0x0000f000:0) | ((exring[cid].unit[i].rangew_ok&0x04)?0x00000f00:0)
@@ -2267,7 +2262,7 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   Ull   ea14woofs_prev:18; /* reg  *//* for siml-loop only */
   Ull   ea14woofs     :18; /* reg  *//* for mex(&addr) feedback */
   Ull   ea14dr        :18; /* reg  */
-  Ull   tr_valid      : 1; /* TR¢ğªÂ?«Øª¤ªÓ¢ğ«Òª±??¡¯ */
+  Ull   tr_valid      : 1; /* TR¤Î¾õÂÖ¤òÉ½¼¨ */
   Ull   tx4dr[UNIT_WIDTH]; /* reg  */
   Ull   mwmux[UNIT_WIDTH]; /* wire for mw0[] */
   struct lmm {
@@ -2290,9 +2285,9 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
       && (reg_ctrl.i[cid].cmd&3) == CMD_RESET) {
     exring[cid].unit[i].ex4dr_prev     = 0LL; /* siml-loop only */
     exring[cid].unit[i].ex4dr          = 0LL;
-    exring[cid].unit[i].ea04woofs_prev = 0;   /* ¢Â«âsiml-loop only */
+    exring[cid].unit[i].ea04woofs_prev = 0;   /* ¡úsiml-loop only */
     exring[cid].unit[i].ea04dr         = 0;
-    exring[cid].unit[i].ea14woofs_prev = 0;   /* ¢Â«âsiml-loop only */
+    exring[cid].unit[i].ea14woofs_prev = 0;   /* ¡úsiml-loop only */
     exring[cid].unit[i].ea14dr         = 0;
     exring[cid].unit[i].tx4dr[0]       = 0LL;
     exring[cid].unit[i].tx4dr[1]       = 0LL;
@@ -2314,9 +2309,9 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   else {
     exring[cid].unit[i].ex4dr_prev     = exring[cid].unit[i].ex4dr; /* siml-loop only */
     if (exring[cid].unit[i].stage4_exec || exring[cid].unit[i].stage4_fold) { /* active */
-      /* LD/ST¢ğª³¢ğ«²¢ğ«³LMM???ª²¢ğªÁlmm_mode¢ğªÂ?«£¢ğ«´ª©«Ó¢ğ©¡cycle¢ğ«Ò¢±?ªÀ¢í¢ğª³?«±¢ğ«³. */
+      /* LD/ST¤Ë¤è¤ëLMM»²¾È¤Ïlmm_mode¤Î³ä¤êÅö¤Æcycle¤ò¸·Ì©¤Ë¼é¤ë. */
       /* ex3dr -> ex4dr */
-      if (reg_ctrl.i[cid].conf[i][j].cdw0.op1 == OP_SFMA) { /* stage4¢ğª®SFMA?ªª?? */
+      if (reg_ctrl.i[cid].conf[i][j].cdw0.op1 == OP_SFMA) { /* stage4¤ÇSFMA²Ã»» */
 	if ((!exring[cid].unit[i].one_shot_fold4 || ((reg_ctrl.i[cid].conf[i][j].cdw0.init&1)&&(exring[cid].unit[i].unit1_forstat_fold4&1))) && j==0)
 	  softu64(3, NULL, &exring[cid].unit[i].ex3dr, &exring[cid].unit[i].ex4dr, exring[cid].unit[i].ex3passr1, exring[cid].unit[i].ex3passr2, exring[cid].unit[i].ex3passr3, 0LL);
 	else
@@ -2338,11 +2333,11 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
     /* exring[cid].unit[i].lmring_ful    = NEXT_TR+NEXT_BR==FULL;                   */
     /* exring[cid].unit[i].deq_wait      = lmring_ful | (ranger_ok & ea1bsy) | (rangew_ok & ea0bsy) | (lddmqw_ok & col!=j); */
 
-    /* eaop0/eaop1¢ğ«Òª£?ª¢ªä¢±¢Â¢ë¢ë¢ğ?¢ğ«³¢ğªÂ¢ğª®,conf.mwsa¢ğªÁ?ª²¢ğ«Á¢ğª´¢ğ¢´¢ğ©¡ªÂª±¢ğ¢ğ */
-    /* (NOP | EXEC) & !deq_wait & lmrangew_ok¢ğªÂ?©Ğ lmwa->ea04dr */
-    /* lmring_ea0bsy                         ¢ğªÂ?©Ğ,ea0d->ea04dr */
-    exring[cid].unit[i].ea04woofs_prev = exring[cid].unit[i].ea04woofs; /* ¢Â«âsiml-loop only */
-    exring[cid].unit[i].ea04woofs      = exring[cid].unit[i].ea03woofs; /* ¢Â«â */
+    /* eaop0/eaop1¤òÄ¾ÀÜ¸¡ºº¤¹¤ë¤Î¤Ç,conf.mwsa¤Ï»È¤ï¤Ê¤¯¤ÆÎÉ¤¤ */
+    /* (NOP | EXEC) & !deq_wait & lmrangew_ok¤Î»ş lmwa->ea04dr */
+    /* lmring_ea0bsy                         ¤Î»ş,ea0d->ea04dr */
+    exring[cid].unit[i].ea04woofs_prev = exring[cid].unit[i].ea04woofs; /* ¡úsiml-loop only */
+    exring[cid].unit[i].ea04woofs      = exring[cid].unit[i].ea03woofs; /* ¡ú */
     if ((exring[cid].unit[i].cmd == CMD_NOP || exring[cid].unit[i].cmd == CMD_EXEC)
       && ful2 && !deq_wait && exring[cid].unit[i].lmrangew_ok) { /* axi->lmm_write */
       /* LMEM_SIZE(128KB)/4 = 32KB... lmm_mode=1:adr=(block=col&0)*(LMEM_SIZE/4) | (ofs=adr&(LMEM_SIZE/1-1)) */
@@ -2363,32 +2358,36 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
       exring[cid].unit[i].lmm.mw0[1]  = exring[cid].unit[i].lmwd[1];
       exring[cid].unit[i].lmm.mw0[2]  = exring[cid].unit[i].lmwd[2];
       exring[cid].unit[i].lmm.mw0[3]  = exring[cid].unit[i].lmwd[3];
+      printf("place1 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+      printf("place1 lmm_mode %x exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask %x  exring[cid].unit[i].lmco %x exring[cid].unit[i].ea04_umask %x exring[cid].unit[i].lmca %x exring[cid].unit[i].ea04_lmask %x\n",reg_ctrl.i[cid].conf[i][exring[cid].unit[i].lmco].cdw2.lmm_mode,exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmco,exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmca,exring[cid].unit[i].ea04_lmask);
 #if 0
 printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%08.8x lmranger_ok=%x lmrangew_ok=%x top=%08.8x bot=%08.8x\n", i, br->col, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axir, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axiw, br->rw, br->ty, br->a, exring[cid].unit[i].lmranger_ok, exring[cid].unit[i].lmrangew_ok, reg_ctrl.i[cid].addr[i][br->col].top, reg_ctrl.i[cid].addr[i][br->col].bot);
 #endif
     }
-    else if (exring[cid].unit[i].lmring_ea0bsy) { /* EXEC & ea0d->lmm_write/read (STRQ/SFMA¢ğªÂª³«²\?\¢ğ\¢´\«³?ª¤?ªÔ¢ğ«¤¢ğ?¢ğ?) */
+    else if (exring[cid].unit[i].lmring_ea0bsy) { /* EXEC & ea0d->lmm_write/read (STRQ/SFMA¤ÎËè¥µ¥¤¥¯¥ë¼Â¹Ô¤â¤³¤³) */
       int kmex;
       k = (exring[cid].unit[i].lmea0sfma || exring[cid].unit[i].lmea0strq) ? exring[cid].unit[i].lmea0strqcol : j;
-      /* ¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«âMEX0ª¿ªĞ¢ğªÂADDR_MASK */
-      /* conf[][col=2]mex1op¢ğªÁ,conf[][col=2].lmm_mode¢ğ«Ò???ª² */
-      /* conf[][col=2]mex0op¢ğªÁ,conf[][col=1].lmm_mode¢ğ«Ò???ª² */
-      kmex = (reg_ctrl.i[cid].conf[i][j].cdw0.mex0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op < OP_IM_BUFRD) ? ((k==3)?2:(k==2)?1:0) : k; /* ¢Â«â */
-      /* ¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«âMEX0ª¿ªĞ¢ğªÂLD */
+      /* ¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡úMEX0ÍÑ¤ÎADDR_MASK */
+      /* conf[][col=2]mex1op¤Ï,conf[][col=2].lmm_mode¤ò»²¾È */
+      /* conf[][col=2]mex0op¤Ï,conf[][col=1].lmm_mode¤ò»²¾È */
+      kmex = (reg_ctrl.i[cid].conf[i][j].cdw0.mex0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op < OP_IM_BUFRD) ? ((k==3)?2:(k==2)?1:0) : k; /* ¡ú */
+      /* ¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡úMEX0ÍÑ¤ÎLD */
       /* if (i==2 && k==2) printf("[2][2] mexop0=%d\n", reg_ctrl.i[cid].conf[i][k].cdw0.mex0op); */
-      switch (reg_ctrl.i[cid].conf[i][kmex].cdw2.lmm_mode) {   /* ¢Â«â */
+      switch (reg_ctrl.i[cid].conf[i][kmex].cdw2.lmm_mode) {   /* ¡ú */
       case 0: exring[cid].unit[i].ea04_umask = LMEM_UMASK0; exring[cid].unit[i].ea04_lmask = LMEM_LMASK0; break;
       case 1: exring[cid].unit[i].ea04_umask = LMEM_UMASK1; exring[cid].unit[i].ea04_lmask = LMEM_LMASK1; break;
       case 2: exring[cid].unit[i].ea04_umask = LMEM_UMASK2; exring[cid].unit[i].ea04_lmask = LMEM_LMASK2; break;
       case 3: exring[cid].unit[i].ea04_umask = LMEM_UMASK3; exring[cid].unit[i].ea04_lmask = LMEM_LMASK3; break;
       }
-      exring[cid].unit[i].ea04dr   = ((kmex & exring[cid].unit[i].ea04_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea03dr & exring[cid].unit[i].ea04_lmask); /* ¢Â«â */
+      exring[cid].unit[i].ea04dr   = ((kmex & exring[cid].unit[i].ea04_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea03dr & exring[cid].unit[i].ea04_lmask); /* ¡ú */
       /* if (i==2 && k==2) printf("kmex=%d lmm_mode=%d ea04dr=%08.8x\n", kmex, reg_ctrl.i[cid].conf[i][kmex].cdw2.lmm_mode, (Uint)exring[cid].unit[i].ea04dr); */
       exring[cid].unit[i].lmm.en0  = 1;
       exring[cid].unit[i].lmm.rw0  = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0op & 0x10)!=0; /* read/write */
       exring[cid].unit[i].lmm.ma0  = (exring[cid].unit[i].ea04dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
-                                        /* OP_TR   ¢ğªÂ?«À?«®,eag0->WRITE,eag1->READ */
-                                        /* OP_LDDMQ¢ğªÂ?«À?«®,eag0->WRITE,eag1->READ */
+      printf("place2 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+
+                                        /* OP_TR   ¤Î¾ì¹ç,eag0->WRITE,eag1->READ */
+                                        /* OP_LDDMQ¤Î¾ì¹ç,eag0->WRITE,eag1->READ */
       /* mws[0-3]:2; 0:lmwd1, 1:exdr, 2:ts1 */
       exring[cid].unit[i].mwmux[0] = reg_ctrl.i[cid].conf[i][k].cdw2.mws0==1 ? exring[cid].unit[i].ex4dr : exring[cid].unit[i].tx3dr[0]; /* ex3dr->ex4dr for SFMR+STBR */
       exring[cid].unit[i].mwmux[1] = reg_ctrl.i[cid].conf[i][k].cdw2.mws1==1 ? exring[cid].unit[i].ex4dr : exring[cid].unit[i].tx3dr[1]; /* ex3dr->ex4dr for SFMR+STBR */
@@ -2404,20 +2403,20 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xff0fffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==2 && (exring[cid].unit[i].cx3dr&2)) ? 0x00f00000 : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xf0ffffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==3 && (exring[cid].unit[i].cx3dr&1)) ? 0x0f000000 : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0x0fffffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==3 && (exring[cid].unit[i].cx3dr&2)) ? 0xf0000000 : 0x00000000);
-        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* alignª±ªÔª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* alignª±ªÔª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* alignª±ªÔª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* alignª±ªÔª¿¡ß */
+        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* alignÉÔÍ× */
+        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* alignÉÔÍ× */
+        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* alignÉÔÍ× */
+        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* alignÉÔÍ× */
         break;
       case OP_STWR:
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xffffff00) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==0 && (exring[cid].unit[i].cx3dr&1)) ? 0x0000000f<<(exring[cid].unit[i].ea03dr & sizeof(int)) : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xffff00ff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==1 && (exring[cid].unit[i].cx3dr&1)) ? 0x00000f00<<(exring[cid].unit[i].ea03dr & sizeof(int)) : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xff00ffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==2 && (exring[cid].unit[i].cx3dr&1)) ? 0x000f0000<<(exring[cid].unit[i].ea03dr & sizeof(int)) : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0x00ffffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==3 && (exring[cid].unit[i].cx3dr&1)) ? 0x0f000000<<(exring[cid].unit[i].ea03dr & sizeof(int)) : 0x00000000);
-        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignª±?ª¿¡ß */
+        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & sizeof(int))*8; /* alignÉ¬Í× */
         break;
 #if 0
       case OP_STHR:
@@ -2425,10 +2424,10 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xffff00ff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==1 && (exring[cid].unit[i].cx3dr&1)) ? 0x00000300<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short))) : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xff00ffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==2 && (exring[cid].unit[i].cx3dr&1)) ? 0x00030000<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short))) : 0x00000000);
         exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0x00ffffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==3 && (exring[cid].unit[i].cx3dr&1)) ? 0x03000000<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short))) : 0x00000000);
-        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignª±?ª¿¡ß */
-        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignª±?ª¿¡ß */
+        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignÉ¬Í× */
+        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)))*8; /* alignÉ¬Í× */
         break;
 #endif
       case OP_STBR:
@@ -2438,24 +2437,24 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
 	exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xffff00ff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==1 && (exring[cid].unit[i].cx3dr&1)) ? 0x00000100<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char))) : 0x00000000);
 	exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0xff00ffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==2 && (exring[cid].unit[i].cx3dr&1)) ? 0x00010000<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char))) : 0x00000000);
 	exring[cid].unit[i].lmm.mm0 = (exring[cid].unit[i].lmm.mm0 & 0x00ffffff) | (((exring[cid].unit[i].ea03dr/sizeof(Ull) & (UNIT_WIDTH-1))==3 && (exring[cid].unit[i].cx3dr&1)) ? 0x01000000<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char))) : 0x00000000);
-	exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignª±?ª¿¡ß */
-	exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignª±?ª¿¡ß */
-	exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignª±?ª¿¡ß */
-	exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignª±?ª¿¡ß */
+	exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignÉ¬Í× */
+	exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignÉ¬Í× */
+	exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignÉ¬Í× */
+	exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]<<(exring[cid].unit[i].ea03dr & (sizeof(int)|sizeof(short)|sizeof(char)))*8; /* alignÉ¬Í× */
         break;
       case OP_IM_PREF:
       case OP_IM_BUFWR:
-        exring[cid].unit[i].lmm.mm0    = 0xffffffff;         /* mask *//* ?ªªª£«´???ªÒ */
-        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* ?ªªª£«´???ªÒ */
-        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* ?ªªª£«´???ªÒ */
-        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* ?ªªª£«´???ªÒ */
-        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* ?ªªª£«´???ªÒ */
+        exring[cid].unit[i].lmm.mm0    = 0xffffffff;         /* mask *//* »ÃÄêµ­½Ò */
+        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* »ÃÄêµ­½Ò */
+        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* »ÃÄêµ­½Ò */
+        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* »ÃÄêµ­½Ò */
+        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* »ÃÄêµ­½Ò */
         break;
       case OP_STRQ: /* OP_STRQ in target   slot */
         if (exring[cid].unit[i].lmea0strq) {
-          /* STRQ¢ğªÁSTR¢ğ«Ò4\?\¢ğ\¢´\«³ª´??«£?ª¤?ªÔ */
+          /* STRQ¤ÏSTR¤ò4¥µ¥¤¥¯¥ëÊ¬³ä¼Â¹Ô */
           exring[cid].unit[i].lmm.mm0 = 0x000000ff << (j<<3);
-          exring[cid].unit[i].lmm.mw0[j] = exring[cid].unit[i].mwmux[j]; /* alignª±ªÔª¿¡ß */
+          exring[cid].unit[i].lmm.mw0[j] = exring[cid].unit[i].mwmux[j]; /* alignÉÔÍ× */
         }
         break;
       default:
@@ -2466,10 +2465,10 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
     else
       exring[cid].unit[i].lmm.en0     = 0;
 
-    /* (NOP | EXEC) & !deq_wait & lmranger_ok¢ğªÂ?©Ğ lmra->ea14dr */
-    /* lmring_ea1bsy                         ¢ğªÂ?©Ğ,ea1d->ea14dr */
-    exring[cid].unit[i].ea14woofs_prev = exring[cid].unit[i].ea14woofs; /* ¢Â«âsiml-loop only */
-    exring[cid].unit[i].ea14woofs      = exring[cid].unit[i].ea13woofs; /* ¢Â«â */
+    /* (NOP | EXEC) & !deq_wait & lmranger_ok¤Î»ş lmra->ea14dr */
+    /* lmring_ea1bsy                         ¤Î»ş,ea1d->ea14dr */
+    exring[cid].unit[i].ea14woofs_prev = exring[cid].unit[i].ea14woofs; /* ¡úsiml-loop only */
+    exring[cid].unit[i].ea14woofs      = exring[cid].unit[i].ea13woofs; /* ¡ú */
     if ((exring[cid].unit[i].cmd == CMD_NOP || exring[cid].unit[i].cmd == CMD_EXEC)
       && ful2 && !deq_wait && exring[cid].unit[i].lmranger_ok) { /* axi->lmm_read */
       /* LMEM_SIZE(128KB)/4 = 32KB... lmm_mode=1:adr=(block=col&0)*(LMEM_SIZE/4) | (ofs=adr&(LMEM_SIZE/1-1)) */
@@ -2490,7 +2489,7 @@ printf("====== RLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
 #endif
     }
     else if (exring[cid].unit[i].lmring_ea1bsy) { /* EXEC & ea1d->lmm_read */
-      /* ¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«â¢Â«âMEX1ª¿ªĞ¢ğªÂLD */
+      /* ¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡ú¡úMEX1ÍÑ¤ÎLD */
       /* if (i==2 && j==2) printf("[2][2] mexop1=%d\n", reg_ctrl.i[cid].conf[i][j].cdw0.mex1op); */
       switch (reg_ctrl.i[cid].conf[i][j].cdw2.lmm_mode) {
       case 0: exring[cid].unit[i].ea14_umask = LMEM_UMASK0; exring[cid].unit[i].ea14_lmask = LMEM_LMASK0; break;
@@ -2510,7 +2509,7 @@ printf("====== RLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
 
     /* lmwd/tx3dr -> tx4dr */
     if (exring[cid].unit[i].stage4_exec) { /* active */
-      /* 0:lmwd0, 1:exdr, 2:ts0 *//* 0:TR?¡ëª±«Ô?«Ğ¢ğ??©Ğ¢ğ©Îª¿ªĞ, 1,2:EX/TS?«Ğ¢ğ??©Ğ¢ğ©Îª¿ªĞ */
+      /* 0:lmwd0, 1:exdr, 2:ts0 *//* 0:TR³°Éô½ñ¤­¹ş¤ßÍÑ, 1,2:EX/TS½ñ¤­¹ş¤ßÍÑ */
       if (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op == OP_LDDMQ) {
         if (exring[cid].unit[i].lmlddmqw_ok && br->col == j) {
           exring[cid].unit[i].tx4dr[0] = exring[cid].unit[i].lmwd[0];
@@ -2522,7 +2521,7 @@ printf("====== RLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
         else
           exring[cid].unit[i].tr_valid = 0; /* no data for OP_LDDMQ */
       }
-      else { /* trs==0¢ğªÂ?«À?«®,lmwd->tr¢ğª¢¢ğ?,LDDMQ¡ëª´?¡ë¢ğª³?ª²ª¿ªĞ¢ğ?¢ğ«³\¡Ş¢Â?\?¢ğªÁ¢ğª´¢ğ¢ğ */
+      else { /* trs==0¤Î¾ì¹ç,lmwd->tr¤À¤¬,LDDMQ°Ê³°¤Ë»ÈÍÑ¤¹¤ë¥±¡¼¥¹¤Ï¤Ê¤¤ */
         exring[cid].unit[i].tx4dr[0] = reg_ctrl.i[cid].conf[i][j].cdw2.trs0==1 ? exring[cid].unit[i].ex4dr : exring[cid].unit[i].tx3dr[0]; /* ex3dr->ex4dr for SFMR+STBR */
         exring[cid].unit[i].tx4dr[1] = reg_ctrl.i[cid].conf[i][j].cdw2.trs1==1 ? exring[cid].unit[i].ex4dr : exring[cid].unit[i].tx3dr[1]; /* ex3dr->ex4dr for SFMR+STBR */
         exring[cid].unit[i].tx4dr[2] = reg_ctrl.i[cid].conf[i][j].cdw2.trs2==1 ? exring[cid].unit[i].ex4dr : exring[cid].unit[i].tx3dr[2]; /* ex3dr->ex4dr for SFMR+STBR */
@@ -2613,8 +2612,8 @@ siml_unit_stage5(Uint cid, Uint i) /* stage-5 (3DR->BROUT)(LMRING_TR->LMRING_BRO
   Ull   mr0d             ; /* muxed data for BR[0] */
   Ull   mr1d             ; /* muxed data for BR[1] */
   Ull   lmrd[UNIT_WIDTH] ; /* wire *//* -> axi   */
-  Ull   brout_valid   : 1; /* BR¢ğªÂ?«Øª¤ªÓ¢ğ«Òª±??¡¯ ?«Á?©Ğtr_valid¢ğ«Ò1¢ÃªÑ¢±«©¢ğª³ª©ª¡ª²ª¤ */
-  struct {Ull r[UNIT_WIDTH];} b[2][EMAX_WIDTH]; /* shadow_breg *//* constant¢ğªÁªÂ?ª´«ò¢ğª³\?\ªª\ª² */
+  Ull   brout_valid   : 1; /* BR¤Î¾õÂÖ¤òÉ½¼¨ ¾ï»ştr_valid¤ò1¦Ó¸å¤ËÅÁÈÂ */
+  struct {Ull r[UNIT_WIDTH];} b[2][EMAX_WIDTH]; /* shadow_breg *//* constant¤ÏÎ¾Êı¤Ë¥»¥Ã¥È */
 
   Ull   lmring_ful2   : 2; /* 0:empty, 3:full */
   Ull   lmring_b_top  : 2; /* to be enqueued next */
@@ -2638,10 +2637,10 @@ siml_unit_stage5(Uint cid, Uint i) /* stage-5 (3DR->BROUT)(LMRING_TR->LMRING_BRO
   exring[cid].unit[i].mr1mux = (a1/sizeof(Ull) & (UNIT_WIDTH-1)); /* mr1[3-0] -> mr0d */
   exring[cid].unit[i].mr1d   = exring[cid].unit[i].lmm.mr1[exring[cid].unit[i].mr1mux];
 
-  exring[cid].unit[i].mexmr0d_prev = exring[cid].unit[i].mexmr0d; /* ¢Â«â */
-  exring[cid].unit[i].mexmr0d      = exring[cid].unit[i].mr0d;    /* ¢Â«â */
-  exring[cid].unit[i].mexmr1d_prev = exring[cid].unit[i].mexmr1d; /* ¢Â«â */
-  exring[cid].unit[i].mexmr1d      = exring[cid].unit[i].mr1d;    /* ¢Â«â */
+  exring[cid].unit[i].mexmr0d_prev = exring[cid].unit[i].mexmr0d; /* ¡ú */
+  exring[cid].unit[i].mexmr0d      = exring[cid].unit[i].mr0d;    /* ¡ú */
+  exring[cid].unit[i].mexmr1d_prev = exring[cid].unit[i].mexmr1d; /* ¡ú */
+  exring[cid].unit[i].mexmr1d      = exring[cid].unit[i].mr1d;    /* ¡ú */
 
   for (k=0; k<UNIT_WIDTH; k++)
     exring[cid].unit[i].lmrd[k] = exring[cid].unit[i].lmm.mr1[k];
@@ -2737,9 +2736,9 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
     /* load mr -> br0 *//* brs0: 0:off, 1:mr10, 2:tr0, 3:mr0 */
     switch (reg_ctrl.i[cid].conf[i][j].cdw2.brs0) {
     case 0:                                                                    break; /* off */
-    case 1: exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].lmm.mr1[0]; break; /* 1:mr10 alignª±ªÔª¿¡ß */
-    case 2: exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].tx4dr[0];   break; /* 2:tr0  alignª±ªÔª¿¡ß */
-    case 3:                                                                           /* 3:mr0  alignª±?ª¿¡ß */
+    case 1: exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].lmm.mr1[0]; break; /* 1:mr10 alignÉÔÍ× */
+    case 2: exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].tx4dr[0];   break; /* 2:tr0  alignÉÔÍ× */
+    case 3:                                                                           /* 3:mr0  alignÉ¬Í× */
       switch (reg_ctrl.i[cid].conf[i][j].cdw1.ea0op) {
       case OP_LDR :
 	switch (a0&7) { /* unaligned load */
@@ -2747,28 +2746,19 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
 	default:     exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].mr1d << (8-(a0&7))*8 | exring[cid].unit[i].mr0d >> (a0&7)*8; break;
 	}
 	break;
-      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
-      case OP_LDUWR: exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
+      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
 #if 0
-      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
-      case OP_LDUHR: exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
+      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
 #endif
-      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
-      case OP_LDUBR: exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
+      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
       }
     }
     /* load mr -> br1 *//* brs1: 0:off, 1:mr11, 2:tr1, 3:mr1 */
     switch (reg_ctrl.i[cid].conf[i][j].cdw2.brs1) {
     case 0:                                                                    break; /* off */
-    case 1: exring[cid].unit[i].b[b][j].r[1] = exring[cid].unit[i].lmm.mr1[1]; break; /* 1:mr11 alignª±ªÔª¿¡ß */
-    case 2: exring[cid].unit[i].b[b][j].r[1] = exring[cid].unit[i].tx4dr[1];   break; /* 2:tr1  alignª±ªÔª¿¡ß */
-    case 3:                                                                           /* 3:mr1  alignª±?ª¿¡ß */
+    case 1: exring[cid].unit[i].b[b][j].r[1] = exring[cid].unit[i].lmm.mr1[1]; break; /* 1:mr11 alignÉÔÍ× */
+    case 2: exring[cid].unit[i].b[b][j].r[1] = exring[cid].unit[i].tx4dr[1];   break; /* 2:tr1  alignÉÔÍ× */
+    case 3:                                                                           /* 3:mr1  alignÉ¬Í× */
       switch (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op) {
       case OP_LDR:   
 	switch (a1&7) { /* unaligned load */
@@ -2776,34 +2766,25 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
 	default:     exring[cid].unit[i].b[b][j].r[1] =                          exring[cid].unit[i].mr1d >> (a1&7)*8; break;
 	}
         break;
-      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
-      case OP_LDUWR: exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
+      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
 #if 0
-      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
-      case OP_LDUHR: exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
+      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
 #endif
-      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
-      case OP_LDUBR: exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
+      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
       }
     }
     /* load mr -> br2 *//* brs2: 0:off, 1:mr12, 2:tr2, 3:exdr */
     switch (reg_ctrl.i[cid].conf[i][j].cdw2.brs2) {
     case 0:                                                                    break; /* off */
-    case 1: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].lmm.mr1[2]; break; /* 1:mr12 alignª±ªÔª¿¡ß */
-    case 2: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].tx4dr[2];   break; /* 2:tr2  alignª±ªÔª¿¡ß */
-    case 3: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].ex4dr;      break; /* 3:exdr alignª±ªÔª¿¡ß */
+    case 1: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].lmm.mr1[2]; break; /* 1:mr12 alignÉÔÍ× */
+    case 2: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].tx4dr[2];   break; /* 2:tr2  alignÉÔÍ× */
+    case 3: exring[cid].unit[i].b[b][j].r[2] = exring[cid].unit[i].ex4dr;      break; /* 3:exdr alignÉÔÍ× */
     }
     /* load mr -> br3 *//* brs3: 0:off, 1:mr13, 2:tr3 */
     switch (reg_ctrl.i[cid].conf[i][j].cdw2.brs3) {
     case 0:                                                                    break; /* off */
-    case 1: exring[cid].unit[i].b[b][j].r[3] = exring[cid].unit[i].lmm.mr1[3]; break; /* 1:mr13 alignª±ªÔª¿¡ß */
-    case 2: exring[cid].unit[i].b[b][j].r[3] = exring[cid].unit[i].tx4dr[3];   break; /* 2:tr3  alignª±ªÔª¿¡ß */
+    case 1: exring[cid].unit[i].b[b][j].r[3] = exring[cid].unit[i].lmm.mr1[3]; break; /* 1:mr13 alignÉÔÍ× */
+    case 2: exring[cid].unit[i].b[b][j].r[3] = exring[cid].unit[i].tx4dr[3];   break; /* 2:tr3  alignÉÔÍ× */
     }
   }
 
@@ -2830,10 +2811,10 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
       exring[cid].unit[i].lmring_br[k].d[3] = 0LL;
     }
   }
-  /* lmring_ful1¢ğª²lmring_ful2¢ğªÁreg, exring[cid].unit[ni].deq_wait¢ğªÁwire */
-  /* ¢±«©ªªª´¢ğ?¢ğ«±siml¢ğ?¢ğ«³¢ğªÂ¢ğª®,[ni].deq_wait¢ğªÁ¢ëª®¢Ä? */
-  /* exring[cid].unit[i].lmring_ful1¢ğªÁ0¢ğª³ª´ªĞ??¢ğ?ª£?¢±«©¢ğªÂsiml_unit_stage4()¢ğª³¢ğ©¡1¢ğª³ªÀ«¡¢ğ«³.\ªÁ¢Â?\ª±¢ğ«¤©¡¡Ş¢ğ¢± */
-  /* exring[cid].unit[i].lmring_ful2¢ğ«Ò¢ğ?¢ğ?¢ğª®??¢Ä?.\ªÁ¢Â?\ª±¢ğ«¤©¡¡Ş¢ğ¢± */
+  /* lmring_ful1¤Èlmring_ful2¤Ïreg, exring[cid].unit[ni].deq_wait¤Ïwire */
+  /* ¸åÃÊ¤«¤ésiml¤¹¤ë¤Î¤Ç,[ni].deq_wait¤ÏºÇ¿· */
+  /* exring[cid].unit[i].lmring_ful1¤Ï0¤ËÊÑ¹¹¤·Ä¾¸å¤Îsiml_unit_stage4()¤Ë¤Æ1¤ËÌá¤ë.¥Ï¡¼¥É¤âÆ±¤¸ */
+  /* exring[cid].unit[i].lmring_ful2¤ò¤³¤³¤Ç¹¹¿·.¥Ï¡¼¥É¤âÆ±¤¸ */
   else {
     if (exring[cid].unit[i].lmring_ful1) { /* enqueue to lmring_br for next cycle */
       /* enqueue */
@@ -2947,13 +2928,15 @@ siml_unit_lmm(cid,  i) Uint cid, i;
     else { /* lmm write enabled */
       for (k=0; k<UNIT_WIDTH; k++)
         *((Ull*)&exring[cid].unit[i].lmm.m[a0al]+k) = (*((Ull*)&exring[cid].unit[i].lmm.m[a0al]+k) & ~mm0[k]) | (exring[cid].unit[i].lmm.mw0[k] & mm0[k]);
-#if 0
-      printf("%03.3d.%02.2d:LMM WR0 a=%08.8x m=%08.8x d=%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x\n",
-             cid, i, a0al, exring[cid].unit[i].lmm.mm0,
+#if 1
+      if(i == 3){
+      printf("%03.3d.%02.2d:LMM WR0 a=%08.8x a1 = %x m=%08.8x d=%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x\n",
+             cid, i, a0al, (Uint)exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].lmm.mm0,
              (Uint)(exring[cid].unit[i].lmm.mw0[3]>>32), (Uint)exring[cid].unit[i].lmm.mw0[3],
              (Uint)(exring[cid].unit[i].lmm.mw0[2]>>32), (Uint)exring[cid].unit[i].lmm.mw0[2],
              (Uint)(exring[cid].unit[i].lmm.mw0[1]>>32), (Uint)exring[cid].unit[i].lmm.mw0[1],
              (Uint)(exring[cid].unit[i].lmm.mw0[0]>>32), (Uint)exring[cid].unit[i].lmm.mw0[0]);
+      }       
 #endif
     }
   }
@@ -3113,11 +3096,11 @@ show_emax6_status(cid) Uint cid;
            (Uint)(exring[cid].unit[row].ex3>>32), (Uint)exring[cid].unit[row].ex3);
     printf(" ea1=%05.5x+%05.5x eab/o=%05.5x/%05.5x ea0=%05.5x+%05.5x st2ex=%d st2fd=%d",
            exring[cid].unit[row].ea1b,
-           (Uint)exring[cid].unit[row].ea1o&0x3ffff, /* ª³ªäª©«Ó¢ğªÁ64bit¢ğ?¢ğ«±MSK¢ğª³¢ğ«²¢ğ«´ª¡¢ìª¤«Ò */
+           (Uint)exring[cid].unit[row].ea1o&0x3ffff, /* ËÜÅö¤Ï64bit¤«¤éMSK¤Ë¤è¤êÁªÂò */
            exring[cid].unit[row].eab,
-           (Uint)exring[cid].unit[row].eao&0x3ffff,  /* ª³ªäª©«Ó¢ğªÁ64bit¢ğ?¢ğ«±MSK¢ğª³¢ğ«²¢ğ«´ª¡¢ìª¤«Ò */
+           (Uint)exring[cid].unit[row].eao&0x3ffff,  /* ËÜÅö¤Ï64bit¤«¤éMSK¤Ë¤è¤êÁªÂò */
            exring[cid].unit[row].ea0b,
-           (Uint)exring[cid].unit[row].ea0o&0x3ffff, /* ª³ªäª©«Ó¢ğªÁ64bit¢ğ?¢ğ«±MSK¢ğª³¢ğ«²¢ğ«´ª¡¢ìª¤«Ò */
+           (Uint)exring[cid].unit[row].ea0o&0x3ffff, /* ËÜÅö¤Ï64bit¤«¤éMSK¤Ë¤è¤êÁªÂò */
            exring[cid].unit[row].stage2_exec, exring[cid].unit[row].stage2_fold);
     printf(" tx3210   =%08.8x%08.8x-%08.8x%08.8x-%08.8x%08.8x-%08.8x%08.8x\n",
            (Uint)(exring[cid].unit[row].tx[3]>>32), (Uint)exring[cid].unit[row].tx[3],

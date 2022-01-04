@@ -700,7 +700,7 @@ emax6_sparse2* sparse_format5(int nnz,Ull* val,const Uint* const val_tmp, int* c
     //32bit*2でindexを伝搬するためにAのindexをこのように格納
     for (col=0,col1=0; col<col_size/2; col+=1,col1+=2){
       for (row=0,row1=0; row1<row_size; row+=2,row1+=1) {
-        #ifdef DEBUG
+        #ifdef CSIMDEBUG
         printf("format\n");
         #endif
       *(Uint*)&val_index_set[col*2*row_size+row+row_size*col_size] = *(Uint*)&val_index_set_tmp[col1*row_size+row1];
@@ -1722,7 +1722,7 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
     
 
     for(k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){
-        //CSCで格納
+        //CSCで格納 
         // row_countは最初すべて0 row_countがふえると格納する行が右にずれて格納先が次のLMMになる
         //count_sort_index_inverse[row_index[k]]でどの行かを特定
         //row_count[1+row_index[k]]*row_sizeでどの列かを特定

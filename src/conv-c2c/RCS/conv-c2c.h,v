@@ -1,10 +1,15 @@
-head	1.24;
+head	1.25;
 access;
 symbols;
 locks
-	nakashim:1.24; strict;
+	nakashim:1.25; strict;
 comment	@ * @;
 
+
+1.25
+date	2021.12.21.03.59.36;	author nakashim;	state Exp;
+branches;
+next	1.24;
 
 1.24
 date	2019.02.17.12.45.35;	author nakashim;	state Exp;
@@ -131,7 +136,7 @@ desc
 @@
 
 
-1.24
+1.25
 log
 @*** empty log message ***
 @
@@ -156,12 +161,15 @@ text
 #include <string.h>
 
 #define         OBJSUFX "-emax6.c"
+#define         PTHSUFX "-emax6pt.c"
 #define         FIGSUFX "-emax6.obj"
 
 char            *srcprog;
 char            *objprog;
+char            *pthprog;
 char            *figfile;
 FILE            *ofile; /* object file */
+FILE            *pfile; /* pthread file */
 FILE            *ffile; /* tgif file */
 
 #define YY_SKIP_YYWRAP
@@ -198,6 +206,17 @@ struct id {
   char               col;   /* -1:undefined, 0-EMAX_WIDTH-1:location of destination */
   unsigned long long val;   /* immediate / absolute address */
 } id[ID_NUM];
+@
+
+
+1.24
+log
+@*** empty log message ***
+@
+text
+@d21 1
+d26 1
+d29 1
 @
 
 
