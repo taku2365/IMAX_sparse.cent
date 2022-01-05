@@ -1568,7 +1568,6 @@ emax6_sparse2* sparse_format8(int nnz,Ull* val,const Uint* const val_tmp, int* c
 
 //CCR base
 emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
-
     // arg read_or_write 0 none 1 read 2 write
     //BをCHIP分割バージョン ver4
 
@@ -1605,9 +1604,9 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
         int* col_count = calloc((col_size),sizeof(int)); 
         fread(col_count,         sizeof(int),  col_size,                file);
         sparse_info->col_p = col_count;
-        int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
-        fread(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
-        sparse_info->col_index= col_index_sparse;
+        // int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
+        // fread(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
+        // sparse_info->col_index= col_index_sparse;
         Uint* count_sort_index = sort_index;
         // Uint* count_sort_index = (Uint*) calloc(row_size,sizeof(Uint));
         fread(count_sort_index,  sizeof(Uint), row_size,                  file);
@@ -1644,13 +1643,14 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
     if((col_size%H) != 0) H_pad = -col_size%H + H;
     Ull* margin = (Ull*) calloc((col_size+H_pad)/H,sizeof(Ull));
     int iter_num = 0,margin_tmp;
-    int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp;
+    int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp,val_index_index,val_index_index2,row_index_k,col_index_k;
     // if ((fpr = fopen(argv[1], "rb")) == NULL){
     //     printf("cal val\n");
     // }
     // else{
     
     // }
+
     for(k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
     // count max = col_size
     for(row=0; row<row_size; row++){
@@ -1667,22 +1667,24 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
         //{[0] = 7, [1] = 9, [2] = 3, [3] = 4, [4] = 6, [5] = 8, [6] = 0, [7] = 1, [8] = 2, [9] = 5}
         // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
         //Cが元の場所に戻すためにつかう
-        count_sort_index[(row_size-1)-count_tmp1] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
+        tmp = (row_size-1) - count_tmp1;
+        count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
 
         //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
         // row_size-1は0から始めるために引く1している。            
         //count_sort_indexの逆                                             row7番目は一番nnzが多いので0に移動する
         //{[0] = 6, [1] = 7, [2] = 8, [3] = 2, [4] = 3, [5] = 9, [6] = 4, [7] = 0, [8] = 5, [9] = 1}
         //元の場所から並べ替えの先に移動するために使う
-        count_sort_index_inverse[row] = (row_size-1) - count_tmp1;
+        count_sort_index_inverse[row] = tmp;
          //アライメントのために次の手段は使えない 倍数の時のみ可(count[row] + (H-1))~(H-1);
          // sortされた後のrowごとのpaddings
          //降順   上が一番nnzが長いrow
          // count[row]/H(IMAXが何回full(H)で計算いるか)+(int)(count[row]%H != 0) (Hで割り切れなかったら、もう一回H分の計算がpad付きで必要)
-         paddings[(row_size-1) - count_tmp1] = count[row]/H + (int)(count[row]%H != 0); 
+         paddings[tmp] = count[row]/H + (int)(count[row]%H != 0); 
 
     }
  
+
 
     //paddingsは最低でも1
     //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
@@ -1714,40 +1716,23 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
         tmp = paddings[row];
     }
 
-  
-    // Uint* val_debug    = (Uint*) calloc(1+row_size*col_size,sizeof(Uint));
 
-    int* col_index_sparse = (int*) calloc(row_size*col_size,sizeof(int));
-    int* row_index_sort_sparse = (int*) calloc((row_size*col_size),sizeof(int));
-    
+    for(k=0; k<nnz; k++){
+        row_index_k = row_index[k];
+        col_index_k = col_index[k];
 
-    for(k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){
-        //CSCで格納 
-        // row_countは最初すべて0 row_countがふえると格納する行が右にずれて格納先が次のLMMになる
-        //count_sort_index_inverse[row_index[k]]でどの行かを特定
-        //row_count[1+row_index[k]]*row_sizeでどの列かを特定
-        count_sort_index_inverse_tmp = count_sort_index_inverse[row_index[k]];
-        //count_sort_index_inverseはindex(row)を代入したら並べ替え後の場所を教えてくれる。
-        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Aの値  
-        //*((Uint*)&val_index_set[どの行かを特定+どの列かを特定]) = Bの対応箇所*2(simd)*4(実際のIMAXコードはUllのアドレス演算なのでpoiterの足し算ではないので4byteかける)
-        val_index_set[(count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size)*2] = val_tmp[row_index[k]+col_index[k]*row_size];
-        val_index_set[(count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size)*2+1] = col_index[k]*2*4;
-        // *((Uint*)&val_debug[(1+count_sort_index_inverse_tmp)+row_count[row_index[k]]*row_size]) = val[row_index[k]+col_index[k]*row_size];
-         //rowを左詰めしているので、colの位置が値ごとに必要
-        col_index_sparse[count_sort_index_inverse_tmp+row_count[row_index[k]]*row_size] = col_index[k];
-        row_index_sort_sparse[k] = count_sort_index_inverse_tmp;
-        //そのrowに何個nonzeroがあるか
-        row_count[row_index[k]]++;
-        col_count[col_index[k]]++;
+        val_index_index = count_sort_index_inverse[row_index_k]+row_count[row_index_k]*row_size;
+        *((Ull*)&val_index_set[val_index_index*2]) = ((Ull)col_index_k*2*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
 
+        row_count[row_index_k]++;
     }
 
-
+   
 
 
     sparse_info->val_index_set = val_index_set;
     sparse_info->col_p = col_count;
-    sparse_info->col_index = (Uint*)col_index_sparse;
+    // sparse_info->col_index = (Uint*)col_index_sparse;
     sparse_info->sort_index = count_sort_index;
     sparse_info->nnz = nnz;
     sparse_info->row_normal_size = row_size;
@@ -1770,7 +1755,7 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
         fwrite(&nnz,              sizeof(int),  1,                         file);
         fwrite(val_index_set,     sizeof(Uint), 2*((col_size)*row_size),   file);
         fwrite(col_count,         sizeof(int),  col_size,                  file);
-        fwrite(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
+        // fwrite(col_index_sparse,  sizeof(int),  row_size*col_size,         file);
         fwrite(count_sort_index,  sizeof(Uint), row_size,                  file);
         fwrite(paddings,          sizeof(int),  row_size,                  file);
         fwrite(margin,            sizeof(Ull),  col_size/H+H_pad,     file);
@@ -1786,7 +1771,7 @@ emax6_sparse2* sparse_format9(int nnz,Ull* val,const Uint* const val_tmp, int* c
     free(row_count);
     free(col_index);
     free(row_index);
-    free(row_index_sort_sparse);
+    // free(row_index_sort_sparse);
     free(count_sort_index_inverse);
     // free(val_index_set_tmp);
 

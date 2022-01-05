@@ -19,6 +19,7 @@ EMAX6_SPARSE_SRC = $(EMAX6_SPARSE_KERNEL_SRC) $(EMAX6_SPARSE_UTIL_SRC)
 EMAX6_SPARSE_ARM_SRC = $(EMAX6_SPARSE_KERNEL_ARM_SRC) $(EMAX6_SPARSE_UTIL_ARM_SRC)
 EMAX6_SPARSE_LIB = $(EMAX6_SPARSE_KERNEL_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
 EMAX6_SPARSE_ARM_LIB = $(EMAX6_SPARSE_KERNEL_ARM_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
+EMAX6_SPARSE_TEST = $(wildcard ./test/*$(SUFFIX)) 
 AR_TARGET = libsparse.a
 SHARED_TARGET = libsparse.so
 SHARED_FLAG = -shared -fPIC
@@ -61,19 +62,19 @@ endif
 
 
 ifeq ($(ARM),1)
-test: binary
+test: binary $(EMAX6_SPARSE_TEST)
 	(cd ./test; $(MAKE) -f Makefile.arm LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
 endif
 
 ifeq ($(CENT),1)
-test: binary
+test: binary $(EMAX6_SPARSE_TEST)
 	(cd ./test; $(MAKE) -f Makefile.cent LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
 endif
 
 #./../csim/csim -x test/test_chipB_div+dma
 # xdisp系をcsimから消した
 ifeq ($(ARM_CROSS),1)
-test: binary
+test: binary $(EMAX6_SPARSE_TEST)
 	(cd ./test; $(MAKE) -f Makefile.csim LINK_FORMAT=$(LINK_FORMAT) CFLAGS="$(CFLAGS)")
 endif
 

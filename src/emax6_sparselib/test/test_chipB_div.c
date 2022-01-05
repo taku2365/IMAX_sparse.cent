@@ -54,16 +54,6 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 #endif
 
 
-
-/* LMM:16KB, RMM:64KB: M/NCHIP=124 M/NCHIP/RMGRP=31 */
-/* A A   B B B B B B   C C C C C C */
-/* A A   B B B B B B   C C C C C C */
-/* A A                 C C C C C C */
-/* A A                 C C C C C C */
-/* L=2, A_row_size=4, B_col_size=6     L<A_row_size,B_col_size     */
-
-
-
   #define A_row_size 768LL   // 縛りなし
   #define A_col_size 768LL    // 縛りなし　H_padのおかげ
   #define B_row_size 768LL    // 縛りなし
@@ -101,18 +91,7 @@ double sum=0,sum1=0;
 #define CSIMWD 320
 #define CSIMHT 240
 #define CSIMBM (CSIMWD*CSIMHT)
-Uint Z[CSIMBM];
 
-#define ERRTH  (5.0E-3)
-#define udiff(a,b) (((a)-(b)>=0.0?(a)-(b):(b)-(a))/((a)==0.0?1:(a)))
-#define setmax(max, new) { if (max < (new)) max = (new); }
-
-#define MAXINT (~(1<<(sizeof(int)*8-1)))
-#define adif(a,b) (((a)>(b))?(a)-(b):(b)-(a))
-#define dif(a,b)  (adif((((a)>>24)&255), (((b)>>24)&255))\
-                  +adif((((a)>>16)&255), (((b)>>16)&255))\
-                  +adif((((a)>> 8)&255), (((b)>> 8)&255)))
-#define abs(a) (((a)<0)?-(a):(a))
 
 
 
@@ -155,7 +134,7 @@ main()
   params->H_param = H;
   params->W_param= W;
   params->A_col_blk_param = A_col_blk;
-  
+
   // params->W_param= W*2;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
@@ -171,7 +150,7 @@ main()
       // tmp = (int) rand()%3;
       // tmp = (int) ((tmp == 0)||(tmp == 1));
       // rnad()%x 0~x-1の間の数字をとる
-      *(float*)&A_tmp[row+col*A_row_size] = (float) (tmp);
+      *(float*)&A_tmp[row+col*A_row_size] = (float) (1);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -181,9 +160,10 @@ main()
     }
   }
 
-  reset_nanosec();
 
- 
+  reset_nanosec();
+  
+  
   // A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
   A_sparse = sparse_format9(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
@@ -272,8 +252,8 @@ main()
 
   reset_nanosec();
   // imax();
-  // sparse_gemm_736_736_736_CHIP_div_B_3(C1, A, B, A_sparse);
-  sparse_gemm_736_736_736_CHIP_div_B_4(C1, A, B, A_sparse,params);
+  // sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse,params);
+  sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse,params);
   // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);
   show_nanosec();
