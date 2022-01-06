@@ -61,13 +61,13 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-  #define A_row_size 58LL   // 縛りなし
-  #define A_col_size 58LL    // 縛りなし　H_padのおかげ
-  #define B_row_size 58LL    // 縛りなし
-  #define B_col_size 64LL   // RMGRP*NCHIP縛り
+  #define A_row_size 768LL   // 縛りなし
+  #define A_col_size 780LL    // 縛りなし　H_padのおかげ
+  #define B_row_size 780LL    // 縛りなし
+  #define B_col_size 768LL   // RMGRP*NCHIP縛り
   #define DIMENTION  2LL
   // #define RMGRP 16
-  #define RMGRP 16
+  #define RMGRP 8
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
@@ -143,12 +143,14 @@ main()
   B_debug  = (Uint*)calloc(2*B_row_size*B_col_size,sizeof(Uint));
   C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+  params->A_row_size_param = A_row_size;
+  params->A_col_size_param = A_col_size;
+  params->B_row_size_param = B_row_size;
+  params->B_col_size_param = B_col_size;
   params->RMGRP_param = RMGRP;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
   params->W_param= W;
-  params->A_col_blk_param = A_col_blk;
-  
   // params->W_param= W*2;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
@@ -164,7 +166,7 @@ main()
       tmp = (int) (rand()%2 == 0);
       // rnad()%x 0~x-1の間の数字をとる
       // tmp = (rand()%3 == 0)||(rand()%2);
-      *(float*)&A[row*A_col_size+col] = (float) (1);
+      *(float*)&A[row*A_col_size+col] = (float) (tmp);
       // floatで等価の判断するの危険なので、LIMITで0判定をしている。
       if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
           col_index_A[nnz_A] = col;
@@ -213,7 +215,7 @@ main()
 
   reset_nanosec();
   // imax();
-  gemm_normal_CHIP_div_B(C1, A, B);
+  gemm_normal_CHIP_div_B(C1, A, B,params);
   // sparse_gemm_736_736_736_CHIP_div_B_4(C1, A, B, A_sparse);
   // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
   get_nanosec(0);

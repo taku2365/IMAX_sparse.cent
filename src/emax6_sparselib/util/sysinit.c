@@ -20,8 +20,8 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
     *membase = (Uchar*)malloc(memsize+alignment);
     printf("malloc size %d \n",malloc_usable_size(*membase));
     printf("membase_before_align: %08.8x\n", (Uint)*membase);
-    if ((Ull)*membase & (Ull)(alignment-1))
-    *membase = (void*)(((Ull)*membase & ~(Ull)(alignment-1))+alignment);
+    // if ((Ull)*membase & (Ull)(alignment-1))
+    // *membase = (void*)(((Ull)*membase & ~(Ull)(alignment-1))+alignment);
     // memset(membase, 0, memsize+alignment);
     int i;
     for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)*membase+i) = (Uint)0;
@@ -68,4 +68,17 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
   #endif
 
   // return membase;
+}
+
+
+void mem_release(Uint memsize,Uchar** membase){
+  #if defined(ARMZYNQ) && defined(EMAX6)
+    {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
+  #else
+  if(*membase != NULL){
+      free(*membase);
+      *membase = NULL;
+    }
+  #endif
+
 }

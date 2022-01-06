@@ -31,8 +31,8 @@ export CC      = gcc
 CFLAGS  = 
 export LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
 
-PROGRAM	      = test_chipB_div test_chipB_div_tmp test_chipA_div test_normal_mode
-OBJS          =	test_chipB_div.o test_chipB_div_tmp.o test_chipA_div.o test_normal_mode.o
+PROGRAM	      = test_chipB_div test_chipA_div test_normal_mode
+OBJS          =	test_chipB_div.o  test_chipA_div.o test_normal_mode.o
 SRCS          =	($(OBJS:.o=.c))
 #HEADERS       =	../../src/emax6_sparselib/include/emax6_sparselib.h
 INCLUDE = -I../Include
@@ -57,8 +57,6 @@ test_chipA_div:	test_chipA_div.o libsparse
 test_chipB_div:	test_chipB_div.o libsparse
 		$(CC)  test_chipB_div.o -o test_chipB_div  $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
 
-test_chipB_div_tmp:	test_chipB_div_tmp.o libsparse
-		$(CC)  test_chipB_div_tmp.o -o test_chipB_div_tmp  $(EMAX_SPARSE_LIB) $(LDFLAGS) $(CFLAGS)
 
 .c.o:		$(HEADERS)
 		$(CC) $(CFLAGS) -c ${INCLUDE} $<

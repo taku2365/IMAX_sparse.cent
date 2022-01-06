@@ -164,7 +164,7 @@ main()
   reset_nanosec();
 
  
-  A_sparse = sparse_format7(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  A_sparse = sparse_format1(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 
 
   

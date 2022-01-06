@@ -29,11 +29,6 @@ typedef struct {Ull u[2];} Dll;
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <pthread.h>
-// #include <X11/Xlib.h>
-// #include <X11/Xatom.h>
-// #include <X11/Xutil.h>
-// #include <X11/cursorfont.h>
-// #include <X11/extensions/Xdbe.h>
 #endif
 
 
@@ -54,32 +49,34 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 #endif
 
 
-  #define A_row_size 768LL   // 縛りなし
-  #define A_col_size 768LL    // 縛りなし　H_padのおかげ
-  #define B_row_size 768LL    // 縛りなし
-  #define B_col_size 768LL   // RMGRP*NCHIP縛り
-  #define DIMENTION  2LL
-  // #define RMGRP 16
-  #define RMGRP 8
-  /*#define NCHIP 4*/
-  #define NCHIP 4
-  #define W  4LL
-  #define H  58
-  // #define H  46
-  #define OOFS_SHIFT 3LL
-  #define A_col_blk 5
+  // #define A_row_size 400LL   // 縛りなし
+  // #define A_col_size 600LL    // 縛りなし　H_padのおかげ
+  // #define B_row_size 600LL    // 縛りなし
+  // #define B_col_size 768LL   // RMGRP*NCHIP縛り
+  // #define DIMENTION  2LL
+  // // #define RMGRP 16
+  // #define RMGRP 8
+  // /*#define NCHIP 4*/
+  // #define NCHIP 4
+  // #define W  4LL
+  // #define H  58
+  // // #define H  46
+  // #define OOFS_SHIFT 3LL
+  // #define A_col_blk 5
 
-Uint *A;  /*[A_row_size][L];*/
-Uint *B;  /*[L][B_col_size];*/
-Uint *C0; /*[A_row_size][B_col_size];*/
-Uint *C1; /*[A_row_size][B_col_size];*/
-Uint *sort_index;
-Uint *A_debug; /*[A_row_size][L];*/
-Uint *B_debug; /*[L][B_col_size];*/
-Uint *C_debug; /*[A_row_size][B_col_size];*/
-emax6_sparse2* A_sparse;
-emax6_param* params;
+Uint *A = NULL;  /*[A_row_size][L];*/
+Uint *B = NULL;  /*[L][B_col_size];*/
+Uint *C0 = NULL; /*[A_row_size][B_col_size];*/
+Uint *C1 = NULL; /*[A_row_size][B_col_size];*/
+Uint *sort_index = NULL;
+Uint *A_debug = NULL; /*[A_row_size][L];*/
+Uint *B_debug = NULL; /*[L][B_col_size];*/
+Uint *C_debug = NULL; /*[A_row_size][B_col_size];*/
+coo_format* coo = NULL;
+emax6_sparse2* A_sparse = NULL;
+emax6_param* params = NULL;
 int blk_iter;
+int mode;
 int row,row1, col, col1, n, n1;
 int top, blk;
 int w, h;
@@ -92,28 +89,40 @@ double sum=0,sum1=0;
 #define CSIMHT 240
 #define CSIMBM (CSIMWD*CSIMHT)
 
-
-
-
-
 main()
-{ //pointerでないので普通に足される。
-  // char* val;
-  // Uchar* membases = (Uchar*)malloc_test(sizeof(int)*10,&val);
-  // val = malloc_test(sizeof(int)*10);
-  // printf("malloc 10 %c \n",val[0]);
-  // printf("malloc size %d \n",malloc_usable_size(val));
+{ 
+  mode = 1;
+  if(params != NULL){
+    free(params);
+    params = NULL;
+  }
+  params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+  Sll A_row_size = params->A_row_size_param = 480LL;
+  Sll A_col_size = params->A_col_size_param = 600LL;
+  Sll B_row_size = params->B_row_size_param = 600LL;
+  Sll B_col_size = params->B_col_size_param = 768LL;
+  Sll RMGRP      = params->RMGRP_param = 8;
+  Sll NCHIP      = params->NCHIP_param = 4;
+  Sll W          = params->W_param= 4LL;
+  Sll A_col_blk  = params->A_col_blk_param = 5;
 
-  Uchar* membase;
-  //A_colがHで割れないときのpadding
+  if(mode == 0){
+    params->H_param = 46LL;
+  }
+  else if(mode == 1){
+    params->H_param = 58LL;
+  }
+  Sll H = params->H_param;
   int A_H_pad = 0;
   if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
-  sysinit((Uint)(2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
+  Uchar* membase = NULL;
+  Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
                 +B_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*B_col_size*sizeof(Uint)
                 // +A_row_size*B_col_size*sizeof(Uint)
-                +A_row_size*sizeof(Uint)
-                ),32,&membase);
+                +A_row_size*sizeof(Uint);
+  //A_colがHで割れないときのpadding
+  sysinit((Uint)memsize,32,&membase);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
   B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
@@ -122,159 +131,53 @@ main()
   C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   
 
-  B_debug  = (Uint*)calloc(2*B_row_size*B_col_size,sizeof(Uint));
   C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-  params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-  params->A_row_size_param = A_row_size;
-  params->A_col_size_param = A_col_size;
-  params->B_row_size_param = B_row_size;
-  params->B_col_size_param = B_col_size;
-  params->RMGRP_param = RMGRP;
-  params->NCHIP_param = NCHIP;
-  params->H_param = H;
-  params->W_param= W;
-  params->A_col_blk_param = A_col_blk;
+  B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
 
-  // params->W_param= W*2;
-  printf("A : %08.8x\n", A);
-  printf("B : %08.8x\n", B);
-  printf("C0: %08.8x\n", C0);
-  printf("C1: %08.8x\n", C1);
-  int tmp = 1,num = 0;
-  int* col_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
-  int* row_index_A = (int *)calloc(A_row_size*A_col_size,sizeof(int));
-  Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-    for (col=0; col<A_col_size; col++){
-      for (row=0; row<A_row_size; row++) {
-      tmp = (int) (rand()%2 == 0);
-      // tmp = (int) rand()%3;
-      // tmp = (int) ((tmp == 0)||(tmp == 1));
-      // rnad()%x 0~x-1の間の数字をとる
-      *(float*)&A_tmp[row+col*A_row_size] = (float) (1);
-      // floatで等価の判断するの危険なので、LIMITで0判定をしている。
-      if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
-          col_index_A[nnz_A] = col;
-          row_index_A[nnz_A] = row;
-          nnz_A += 1;
-        }
-    }
+
+  // make A sparse matrix with sparsity percent
+  coo = make_sparse_mat(params,0.3);
+  // make B dense matrix for simd calculation
+  make_simd_random_mat(params,B,B_debug);
+
+  reset_nanosec();
+  if(coo == NULL){
+    fprintf(stderr,"coo NULL \n");
   }
+  A_sparse = sparse_format(mode,coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+  get_nanosec(0);
+  show_nanosec();
+  reset_nanosec();
+  orig_chip_divB(coo->val,B_debug,C0,params);
+
+  if(coo->val != NULL){
+    free(coo->val);
+    coo->val = NULL;
+  }
+  if(coo->col_index != NULL){
+  free(coo->col_index);
+  coo->col_index = NULL;
+  }
+  if(coo->row_index != NULL){
+  free(coo->row_index);
+  coo->row_index = NULL;
+  }
+  free(coo);
+  coo = NULL;
+ 
 
 
   reset_nanosec();
-  
-  
-  // A_sparse = sparse_format5(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
-  A_sparse = sparse_format9(nnz_A,A,A_tmp,col_index_A,row_index_A,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
-
-
-  
+  if(mode == 0){
+    sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse, params);
+  }
+  else if(mode == 1){
+    sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse, params);
+  }
   get_nanosec(0);
   show_nanosec();
 
-  float val = 0;
-  for (row=0; row<B_row_size; row++) {
-    val += 1;
-    for (col=0; col<B_col_size; col++){
-      // *(float*)&B[col*B_col_size+row] = (float) tmp;
-      if(col%4 == 0){
-      *(float*)&B_debug[col*B_row_size+row] = (float)1;
-      }
-      else{
-      *(float*)&B_debug[col*B_row_size+row] = (float)0;
-      }
-      // if(!((-LIMIT <= *(float*)&B[col*B_col_size+row]) && (*(float*)&B[col*B_col_size+row] <= LIMIT))) nnz_B += 1; 
-      // if(!((-LIMIT <= *(float*)&B_debug[col*B_col_size+row]) && (*(float*)&B_debug[col*B_col_size+row] <= LIMIT))) nnz_B_debug += 1; 
-    }
-  }
-
-
-
-  for (col=0,col1=0; col<B_col_size/2; col+=1,col1+=2){
-    for (row=0,row1=0; row1<B_row_size; row+=2,row1+=1) {
-        // simdを使うため
-      #ifdef CSIMDEBUG
-       printf("B in\n");
-      #endif
-      *(float*)&B[col*2*B_row_size+row] = *(float*)&B_debug[col1*B_row_size+row1];
-      *(float*)&B[col*2*B_row_size+row+1] = *(float*)&B_debug[(col1+1)*B_row_size+row1];
-    }
-  }
-  
-  #ifdef CSIMDEBUG
-  for (col=0; col<B_col_size; col++){
-    for (row=0; row<B_row_size; row++) {
-        // simdを使うため
-        sum += *(float*)&B_debug[col*B_row_size+row];
-        sum1 += *(float*)&B[col*B_row_size+row];
-    }
-  }
-  #endif
-
-  if((int)sum != (int)sum1) {
-    fprintf(stderr,"sum != sum\n");
-    exit(1);
-  }
-
-//nanosec: ARM:2401635 DRAIN:6224355 CONF:97039 REGV:8770122 RANGE:5750319 LOAD:34852993 EXEC:10689721 total:68786184
-//nanosec: ARM:639792 DRAIN:5798857 CONF:84279 REGV:11193238 RANGE:3365026 LOAD:42099973 EXEC:6050752 total:69231917 4chip ver4 2/3
-// nanosec: ARM:1404416 DRAIN:6463783 CONF:102820 REGV:22823288 RANGE:6852784 LOAD:63949762 EXEC:6507324 total:108104177
-// nanosec: ARM:1222759 DRAIN:6266005 CONF:97750  REGV:22352557 RANGE:6730925 LOAD:62307900 EXEC:5196952 total:104174848
-// nanosec: ARM:479774  DRAIN:5795172 CONF:80298  REGV:8378467  RANGE:2509935 LOAD:57025331 EXEC:5546742 total:79815719
-                                     //  nanosec: ARM:14476178 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0  total:14476178 //format
-// nanosec: ARM:428330 DRAIN:5347764 CONF:103059 REGV:15701836 RANGE:10177188 LOAD:42058397 EXEC:10241348 total:84057922 4chip 密
-// nanosec: ARM:643720 DRAIN:3900830 CONF:139645 REGV:22034423 RANGE:12112945 LOAD:81180395 EXEC:20458796  total:140470754  密
-// nanosec: ARM:284607 DRAIN:5347242 CONF:104924 REGV:34797322 RANGE:10362789 LOAD:74936785 EXEC:10831409  total:136665078
-// nanosec: ARM:697759 DRAIN:3912415 CONF:144105 REGV:36137979 RANGE:12767833 LOAD:144809961　EXEC:21722040 total:220192092 そのまま計算
-// nanosec: ARM:228882 DRAIN:1898495 CONF:96632 REGV:27163829 RANGE:8146254 LOAD:28577880 EXEC:7937346     total:74049318
-// nanosec: ARM:523872 DRAIN:3860935 CONF:124981 REGV:27126625 RANGE:9538279 LOAD:109312336 EXEC:15392081  total:165879109  2/3
-// nanosec: ARM:179727 DRAIN:5271546 CONF:87108 REGV:19541144 RANGE:5845150 LOAD:43363760 EXEC:5812181     total:80100616 4chip %2
-// nanosec: ARM:183810 DRAIN:5271064 CONF:87208 REGV:19602317 RANGE:5766538 LOAD:43357904 EXEC:5827063     total:80095904 4chip  %2 forの順番入れ替え
-// nanosec: ARM:406986 DRAIN:3818889 CONF:110080 REGV:20350376 RANGE:7143744 LOAD:82684247 EXEC:11680525   total:126194847 %2
-// nanosec: ARM:318687 DRAIN:3793709 CONF:100085 REGV:15827467 RANGE:5573393 LOAD:64865556 EXEC:8321523    total:98800420 %3
-// nanosec: ARM:197559 DRAIN:3747668 CONF:85619 REGV:9034281 RANGE:3180254 LOAD:38802744 EXEC:5216107      total:60264232 //2.33 %4
-// nanosec: ARM:201870 DRAIN:3755070 CONF:84790 REGV:9040110 RANGE:3187043 LOAD:38284119 EXEC:5230658      total:59783660 %5
-// nanosec: ARM:201605 DRAIN:3751573 CONF:84941 REGV:9047404 RANGE:3170832 LOAD:38262244 EXEC:4460222      total:58978821 %6
-// nanosec: ARM:152969 DRAIN:3738010 CONF:80459 REGV:6775409 RANGE:2385811 LOAD:29399387 EXEC:4009696      total:46541741 %7
-// nanosec: ARM:154852 DRAIN:3737772 CONF:81778 REGV:6785112 RANGE:2377742 LOAD:29789329 EXEC:3514694      total:46441279 //3.02 %8
-// nanosec: ARM:161484 DRAIN:3740919 CONF:80551 REGV:6781150 RANGE:2391537 LOAD:29382167 EXEC:3101214      total:45639022 %9
-// nanosec: ARM:104578 DRAIN:5207871 CONF:73289 REGV:6516141 RANGE:1944812 LOAD:16307317 EXEC:1545583      total:31699591
-// nanosec: ARM:80258 DRAIN:5209217 CONF:72478 REGV:6516916 RANGE:1970062 LOAD:16281524  EXEC:1546550      total:31677005
-// nanosec: ARM:9881990142 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:9881990142
-
-
-// nanosec: ARM:46525 DRAIN:5433830 CONF:69457 REGV:3404251 RANGE:1016464 LOAD:8883664 EXEC:1945807 total:20799998 [736][96][96][736] sparse_gemm_736_1_ver
-// nanosec: ARM:46333 DRAIN:5437919 CONF:69627 REGV:3404969 RANGE:1011242 LOAD:8888286 EXEC:1945960 total:20804336 同じ　　　　　　　　 sparse_gemm_736_2_ver
-  reset_nanosec();
-  orig(A_tmp,B_debug,C0);
-  get_nanosec(0);
-  show_nanosec();
-
-  reset_nanosec();
-  // imax();
-  // sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse,params);
-  sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse,params);
-  // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
-  get_nanosec(0);
-  show_nanosec();
-
-  //   sum = 0;
-  //   sum1 = 0;
-
-  //   for (col=0,col1=0; col<B_col_size; col+=1,col1+=2){
-  //     for (row=0,row1=0; row1<A_row_size; row+=1,row1+=1) {
-  //         count2++;
-  //         sum += *(float*)&C0[col+row*B_col_size];
-  //         sum1 += *(float*)&C1[col+row*B_col_size];
-  //         // printf("C0[%d][%d]=%f \n", row, col, (double)*(float*)&C0[col+row*B_col_size]);
-     
-  //   }
-  // }
-  // printf("sum %f \n",sum);
-  // printf("sum1 %f \n",sum1);
-  // count2 = 0;
-
-    for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+  for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
       for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
           count2++;
         #ifdef CSIMDEBUG
@@ -299,6 +202,7 @@ main()
 
           printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                   row, col, *(float*)&C_debug[col*A_row_size+row]); 
+          // exit(1);
           // exit(1);       
       }
     }
@@ -306,31 +210,32 @@ main()
 
   printf("sum %f \n",sum);
   printf("sum1 %f \n",sum1);
-  
-free(A_tmp);
 
+  free_sparse_format(A_sparse);
 
-
-
-}
-
-
-
-
-orig(Uint* A_orig,Uint* B_orig,Uint* C_orig) {
-  printf("<<<ORIG>>>\n");
-  for (row=0; row<A_row_size; row++) {
-    for (col=0; col<B_col_size; col++) {
-      for (n=0; n<A_col_size; n++) {
-        if (n==0) *(float*)&C_orig[row+col*A_row_size]  = *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
-        else      *(float*)&C_orig[row+col*A_row_size] += *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*B_row_size];
-        count0++;
-        /*printf("[%d %d %d]", row, col, n);*/
-      }
-      /*printf("\n");*/
-    }
+  if(params != NULL){
+  free(params);
+  params = NULL;
   }
+  if(B_debug != NULL){
+  free(B_debug);
+  B_debug = NULL;
+  }
+  if(C_debug != NULL){
+  free(C_debug);
+  C_debug = NULL;
+  }
+  if(C0 != NULL){
+  free(C0);
+  C0 = NULL;
+  }
+  
+mem_release(memsize,&membase);
+
+
+
 }
+
 
 
 

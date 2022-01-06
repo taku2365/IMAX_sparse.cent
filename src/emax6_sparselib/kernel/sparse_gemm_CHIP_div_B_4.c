@@ -20,7 +20,7 @@ void sparse_gemm_CHIP_div_B_4(Uint* C, const Uint* A, const Uint* B, emax6_spars
   Uint blk_iter,A_margin_tmp,blk_iter_tmp;
   Ull* A_margin = A_sparse->margin;
   Uint* val_index_set = A_sparse->val_index_set;
-  Uint* paddings = A_sparse->paddings;
+  // Uint* paddings = A_sparse->paddings;
   Uint A_col_blk_tmp;
 
   Uint* A_sort_index= A_sparse->sort_index;
@@ -65,7 +65,7 @@ void sparse_gemm_CHIP_div_B_4(Uint* C, const Uint* A, const Uint* B, emax6_spars
   Sll W  = params->W_param;
   Sll H  = params->H_param;
   Sll A_col_blk = params->A_col_blk_param;
-
+  Sll A_H_pad;
   Sll RMGRP_mul_B_row_size = RMGRP*B_row_size;
   Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
   Sll A_row_size_mul_RMGRP = A_row_size*RMGRP;
@@ -73,13 +73,15 @@ void sparse_gemm_CHIP_div_B_4(Uint* C, const Uint* A, const Uint* B, emax6_spars
   Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
   Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
   Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
+  if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
   printf("<<<IMAX>>>\n");
   for (top=0; top<B_col_size/NCHIP; top+=RMGRP) {
     for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
       if ((A_margin_tmp=A_margin[blk_iter])==0) break;
       // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
       for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk);blk_iter_tmp++){
-        if ((A_margin[blk_iter_tmp])==0){
+
+        if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
           A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
           A_col_blk_tmp -= 1;
         }
