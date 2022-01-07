@@ -40,3 +40,22 @@ coo_format* make_sparse_mat(emax6_param* emax6_param,float sparsity){
 
   return coo;
 }
+
+
+
+void free_sparse_mat(coo_format* coo){
+  if(coo->val != NULL){
+    free(coo->val);
+    coo->val = NULL;
+  }
+  if(coo->col_index != NULL){
+  free(coo->col_index);
+  coo->col_index = NULL;
+  }
+  if(coo->row_index != NULL){
+  free(coo->row_index);
+  coo->row_index = NULL;
+  }
+  free(coo);
+  coo = NULL;
+}

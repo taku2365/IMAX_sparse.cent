@@ -44,25 +44,8 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 #include "../Include/kernel_lib.h"
 // #include "./../../conv-c2c/emax6lib.c"
 #endif
-#if !defined(ARMSIML)
-// #include "./xdisp.c"
-#endif
 
 
-  // #define A_row_size 400LL   // 縛りなし
-  // #define A_col_size 600LL    // 縛りなし　H_padのおかげ
-  // #define B_row_size 600LL    // 縛りなし
-  // #define B_col_size 768LL   // RMGRP*NCHIP縛り
-  // #define DIMENTION  2LL
-  // // #define RMGRP 16
-  // #define RMGRP 8
-  // /*#define NCHIP 4*/
-  // #define NCHIP 4
-  // #define W  4LL
-  // #define H  58
-  // // #define H  46
-  // #define OOFS_SHIFT 3LL
-  // #define A_col_blk 5
 
 Uint *A = NULL;  /*[A_row_size][L];*/
 Uint *B = NULL;  /*[L][B_col_size];*/
@@ -76,7 +59,7 @@ coo_format* coo = NULL;
 emax6_sparse2* A_sparse = NULL;
 emax6_param* params = NULL;
 int blk_iter;
-int mode;
+int mode,sparse_rate_len,sparse_rate_index;
 int row,row1, col, col1, n, n1;
 int top, blk;
 int w, h;
@@ -92,149 +75,142 @@ double sum=0,sum1=0;
 main()
 { 
   mode = 1;
-  if(params != NULL){
-    free(params);
-    params = NULL;
-  }
-  params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-  Sll A_row_size = params->A_row_size_param = 480LL;
-  Sll A_col_size = params->A_col_size_param = 600LL;
-  Sll B_row_size = params->B_row_size_param = 600LL;
-  Sll B_col_size = params->B_col_size_param = 768LL;
-  Sll RMGRP      = params->RMGRP_param = 8;
-  Sll NCHIP      = params->NCHIP_param = 4;
-  Sll W          = params->W_param= 4LL;
-  Sll A_col_blk  = params->A_col_blk_param = 5;
-
-  if(mode == 0){
-    params->H_param = 46LL;
-  }
-  else if(mode == 1){
-    params->H_param = 58LL;
-  }
-  Sll H = params->H_param;
-  int A_H_pad = 0;
-  if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
-  Uchar* membase = NULL;
-  Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
-                +B_row_size*B_col_size*sizeof(Uint)
-                +A_row_size*B_col_size*sizeof(Uint)
-                // +A_row_size*B_col_size*sizeof(Uint)
-                +A_row_size*sizeof(Uint);
-  //A_colがHで割れないときのpadding
-  sysinit((Uint)memsize,32,&membase);
-  printf("membase: %08.8x\n", (Uint)membase);
-  A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
-  C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
-  sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
-  C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-  
-
-  C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-  B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
-
-
-  // make A sparse matrix with sparsity percent
-  coo = make_sparse_mat(params,0.3);
-  // make B dense matrix for simd calculation
-  make_simd_random_mat(params,B,B_debug);
-
-  reset_nanosec();
-  if(coo == NULL){
-    fprintf(stderr,"coo NULL \n");
-  }
-  A_sparse = sparse_format(mode,coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
-  get_nanosec(0);
-  show_nanosec();
-  reset_nanosec();
-  orig_chip_divB(coo->val,B_debug,C0,params);
-
-  if(coo->val != NULL){
-    free(coo->val);
-    coo->val = NULL;
-  }
-  if(coo->col_index != NULL){
-  free(coo->col_index);
-  coo->col_index = NULL;
-  }
-  if(coo->row_index != NULL){
-  free(coo->row_index);
-  coo->row_index = NULL;
-  }
-  free(coo);
-  coo = NULL;
- 
-
-
-  reset_nanosec();
-  if(mode == 0){
-    sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse, params);
-  }
-  else if(mode == 1){
-    sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse, params);
-  }
-  get_nanosec(0);
-  show_nanosec();
-
-  for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
-      for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
-          count2++;
-        #ifdef CSIMDEBUG
-         printf("C in\n");
-        #endif
-           *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
-           *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
-          // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
-     
+  float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+  sparse_rate_len = 10;
+  for(sparse_rate_index=0;sparse_rate_index<sparse_rate_len;sparse_rate_index++){
+    if(params != NULL){
+      free(params);
+      params = NULL;
     }
-  }
-  printf("count2 %d \n",count2);
+    params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+    Sll A_row_size = params->A_row_size_param = 480LL;
+    Sll A_col_size = params->A_col_size_param = 600LL;
+    Sll B_row_size = params->B_row_size_param = 600LL;
+    Sll B_col_size = params->B_col_size_param = 768LL;
+    Sll RMGRP      = params->RMGRP_param = 8;
+    Sll NCHIP      = params->NCHIP_param = 4;
+    Sll W          = params->W_param= 4LL;
+    Sll A_col_blk  = params->A_col_blk_param = 5;
 
-    sum = 0;
-    sum1 = 0;
-    for (col=0; col<B_col_size; col+=1){
-      for (row=0; row<A_row_size; row+=1) {
-        sum += *(float*)&C0[col+row*B_col_size];
-        sum1 += *(float*)&C_debug[col*A_row_size+row];
-        if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
-          count2++;
+    if(mode == 0){
+      params->H_param = 46LL;
+    }
+    else if(mode == 1){
+      params->H_param = 58LL;
+    }
+    Sll H = params->H_param;
+    int A_H_pad = 0;
+    //はみ出た時の拡張
+    if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
+    Uchar* membase = NULL;
+    Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
+                  +B_row_size*B_col_size*sizeof(Uint)
+                  +A_row_size*B_col_size*sizeof(Uint)
+                  // +A_row_size*B_col_size*sizeof(Uint)
+                  +A_row_size*sizeof(Uint);
+    //A_colがHで割れないときのpadding
+    sysinit((Uint)memsize,32,&membase);
+    printf("membase: %08.8x\n", (Uint)membase);
+    A  = (Uint*)membase;
+    B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
+    C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
+    sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
+    C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
 
-          printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
-                                                  row, col, *(float*)&C_debug[col*A_row_size+row]); 
-          // exit(1);
-          // exit(1);       
+
+    C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
+    B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
+
+
+    // make A sparse matrix with sparsity percent
+    coo = make_sparse_mat(params,sparse_rate[sparse_rate_index]);
+    // coo = make_sparse_mat(params,0.1);
+    // make B dense matrix for simd calculation
+    make_simd_random_mat(params,B,B_debug);
+
+    reset_nanosec();
+    if(coo == NULL){
+      fprintf(stderr,"coo NULL \n");
+    }
+    A_sparse = sparse_format(mode,coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+    get_nanosec(0);
+    show_nanosec();
+    reset_nanosec();
+    orig_chip_divB(coo->val,B_debug,C0,params);
+
+
+
+
+
+    reset_nanosec();
+    if(mode == 0){
+      sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse, params);
+    }
+    else if(mode == 1){
+      sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse, params);
+    }
+    get_nanosec(0);
+    show_nanosec();
+
+    for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+        for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
+            count2++;
+          #ifdef CSIMDEBUG
+            printf("C in\n");
+          #endif
+              *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+              *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+            // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+        
       }
     }
-  }
+    printf("count2 %d \n",count2);
 
-  printf("sum %f \n",sum);
-  printf("sum1 %f \n",sum1);
+      sum = 0;
+      sum1 = 0;
+      for (col=0; col<B_col_size; col+=1){
+        for (row=0; row<A_row_size; row+=1) {
+          sum += *(float*)&C0[col+row*B_col_size];
+          sum1 += *(float*)&C_debug[col*A_row_size+row];
+          if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+            count2++;
 
-  free_sparse_format(A_sparse);
+            printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
+                                                    row, col, *(float*)&C_debug[col*A_row_size+row]); 
+            // exit(1);
+            // exit(1);       
+        }
+      }
+    }
 
-  if(params != NULL){
-  free(params);
-  params = NULL;
-  }
-  if(B_debug != NULL){
-  free(B_debug);
-  B_debug = NULL;
-  }
-  if(C_debug != NULL){
-  free(C_debug);
-  C_debug = NULL;
-  }
-  if(C0 != NULL){
-  free(C0);
-  C0 = NULL;
-  }
-  
-mem_release(memsize,&membase);
+    printf("sum %f \n",sum);
+    printf("sum1 %f \n",sum1);
 
+    free_sparse_mat(coo);
+    free_sparse_format(A_sparse);
 
+    if(params != NULL){
+    free(params);
+    params = NULL;
+    }
+    if(B_debug != NULL){
+    free(B_debug);
+    B_debug = NULL;
+    }
+    if(C_debug != NULL){
+    free(C_debug);
+    C_debug = NULL;
+    }
+    if(C0 != NULL){
+    free(C0);
+    C0 = NULL;
+    }
 
-}
+    mem_release(memsize,&membase);
+
+  } //sparse rate tmp
+
+} // main
 
 
 

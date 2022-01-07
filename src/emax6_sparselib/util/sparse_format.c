@@ -94,7 +94,7 @@ emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int*
      //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
     if((col_size%H) != 0) H_pad = -col_size%H + H;
-    Ull* margin = (Ull*) calloc((col_size+H_pad)/H,sizeof(Ull));
+    Ull* margin = (Ull*) calloc((col_size+H_pad)/H+1,sizeof(Ull));
     int iter_num = 0,margin_tmp;
     int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp,val_index_index,val_index_index2,row_index_k,col_index_k;
     // if ((fpr = fopen(argv[1], "rb")) == NULL){
@@ -143,7 +143,7 @@ emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int*
     //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
     //最小のpaddingsではAを一番下まで確保するので、row_size+1
     //ex paddings[row_size-1]=7 (row+1)  一番下のArowでもH分を6回計算  H*6回分のA_colはA_rowの一番下まで計算　よってrow_sizeを6回、marginに入れる 　  
-    for(iter=0;iter<paddings[row_size-1]; iter++){
+    for(iter=0;iter<(paddings[row_size-1]+1); iter++){
         margin[iter_num++] = row_size; //row+1
     }
     // row_size回 for分を回す

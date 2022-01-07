@@ -87,6 +87,7 @@ typedef struct {
 coo_format* make_sparse_mat(emax6_param* emax6_param,float sparsity);
 void make_simd_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
 void free_sparse_format(emax6_sparse2* sparse_format);
+void free_sparse_mat(coo_format* coo);
 void orig_chip_divB(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
 void mem_release(Uint memsize,Uchar** membase);
 emax6_sparse2* sparse_format(int mode,int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
