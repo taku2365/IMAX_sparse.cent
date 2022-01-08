@@ -6,7 +6,6 @@ void orig_chip_divB(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_pa
   int A_col_size = emax6_param->A_col_size_param;
   int B_row_size = emax6_param->B_row_size_param;
   int B_col_size = emax6_param->B_col_size_param;
-  printf("<<<ORIG>>>\n");
   for (row=0; row<A_row_size; row++) {
     for (col=0; col<B_col_size; col++) {
       for (n=0; n<A_col_size; n++) {

@@ -36,23 +36,6 @@ void sparse_gemm_CHIP_div_B_4(Uint* C, const Uint* A, const Uint* B, emax6_spars
   Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
 
-  #undef A_row_size 
-  #undef A_col_size 
-  #undef B_row_size 
-  #undef B_col_size 
-
-  #undef RMGRP 
-  #undef NCHIP 
-  #undef W  
-  #undef H  
-  #undef OOFS_SHIFT  
-  #undef A_col_blk
-  #undef sparse_core1_1
-  #undef sparse_core2
-  #undef sparse_core2_1
-  #undef sparse_core3_1
-  #undef sparse_core4
-  #undef sparse_final1
   #define NCHIP 4
   Sll A_row_size = params->A_row_size_param;   // 縛りなし
   Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
@@ -65,7 +48,7 @@ void sparse_gemm_CHIP_div_B_4(Uint* C, const Uint* A, const Uint* B, emax6_spars
   Sll W  = params->W_param;
   Sll H  = params->H_param;
   Sll A_col_blk = params->A_col_blk_param;
-  Sll A_H_pad;
+  Sll A_H_pad = 0;
   Sll RMGRP_mul_B_row_size = RMGRP*B_row_size;
   Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
   Sll A_row_size_mul_RMGRP = A_row_size*RMGRP;

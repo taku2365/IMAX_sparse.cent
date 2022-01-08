@@ -1,0 +1,117 @@
+ sparse_rate 0.0 A_row_size 768 A_col_size 768 B_row_size 768 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:5239796 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:5239796
+<<<IMAX>>>
+nanosec: ARM:7435856854 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:7435856854
+ sparse_rate 0.3 A_row_size 768 A_col_size 768 B_row_size 768 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:3190880 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3190880
+<<<IMAX>>>
+nanosec: ARM:4771669406 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4771669406
+ sparse_rate 0.5 A_row_size 768 A_col_size 768 B_row_size 768 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2778209 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2778209
+<<<IMAX>>>
+nanosec: ARM:4234559049 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4234559049
+ sparse_rate 0.9 A_row_size 768 A_col_size 768 B_row_size 768 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:557748 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:557748
+<<<IMAX>>>
+nanosec: ARM:1053007786 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1053007786
+ sparse_rate 0.0 A_row_size 768 A_col_size 708 B_row_size 708 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:4734261 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4734261
+<<<IMAX>>>
+nanosec: ARM:6884237993 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:6884237993
+ sparse_rate 0.3 A_row_size 768 A_col_size 708 B_row_size 708 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:3038400 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3038400
+<<<IMAX>>>
+nanosec: ARM:4231700982 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4231700982
+ sparse_rate 0.5 A_row_size 768 A_col_size 708 B_row_size 708 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2473675 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2473675
+<<<IMAX>>>
+nanosec: ARM:3700243032 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3700243032
+ sparse_rate 0.9 A_row_size 768 A_col_size 708 B_row_size 708 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:495403 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:495403
+<<<IMAX>>>
+nanosec: ARM:1054995216 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1054995216
+ sparse_rate 0.0 A_row_size 768 A_col_size 648 B_row_size 648 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:4291805 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4291805
+<<<IMAX>>>
+nanosec: ARM:6347450499 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:6347450499
+ sparse_rate 0.3 A_row_size 768 A_col_size 648 B_row_size 648 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2787831 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2787831
+<<<IMAX>>>
+nanosec: ARM:4234130435 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4234130435
+ sparse_rate 0.5 A_row_size 768 A_col_size 648 B_row_size 648 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2248879 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2248879
+<<<IMAX>>>
+nanosec: ARM:3708712622 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3708712622
+ sparse_rate 0.9 A_row_size 768 A_col_size 648 B_row_size 648 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:455959 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:455959
+<<<IMAX>>>
+nanosec: ARM:1057716999 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1057716999
+ sparse_rate 0.0 A_row_size 768 A_col_size 588 B_row_size 588 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:4042785 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4042785
+<<<IMAX>>>
+nanosec: ARM:5819139711 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:5819139711
+ sparse_rate 0.3 A_row_size 768 A_col_size 588 B_row_size 588 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2470689 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2470689
+<<<IMAX>>>
+nanosec: ARM:3711717484 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3711717484
+ sparse_rate 0.5 A_row_size 768 A_col_size 588 B_row_size 588 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2082373 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2082373
+<<<IMAX>>>
+nanosec: ARM:3175820859 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3175820859
+ sparse_rate 0.9 A_row_size 768 A_col_size 588 B_row_size 588 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:417106 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:417106
+<<<IMAX>>>
+nanosec: ARM:1052492817 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1052492817
+ sparse_rate 0.0 A_row_size 768 A_col_size 528 B_row_size 528 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:3491645 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3491645
+<<<IMAX>>>
+nanosec: ARM:5300366770 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:5300366770
+ sparse_rate 0.3 A_row_size 768 A_col_size 528 B_row_size 528 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2108614 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2108614
+<<<IMAX>>>
+nanosec: ARM:3692622162 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3692622162
+ sparse_rate 0.5 A_row_size 768 A_col_size 528 B_row_size 528 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:1764710 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1764710
+<<<IMAX>>>
+nanosec: ARM:3162565462 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3162565462
+ sparse_rate 0.9 A_row_size 768 A_col_size 528 B_row_size 528 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:365391 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:365391
+<<<IMAX>>>
+nanosec: ARM:1047269541 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1047269541
+ sparse_rate 0.0 A_row_size 768 A_col_size 468 B_row_size 468 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:3094951 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3094951
+<<<IMAX>>>
+nanosec: ARM:4775730564 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4775730564
+ sparse_rate 0.3 A_row_size 768 A_col_size 468 B_row_size 468 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:1878192 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1878192
+<<<IMAX>>>
+nanosec: ARM:3170028692 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3170028692
+ sparse_rate 0.5 A_row_size 768 A_col_size 468 B_row_size 468 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:1541053 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1541053
+<<<IMAX>>>
+nanosec: ARM:2637661540 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2637661540
+ sparse_rate 0.9 A_row_size 768 A_col_size 468 B_row_size 468 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:319266 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:319266
+<<<IMAX>>>
+nanosec: ARM:1049604932 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1049604932
+ sparse_rate 0.0 A_row_size 768 A_col_size 408 B_row_size 408 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2713251 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2713251
+<<<IMAX>>>
+nanosec: ARM:4230849913 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:4230849913
+ sparse_rate 0.3 A_row_size 768 A_col_size 408 B_row_size 408 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:1622160 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1622160
+<<<IMAX>>>
+nanosec: ARM:2648957301 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2648957301
+ sparse_rate 0.5 A_row_size 768 A_col_size 408 B_row_size 408 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:1342359 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1342359
+<<<IMAX>>>
+nanosec: ARM:2631374222 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2631374222
+ sparse_rate 0.9 A_row_size 768 A_col_size 408 B_row_size 408 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:278783 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:278783
+<<<IMAX>>>
+nanosec: ARM:1048975257 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:1048975257
+ sparse_rate 0.0 A_row_size 768 A_col_size 348 B_row_size 348 B_col_size 768 RMGRP 8 NCHIP 4 W 4 A_col_blk 5
+nanosec: ARM:2307581 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:2307581
+<<<IMAX>>>
+nanosec: ARM:3705442724 DRAIN:0 CONF:0 REGV:0 RANGE:0 LOAD:0 EXEC:0 total:3705442724
+C0[0][0]=348.000000 C_debug[0][0]=378.000000

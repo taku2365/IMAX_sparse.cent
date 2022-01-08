@@ -18,8 +18,8 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
   #else
     *membase = (Uchar*)malloc(memsize+alignment);
-    printf("malloc size %d \n",malloc_usable_size(*membase));
-    printf("membase_before_align: %08.8x\n", (Uint)*membase);
+    // printf("malloc size %d \n",malloc_usable_size(*membase));
+    // printf("membase_before_align: %08.8x\n", (Uint)*membase);
     // if ((Ull)*membase & (Ull)(alignment-1))
     // *membase = (void*)(((Ull)*membase & ~(Ull)(alignment-1))+alignment);
     // memset(membase, 0, memsize+alignment);
@@ -29,7 +29,7 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
 
     
     // 32byte = 16byte*2 = 0x20
-    printf("membase_after_align: %08.8x\n", (Uint)*membase);
+    // printf("membase_after_align: %08.8x\n", (Uint)*membase);
 
     
   #endif
