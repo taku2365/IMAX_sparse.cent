@@ -52,7 +52,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 
 
 
-/* LMM:16KB, RMM:64KB: M/NCHIP=124 M/NCHIP/RMGRP=31 */
+/* LMM:16KB, RMM:64KB: M/NCHIP=124 M/NCHIP/B_col_blk=31 */
 /* A A   B B B B B B   C C C C C C */
 /* A A   B B B B B B   C C C C C C */
 /* A A                 C C C C C C */
@@ -64,10 +64,10 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
   #define A_row_size 768LL   // 縛りなし
   #define A_col_size 780LL    // 縛りなし　H_padのおかげ
   #define B_row_size 780LL    // 縛りなし
-  #define B_col_size 768LL   // RMGRP*NCHIP縛り
+  #define B_col_size 768LL   // B_col_blk*NCHIP縛り
   #define DIMENTION  2LL
-  // #define RMGRP 16
-  #define RMGRP 8
+  // #define B_col_blk 16
+  #define B_col_blk 8
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
@@ -147,7 +147,7 @@ main()
   params->A_col_size_param = A_col_size;
   params->B_row_size_param = B_row_size;
   params->B_col_size_param = B_col_size;
-  params->RMGRP_param = RMGRP;
+  params->B_col_blk_param = B_col_blk;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
   params->W_param= W;

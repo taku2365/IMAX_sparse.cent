@@ -17,7 +17,7 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
     *membase = emax_info.ddr_mmap;
     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
   #else
-    *membase = (Uchar*)malloc(memsize+alignment);
+    *membase = (Uchar*)malloc(memsize+alignment); 
     // printf("malloc size %d \n",malloc_usable_size(*membase));
     // printf("membase_before_align: %08.8x\n", (Uint)*membase);
     // if ((Ull)*membase & (Ull)(alignment-1))
@@ -72,13 +72,15 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
 
 
 void mem_release(Uint memsize,Uchar** membase){
-  #if defined(ARMZYNQ) && defined(EMAX6)
-    {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
-  #else
-  if(*membase != NULL){
-      free(*membase);
-      *membase = NULL;
-    }
-  #endif
+  // #if defined(ARMZYNQ) && defined(EMAX6)
+    // {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
+
+    memset(*membase,0,memsize);
+  // #else
+  // if(*membase != NULL){
+  //     free(*membase);
+  //     *membase = NULL;
+  //   }
+  // #endif
 
 }

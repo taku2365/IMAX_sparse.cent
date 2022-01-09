@@ -7,7 +7,7 @@ emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int*
     //read_or_write 0 none 1 read 2 write
     //valなどをformatに入れるとパフォーマンスが落ちるので、引数に直接渡す。
 
-
+    printf("Format\n");
     FILE *file;
     emax6_sparse2* sparse_info = (emax6_sparse2 *) malloc(1*sizeof(emax6_sparse2));
     sparse_info->val_index_set = NULL;

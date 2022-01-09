@@ -55,8 +55,8 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
   #define B_row_size 736LL
   #define B_col_size 736LL
   #define DIMENTION  2LL
-  // #define RMGRP 16
-  #define RMGRP 8
+  // #define B_col_blk 16
+  #define B_col_blk 8
   /*#define NCHIP 4*/
   #define NCHIP 4
   #define W  4LL
@@ -131,7 +131,7 @@ main()
   B_debug  = (Uint*)calloc(2*B_row_size*B_col_size,sizeof(Uint));
   C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
   params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-  params->RMGRP_param = RMGRP;
+  params->B_col_blk_param = B_col_blk;
   params->NCHIP_param = NCHIP;
   params->H_param = H;
   params->W_param= W;

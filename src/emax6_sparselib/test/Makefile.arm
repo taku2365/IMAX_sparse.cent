@@ -1,6 +1,8 @@
 PROJTOP	      = ../../
 OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-PROGRAM       = test_chipA_div+dma test_chipB_div+dma test_normal_mode+dma pthread_test
+SUFFIX = .c
+EMAX6_SPARSE_TEST = $(wildcard test_*$(SUFFIX)) 
+EMAX6_SPARSE_TEST_BIN = $(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST))
 CPP           = cpp -P
 CC            = gcc
 #CFLAGS        = -I. -O3 -g3 $(OPTION)
@@ -13,50 +15,34 @@ LIBS          = -lm -lc -lX11 -lXext -lsparse -lpthread
 LIBFLAGS      = 
 OBJS	      =	test_chipB_div-emax6.o test_chipA_div-emax6.o test_normal_mode.o 
 INCLUDE = -I../Include
-all:		$(PROGRAM)
+all:		$(EMAX6_SPARSE_TEST_BIN)
 SHARED_LINK = 0
 SHARED_PATH =
 LINK_FORMAT = static
 
-test_normal_mode+dma:     test_normal_mode.o
+test_%+dma:     test_%.o
 		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test_normal_mode.o:	test_normal_mode.c 
+test_%.o:		test_%.c 
 		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
-test_chipA_div+dma:     test_chipA_div.o
-		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
+#pthread_test:     pthread_test.o
+#		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test_chipA_div.o:	test_chipA_div.c 
-		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
-
-
-test_chipB_div+dma:     test_chipB_div.o
-		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test_chipB_div.o:	test_chipB_div.c 
-		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
+#pthread_test.o:	pthread_test.c 
+#		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
 
-pthread_test:     pthread_test.o
-		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-pthread_test.o:	pthread_test.c 
-		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
 
 ifeq ($(LINK_FORMAT),static)
-test_normal_mode.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
-test_chipA_div.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
-test_chipB_div.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
-pthread_test.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_normal_mode.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
-test_chipA_div.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
-test_chipB_div.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
-pthread_test.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+
 endif
 
 # $(MAKE)はマクロも引き継がれる
