@@ -84,26 +84,26 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 768LL;
-A_col_size_ini = A_col_size = 288LL;
-B_row_size_ini = B_row_size = 288LL;
-B_col_size_ini = B_col_size = 704LL;
-B_col_blk_ini      = B_col_blk      = 8LL  ;
+A_row_size_ini = A_row_size = 128LL;
+A_col_size_ini = A_col_size = 128LL;
+B_row_size_ini = B_row_size = 128LL;
+B_col_size_ini = B_col_size = 128LL;
+B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 4LL  ;
 W_ini          = W          = 4LL  ;
-A_col_blk_ini  = A_col_blk  = 5LL  ;
+A_col_blk_ini  = A_col_blk  = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-mode = 1;
-if(mode == 0){
+params->mode = 2;
+if(params->mode == 1){
     H = params->H_param = 46LL;
 }
-else if(mode == 1){
+else if(params->mode == 2){
     H =params->H_param = 58LL;
 }
-// float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
-float sparse_rate[4] = {0,0.3,0.5,0.9};
-sparse_rate_index = 0;
-sparse_rate_len = 4;
+float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+// float sparse_rate[4] = {0,0.3,0.5,0.9};
+sparse_rate_index = 4;
+sparse_rate_len = 6;
 int A_H_pad = 0;
 //はみ出た時の拡張
 if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
@@ -152,23 +152,18 @@ coo = make_sparse_mat(params,sparse_rate[sparse_rate_index]);
 // make B dense matrix for simd calculation
 make_simd_random_mat(params,B,B_debug);
 
-reset_nanosec();
 if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
 }
-A_sparse = sparse_format(mode,coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+reset_nanosec();
+A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 get_nanosec(0);
 show_nanosec();
 reset_nanosec();
 orig_chip_divB(coo->val,B_debug,C0,params);
 
 reset_nanosec();
-if(mode == 0){
-sparse_gemm_CHIP_div_B_3(C1, A, B, A_sparse, params);
-}
-else if(mode == 1){
-sparse_gemm_CHIP_div_B_4(C1, A, B, A_sparse, params);
-}
+sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, params);
 get_nanosec(0);
 show_nanosec();
 

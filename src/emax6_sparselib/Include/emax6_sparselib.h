@@ -64,6 +64,7 @@ typedef struct {
 } emax6_sparse2;
 
 typedef struct {
+    Uint mode;
     Sll H_param;
     Sll W_param;
     Sll B_col_blk_param  ;
@@ -94,7 +95,7 @@ void free_sparse_mat(coo_format* coo);
 void orig_chip_divB(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
 void mem_release(Uint memsize,Uchar** membase);
 void IMAX_param_tunig(emax6_param* params);
-emax6_sparse2* sparse_format(int mode,int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
+emax6_sparse2* sparse_format(int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
 emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
 // void sparse_multiply(const emax6_sparse* const  A_sparse, const Uint* const B, Uint* C_sparse, int B_col_size);
 // int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);

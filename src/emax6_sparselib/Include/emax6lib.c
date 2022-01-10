@@ -510,6 +510,32 @@ show_nanosec()
 #endif
 }
 
+Ull* show_nanosec1()
+{
+#if defined(ARMSIML)
+  printf("SIML_cycle: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
+	 nanosec[NANOS_ARM],
+	 nanosec[NANOS_DRAIN],
+	 nanosec[NANOS_CONF],
+	 nanosec[NANOS_REGV],
+	 nanosec[NANOS_RANGE],
+	 nanosec[NANOS_LOAD],
+	 nanosec[NANOS_EXEC],
+	 nanosec[NANOS_TOTAL]);
+#else
+  printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
+	 nanosec[NANOS_ARM],
+	 nanosec[NANOS_DRAIN],
+	 nanosec[NANOS_CONF],
+	 nanosec[NANOS_REGV],
+	 nanosec[NANOS_RANGE],
+	 nanosec[NANOS_LOAD],
+	 nanosec[NANOS_EXEC],
+	 nanosec[NANOS_TOTAL]);
+#endif
+  return nanosec;
+}
+
 /*******************************************************************************/
 /******************************** DMA-START ************************************/
 /*******************************************************************************/

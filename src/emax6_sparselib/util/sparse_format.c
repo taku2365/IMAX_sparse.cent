@@ -1,7 +1,7 @@
 #include "../Include/emax6_sparselib.h"
 
 
-emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
+emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write){
     // arg
     //mode 0 chip_divB_ver3 mode 1 chip_divB_ver4
     //read_or_write 0 none 1 read 2 write
@@ -171,7 +171,7 @@ emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int*
     // reset_nanosec();
 
 
-    if(mode == 0){
+    if(emax6_param->mode == 1){
 
         Uint* val_index_set_tmp = (Uint*) calloc(2*row_size*col_size,sizeof(Uint));
         for(k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){
@@ -209,7 +209,7 @@ emax6_sparse2* sparse_format(int mode, int nnz,Ull* val,Uint*val_tmp, const int*
 
     }
 
-    else if(mode == 1){
+    else if((emax6_param->mode == 2)||(emax6_param->mode == 3)){
         for(k=0; k<nnz; k++){
         row_index_k = row_index[k];
         col_index_k = col_index[k];

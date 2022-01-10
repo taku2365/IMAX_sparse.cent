@@ -109,7 +109,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
 	    mop(OP_STR,  3, &AR[rp1][2],     (Ull)oofs, (Ull)c02[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
 	    mop(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk)
 
-//EMAX5A begin mm5 mapdist=0
+//EMAX5A begin mm0 mapdist=0
 /*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
   /*2*/ for (INIT1=1,LOOP1=B_col_blk,rofs=rofs_init; LOOP1--; INIT1=0) { /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
     /*1*/ for (INIT0=1,LOOP0=B_col_size/W/2,cofs=cofs_init; LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */

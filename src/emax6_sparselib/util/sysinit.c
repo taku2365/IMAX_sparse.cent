@@ -72,15 +72,11 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
 
 
 void mem_release(Uint memsize,Uchar** membase){
-  // #if defined(ARMZYNQ) && defined(EMAX6)
-    // {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
-
+  #if defined(ARMZYNQ) && defined(EMAX6)
+    {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
+    
+  #else
     memset(*membase,0,memsize);
-  // #else
-  // if(*membase != NULL){
-  //     free(*membase);
-  //     *membase = NULL;
-  //   }
-  // #endif
+  #endif
 
 }
