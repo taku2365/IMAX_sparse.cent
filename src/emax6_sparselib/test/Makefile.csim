@@ -46,7 +46,7 @@ all:		$(EMAX6_SPARSE_TEST_BIN)
 
 clean:;		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c
 
-test_%+dma:	test_%.o
+test_%+dma:	test_%.o test_depend
 		$(LD) $(LDFLAGS) -o $@ $(PROJTOP)/lib/asim64-lib/_start.o $< $(LIBFLAGS) --start-group $(LIBS) --end-group
 
 test_%.o: test_%.c
@@ -54,10 +54,10 @@ test_%.o: test_%.c
 
 
 ifeq ($(LINK_FORMAT),static)
-test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
 
 endif

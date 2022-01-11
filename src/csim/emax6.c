@@ -2358,8 +2358,8 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
       exring[cid].unit[i].lmm.mw0[1]  = exring[cid].unit[i].lmwd[1];
       exring[cid].unit[i].lmm.mw0[2]  = exring[cid].unit[i].lmwd[2];
       exring[cid].unit[i].lmm.mw0[3]  = exring[cid].unit[i].lmwd[3];
-      printf("place1 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
-      printf("place1 lmm_mode %x exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask %x  exring[cid].unit[i].lmco %x exring[cid].unit[i].ea04_umask %x exring[cid].unit[i].lmca %x exring[cid].unit[i].ea04_lmask %x\n",reg_ctrl.i[cid].conf[i][exring[cid].unit[i].lmco].cdw2.lmm_mode,exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmco,exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmca,exring[cid].unit[i].ea04_lmask);
+      // printf("place1 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+      // printf("place1 lmm_mode %x exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask %x  exring[cid].unit[i].lmco %x exring[cid].unit[i].ea04_umask %x exring[cid].unit[i].lmca %x exring[cid].unit[i].ea04_lmask %x\n",reg_ctrl.i[cid].conf[i][exring[cid].unit[i].lmco].cdw2.lmm_mode,exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmco,exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmca,exring[cid].unit[i].ea04_lmask);
 #if 0
 printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%08.8x lmranger_ok=%x lmrangew_ok=%x top=%08.8x bot=%08.8x\n", i, br->col, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axir, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axiw, br->rw, br->ty, br->a, exring[cid].unit[i].lmranger_ok, exring[cid].unit[i].lmrangew_ok, reg_ctrl.i[cid].addr[i][br->col].top, reg_ctrl.i[cid].addr[i][br->col].bot);
 #endif
@@ -2384,7 +2384,7 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
       exring[cid].unit[i].lmm.en0  = 1;
       exring[cid].unit[i].lmm.rw0  = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0op & 0x10)!=0; /* read/write */
       exring[cid].unit[i].lmm.ma0  = (exring[cid].unit[i].ea04dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
-      printf("place2 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+      // printf("place2 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
 
                                         /* OP_TR   の場合,eag0->WRITE,eag1->READ */
                                         /* OP_LDDMQの場合,eag0->WRITE,eag1->READ */

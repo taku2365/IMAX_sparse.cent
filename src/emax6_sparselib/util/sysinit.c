@@ -24,8 +24,9 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
     // *membase = (void*)(((Ull)*membase & ~(Ull)(alignment-1))+alignment);
     // memset(membase, 0, memsize+alignment);
     int i;
-    for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)*membase+i) = (Uint)0;
-
+    #if !defined(CSIMDEBUG)
+    for(i=0;i<memsize/sizeof(Ull);i++) *((Ull*)*membase+i) = (Ull)0;
+    #endif
 
     
     // 32byte = 16byte*2 = 0x20

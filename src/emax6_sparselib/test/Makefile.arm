@@ -20,13 +20,13 @@ SHARED_LINK = 0
 SHARED_PATH =
 LINK_FORMAT = static
 
-test_%+dma:     test_%.o
+test_%+dma:     test_%.o test_depend
 		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test_%.o:		test_%.c 
+test_%.o:		test_%.c
 		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
-#pthread_test:     pthread_test.o
+#pthread_test:     pthread_test.o test_depend
 #		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
 #pthread_test.o:	pthread_test.c 
@@ -37,11 +37,11 @@ test_%.o:		test_%.c
 
 
 ifeq ($(LINK_FORMAT),static)
-test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_%.o: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
 
 endif
 

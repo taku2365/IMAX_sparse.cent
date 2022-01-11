@@ -6,6 +6,8 @@ share/
 .gdb_history
 include/
 src/*tgz
+src/emax6_sparselib/*.log
+src/emax6_sparselib/*.txt
 lib/
 lib64/
 sample/4dimage/472.pnm

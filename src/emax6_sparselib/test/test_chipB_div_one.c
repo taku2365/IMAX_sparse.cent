@@ -84,10 +84,10 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 128LL;
-A_col_size_ini = A_col_size = 128LL;
-B_row_size_ini = B_row_size = 128LL;
-B_col_size_ini = B_col_size = 128LL;
+A_row_size_ini = A_row_size = 1024LL;
+A_col_size_ini = A_col_size = 1024LL;
+B_row_size_ini = B_row_size = 1024LL;
+B_col_size_ini = B_col_size = 1024LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 4LL  ;
 W_ini          = W          = 4LL  ;
@@ -102,7 +102,7 @@ else if(params->mode == 2){
 }
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
-sparse_rate_index = 4;
+sparse_rate_index = 6;
 sparse_rate_len = 6;
 int A_H_pad = 0;
 //はみ出た時の拡張
@@ -220,11 +220,12 @@ C0 = NULL;
 }
 mem_release(memsize,&membase);
 
-
+#if !defined(ARMZYNQ) && defined(EMAX6)
 if(membase != NULL){
     free(membase);
     membase = NULL;
 }
+#endif
 if(params != NULL){
 free(params);
 params = NULL;
