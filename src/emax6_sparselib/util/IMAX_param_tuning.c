@@ -12,7 +12,7 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     Sll W          = params->W_param         ;
     Sll H          = params->H_param         ;
     Uint A_H_pad   = 0                       ;
-    if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
+    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
@@ -36,8 +36,12 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     }
     params->A_col_blk_param = A_col_blk;
     params->B_col_blk_param = B_col_blk;
-    params->LMM_usage_kbyte = ((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/1000;
-    params->LMM_usage_rate  = (float)((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/(float)LMM_SIZE;
+    params->LMM_usage_A_kbyte = ((A_row_size*A_col_blk)*4)/1000;
+    params->LMM_usage_B_kbyte = ((2*B_row_size*B_col_blk)*4)/1000;
+    params->LMM_usage_kbyte   =  ((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/1000;
+    params->LMM_usage_A_rate  = (float)((2*A_row_size*A_col_blk)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_B_rate  = (float)((B_row_size*B_col_blk)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_rate    = (float)((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/(float)LMM_SIZE;
 
 }
 
@@ -86,15 +90,16 @@ static void IMAX_param_tunig_impl3(emax6_param* params){
     params->A_col_blk_param = A_col_blk;
     params->B_col_blk_param = B_col_blk;
     params->C_col_blk_param = C_col_blk;
-    params->LMM_usage_kbyte = ((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/1000;
+    params->LMM_usage_kbyte = ((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/1024;
     params->LMM_usage_rate  = (float)((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/(float)LMM_SIZE;
-
 }
 
 
 void IMAX_param_tunig(emax6_param* params){
 
     switch(params->mode){
+    case 1:
+        break;
     case 2:
         IMAX_param_tunig_impl2(params);
         break;

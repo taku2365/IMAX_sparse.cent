@@ -85,8 +85,8 @@ Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
 A_row_size_ini = A_row_size = 1024LL;
-A_col_size_ini = A_col_size = 1024LL;
-B_row_size_ini = B_row_size = 1024LL;
+A_col_size_ini = A_col_size = 64LL;
+B_row_size_ini = B_row_size = 64LL;
 B_col_size_ini = B_col_size = 1024LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 4LL  ;
@@ -94,11 +94,18 @@ W_ini          = W          = 4LL  ;
 A_col_blk_ini  = A_col_blk  = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 params->mode = 2;
-if(params->mode == 1){
-    H = params->H_param = 46LL;
-}
-else if(params->mode == 2){
-    H =params->H_param = 58LL;
+switch(params->mode){
+    case 1:
+        H = params->H_param = 46LL;
+    break;
+    case 2:
+    case 3:
+        H =params->H_param = 58LL;
+        break;
+    default:
+    printf("There isn`t this pattern\n");
+    exit(1);
+    
 }
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
@@ -127,14 +134,18 @@ params->W_param          = W         ;
 params->A_col_blk_param  = A_col_blk ;
 IMAX_param_tunig(params);
 
-
-printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.1f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d B_col_blk %d NCHIP %d W %d A_col_blk %d\n",\
+printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
 params->LMM_usage_rate,params->LMM_usage_kbyte,\
+params->LMM_usage_A_rate,params->LMM_usage_A_kbyte,\
+params->LMM_usage_B_rate,params->LMM_usage_B_kbyte,\
 sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
 (int)B_row_size,(int)B_col_size,\
-(int)params->B_col_blk_param,(int)NCHIP,(int)W,(int)params->A_col_blk_param); 
+(int)params->A_col_blk_param,(int)params->B_col_blk_param,\
+(int)params->C_col_blk_param,(int)NCHIP,(int)W); 
+
 H = params->H_param;
-if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
+A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
+printf("A_H_pad %d \n",A_H_pad);
 A  = (Uint*)membase;
 B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
 C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));

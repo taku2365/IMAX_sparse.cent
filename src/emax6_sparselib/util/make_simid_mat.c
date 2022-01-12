@@ -10,7 +10,7 @@ void make_simd_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug){
   for (row=0; row<B_row_size; row++) {
     for (col=0; col<B_col_size; col++){
       // *(float*)&B[col*B_col_size+row] = (float) tmp;
-      if(col%4 == 0){
+      if(col%2 == 0){
       *(float*)&B_debug[col*B_row_size+row] = (float)0;
       }
       else{

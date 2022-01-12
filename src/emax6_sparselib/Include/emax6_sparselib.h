@@ -75,8 +75,12 @@ typedef struct {
     Sll A_col_size_param ;
     Sll B_row_size_param ;
     Sll B_col_size_param ;  
+    float LMM_usage_A_kbyte;
+    float LMM_usage_A_rate ;
+    float LMM_usage_B_kbyte;
+    float LMM_usage_B_rate ;
     float LMM_usage_kbyte;
-    float LMM_usage_rate ;
+    float LMM_usage_rate ;    
 } emax6_param;
 
 typedef struct {    

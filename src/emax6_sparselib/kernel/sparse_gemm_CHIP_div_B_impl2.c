@@ -56,9 +56,11 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
   Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
   Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
   Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
-  Ull Force;
+  Ull Force,Force_reverse;
   Force = 1;
-  if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
+  // Force_reverse = ~Force;
+  A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
+
   printf("IMAX\n");
   for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
     for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
