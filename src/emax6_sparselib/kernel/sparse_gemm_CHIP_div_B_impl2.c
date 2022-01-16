@@ -66,18 +66,18 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
     Uint  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
 
     printf("IMAX\n");
-    for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
-        for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
-            if ((A_margin_tmp=A_margin[blk_iter])==0) {break;}
-            // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
-            for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk+1);blk_iter_tmp++){
+    for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
+        if ((A_margin_tmp=A_margin[blk_iter])==0) {break;}
+        // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
+        for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk+1);blk_iter_tmp++){
 
-                if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
-                    A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
-                    A_col_blk_tmp -= 1;
-                }
+            if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
+                A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
+                A_col_blk_tmp -= 1;
             }
+        }
         if(A_col_blk_tmp == 0){break;}
+        for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
         for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
 

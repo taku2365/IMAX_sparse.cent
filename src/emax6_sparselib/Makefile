@@ -1,4 +1,3 @@
-
 ## EMAX5/6 Application Simulator       ##
 ##   Copyright (C) 2021 by NAIST UNIV. ##
 ##         Primary writer: T.Sugahara##
@@ -174,4 +173,3 @@ endif
 clean:
 	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-*
 	(cd ./test; $(MAKE) -f Makefile.cent clean)
-

@@ -1,0 +1,9 @@
+CUDA_TOOLKIT := $(shell dirname $$(command -v nvcc))/..
+INC          := -I$(CUDA_TOOLKIT)/include 
+LIBS         := -lcudart -lcusparse
+
+.PHONY : test.out
+test.out: test_cusparse.cu
+	nvcc $(INC) test_cusparse.cu -o test_cusparse $(LIBS) -O2
+
+    

@@ -225,19 +225,19 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); 
         #endif
 
-        orig(coo->val,B_debug,C0,params);
-        for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
-            for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
-                count2++;
-                #ifdef CSIMDEBUG
-                printf("C in\n");
-                #endif
-                    *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
-                    *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
-                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+        // orig(coo->val,B_debug,C0,params);
+        // for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+        //     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
+        //         count2++;
+        //         #ifdef CSIMDEBUG
+        //         printf("C in\n");
+        //         #endif
+        //             *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+        //             *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+        //         // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
             
-            }
-        }
+        //     }
+        // }
 // nanosec: ARM:154329 DRAIN:9835515 CONF:13903 REGV:14830345 RANGE:4417095 LOAD:159138651 EXEC:12162100 total:200551938
 // nanosec: ARM:155206 DRAIN:9837535 CONF:13972 REGV:14814455 RANGE:4423073 LOAD:159105715 EXEC:16995296 total:205345252
 // nanosec: ARM:181222 DRAIN:9854057 CONF:18311 REGV:18540761 RANGE:5497330 LOAD:178717371 EXEC:19210359 total:232019411

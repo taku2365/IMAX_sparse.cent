@@ -52,7 +52,7 @@
 
 
 
-// /* LMM:16KB, RMM:64KB: M/NCHIP=124 M/NCHIP/B_col_blk=31 */
+// /* LMM:16KB, RMM:64KB: M/NCHIP=124 M/NCHIP/RMGRP=31 */
 // /* A A   B B B B B B   C C C C C C */
 // /* A A   B B B B B B   C C C C C C */
 // /* A A                 C C C C C C */
@@ -61,14 +61,13 @@
 
 
 
-//   #define A_row_size 1024LL   // 縛りなし
-//   #define A_col_size 1080LL    // 縛りなし　H_padのおかげ
-//   #define B_row_size 1080LL    // 縛りなし
-//   #define B_col_size 1024LL   // B_col_blk*NCHIP縛り
+//   #define A_row_size 768LL   // 縛りなし
+//   #define A_col_size 780LL    // 縛りなし　H_padのおかげ
+//   #define B_row_size 780LL    // 縛りなし
+//   #define B_col_size 768LL   // RMGRP*NCHIP縛り
 //   #define DIMENTION  2LL
-//   // #define B_col_blk 16
-//   #define B_col_blk 8
-//   #define A_row_blk 4
+//   // #define RMGRP 16
+//   #define RMGRP 8
 //   /*#define NCHIP 4*/
 //   #define NCHIP 4
 //   #define W  4LL
@@ -135,7 +134,7 @@
 //                 ),32,&membase);
 //   printf("membase: %08.8x\n", (Uint)membase);
 //   A  = (Uint*)membase;
-//   B  = (Uint*)((Uchar*)A  + (A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
+//   B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
 //   C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
 //   C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
 //   sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
@@ -148,8 +147,7 @@
 //   params->A_col_size_param = A_col_size;
 //   params->B_row_size_param = B_row_size;
 //   params->B_col_size_param = B_col_size;
-//   params->B_col_blk_param = B_col_blk;
-//   params->A_row_blk_param = A_row_blk;
+//   params->A_row_blk_param = RMGRP;
 //   params->NCHIP_param = NCHIP;
 //   params->H_param = H;
 //   params->W_param= W;
@@ -210,19 +208,19 @@
 //   }
 
 
-//   reset_nanosec();
-//   gemm_normal_CHIP_div_B(C1, A, B,params);
-//   get_nanosec(0);
-//   show_nanosec();
 
 //   reset_nanosec();
 //   // imax();
-//   origB(A,B,C0);
+//   gemm_normal_CHIP_div_B(C1, A, B,params);
 //   // sparse_gemm_736_736_736_CHIP_div_B_4(C1, A, B, A_sparse);
 //   // sparse_multiply_imax6(nnz_A,A_sparse,B,C1,B_col_size,params);
 //   get_nanosec(0);
 //   show_nanosec();
 
+//   reset_nanosec();
+//   origB(A,B,C0);
+//   get_nanosec(0);
+//   show_nanosec();
 
 //     sum = 0;
 //     sum1 = 0;
@@ -267,11 +265,6 @@
 //     }
 //   }
 // }
-
-
-
-
-
 
 
 
@@ -408,10 +401,11 @@ switch(params->mode){
 }
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
-sparse_rate_len = 7;
+// sparse_rate_len = 7;
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-size_array_len = 6;
-Uint size_array[6] = {1024,512,256,128,64,32};
+size_array_len = 5;
+// Uint size_array[1] = {736};
+Uint size_array[5] = {1024,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 10;
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
@@ -492,7 +486,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         for (col=0; col<B_col_size; col++)
           tmp = (rand()%(int)2);
           tmp = (tmp == 0);
-        * (float*)&B[row*B_col_size+col] = (float)tmp;
+        * (float*)&B[row*B_col_size+ col] = (float)tmp;
       }
 
 
@@ -500,7 +494,6 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, params);
       get_nanosec(0);
       show_nanosec();
-      orig(A,B,C0,params);
       #if !defined(CSIMDEBUG)
       fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
       params->LMM_usage_rate,params->LMM_usage_kbyte,\
@@ -515,22 +508,23 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       #endif
 
 
-      sum = 0;
-      sum1 = 0;
-      for (col=0; col<B_col_size; col+=1){
-          for (row=0; row<A_row_size; row+=1) {
-              sum += *(float*)&C0[col+row*B_col_size];
-              sum1 += *(float*)&C1[row*B_col_size+col];
-              if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
-                  count2++;
+    //   orig(A,B,C0,params);
+    //   sum = 0;
+    //   sum1 = 0;
+    //   for (col=0; col<B_col_size; col+=1){
+    //       for (row=0; row<A_row_size; row+=1) {
+    //           sum += *(float*)&C0[col+row*B_col_size];
+    //           sum1 += *(float*)&C1[row*B_col_size+col];
+    //           if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
+    //               count2++;
 
-                  printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
-                                                      row, col, *(float*)&C1[row*B_col_size+col]);
-                  printf("sparse_rate_index %d \n",sparse_rate_index);                                        
-                  exit(1);
-              }
-          }
-      }
+    //               printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
+    //                                                   row, col, *(float*)&C1[row*B_col_size+col]);
+    //               printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+    //               exit(1);
+    //           }
+    //       }
+    //   }
       #if !defined(ARMZYNQ) && defined(EMAX6)
       if(abs(sum-sum1)>1){
           printf("sum %f \n",sum);

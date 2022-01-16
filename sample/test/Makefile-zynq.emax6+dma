@@ -27,7 +27,7 @@
 
 PROJTOP	      = /home/takuya-s/IMAX_sparse.cent/
 OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-PROGRAM       = test024-zynq.emax6+dma test025-zynq.emax6+dma
+PROGRAM       = test025-zynq.emax6+dma
 CPP           = cpp -P
 CC            = gcc
 CFLAGS        = -I. -O2 $(OPTION)
@@ -47,13 +47,6 @@ LINK_FORMAT = static
 
 
 
-test024-zynq.emax6+dma:     test024.o
-		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test024.o:	test024.c sparse_lib
-		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
-
-
 test025-emax6.o: $(PROJTOP)/src/conv-c2c/emax6.h $(PROJTOP)/src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 
 test025-zynq.emax6+dma:     test025-emax6.o
@@ -70,10 +63,10 @@ test025-emax6.c:	test025.c
 
 
 test025-emax6.o: $(PROJTOP)/src/conv-c2c/emax6.h $(PROJTOP)/src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
-test024.o: $(PROJTOP)/src/conv-c2c/emax6.h $(PROJTOP)/src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 
-sparse_lib:
-	(cd ../../src/emax6_sparselib; $(MAKE) ARM=1 LINK_FORMAT=$(LINK_FORMAT) $(LINK_FORMAT))
+
+#sparse_lib:
+#	(cd ../../src/emax6_sparselib; $(MAKE) ARM=1 LINK_FORMAT=$(LINK_FORMAT) $(LINK_FORMAT))
 # $(MAKE)はマクロも引き継がれる
 
 

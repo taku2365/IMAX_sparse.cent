@@ -50,7 +50,7 @@ int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECS
 #define CSIMBM (CSIMWD*CSIMHT)
 
 main(int argc,char*argv[])
-{   
+{
 Uint *A = NULL;  /*[A_row_size][L];*/
 Uint *B = NULL;  /*[L][B_col_size];*/
 Uint *C0 = NULL; /*[A_row_size][B_col_size];*/
@@ -112,7 +112,7 @@ switch(params->mode){
     default:
     printf("This pattern does not exist\n");
     exit(1);
-    
+
 }
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
@@ -155,12 +155,12 @@ for(size_array_index=0;size_array_index<row_size_array_len;size_array_index++){
         A_col_size = params->A_col_size_param = row_size_array[size_array_index];
         B_row_size = params->B_row_size_param = row_size_array[size_array_index];
         B_col_size = params->B_col_size_param = 1024LL;
-        params->A_col_blk_param  = A_col_blk ;  
+        params->A_col_blk_param  = A_col_blk ;
         params->B_col_blk_param  = B_col_blk ;
         params->C_col_blk_param  = C_col_blk ;
         params->NCHIP_param      = NCHIP     ;
         params->W_param          = W         ;
-        IMAX_param_tunig(params);        
+        IMAX_param_tunig(params);
         // printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.1f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",
         printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
             params->LMM_usage_rate,params->LMM_usage_kbyte,\
@@ -169,10 +169,10 @@ for(size_array_index=0;size_array_index<row_size_array_len;size_array_index++){
             sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
             (int)B_row_size,(int)B_col_size,\
             (int)params->A_col_blk_param,(int)params->B_col_blk_param,\
-            (int)params->C_col_blk_param,(int)NCHIP,(int)W); 
+            (int)params->C_col_blk_param,(int)NCHIP,(int)W);
         H = params->H_param;
         A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
-        
+
         Base_p  = (Uint*)((Uchar*)membase);
         A  = (Uint*)((Uchar*)Base_p);
         B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
@@ -183,7 +183,7 @@ for(size_array_index=0;size_array_index<row_size_array_len;size_array_index++){
 
         C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
         B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
-        
+
 
         // make A sparse matrix with sparsity percent
         coo = make_mat(params,sparse_rate[sparse_rate_index],zero_bias);
@@ -215,22 +215,22 @@ for(size_array_index=0;size_array_index<row_size_array_len;size_array_index++){
         (int)params->A_col_blk_param,(int)params->B_col_blk_param,\
         (int)params->C_col_blk_param,(int)NCHIP,(int)W,\
         nanosec[NANOS_ARM],nanosec[NANOS_DRAIN],nanosec[NANOS_CONF],nanosec[NANOS_REGV],\
-        nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); 
+        nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]);
         #endif
-        
-        orig(coo->val,B_debug,C0,params);
-        for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
-            for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
-                count2++;
-                #ifdef CSIMDEBUG
-                printf("C in\n");
-                #endif
-                    *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
-                    *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
-                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
-            
-            }
-        }
+
+        // orig(coo->val,B_debug,C0,params);
+        // for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+        //     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
+        //         count2++;
+        //         #ifdef CSIMDEBUG
+        //         printf("C in\n");
+        //         #endif
+        //             *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+        //             *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+        //         // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+
+        //     }
+        // }
 
         sum = 0;
         sum1 = 0;
@@ -243,7 +243,7 @@ for(size_array_index=0;size_array_index<row_size_array_len;size_array_index++){
 
                     printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                         row, col, *(float*)&C_debug[col*A_row_size+row]);
-                    printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+                    printf("sparse_rate_index %d \n",sparse_rate_index);
                     // exit(1);
                 }
             }

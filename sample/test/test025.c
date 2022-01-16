@@ -1,3 +1,4 @@
+
 static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_lf/RCS/mm.c,v 1.4 2018/02/04 10:28:53 nakashim Exp nakashim $";
 
 /*                          Copyright (C) 2013- by NAIST */
@@ -23,7 +24,6 @@ typedef struct {Ull u[2];} Dll;
 #include <time.h>
 #include <fcntl.h>
 #include <math.h>
-#include <malloc.h>
 #ifndef ARMSIML
 #include <unistd.h>
 #include <sys/times.h>
@@ -37,14 +37,11 @@ typedef struct {Ull u[2];} Dll;
 #include <X11/extensions/Xdbe.h>
 #endif
 
-
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 
 #if defined(EMAX6)
-// #include "../../src/conv-c2c/emax6.h"
-// #include "../../src/conv-c2c/emax6lib.c"
-#include "../../src/emax6_sparselib/Include/emax6_sparselib.h"
-#include "./../../conv-c2c/emax6lib.c"
+#include "../../src/conv-c2c/emax6.h"
+#include "../../src/conv-c2c/emax6lib.c"
 #endif
 #if !defined(ARMSIML)
 #include "./xdisp.c"
@@ -64,22 +61,12 @@ sysinit(memsize, alignment) Uint memsize, alignment;
     exit(1);
   membase = emax_info.ddr_mmap;
   {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
+#elif __linux__ == 1
+  posix_memalign(&membase, alignment, memsize);
 #else
   membase = (void*)malloc(memsize+alignment);
-  printf("malloc size %d \n",malloc_usable_size(membase));
-  printf("membase_before_align: %08.8x\n", (Uint)membase);
-  if ((Ull)membase & (Ull)(alignment-1))
-  membase = (void*)(((Ull)membase & ~(Ull)(alignment-1))+alignment);
-  // memset(membase, 0, memsize+alignment);
-  int i;
-  for(i=0;i<memsize/sizeof(Uint);i++) *((Uint*)membase+i) = (Uint)0;
-
-
-  
-  // 32byte = 16byte*2 = 0x20
-  printf("membase_after_align: %08.8x\n", (Uint)membase);
-
-  
+  if ((int)membase & (alignment-1))
+    membase = (void*)(((int)membase & ~(alignment-1))+alignment);
 #endif
 
 #if !defined(ARMZYNQ) && defined(EMAX5)
@@ -123,50 +110,27 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 /* A A                 C C C C C C */
 /* L=2, M1=4, M2=6     L<M1,M2     */
 
-
-
-
-#define L  736LL
-#define M1 736LL
-#define M2 736LL
-#define A_row_size 736LL
-#define A_col_size 736LL
-#define B_row_size 736LL
-#define B_col_size 736LL
-
-// #define RMGRP 16
-#define RMGRP 8
+#define L  480LL
+#define M1 480LL
+#define M2 480LL
+#define RMGRP 15
 /*#define NCHIP 4*/
 #define NCHIP 4
 #define W  4LL
-#define H  46
-
+#define H  60
 Uint *A;  /*[M1][L];*/
 Uint *B;  /*[L][M2];*/
 Uint *C0; /*[M1][M2];*/
 Uint *C1; /*[M1][M2];*/
-Uint *A_debug; /*[M1][L];*/
-Uint *B_debug; /*[L][M2];*/
-Uint *C_debug; /*[M1][M2];*/
-emax6_sparse2* A_sparse;
-emax6_param* params;
-int blk_iter;
-int row,row1, col, col1, n, n1;
+int row, col, n;
 int top, blk;
 int w, h;
 int count0, count1, count2;
-int nnz_A,nnz_B,nnz_B_debug;
-double sum=0,sum1=0;
-
 
 #define CSIMWD 320
 #define CSIMHT 240
 #define CSIMBM (CSIMWD*CSIMHT)
 Uint Z[CSIMBM];
-
-#define ERRTH  (5.0E-3)
-#define udiff(a,b) (((a)-(b)>=0.0?(a)-(b):(b)-(a))/((a)==0.0?1:(a)))
-#define setmax(max, new) { if (max < (new)) max = (new); }
 
 #define MAXINT (~(1<<(sizeof(int)*8-1)))
 #define adif(a,b) (((a)>(b))?(a)-(b):(b)-(a))
@@ -176,55 +140,64 @@ Uint Z[CSIMBM];
 #define abs(a) (((a)<0)?-(a):(a))
 
 main()
-{ //pointerでないので普通に足される。
-  sysinit((Uint)(2*((M1+1)*L)*sizeof(Uint)
+{
+  sysinit((Uint)(M1*L*sizeof(Uint)
                 +L*M2*sizeof(Uint)
                 +M1*M2*sizeof(Uint)
-                +M1*M2*sizeof(Uint)
-                ),32);
+                +M1*M2*sizeof(Uint)),32);
   printf("membase: %08.8x\n", (Uint)membase);
   A  = (Uint*)membase;
-  B  = (Uint*)((Uchar*)A  + 2*((M1)*L)*sizeof(Uint));
+  B  = (Uint*)((Uchar*)A  + M1*L*sizeof(Uint));
   C0 = (Uint*)((Uchar*)B  + L*M2*sizeof(Uint));
   C1 = (Uint*)((Uchar*)C0 + M1*M2*sizeof(Uint));
-
-  A_debug = (Uint*)calloc(M1*M2,sizeof(Uint));
-  B_debug  = (Uint*)calloc(2*((M1+1)*L),sizeof(Uint));
-  C_debug = (Uint*)calloc(L*M2,sizeof(Uint));
-  params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-  params->RMGRP_param = RMGRP;
-  params->NCHIP_param = NCHIP;
-  params->H_param = H;
-  params->W_param= W*2;
-  
-  // params->W_param= W*2;
   printf("A : %08.8x\n", A);
   printf("B : %08.8x\n", B);
   printf("C0: %08.8x\n", C0);
   printf("C1: %08.8x\n", C1);
-  int tmp = 0,num = 0;
-  int* col_index_A = (int *)calloc(M1*L,sizeof(int));
-  int* row_index_A = (int *)calloc(M1*L,sizeof(int));
-  Uint* A_tmp = (Uint *)calloc(M1*L,sizeof(Uint));
-
-
 
   for (row=0; row<M1; row++) {
     for (col=0; col<L; col++)
-    // fprintf(stderr,"aaaa\n");
       *(float*)&A[row*L+col] = row%120+1;
   }
   for (row=0; row<L; row++) {
-    // fprintf(stderr,"bbbb\n");
     for (col=0; col<M2; col++)
       *(float*)&B[row*M2+col] = col%120+1;
   }
 
+#if !defined(ARMSIML)
+  x11_open(0);
+#endif
+
+  reset_nanosec();
   orig();
+  get_nanosec(0);
+  show_nanosec();
+
   reset_nanosec();
   imax();
   get_nanosec(0);
   show_nanosec();
+
+#ifdef ARMSIML
+  copy_Z(0, C1); _copyX(0, Z);
+  copy_Z(1, C1); _copyX(1, Z);
+  copy_Z(4, C1); _copyX(4, Z);
+  copy_Z(5, C1); _copyX(5, Z);
+  copy_Z(8, C1); _copyX(8, Z);
+  copy_Z(9, C1); _copyX(9, Z);
+  _updateX();
+#endif
+#if !defined(ARMSIML)
+  copy_Z(0, C1); BGR_to_X(0, Z);
+  copy_Z(1, C1); BGR_to_X(1, Z);
+  copy_Z(4, C1); BGR_to_X(5, Z);
+  copy_Z(5, C1); BGR_to_X(6, Z);
+  copy_Z(8, C1); BGR_to_X(10,Z);
+  copy_Z(9, C1); BGR_to_X(11,Z);
+  x11_update();
+#endif
+
+  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
 
   for (row=0; row<M1; row++) {
     for (col=0; col<M2; col++) {
@@ -235,27 +208,58 @@ main()
       }
     }
   }
+  if (count2)
+    printf("Num of diffs: %d\n", count2);
+  else
+    printf("Results are equal\n");
 
-//     for (col=0,col1=0; col<M2/2; col+=1,col1+=2){
-//       for (row=0,row1=0; row1<L; row+=2,row1+=1) {
-//         if ((C0[col1+row1*L] != C1[col*2*M2+row])||(C0[(col1+1)+row1*L] != C1[col*2*M2+row+1])) {
-//           count2++;
-//           printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1, (double)*(float*)&C0[col1+row1*L],
-//                                                   row, col*2, (double)*(float*)&C1[col*2*M2+row]);
-//           printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row1, col1+1, (double)*(float*)&C0[(col1+1)+row1*L],
-//                                                   row+1, col*2, (double)*(float*)&C1[col*2*M2+row+1]);  
-//           exit(1);       
-//       }
-//     }
-//   }
-  
-// free(A_tmp);
+  show_nanosec();
 
-
+#if !defined(ARMSIML)
+  printf("==== Normal end. Type any in ImageWin ====\n");
+  while (!x11_checkevent());
+#endif
 }
 
+copy_Z(id, from)
+     int id; /* 0 .. 11 */
+     unsigned int *from;
+{
+  int i, j;
+  volatile unsigned int *to = Z;
+  unsigned int *offs;
 
-
+  switch (id) {
+  case 0:  offs = from;               break;
+  case 1:  offs = from + WD;          break;
+  case 2:  offs = from + WD*2;        break;
+  case 3:  offs = from + WD*3;        break;
+  case 4:  offs = from + M2*HT;        break;
+  case 5:  offs = from + M2*HT+WD;     break;
+  case 6:  offs = from + M2*HT+WD*2;   break;
+  case 7:  offs = from + M2*HT+WD*3;   break;
+  case 8:  offs = from + M2*HT*2;      break;
+  case 9:  offs = from + M2*HT*2+WD;   break;
+  case 10: offs = from + M2*HT*2+WD*2; break;
+  case 11: offs = from + M2*HT*2+WD*3; break;
+  case 12: offs = from + M2*HT*3;      break;
+  case 13: offs = from + M2*HT*3+WD;   break;
+  case 14: offs = from + M2*HT*3+WD*2; break;
+  case 15: offs = from + M2*HT*3+WD*3; break;
+  }
+  for (i=0; i<HT; i++, offs+=M2) {
+    if (offs<from+M1*M2) {
+      for (j=0; j<WD; j++) {
+	if (j+(id%4)*WD<M2) *to++ = (*(offs+j))>>0;
+	else                *to++ = 0;
+      }
+    }
+    else {
+      for (j=0; j<WD; j++)
+	*to++ = 0;
+    }
+  }
+}
 
 orig() {
   printf("<<<ORIG>>>\n");
@@ -272,11 +276,140 @@ orig() {
   }
 }
 
+#if 0
+imax() {
+  Ull CHIP;
+  Ull rofs;
+  printf("<<<IMAX>>>\n");
+  for (top=0; top<M1/NCHIP; top+=RMGRP) { /* will be parallelized by multi-chip (M/#chip) */
+    for (blk=0; blk<L; blk+=H) { /* 3重ループ目 (Cが確定するまでのDMA入れ換えはR/Wを伴うためオーバヘッドになる. Bのbroadcast回数を増やす方が結果的に高速) */
+/*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
+  /*2*/ for (rofs=0; rofs<RMGRP; rofs++) { /* will be parallelized by multi-chip (M/#chip) */
+          /*【3重ループ制御方法】                                                                                                                                                              */
+          /*    loop0-reg 4           4           4           4           4           4           4           4           4           4           4           4           4                    */
+          /*                 3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  3  2  1  0  - (stop1=1)       */
+          /*    loop1-reg 4                                               4                                               4                                               4                    */
+          /*                          3           2           1           0           3           2           1           0           3           2           1           0                    */
+          /*    loop2-reg 3                                                                                                                                               3                    */
+          /*                                                              2                                               1                                               0                    */
+          /*                                                                                                                                                   【★Ａ★】 ↑arbrk=1(停止)      */
+          /*                ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex ex --------- */
+          /*        loop0    0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  0  1  2  3  - (stop1=1)       */
+          /*        loop1    0  0  0  0  1  1  1  1  2  2  2  2  3  3  3  3  0  0  0  0  1  1  1  1  2  2  2  2  3  3  3  3  0  0  0  0  1  1  1  1  2  2  2  2  3  3  3  3                    */
+          /*        loop2    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2                    */
 
+          /*【★Ａ★】部分の拡大              0         1         2         3      |  0         1         2         3      |  0         1         2         3      |  0                        */
+          /*                 unit1 clk  ___/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____                  */
+          /*                   stage1d  ----< loop0=2 X loop1=1 X loop2=1 X ======= X loop0=1 X loop1=1 X loop2=1 X ======= X loop0=4★-----------------------------X loop0=3                  */
+          /*                                                                                                                  init0=1★                            |                           */
+          /*                   stage2d  --------------< 0nzero  X nop     X nop     X ======= X 0zero★ X 1zero★ X 2zero★ X ======= >--------------------------------------                  */
+          /*                                                                                                ↑        ↑                                           |                           */
+          /*                                                                                           前cycle:zeroの場合decr                                      |                           */
+          /*                   stage3d  ------------------------< loop0=1 X loop1=1 X loop2=1 X ======= X loop0=0 X loop1=0 X lop2=0★X ======= X loop0=3 >------------------                  */
+          /*                                                                                                            ↑stage1dに戻る                            |                           */
+          /*                                                                                                            │この時0ならstage1dにinit0=1を通知.stage1dに初期値をBRからセット      */
+          /*                                                                                                            │init0=1は下方(BR)に伝搬                  |                           */
+          /*                   stage4d  ----------------------------------< loop0=1 X loop1=1 X loop2=1 X ======= X loop0=0 X lop1=0  X lop2=0★X ======= X loop0=3 >--------       init0=1が  */
+          /*                                                                                                                                                init0=1|              │次段unitへ */
+          /*                                                                                                                                                       |stop1=1       ↓           */
+          /*                                  0         1         2         3      |  0         1         2         3      |  0         1         2         3      |  0        stage1dに初期値 */
+          /*                 unit2 clk  ___/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____/~~~~\____                  */
+          /*                                                                                                          ★OP_WHILEが存在  かつ zeroの場合にarbrk=1セット★                       */
+          /*                【3重ループのパターン】                                                       ★col=0から順に調べ nonzeroの場合はarbrk=0に戻す★                                   */
+          /*                                     col2=0  col1=0  col0=0                                                                                                                        */
+          /*                                       ↓      ↓      ↓     DMA以外のレジスタ値設定を自動化                                                                                      */
+          /*                                     arbrk=1 init1=1 init0=1  受信したら初期値再セット                                                                                             */
+          /*                                                   0       1                                                                                                                       */
+          /*                                                   1       0                                                                                                                       */
+          /*                                                   1       1                                                                                                                       */
+          /*                                           1       X       X  IMAX終了                                                                                                             */
+          /*                                                                                                                                                                                   */
+          /*                【2重ループのパターン】      col1=0  col0=0                                                                                                                        */
+          /*                                               ↓      ↓     DMA以外のレジスタ値設定を自動化                                                                                      */
+          /*                                             arbrk=1 init0=1  受信したら初期値再セット                                                                                             */
+          /*                                                   0       1  A先頭はA[0][0]からA[1][0]に変更（480x4B加算）                                                                        */
+          /*                                                              B先頭は元に戻す(ofs=-Wx4に戻す:実際にはselfloopを一度解除しBRから入力するだけ)                                       */
+          /*                                                              RANGEは60行x480列x4B=115200を加算(lenは無変更)                                                                       */
+          /*                                                                exe(OP_ADD, &ofs, ★INIT0, ofs, EXP_H3210, W*4, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);              */
+          /*                                                                                            ↑Cの記述はそのまま.IMAXではBRに初期値が残っているので利用                             */
+          /*                                                                mop(OP_LDUWR,  1, &BR[1][0][1],  ★(Ull)b000, (Ull)ofs, MSK_D0, ★(Ull)b00, M/2, 0, 0, (Ull)NULL, M/2);            */
+          /*                                                                                            ↑Cの記述はそのまま.2重ループの範囲では増分指定不要                                    */
+          /*                                                   1       X  IMAX終了                                                                                                             */
 
+          /*【3重ループ参照パターン】                                                                                                                                                          */
+          /* a0000 a0001 a0002 a0003 a0004 ... a0059 | a0060 a0061 ... *//* LMM[ 0] b0000 b0001 b0002 b0003 b0004 ... b0059 b0099 ... *//* partial c0000 c0001 c0002 c0003 c0004 ... c0099 ... */
+          /* a0100 a0101 a0102 a0103 a0104 ... a0159 | a0160 a0161 ... *//* LMM[ 1] b0100 b0101 b0102 b0103 b0104 ... b0159 b0199 ... *//* partial c0100 c0101 c0102 c0103 c0104 ... c0199 ... */
+          /* a0200 a0201 a0202 a0203 a0204 ... a0259 | a0260 a0261 ... *//* LMM[ 2] b0200 b0201 b0202 b0203 b0204 ... b0259 b0299 ... *//* partial c0200 c0201 c0202 c0203 c0204 ... c0299 ... */
+          /* a0300 a0301 a0302 a0303 a0304 ... a0359 | a0360 a0361 ... *//* LMM[ 3] b0300 b0301 b0302 b0303 b0304 ... b0359 b0399 ... *//* partial c0300 c0301 c0302 c0303 c0304 ... c0399 ... */
+          /*                                                           *//* LMM[59] b5900 b5901 b5902 b5903 b5904 ... b5959 b5999 ... *//*                                                     */
+          /*                                                           *//* --------------------------------------------------------- *//*                                                     */
+          /* a9900 a9901 a9902 a9903 a9904 ... a9959 | a9960 a9961 ... *//* LMM[99] b9900 b9901 b9902 b9903 b9904 ... b9959 b9999 ... *//* partial c9900 c9901 c9902 c9903 c9904 ... c9999 ... */
 
+          /*【3重ループ実行手順】                                                                                                                                                              */
+          /* ================================== 3重ループ開始 ================================================================================================================================ */
+          /*   LMM00: A[0:7][0:479] (必要なのはa000000,001000,...007000) 480x8x4B=16KB | B[00][0:479] 480x4B=2KB                                                                               */
+          /*                                   a000060,001060,...007060                |                                                                                                       */
+          /*                                   a000420,001420,...007420                |                                                                                                       */
+          /*   LMM01: A[0:7][0:479] (必要なのはa000001,001001,...007001)               | B[01][0:479] 480x4B=2KB                                                                               */
+          /*                                   a000061,001061,...007061                |                                                                                                       */
+          /*                                   a000421,001421,...007421                |                                                                                                       */
+          /*   LMM59: A[0:7][0:479] (必要なのはa000059,001059,...007059) 8要素         | B[59][0:479] 480x4B=2KB                                                                               */
+          /*                                   a000119,001119,...007119  8要素         |                                                                                                       */
+          /*                                   a000479,001479,...007479  8要素x8blk分  |                                                                                                       */
+          /*   LMM60: ---------------------------------------------------------------------------------------- C[0:7][0:479] 480x8x4B=16KB  Cの途中結果をR/Wで入れ換えるのは損                 */
+          /*                                                                                                   multi-chipに対するR/Wがシリアライズされるし,LMMのREADは遅いので回数を減らすべき */
+          /* ★RANGE設定,A[0:7][0:479]を一度に供給                                                                                           ★RANGE設定,C[0:7][*]初期化書き込み               */
+          /* ================================== 3重ループ先頭開始 BLK=0======================================================================================================================= */
+          /*                                                                        ★BのREGV+RANGEを設定,次のB[  0: 59]を1回のburstで供給(MC-broadcast)                                       */
+          /* ---------------------------------- 2重ループIMAX開始 --3重loopのblk-iteration-- 1回目 (blk=0)                            *//*                                                     */
+          /* A[0][  0: 59]->LMMを再利用                                *//*   row= 0: B[  0][*]:480*4B=2KB /LMM(1/2) b00=B+(blk+ 0)*M *//*  row=0: C[0][*]:480*4B=2KB / LMM┐                  */
+          /* A[1][  0: 59]->LMMを再利用                                *//*   row= 1: B[  1][*]:480*4B=2KB /LMM(1/2) b01=B+(blk+ 1)*M *//*  row=1: C[1][*]:480*4B=2KB / LMM│合計16KBは実際は  */
+          /* A[7][  0: 59]->LMMを再利用                                *//*   row=59: B[ 59][*]:480*4B=2KB /LMM(1/2) b59=B+(blk+59)*M *//*  row=7: C[7][*]:480*4B=2KB / LMM┘1LMMに収容可能    */
+          /* ---------------------------------- IMAX動作一旦終了 ----------------------------------------------------------------------------------------------------------------------------- */
+          /*                                                                        ★BのREGV+RANGEを設定,次のB[ 60:119]を1回のburstで供給(MC-broadcast)                                       */
+          /* ---------------------------------- 2重ループIMAX開始 --3重loopのblk-iteration-- 2回目 (blk=1)   B[0]とB[60]の距離は480*60*4B(128KB),LMM共存無理                                   */
+          /* A[0][ 60:119]->LMMを再利用                                *//*   row= 0: B[ 60][*]:480*4B=2KB /LMM(1/2) b00+=(H-1)*M*4B  *//*  row=0: C[0][*]:480*4B=2KB / LMM (update)           */
+          /* A[1][ 60:119]->LMMを再利用                                *//*   row= 1: B[ 61][*]:480*4B=2KB /LMM(1/2) b01+=(H-1)*M*4B  *//*  row=1: C[1][*]:480*4B=2KB / LMM (update)           */
+          /* A[7][ 60:119]->LMMを再利用                                *//*   row=59: B[119][*]:480*4B=2KB /LMM(1/2) b59+=(H-1)*M*4B  *//*  row=7: C[7][*]:480*4B=2KB / LMM (update)           */
+          /* ---------------------------------- IMAX動作一旦終了 ----------------------------------------------------------------------------------------------------------------------------- */
+          /*                                                                        ★BのREGV+RANGEを設定,次のB[420:479]を1回のburstで供給(MC-broadcast)                                       */
+          /* ---------------------------------- 2重ループIMAX開始 --3重loopのblk-iteration-- 8回目 (blk=7)                            *//*                                                     */
+          /* A[0][420:479]->LMMを再利用                                *//*   row= 0: B[420][*]:480*4B=2KB /LMM(1/2) b00+=(H-1)*M*4B  *//*  row=0: C[0][*]:480*4B=2KB / LMM (update)           */
+          /* A[1][420:479]->LMMを再利用                                *//*   row= 1: B[421][*]:480*4B=2KB /LMM(1/2) b01+=(H-1)*M*4B  *//*  row=1: C[1][*]:480*4B=2KB / LMM (update)           */
+          /* A[7][420:479]->LMMを再利用                                *//*   row=59: B[479][*]:480*4B=2KB /LMM(1/2) b59+=(H-1)*M*4B  *//*  row=7: C[7][*]:480*4B=2KB / LMM (update)           */
+          /* ---------------------------------- IMAX動作一旦終了 ----------------------------------------------------------------------------------------------------------------------------- */
+          /* ================================== 3重ループ全体終了 ============================================================================================================================ */
+          /* ★A[8:15][0:479]を一度に供給                                                                                                    ★RANGE設定,C[0:7][*]READ+C[8:15][*]WRITE         */
+          /* ================================== 3重ループ先頭開始 BLK=0======================================================================================================================= */
+          /*                                                                        ★BのREGV+RANGEを設定,次のB[  0: 59]を1回のburstで供給(MC-broadcast)                                       */
+          /* ---------------------------------- 2重ループIMAX開始 --3重loopのblk-iteration-- 1回目 (blk=0)                            *//*                                                     */
+          /* A[ 8][  0: 59]->LMMを再利用                               *//*   row= 0: B[  0][*]:480*4B=2KB /LMM(1/2) b00=B+(blk+ 0)*M *//*  row=0: C[ 8][*]:480*4B=2KB / LMM┐                 */
+          /* A[ 9][  0: 59]->LMMを再利用                               *//*   row= 1: B[  1][*]:480*4B=2KB /LMM(1/2) b01=B+(blk+ 1)*M *//*  row=1: C[ 9][*]:480*4B=2KB / LMM│合計16KBは実際は */
+          /* A[15][  0: 59]->LMMを再利用                               *//*   row=59: B[ 59][*]:480*4B=2KB /LMM(1/2) b59=B+(blk+59)*M *//*  row=7: C[15][*]:480*4B=2KB / LMM┘1LMMに収容可能   */
 
+    /*1*/ for (col=0; col<M2; col+=W) { /* one-horizontal-line is calculated by EMAX-while(loop--) */
+                                        /* C0xの部分和を生成（1行分）1chip分の総量はMword*M/#chip  */
+                                        /*                          M=504の場合は64Kword(256KB)    */
+                                        /*      さらにchip内でも行を分割すればcsimLMM(128KB)に入る */
+            for (w=0; w<W; w++) {   /* horizontal (parallel) execution */
+              for (h=0; h<H; h++) { /* vertical (pipelined) execution */
+                if (blk == 0 && h == 0)
+                  *(float*)&C1[(CHIP*M1/NCHIP+top+rofs)*M2+col+w]  = *(float*)&A[(CHIP*M1/NCHIP+top+rofs)*L+blk+h]**(float*)&B[(blk+h)*M2+col+w];
+                else
+                  *(float*)&C1[(CHIP*M1/NCHIP+top+rofs)*M2+col+w] += *(float*)&A[(CHIP*M1/NCHIP+top+rofs)*L+blk+h]**(float*)&B[(blk+h)*M2+col+w];
+                count1++;
+                /*printf("[%d %d %d %d %d %d %d]", CHIP, top, rofs, blk, col, w, h);*/
+              }
+            }
+            /*printf("\n");*/
+          }
+        }
+      }
+    }
+  }
+}
 
+#else
 
 imax() {
   Ull  CHIP;
@@ -405,9 +538,22 @@ imax() {
 	    sgemm00_core1(44, 43, 45);
 	    sgemm00_core1(45, 44, 46);
 	    sgemm00_core1(46, 45, 47);
-
+	    sgemm00_core1(47, 46, 48);
+	    sgemm00_core1(48, 47, 49);
+	    sgemm00_core1(49, 48, 50);
+	    sgemm00_core1(50, 49, 51);
+	    sgemm00_core1(51, 50, 52);
+	    sgemm00_core1(52, 51, 53);
+	    sgemm00_core1(53, 52, 54);
+	    sgemm00_core1(54, 53, 55);
+	    sgemm00_core1(55, 54, 56);
+	    sgemm00_core1(56, 55, 57);
+	    sgemm00_core1(57, 56, 58);
+	    sgemm00_core1(58, 57, 59);
+	    sgemm00_core1(59, 58, 60);
+	    sgemm00_core1(60, 59, 61); /* H=60 */
 	    /****final*****/
-	    sgemm00_final(47,     48);
+	    sgemm00_final(61,     62);
           }
         }
       }
@@ -416,9 +562,4 @@ imax() {
   }
 //EMAX5A drain_dirty_lmm
 }
-
-
-
-
-
-
+#endif
