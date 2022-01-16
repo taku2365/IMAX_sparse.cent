@@ -64,13 +64,18 @@ typedef struct {
 } emax6_sparse2;
 
 typedef struct {
-    Uint mode;
+    Uint mode;    // 0:dense dense  1:sparse dense H=46 ver  2:sparse dense H=58 ver 3:sparse dense H=58 C_col_blk != B_col_blk ver
+    Uint data_format; // 0:dense normal  1:csr index val set  2:jds index val separate  3:jds index val set 
+    Uint data_type; // 0:normal 1:sparse 2:biased sparse
     Sll H_param;
     Sll W_param;
-    Sll B_col_blk_param  ;
-    Sll C_col_blk_param  ;
-    Sll NCHIP_param      ;
     Sll A_col_blk_param  ;
+    Sll A_row_blk_param  ;
+    Sll B_col_blk_param  ;
+    Sll B_row_blk_param  ;
+    Sll C_col_blk_param  ;
+    Sll C_row_blk_param  ;
+    Sll NCHIP_param      ;
     Sll A_row_size_param ;
     Sll A_col_size_param ;
     Sll B_row_size_param ;
@@ -92,11 +97,11 @@ typedef struct {
     int col_size;
 } coo_format;
 
-coo_format* make_sparse_mat(emax6_param* emax6_param,float sparsity);
-void make_simd_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent_index);
+void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
 void free_sparse_format(emax6_sparse2* sparse_format);
 void free_sparse_mat(coo_format* coo);
-void orig_chip_divB(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
+void orig(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
 void mem_release(Uint memsize,Uchar** membase);
 void IMAX_param_tunig(emax6_param* params);
 emax6_sparse2* sparse_format(int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);

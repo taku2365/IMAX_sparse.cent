@@ -86,6 +86,8 @@ Sll A_col_blk_ini ,A_col_blk ;
 Sll C_col_blk_ini ,C_col_blk ;
 extern Ull nanosec[NANOS_CLASS];
 Uint tmp;
+float zero_bias = 0.0;
+
 
 A_row_size_ini = A_row_size = 1024LL;
 A_col_size_ini = A_col_size = 1024LL;
@@ -97,7 +99,9 @@ C_col_blk_ini  = C_col_blk  = 0LL  ;
 NCHIP_ini      = NCHIP      = 4LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->mode = 1;
+params->data_format = 3;
+params->mode = 2;
+params->data_type = 1;
 
 switch(params->mode){
     case 1:
@@ -106,6 +110,7 @@ switch(params->mode){
     case 2:
     case 3:
         H =params->H_param = 58LL;
+    break;
     default:
     printf("There isn`t this pattern\n");
     exit(1);
@@ -131,7 +136,7 @@ if((fp=fopen(name,"w"))==NULL){
 #endif
 
 #if !defined(CSIMDEBUG)
-fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total\n");
+fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,LMM_usage_A_rate,LMM_usage_A_kbyte,LMM_usage_B_rate,LMM_usage_B_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total\n");
 #endif
 //はみ出た時の拡張
 A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
@@ -142,7 +147,7 @@ Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
                 // +A_row_size*B_col_size*sizeof(Uint)
                 +A_row_size*sizeof(Uint)
                 +8*sizeof(Uint)*sparse_rate_len;
-                ;
+                
 memsize += ((memsize%32) != 0) ? (-memsize%32 + 32) : 0;
 sysinit((Uint)memsize,32,&membase);
         //A_colがHで割れないときのpadding
@@ -185,10 +190,10 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         
 
         // make A sparse matrix with sparsity percent
-        coo = make_sparse_mat(params,sparse_rate[sparse_rate_index]);
+        coo = make_mat(params,sparse_rate[sparse_rate_index],zero_bias);
         // coo = make_sparse_mat(params,0.1);
         // make B dense matrix for simd calculation
-        make_simd_random_mat(params,B,B_debug);
+        make_random_mat(params,B,B_debug);
 
         if(coo == NULL){
             fprintf(stderr,"coo NULL \n");
@@ -205,7 +210,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         get_nanosec(0);
         show_nanosec();
         #if !defined(CSIMDEBUG)
-        fprintf(fp,"%2.2f,%2.2f,%2.1f,%2.2f,%2.2f,%2.1f,%2.2f,%2.2f,%2.1f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
+        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
         params->LMM_usage_rate,params->LMM_usage_kbyte,\
         params->LMM_usage_A_rate,params->LMM_usage_A_kbyte,\
         params->LMM_usage_B_rate,params->LMM_usage_B_kbyte,\
@@ -217,36 +222,36 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); 
         #endif
 
-        // orig_chip_divB(coo->val,B_debug,C0,params);
-        // for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
-        //     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
-        //         count2++;
-        //         #ifdef CSIMDEBUG
-        //         printf("C in\n");
-        //         #endif
-        //             *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
-        //             *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
-        //         // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+        orig(coo->val,B_debug,C0,params);
+        for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+            for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
+                count2++;
+                #ifdef CSIMDEBUG
+                printf("C in\n");
+                #endif
+                    *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+                    *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
             
-        //     }
-        // }
+            }
+        }
 
-        // sum = 0;
-        // sum1 = 0;
-        // for (col=0; col<B_col_size; col+=1){
-        //     for (row=0; row<A_row_size; row+=1) {
-        //         sum += *(float*)&C0[col+row*B_col_size];
-        //         sum1 += *(float*)&C_debug[col*A_row_size+row];
-        //         if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
-        //             count2++;
+        sum = 0;
+        sum1 = 0;
+        for (col=0; col<B_col_size; col+=1){
+            for (row=0; row<A_row_size; row+=1) {
+                sum += *(float*)&C0[col+row*B_col_size];
+                sum1 += *(float*)&C_debug[col*A_row_size+row];
+                if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+                    count2++;
 
-        //             printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
-        //                                                 row, col, *(float*)&C_debug[col*A_row_size+row]);
-        //             printf("sparse_rate_index %d \n",sparse_rate_index);                                        
-        //             // exit(1);
-        //         }
-        //     }
-        // }
+                    printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
+                                                        row, col, *(float*)&C_debug[col*A_row_size+row]);
+                    printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+                    exit(1);
+                }
+            }
+        }
         #if !defined(ARMZYNQ) && defined(EMAX6)
         if(abs(sum-sum1)>1){
             printf("sum %f \n",sum);
@@ -270,9 +275,9 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         C_debug = NULL;
         }
         mem_release(memsize,&membase);
-        }
-
     }
+
+}
 #if !defined(ARMZYNQ) && defined(EMAX6)
 if(membase != NULL){
         free(membase);

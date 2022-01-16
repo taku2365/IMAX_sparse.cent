@@ -152,7 +152,7 @@ main()
         coo = make_sparse_mat(params,sparse_rate[sparse_rate_index]);
         // coo = make_sparse_mat(params,0.1);
         // make B dense matrix for simd calculation
-        make_simd_random_mat(params,B,B_debug);
+        make_random_mat(params,B,B_debug);
 
         reset_nanosec();
         if(coo == NULL){

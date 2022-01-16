@@ -66,6 +66,7 @@ int w, h;
 int count0, count1, count2;
 int nnz_A=0,nnz_B=0,nnz_B_debug=0;
 double sum=0,sum1=0;
+float zero_bias = 0.0;
 
 
 #define CSIMWD 320
@@ -89,7 +90,7 @@ A_col_size_ini = A_col_size = 64LL;
 B_row_size_ini = B_row_size = 64LL;
 B_col_size_ini = B_col_size = 1024LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
-NCHIP_ini      = NCHIP      = 4LL  ;
+NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 A_col_blk_ini  = A_col_blk  = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
@@ -158,10 +159,10 @@ B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
 
 
 // make A sparse matrix with sparsity percent
-coo = make_sparse_mat(params,sparse_rate[sparse_rate_index]);
+coo = make_mat(params,sparse_rate[sparse_rate_index],zero_bias);
 // coo = make_sparse_mat(params,0.1);
 // make B dense matrix for simd calculation
-make_simd_random_mat(params,B,B_debug);
+make_random_mat(params,B,B_debug);
 
 if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
@@ -170,14 +171,13 @@ reset_nanosec();
 A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 get_nanosec(0);
 show_nanosec();
-reset_nanosec();
-orig_chip_divB(coo->val,B_debug,C0,params);
 
 reset_nanosec();
 sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, params);
 get_nanosec(0);
 show_nanosec();
 
+orig(coo->val,B_debug,C0,params);
 for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
         count2++;

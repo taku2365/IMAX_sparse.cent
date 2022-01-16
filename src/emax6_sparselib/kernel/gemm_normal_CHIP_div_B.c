@@ -43,18 +43,22 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
   // Sll NCHIP = params->NCHIP_param;
   Sll W  = params->W_param;
   Sll H  = params->H_param;
+  Sll A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
+  Sll A_row_blk = params->A_row_blk_param;
   Sll A_col_blk = params->A_col_blk_param;
-  Sll B_col_size_mul_B_col_blk = B_col_size*B_col_blk;
-  Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
+  Sll B_row_blk = params->B_row_blk_param;
+  Sll B_col_size_mul_A_row_blk = B_col_size*A_row_blk;
+  Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size+A_H_pad);
   Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
-  Sll A_col_size_mul_B_col_blk = A_col_size*B_col_blk;
-  Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
+  Sll A_col_size_mul_A_row_blk = (A_col_size+A_H_pad)*A_row_blk;
+  Sll A_row_size_mul_A_row_blk = A_row_size*A_row_blk;
   Sll A_row_size_mul_8 = A_row_size*8;
-  Sll  W_mul_8_64 =  (W*8)<<32|(W*8);
+  Sll W_mul_8_64 =  (W*8)<<32|(W*8);
   Sll cofs_init = (0-W*8)<<32|((0-W*8)&0xffffffff);
-  Sll rofs_init = (0-A_col_size*4)<<32|((0-B_col_size*4)&0xffffffff);
+  Sll rofs_init = (0-(A_col_size+A_H_pad)*4)<<32|((0-B_col_size*4)&0xffffffff);
   Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
-  Sll rofs_reverse = (A_col_size*4)<<32|(B_col_size*4);
+  Sll rofs_reverse = ((A_col_size+A_H_pad)*4)<<32|(B_col_size*4);
+
   /*  ┌─────┐convolutionの場合                                                  */
   /*  │┌────┴┐Bが複数と考える                                                  */
   /*  ││┌────┴┐┌─────┐┐        ┌─────┐┐                       */
@@ -65,8 +69,8 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
   /*    └│b        k││blk       ││        │blk       ││                       */
   /*      └─────┘└─┴─┴─┘┘        └─┴─┴─┘┘                       */
   printf("<<<IMAX>>>\n");
-  for (top=0; top<A_row_size/NCHIP; top+=B_col_blk) { /* will be parallelized by multi-chip (M/#chip) */
-    for (blk=0; blk<B_row_size; blk+=H) { /* 3重ループ展開の外側対象 */
+  for (top=0; top<A_row_size/NCHIP; top+=A_row_blk) { /* will be parallelized by multi-chip (M/#chip) */
+    for (blk=0; blk<(B_row_size+A_H_pad); blk+=H) { /* 3重ループ展開の外側対象 */
       typedef struct {Uint i[8]} Ui8;
       Uint *a0[NCHIP];
       Uint *a[H][NCHIP];
@@ -77,7 +81,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
 	b[k] = B+(blk+k)*B_col_size; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4;  b3[k] = (Uint*)b[k]+6; 
       }
       for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-	a0[CHIP] = A+(CHIP*A_row_size/NCHIP+top)*A_col_size;
+	a0[CHIP] = A+(CHIP*A_row_size/NCHIP+top)*(A_col_size+A_H_pad);
 	for (k=0; k<H; k++)
 	  a[k][CHIP] = a0[CHIP]+blk+k;
 	c0[CHIP] = C+(CHIP*A_row_size/NCHIP+top)*B_col_size;
@@ -89,29 +93,29 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
 	    mop(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], B_col_size, 0, 0, (Ull)NULL, B_col_size);\
 	    mop(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], B_col_size, 0, 0, (Ull)NULL, B_col_size);\
 	    mop(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], B_col_size, 0, 0, (Ull)NULL, B_col_size);\
-	    mop(OP_LDWR,1, &BR[r][2][1],  (Ull)a[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], A_col_size_mul_B_col_blk, 0, 0, (Ull)NULL, A_col_size_mul_B_col_blk);\
+	    mop(OP_LDWR,1, &BR[r][2][1],  (Ull)a[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], A_col_size_mul_A_row_blk, 0, 0, (Ull)NULL, A_col_size_mul_A_row_blk);\
 	    exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
 
 #define sgemm00_final(r, rp1) \
-	    mop(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
+	    mop(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_LDR,  3, &BR[rp1][1][1],  (Ull)c01[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_LDR,  3, &BR[rp1][2][1],  (Ull)c02[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_LDR,  3, &BR[rp1][3][1],  (Ull)c03[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
 	    exe(OP_FAD, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[rp1][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[rp1][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[rp1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FAD, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[rp1][3][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
-	    mop(OP_STR,  3, &AR[rp1][0],     (Ull)oofs, (Ull)c00[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_STR,  3, &AR[rp1][1],     (Ull)oofs, (Ull)c01[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_STR,  3, &AR[rp1][2],     (Ull)oofs, (Ull)c02[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk);\
-	    mop(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_B_col_blk, 0, 1, (Ull)NULL, B_col_size_mul_B_col_blk)
+	    mop(OP_STR,  3, &AR[rp1][0],     (Ull)oofs, (Ull)c00[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_STR,  3, &AR[rp1][1],     (Ull)oofs, (Ull)c01[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_STR,  3, &AR[rp1][2],     (Ull)oofs, (Ull)c02[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk);\
+	    mop(OP_STR,  3, &AR[rp1][3],     (Ull)oofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], B_col_size_mul_A_row_blk, 0, 1, (Ull)NULL, B_col_size_mul_A_row_blk)
 
 //EMAX5A begin mm0 mapdist=0
 /*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
-  /*2*/ for (INIT1=1,LOOP1=B_col_blk,rofs=rofs_init; LOOP1--; INIT1=0) { /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
+  /*2*/ for (INIT1=1,LOOP1=A_row_blk,rofs=rofs_init; LOOP1--; INIT1=0) { /* stage#0 *//* mapped to FOR() on BR[63][1][0] */
     /*1*/ for (INIT0=1,LOOP0=B_col_size/W/2,cofs=cofs_init; LOOP0--; INIT0=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
             exe(OP_ADD,    &cofs, INIT0?cofs:cofs, EXP_H3210, W_mul_8_64, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */
             exe(OP_ADD,    &rofs, rofs, EXP_H3210, INIT0?rofs_reverse:0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
@@ -121,7 +125,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
             mop(OP_LDR,  3, &BR[1][0][0],  (Ull)b1[0], (Ull)cofs, MSK_W1, (Ull)b[0], B_col_size, 0, 0, (Ull)NULL, B_col_size);             /* stage#1 */
             mop(OP_LDR,  3, &BR[1][1][1],  (Ull)b2[0], (Ull)cofs, MSK_W1, (Ull)b[0], B_col_size, 0, 0, (Ull)NULL, B_col_size);             /* stage#1 */
             mop(OP_LDR,  3, &BR[1][1][0],  (Ull)b3[0], (Ull)cofs, MSK_W1, (Ull)b[0], B_col_size, 0, 0, (Ull)NULL, B_col_size);             /* stage#1 2KB */
-            mop(OP_LDWR,1, &BR[1][2][1],  (Ull)a[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], A_col_size_mul_B_col_blk, 0, 0, (Ull)NULL, A_col_size_mul_B_col_blk); /* stage#1 16KB */
+            mop(OP_LDWR, 1, &BR[1][2][1],  (Ull)a[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], A_col_size_mul_A_row_blk, 0, 0, (Ull)NULL, A_col_size_mul_A_row_blk); /* stage#1 16KB */
             exe(OP_FML, &AR[2][0], BR[1][0][1], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
             exe(OP_FML, &AR[2][1], BR[1][0][0], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
             exe(OP_FML, &AR[2][2], BR[1][1][1], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */

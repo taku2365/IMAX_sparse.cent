@@ -5,7 +5,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     // arg
     //mode 0 chip_divB_ver3 mode 1 chip_divB_ver4
     //read_or_write 0 none 1 read 2 write
-    //valなどをformatに入れるとパフォーマンスが落ちるので、引数に直接渡す。
+    //valなどをformatに入れるとパフォーマンスが落ちるので、実装とinterfaceの分離をしない。
 
     printf("Format\n");
     FILE *file;
@@ -26,6 +26,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     int H = emax6_param->H_param;
     int A_col_blk = emax6_param->A_col_blk_param;
     int H_pad = 0;
+    int pad_max;
     // int col_size1 = coo.col_size;
     // int row_size1 = coo.row_size;
     // const int* row_index1 = coo.row_index;
@@ -94,84 +95,104 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
      //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
     if((col_size%H) != 0) H_pad = -col_size%H + H;
-    Ull* margin = (Ull*) calloc((col_size+H_pad)/H+1,sizeof(Ull));
+    // ptopではみ出ないため、念のための2* 
+    Ull* margin = (Ull*) calloc(2*(col_size+H_pad)/H+1,sizeof(Ull));
     int iter_num = 0,margin_tmp;
     int k,row,row1,col,col1,iter,count_sort_index_inverse_tmp,tmp,val_index_index,val_index_index2,row_index_k,col_index_k;
-    // if ((fpr = fopen(argv[1], "rb")) == NULL){
-    //     printf("cal val\n");
-    // }
-    // else{
-    
-    // }
-
     for(k=0; k<nnz; k++) count[row_index[k]]++; //ex {[0] = 3, [1] = 2, [2] = 2, [3] = 4, [4] = 4, [5] = 1, [6] = 4, [7] = 6, [8] = 4, [9] = 5}
-    // count max = col_size
-    for(row=0; row<row_size; row++){
-        count_tmp[count[row]]++; //  {[0] = 0, [1] = 1, [2] = 2, [3] = 1, [4] = 4, [5] = 1, [6] = 1, [7] = 0, [8] = 0, [9] = 0, [10] = 0} 
-    }
-    // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
+        // count max = col_size
+        for(row=0; row<row_size; row++){
+            count_tmp[count[row]]++; //  {[0] = 0, [1] = 1, [2] = 2, [3] = 1, [4] = 4, [5] = 1, [6] = 1, [7] = 0, [8] = 0, [9] = 0, [10] = 0} 
+        }
+        // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
     for(col=0; col<col_size; col++) count_tmp[col+1] += count_tmp[col];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
-    for(row=0; row<row_size; row++){
-        count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
-        
-        // count_sort_indexと count_sort_index_inverseは逆の関係
-        //count_sort_indexは並べ替えた後、該当のrow(index)に入るべき、並べ替え前のrow(index)を返してくれて、count_sort_index_inverseはindex(row)を代入したら並べ替え後の場所を教えてくれる。
-        //上の例が続いている 降順に表示  9番目がrow=5で一番少ないnnz=1
-        //{[0] = 7, [1] = 9, [2] = 3, [3] = 4, [4] = 6, [5] = 8, [6] = 0, [7] = 1, [8] = 2, [9] = 5}
-        // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
-        //Cが元の場所に戻すためにつかう
-        tmp = (row_size-1) - count_tmp1;
-        count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
+    
+    if(emax6_param->data_format != 1){
+        for(row=0; row<row_size; row++){
+            count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
+            
+            // count_sort_indexと count_sort_index_inverseは逆の関係
+            //count_sort_indexは並べ替えた後、該当のrow(index)に入るべき、並べ替え前のrow(index)を返してくれて、count_sort_index_inverseはindex(row)を代入したら並べ替え後の場所を教えてくれる。
+            //上の例が続いている 降順に表示  9番目がrow=5で一番少ないnnz=1
+            //{[0] = 7, [1] = 9, [2] = 3, [3] = 4, [4] = 6, [5] = 8, [6] = 0, [7] = 1, [8] = 2, [9] = 5}
+            // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
+            //Cが元の場所に戻すためにつかう
+            tmp = (row_size-1) - count_tmp1;
+            count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
 
-        //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
-        // row_size-1は0から始めるために引く1している。            
-        //count_sort_indexの逆                                             row7番目は一番nnzが多いので0に移動する
-        //{[0] = 6, [1] = 7, [2] = 8, [3] = 2, [4] = 3, [5] = 9, [6] = 4, [7] = 0, [8] = 5, [9] = 1}
-        //元の場所から並べ替えの先に移動するために使う
-        count_sort_index_inverse[row] = tmp;
-         //アライメントのために次の手段は使えない 倍数の時のみ可(count[row] + (H-1))~(H-1);
-         // sortされた後のrowごとのpaddings
-         //降順   上が一番nnzが長いrow
-         // count[row]/H(IMAXが何回full(H)で計算いるか)+(int)(count[row]%H != 0) (Hで割り切れなかったら、もう一回H分の計算がpad付きで必要)
-         paddings[tmp] = count[row]/H + (int)(count[row]%H != 0); 
+            //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
+            // row_size-1は0から始めるために引く1している。            
+            //count_sort_indexの逆                                             row7番目は一番nnzが多いので0に移動する
+            //{[0] = 6, [1] = 7, [2] = 8, [3] = 2, [4] = 3, [5] = 9, [6] = 4, [7] = 0, [8] = 5, [9] = 1}
+            //元の場所から並べ替えの先に移動するために使う
+            count_sort_index_inverse[row] = tmp;
+            //アライメントのために次の手段は使えない 倍数の時のみ可(count[row] + (H-1))~(H-1);
+            // sortされた後のrowごとのpaddings
+            //降順   上が一番nnzが長いrow
+            // count[row]/H(IMAXが何回full(H)で計算いるか)+(int)(count[row]%H != 0) (Hで割り切れなかったら、もう一回H分の計算がpad付きで必要)
+            paddings[tmp] = count[row]/H + (int)(count[row]%H != 0); 
 
+        }
+        //paddingsは最低でも1
+        //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
+        //最小のpaddingsではAを一番下まで確保するので、row_size+1
+        //ex paddings[row_size-1]=7 (row+1)  一番下のArowでもH分を6回計算  H*6回分のA_colはA_rowの一番下まで計算　よってrow_sizeを6回、marginに入れる 　  
+        for(iter=0;iter<(paddings[row_size-1]+1); iter++){
+            margin[iter_num++] = row_size; //row+1
+        }
+        // row_size回 for分を回す
+        for(row=row_size-1,tmp=paddings[row_size-1]; row>=0; row--){
+            //前回からの変化があれば変化の差分を埋める
+            //  定義部分　Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
+            // ex col_size/H 736/46=16
+            //H*7は735がA_row方向のnnzの最後 H*8は365が最大
+            // marginが決まったら、そのH区間はその値を使う
+            //p margin[0]@16 $2 = {[0] = 736, [1] = 736, [2] = 736, [3] = 736, [4] = 736, [5] = 736, [6] = 736, [7] = 735, [8] = 365, [9] = 0, [10] = 0, [11] = 0, [12] = 0, [13] = 0, [14] = 0, [15] = 0}
+            if(tmp != paddings[row]){
+                //row+1が入っているので、margin[iter_num-1]-1 
+                //iter_numはmargin[iter_num++]とされているの、iter_num-1は前回のiter_numを表している
+                // A_rowの一番最後のrow_size-1から始める  marginを埋めるのは0から
+                // tmp != paddings[row] 変化した次のrowを代入している
+                // ex margin[iter_num-1]-1 == 736-1 = 735  paddings[margin[iter_num-1]-1]=2
+                // 4 -> 2のようにいきなりpaddingが二個飛びで変化するケースに対応している。
+                for(iter=paddings[margin[iter_num-1]-1];iter<paddings[row]; iter++){
+                    //row+1が入る multiplyのfor文で扱いやすくするため。 for (rofs=0; rofs<A_margin[blk_iter]; rofs++) 
+                    margin[iter_num++] = row+1;
+                } 
+            }
+            tmp = paddings[row];
+        }
+    }
+    else{
+
+        pad_max = 0;
+        // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
+        for(row=0; row<row_size; row++){
+            
+            count_sort_index[row] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
+            paddings[row] = count[row]/H + (int)(count[row]%H != 0); 
+            if(paddings[row]>pad_max){pad_max = paddings[row];}   
+        }
+        for(iter=0;iter<(pad_max+1); iter++){
+            margin[iter_num++] = row_size; //row+1
+        }
     }
  
 
 
-    //paddingsは最低でも1
-    //marginはA_colをH進めるごとにA_rowをどれだけ確保すればいいかを教えてくれる
-    //最小のpaddingsではAを一番下まで確保するので、row_size+1
-    //ex paddings[row_size-1]=7 (row+1)  一番下のArowでもH分を6回計算  H*6回分のA_colはA_rowの一番下まで計算　よってrow_sizeを6回、marginに入れる 　  
-    for(iter=0;iter<(paddings[row_size-1]+1); iter++){
-        margin[iter_num++] = row_size; //row+1
-    }
-    // row_size回 for分を回す
-    for(row=row_size-1,tmp=paddings[row_size-1]; row>=0; row--){
-        //前回からの変化があれば変化の差分を埋める
-        //  定義部分　Ull* margin = (Ull*) calloc((col_size/H),sizeof(Ull));
-        // ex col_size/H 736/46=16
-        //H*7は735がA_row方向のnnzの最後 H*8は365が最大
-        // marginが決まったら、そのH区間はその値を使う
-        //p margin[0]@16 $2 = {[0] = 736, [1] = 736, [2] = 736, [3] = 736, [4] = 736, [5] = 736, [6] = 736, [7] = 735, [8] = 365, [9] = 0, [10] = 0, [11] = 0, [12] = 0, [13] = 0, [14] = 0, [15] = 0}
-        if(tmp != paddings[row]){
-            //row+1が入っているので、margin[iter_num-1]-1 
-            //iter_numはmargin[iter_num++]とされているの、iter_num-1は前回のiter_numを表している
-            // A_rowの一番最後のrow_size-1から始める  marginを埋めるのは0から
-            // tmp != paddings[row] 変化した次のrowを代入している
-            // ex margin[iter_num-1]-1 == 736-1 = 735  paddings[margin[iter_num-1]-1]=2
-            // 4 -> 2のようにいきなりpaddingが二個飛びで変化するケースに対応している。
-            for(iter=paddings[margin[iter_num-1]-1];iter<paddings[row]; iter++){
-                //row+1が入る multiplyのfor文で扱いやすくするため。 for (rofs=0; rofs<A_margin[blk_iter]; rofs++) 
-                margin[iter_num++] = row+1;
-            } 
+
+    if(emax6_param->data_format == 1){
+        for(k=0; k<nnz; k++){
+        row_index_k = row_index[k];
+        col_index_k = col_index[k];
+
+        val_index_index = (row_index_k+row_count[row_index_k]*row_size)*2;
+        *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*2*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
+
+        row_count[row_index_k]++;
         }
-        tmp = paddings[row];
     }
-    // reset_nanosec();
-
-
-    if(emax6_param->mode == 1){
+    else if(emax6_param->data_format == 2){
 
         Uint* val_index_set_tmp = (Uint*) calloc(2*row_size*col_size,sizeof(Uint));
         for(k=0,count_sort_index_inverse_tmp=0; k<nnz; k++){
@@ -202,14 +223,17 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
             printf("format\n");
             #endif
         *(Uint*)&val_index_set[col*2*row_size+row+row_size*col_size] = *(Uint*)&val_index_set_tmp[col1*row_size+row1];
+        // Bの対応箇所*2(simd)*4(実際のIMAXコードはUllのアドレス演算なのでpoiterの足し算ではないので4byteかける)
         *(Uint*)&val_index_set[col*2*row_size+row+1+row_size*col_size] = *(Uint*)&val_index_set_tmp[(col1+1)*row_size+row1];
             }
         }
-       free(val_index_set_tmp);
-
+    if(val_index_set_tmp != NULL){
+        free(val_index_set_tmp);
+        val_index_set_tmp = NULL;
+    }
     }
 
-    else if((emax6_param->mode == 2)||(emax6_param->mode == 3)){
+    else if(emax6_param->data_format == 3){
         for(k=0; k<nnz; k++){
         row_index_k = row_index[k];
         col_index_k = col_index[k];
@@ -219,6 +243,9 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
 
         row_count[row_index_k]++;
         }
+    }
+    else{
+        fprintf("data_format %d mode %d ,This pattern dosenot exsit !\n",emax6_param->data_format,emax6_param->mode);
     }
 
 //         get_nanosec(0);

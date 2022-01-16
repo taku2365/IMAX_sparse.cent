@@ -235,7 +235,7 @@ main()
 // nanosec: ARM:46525 DRAIN:5433830 CONF:69457 REGV:3404251 RANGE:1016464 LOAD:8883664 EXEC:1945807 total:20799998 [736][96][96][736] sparse_gemm_736_1_ver
 // nanosec: ARM:46333 DRAIN:5437919 CONF:69627 REGV:3404969 RANGE:1011242 LOAD:8888286 EXEC:1945960 total:20804336 同じ　　　　　　　　 sparse_gemm_736_2_ver
   reset_nanosec();
-  orig(A_tmp,B_debug,C0);
+  origA(A_tmp,B_debug,C0);
   get_nanosec(0);
   show_nanosec();
 
@@ -276,7 +276,7 @@ free(A_tmp);
 
 
 
-orig(Uint* A_orig,Uint* B_orig,Uint* C_orig){
+origA(Uint* A_orig,Uint* B_orig,Uint* C_orig){
   // A fortran cont
   // B fortran cont
   printf("<<<ORIG>>>\n");

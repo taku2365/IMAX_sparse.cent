@@ -7,10 +7,13 @@
 
 
 void sparse_gemm_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_sparse, emax6_param* params) {
+    // pattern 0 dense dense
+    // pattern 1 sparse dense H=46 ver
+    // pattern 2 sparse dense H=58 ver
     switch (params->mode)
     {
     case 0:
-        gemm_normal_CHIP_div_B(C, A, B, A_sparse, params);
+        gemm_normal_CHIP_div_B(C, A, B, params);
         break;
     case 1:
         sparse_gemm_CHIP_div_B_impl1(C, A, B, A_sparse, params);

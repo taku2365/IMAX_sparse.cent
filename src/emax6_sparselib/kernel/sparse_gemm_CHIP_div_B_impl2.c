@@ -3,93 +3,92 @@
 #endif
 #include "../Include/kernel_lib.h"
 void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_sparse, emax6_param* params) {
-  // args: A IMAX_CSR_format
-  // arg B fortran continues simd format
-  // arg C fortran continues simd format
-  // A_col_blk=2 スケジューリング方法を変更
-  Ull  CHIP;
-  Ull  LOOP1, LOOP0;
-  Ull  INIT1, INIT0;
-  Ull  AR[64][4];                     /* output of EX     in each unit */
-  Ull  BR[64][4][4];                  /* output registers in each unit */
-  Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
-  Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
-  Ull  cc0, cc1, cc2, cc3, ex0, ex1;
-  Ull  cofs, rofs,a_rofs, oofs, k;
-  // Ull A_row_size = M, A_col_size = K, B_row_size = K, B_col_size = N;
-  Uint blk_iter,A_margin_tmp,blk_iter_tmp;
-  Ull* A_margin = A_sparse->margin;
-  Uint* val_index_set = A_sparse->val_index_set;
-  // Uint* paddings = A_sparse->paddings;
-  Uint A_col_blk_tmp;
+    // args: A IMAX_CSR_format
+    // arg B fortran continues simd format
+    // arg C fortran continues simd format
+    // A_col_blk=2 スケジューリング方法を変更
+    Ull  CHIP;
+    Ull  LOOP1, LOOP0;
+    Ull  INIT1, INIT0;
+    Ull  AR[64][4];                     /* output of EX     in each unit */
+    Ull  BR[64][4][4];                  /* output registers in each unit */
+    Ull  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+    Ull  r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31;
+    Ull  cc0, cc1, cc2, cc3, ex0, ex1;
+    Ull  cofs, rofs,a_rofs, oofs, k;
+    // Ull A_row_size = M, A_col_size = K, B_row_size = K, B_col_size = N;
+    Uint blk_iter,A_margin_tmp,blk_iter_tmp;
+    Ull* A_margin = A_sparse->margin;
+    Uint* val_index_set = A_sparse->val_index_set;
+    // Uint* paddings = A_sparse->paddings;
+    Uint A_col_blk_tmp;
 
-  Uint* A_sort_index= A_sparse->sort_index;
-  Uint top,blk,b_col_B_col_blk;
-  Ull x,y,z,t;
-  Ull a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10;
-  Ull a11,a12,a13,a14,a15,a16,a17,a18,a19,a20;
-  Ull a21,a22,a23,a24,a25,a26,a27,a28,a29,a30;
-  Ull a31,a32,a33,a34,a35,a36,a37,a38,a39,a40;
-  Ull a41,a42,a43,a44,a45,a46,a47,a48,a49,a50;
-  Ull a51,a52,a53,a54,a55,a56,a57,a58,a59,a60;
-  Ull c_index,c_index1;
-  Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
-
-
-  #define NCHIP 4
-  Sll A_row_size = params->A_row_size_param;   // 縛りなし
-  Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
-  Sll B_row_size = params->B_row_size_param;    // 縛りなし
-  Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
-  // #define B_col_blk 16
-  Sll B_col_blk = params->B_col_blk_param;
-  /*Sll NCHIP 4*/
-  // Sll NCHIP = params->NCHIP_param;
-  Sll W  = params->W_param;
-  Sll H  = params->H_param;
-  Sll A_col_blk = params->A_col_blk_param;
-  Sll A_H_pad = 0;
-  Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
-  Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
-  Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
-  Sll A_row_size_mul_8 = A_row_size*8;
-  Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
-  Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
-  Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
-  Ull Force,Force_reverse;
-  Force = 1;
-  // Force_reverse = ~Force;
-  A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
-
-  printf("IMAX\n");
-  for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
-    for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
-      if ((A_margin_tmp=A_margin[blk_iter])==0) {break;}
-      // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
-      for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk+1);blk_iter_tmp++){
-
-        if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
-          A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
-          A_col_blk_tmp -= 1;
-        }
-      }
-      if(A_col_blk_tmp == 0){break;}
-      for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
-        typedef struct {Uint i[8]} Ui8;
-        Uint *a[H],*a_index[H],*a_debug[H+1];
-        Ui8  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
-        Ui8  *c0[NCHIP],*c0_debug[NCHIP];
-        Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
-        for (CHIP=0; CHIP<NCHIP; CHIP++) { 
-      
-          b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
-          b0[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+0; b1[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*2; b2[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*4;  b3[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*6; 
+    Uint* A_sort_index= A_sparse->sort_index;
+    Uint top,blk,b_col_B_col_blk;
+    Ull x,y,z,t;
+    Ull a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10;
+    Ull a11,a12,a13,a14,a15,a16,a17,a18,a19,a20;
+    Ull a21,a22,a23,a24,a25,a26,a27,a28,a29,a30;
+    Ull a31,a32,a33,a34,a35,a36,a37,a38,a39,a40;
+    Ull a41,a42,a43,a44,a45,a46,a47,a48,a49,a50;
+    Ull a51,a52,a53,a54,a55,a56,a57,a58,a59,a60;
+    Ull c_index,c_index1;
+    Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
 
-          c0[CHIP] = C+(CHIP*B_col_size/NCHIP+top)*A_row_size;
-          c00[CHIP]= (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+0; c01[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*2; c02[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*4; c03[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*6;
-    
-        }
+    #define NCHIP 4
+    Sll A_row_size = params->A_row_size_param;   // 縛りなし
+    Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
+    Sll B_row_size = params->B_row_size_param;    // 縛りなし
+    Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    // #define B_col_blk 16
+    Sll B_col_blk = params->B_col_blk_param;
+    /*Sll NCHIP 4*/
+    // Sll NCHIP = params->NCHIP_param;
+    Sll W  = params->W_param;
+    Sll H  = params->H_param;
+    Sll A_col_blk = params->A_col_blk_param;
+    Sll A_H_pad = 0;
+    Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
+    Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
+    Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
+    Sll A_row_size_mul_8 = A_row_size*8;
+    Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
+    Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
+    Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
+    Ull Force,Force_reverse;
+    Force = 1;
+    // Force_reverse = ~Force;
+    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
+    Uint *a[H],*a_index[H],*a_debug[H+1];
+    Uint  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
+    Uint  *c0[NCHIP],*c0_debug[NCHIP];
+    Uint  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
+
+    printf("IMAX\n");
+    for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
+        for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
+            if ((A_margin_tmp=A_margin[blk_iter])==0) {break;}
+            // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
+            for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk+1);blk_iter_tmp++){
+
+                if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
+                    A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
+                    A_col_blk_tmp -= 1;
+                }
+            }
+        if(A_col_blk_tmp == 0){break;}
+        for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
+            for (CHIP=0; CHIP<NCHIP; CHIP++) { 
+
+                b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
+                b0[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+0; b1[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*2; b2[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*4;  b3[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*6; 
+
+
+                c0[CHIP] = C+(CHIP*B_col_size/NCHIP+top)*A_row_size;
+                c00[CHIP]= (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+0; c01[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*2; c02[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*4; c03[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*6;
+
+            }
         // little edianで格納 big <- <- <- <- small 右から左に流れていく
         //ex 64bit *((Ull*)&offset2)  11000000000000000000000000000000000   
         //   32bit *((Uint*)&offset2) -> 0    *((Uint*)&offset2+1) -> 1
@@ -114,10 +113,10 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
         // for (k=0; k<H/2; k++) a_index[k] = (Uint*)val_index_set+blk/2*A_row_size*2+k*A_row_size*2+A_col_size*A_row_size;
 
 
-    // A_row_size*2*4*2は二か所で使用する　ブロードキャスト的な？
+        // A_row_size*2*4*2は二か所で使用する　ブロードキャスト的な？
 
-  #define sparse_core1_1(ar,ar_pre,br,br_pre,a_index,a_prev,a_current,a_next) \
-      exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+    #define sparse_core1_1(ar,ar_pre,br,br_pre,a_index,a_prev,a_current,a_next) \
+        exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -127,8 +126,8 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
 	    mop(OP_LDR,  3, &BR[br][1][0],  (Ull)b3[CHIP],(Ull)a_current, MSK_W1, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);\
 	    mop(OP_LDR,  3, &a_next,  (Ull)a[a_index],  (Ull)a_rofs, MSK_W1, (Ull)a[a_index], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk)
 
-  #define sparse_core2_1(ar,ar_pre,br,br_pre,a_prev,a_current) \
-      exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+    #define sparse_core2_1(ar,ar_pre,br,br_pre,a_prev,a_current) \
+        exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
@@ -137,15 +136,15 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
 	    mop(OP_LDR,  3, &BR[br][1][1],  (Ull)b2[CHIP],(Ull)a_current, MSK_W1, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);\
 	    mop(OP_LDR,  3, &BR[br][1][0],  (Ull)b3[CHIP],(Ull)a_current, MSK_W1, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size)
 
-  #define sparse_core3_1(ar,ar_pre,br,br_pre,a_prev) \
-      exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+    #define sparse_core3_1(ar,ar_pre,br,br_pre,a_prev) \
+        exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][2], AR[ar_pre][2], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
 	    exe(OP_FMA, &AR[ar][3], AR[ar_pre][3], EXP_H3210, a_prev , EXP_H1010, BR[br_pre][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
       
   
 
-#define sparse_final1(ar,ar_pre,br,br_pre,index_val) \
+    #define sparse_final1(ar,ar_pre,br,br_pre,index_val) \
 	    mop(OP_LDR,  3, &BR[br][0][1],  (Ull)c00[CHIP],(Ull)index_val, MSK_W0, (Ull)c0[CHIP], A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk);\
 	    mop(OP_LDR,  3, &BR[br][1][1],  (Ull)c01[CHIP],(Ull)index_val, MSK_W0, (Ull)c0[CHIP], A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk);\
 	    mop(OP_LDR,  3, &BR[br][2][1],  (Ull)c02[CHIP],(Ull)index_val, MSK_W0, (Ull)c0[CHIP], A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk);\
@@ -161,7 +160,7 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
 
 
 //EMAX5A begin mm2 mapdist=0
-/*3*/ for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
+/*3*/  for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
         //LOOP1--はLOOP1==1で終了するので、LOOP1はrow+1がよい
    /*1*/ for (INIT1=1,LOOP1=A_col_blk_tmp,cofs=cofs_init; LOOP1--; INIT1=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
   /*2*/    for (INIT0=1,LOOP0=A_margin_tmp,rofs=rofs_init; LOOP0--; INIT0=0) {  /* stage#0 *//* mapped to FOR() on BR[63][1][0] */

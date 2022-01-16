@@ -34,6 +34,8 @@ void sparse_gemm_CHIP_div_B_impl1(Uint* C, const Uint* A, const Uint* B, emax6_s
   Ull x6,y6,z6,t6;
   Ull cofs1;
 
+
+
   #undef A_row_size 
   #undef A_col_size 
   #undef B_row_size 
@@ -82,16 +84,17 @@ void sparse_gemm_CHIP_div_B_impl1(Uint* C, const Uint* A, const Uint* B, emax6_s
   Sll cofs_init = (0-W*4*2*A_row_size)<<32|((0-W*4*2*B_row_size)&0xffffffff);
   Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
   Sll A_row_size_mul_W_mul_4_2_64 = (W*4*2*A_row_size)<<32|(W*4*2*B_row_size);
+  typedef struct {Uint i[8]} Ui8;
+  Uint *a[H],*a_index[H],*a_debug[H+1];
+  Ui8  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
+  Ui8  *c0[NCHIP],*c0_debug[NCHIP];
+  Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
 
   printf("<<<IMAX>>>\n");
   for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
     for (blk=0,blk_iter=0; blk<A_col_size; blk+=H,blk_iter+=1) { /* 3重ループ展開の外側対象 */
       if((A_margin_tmp=A_margin[blk_iter])==0) break;
-      typedef struct {Uint i[8]} Ui8;
-      Uint *a[H],*a_index[H],*a_debug[H+1];
-      Ui8  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
-      Ui8  *c0[NCHIP],*c0_debug[NCHIP];
-      Ui8  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
+
       for (CHIP=0; CHIP<NCHIP; CHIP++) { 
       
         b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*B_row_size;
