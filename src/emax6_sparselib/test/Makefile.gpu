@@ -1,9 +1,18 @@
-CUDA_TOOLKIT := $(shell dirname $$(command -v nvcc))/..
+CUDA_TOOLKIT := $(shell dirname $$(command -v /usr/local/cuda/bin/nvcc))/..
 INC          := -I$(CUDA_TOOLKIT)/include 
-LIBS         := -lcudart -lcusparse
+ifeq ($(MACHTYPE),x86_64)
+LIBS         := -lcublas -lcusparse -arch=sm_80
+endif
+ifeq ($(MACHTYPE),aarch64)
+LIBS         := -lcublas -lcusparse -arch=sm_62
+endif
+all: test_cu_3090 test_cu_cusparse
 
-.PHONY : test.out
-test.out: test_cusparse.cu
-	nvcc $(INC) test_cusparse.cu -o test_cusparse $(LIBS) -O2
+test_cu_3090: test_cu_3090.cu
+	/usr/local/cuda/bin/nvcc $(INC) test_cu_3090.cu -o test_cu_3090 $(LIBS)
 
-    
+test_cu_cusparse: test_cu_cusparse.cu
+	/usr/local/cuda/bin/nvcc $(INC) test_cu_cusparse.cu -o test_cu_cusparse $(LIBS)
+
+
+.PHONY: clean all test
