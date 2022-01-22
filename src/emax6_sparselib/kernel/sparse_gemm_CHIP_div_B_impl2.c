@@ -36,7 +36,7 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
     Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
 
-    #define NCHIP 4
+    #define NCHIP 1
     Sll A_row_size = params->A_row_size_param;   // 縛りなし
     Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
     Sll B_row_size = params->B_row_size_param;    // 縛りなし
@@ -77,7 +77,7 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
             }
         }
         if(A_col_blk_tmp == 0){break;}
-        for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
+    for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
         for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
 

@@ -11,7 +11,7 @@ static void make_random_mat_0(emax6_param* emax6_param,Uint* B,Uint* B_debug){
     for (col=0; col<B_col_size; col++){
       // *(float*)&B[col*B_col_size+row] = (float) tmp;
       if(col%2 == 0){
-      *(float*)&B_debug[row*B_col_size+col] = (float)1;
+      *(float*)&B_debug[row*B_col_size+col] = (float)0;
       }
       else{
       *(float*)&B_debug[row*B_col_size+col] = (float)1;

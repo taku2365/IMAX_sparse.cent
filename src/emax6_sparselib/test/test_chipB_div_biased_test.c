@@ -89,7 +89,8 @@ extern Ull nanosec[NANOS_CLASS];
 Uint tmp;
 float zero_bias = 0.0;
 
-
+// 77304050
+// 3202063
 A_row_size_ini = A_row_size = 1024LL;
 A_col_size_ini = A_col_size = 1024LL;
 B_row_size_ini = B_row_size = 1024LL;
@@ -97,12 +98,14 @@ B_col_size_ini = B_col_size = 1024LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 C_col_blk_ini  = C_col_blk  = 0LL  ;
-NCHIP_ini      = NCHIP      = 4LL  ;
+NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->data_format = 3;
-params->mode = 2;
-params->data_type = 2;
+params->data_format = CSR_INDEX_VAL_SET;
+// params->data_format = JDS_INDEX_VAL_SET;
+params->mode = SPARSE_DENSE_58_VER2;
+params->data_type = BIASED_SPARSE;
+//sparsity 0.5で固定
 sparse_rate_index = 5;
 switch(params->mode){
     case 1:

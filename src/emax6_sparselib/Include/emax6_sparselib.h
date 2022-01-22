@@ -114,3 +114,20 @@ int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, con
 int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 #endif
+
+
+
+//mode    
+#define DENSE_DENSE 0
+#define SPARSE_DENSE_46 1
+#define SPARSE_DENSE_58_VER2 2
+#define SPARSE_DENSE_58_VER3 3
+// data_format
+#define DENSE_NORMAL 0
+#define CSR_INDEX_VAL_SET 1
+#define JDS_INDEX_SEPARATE 2
+#define JDS_INDEX_VAL_SET 3
+// data_type
+#define NORMAL 0 
+#define SPARSE 1
+#define BIASED_SPARSE 2

@@ -96,19 +96,19 @@ B_col_size_ini = B_col_size = 1024LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 C_col_blk_ini  = C_col_blk  = 0LL  ;
-NCHIP_ini      = NCHIP      = 4LL  ;
+NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->data_format = 3;
-params->mode = 2;
-params->data_type = 1;
+params->data_format = JDS_INDEX_VAL_SET;
+params->mode = SPARSE_DENSE_58_VER2;
+params->data_type = SPARSE;
 
 switch(params->mode){
-    case 1:
+    case SPARSE_DENSE_46:
         H = params->H_param = 46LL;
     break;
-    case 2:
-    case 3:
+    case SPARSE_DENSE_58_VER2:
+    case SPARSE_DENSE_58_VER3:
         H =params->H_param = 58LL;
     break;
     default:
@@ -223,6 +223,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         #endif
 
         orig(coo->val,B_debug,C0,params);
+
         for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
             for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
                 count2++;
