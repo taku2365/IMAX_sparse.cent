@@ -47,6 +47,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
   int col,row,tmp,tmp1,nnz=0;
   int A_row_size = emax6_param->A_row_size_param;
   int A_col_size = emax6_param->A_col_size_param;
+  double sum = 0;
   coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
   Uint* col_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
   Uint* row_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
@@ -57,11 +58,16 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
   }
   for (col=0; col<A_col_size; col++){
     for (row=0; row<A_row_size; row++) {
-    tmp = (rand()%(int)10);
-    tmp1 = (int)(tmp==0)&&((int)((1-sparsity)*10.0)>0)||(tmp==1)&&((int)((1-sparsity)*10.0)>1)||(tmp==2)&&((int)((1-sparsity)*10.0)>2)\
-              ||(tmp==3)&&((int)((1-sparsity)*10.0)>3)||(tmp==4)&&((int)((1-sparsity)*10.0)>4)||(tmp==5)&&((int)((1-sparsity)*10.0)>5)||\
-                (tmp==6)&&((int)((1-sparsity)*10.0)>6)||(tmp==7)&&((int)((1-sparsity)*10.0)>7)||(tmp==8)&&((int)((1-sparsity)*10.0)>8)||\
-                (tmp==9)&&((int)((1-sparsity)*10.0)>9)||((sparsity>-1)&&(sparsity<0.001));
+    tmp = (rand()%(int)20);
+    tmp1 = (int)(tmp==0)&&(((1-sparsity)*10.0)>0)   ||(tmp==1)&&(((1-sparsity)*10.0)>0.6) ||(tmp==2)&&(((1-sparsity)*10.0)>1.1)\
+              ||(tmp==3)&&(((1-sparsity)*10.0)>1.6) ||(tmp==4)&&(((1-sparsity)*10.0)>2.1)   ||(tmp==5)&&(((1-sparsity)*10.0)>2.6) ||\
+                (tmp==6)&&(((1-sparsity)*10.0)>3.1)   ||(tmp==7)&&(((1-sparsity)*10.0)>3.6) ||(tmp==8)&&(((1-sparsity)*10.0)>4.1)   ||\
+                (tmp==9)&&(((1-sparsity)*10.0)>4.6) ||
+                (tmp==10)&&(((1-sparsity)*10.0)>5.1)  ||(tmp==11)&&(((1-sparsity)*10.0)>5.6)||(tmp==12)&&(((1-sparsity)*10.0)>6.1)||\
+                (tmp==13)&&(((1-sparsity)*10.0)>6.6)||(tmp==14)&&(((1-sparsity)*10.0)>7.1)  ||(tmp==15)&&(((1-sparsity)*10.0)>7.6)||\
+                (tmp==16)&&(((1-sparsity)*10.0)>8.1)  ||(tmp==17)&&(((1-sparsity)*10.0)>8.6)||(tmp==18)&&(((1-sparsity)*10.0)>9.1)  ||\
+                (tmp==19)&&(((1-sparsity)*10.0)>9.6)||((sparsity>-1)&&(sparsity<0.0001));
+    sum += tmp1;
     // tmp = (int) rand()%3;
     // tmp = (int) ((tmp == 0)||(tmp == 1));
     // rnad()%x 0~x-1の間の数字をとる
@@ -74,6 +80,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
       }
     }
   }
+  printf("nnz percent %f %% \n",(sum/((double)A_col_size*A_row_size))*100);
 
   coo->col_index = col_index;
   coo->row_index = row_index;

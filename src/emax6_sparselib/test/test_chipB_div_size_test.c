@@ -123,8 +123,8 @@ switch(params->mode){
 size_array_len = 6;
 Uint size_array[6] = {1024,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
-sparse_rate_len = 10;
-float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+sparse_rate_len = 12;
+float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 int A_H_pad = 0;
 char* name = "result.csv";
 if(argc == 2){name = argv[1];}
@@ -222,43 +222,43 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); 
         #endif
 
-        orig(coo->val,B_debug,C0,params);
+        // orig(coo->val,B_debug,C0,params);
 
-        for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
-            for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
-                count2++;
-                #ifdef CSIMDEBUG
-                printf("C in\n");
-                #endif
-                    *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
-                    *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
-                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+        // for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+        //     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
+        //         count2++;
+        //         #ifdef CSIMDEBUG
+        //         printf("C in\n");
+        //         #endif
+        //             *(float*)&C_debug[col1*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row];
+        //             *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
+        //         // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
             
-            }
-        }
+        //     }
+        // }
 
-        sum = 0;
-        sum1 = 0;
-        for (col=0; col<B_col_size; col+=1){
-            for (row=0; row<A_row_size; row+=1) {
-                sum += *(float*)&C0[col+row*B_col_size];
-                sum1 += *(float*)&C_debug[col*A_row_size+row];
-                if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
-                    count2++;
+        // sum = 0;
+        // sum1 = 0;
+        // for (col=0; col<B_col_size; col+=1){
+        //     for (row=0; row<A_row_size; row+=1) {
+        //         sum += *(float*)&C0[col+row*B_col_size];
+        //         sum1 += *(float*)&C_debug[col*A_row_size+row];
+        //         if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+        //             count2++;
 
-                    printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
-                                                        row, col, *(float*)&C_debug[col*A_row_size+row]);
-                    printf("sparse_rate_index %d \n",sparse_rate_index);                                        
-                    exit(1);
-                }
-            }
-        }
-        #if !defined(ARMZYNQ) && defined(EMAX6)
-        if(abs(sum-sum1)>1){
-            printf("sum %f \n",sum);
-            printf("sum1 %f \n",sum1);
-        }
-        #endif
+        //             printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
+        //                                                 row, col, *(float*)&C_debug[col*A_row_size+row]);
+        //             printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+        //             exit(1);
+        //         }
+        //     }
+        // }
+        // #if !defined(ARMZYNQ) && defined(EMAX6)
+        // if(abs(sum-sum1)>1){
+        //     printf("sum %f \n",sum);
+        //     printf("sum1 %f \n",sum1);
+        // }
+        // #endif
         // memory clean
         free_sparse_mat(coo);
         free_sparse_format(A_sparse);

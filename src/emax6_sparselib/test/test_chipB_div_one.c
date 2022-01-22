@@ -86,32 +86,34 @@ Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
 A_row_size_ini = A_row_size = 1024LL;
-A_col_size_ini = A_col_size = 64LL;
-B_row_size_ini = B_row_size = 64LL;
+A_col_size_ini = A_col_size = 1024LL;
+B_row_size_ini = B_row_size = 1024LL;
 B_col_size_ini = B_col_size = 1024LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 A_col_blk_ini  = A_col_blk  = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->mode = 2;
+params->data_format = JDS_INDEX_VAL_SET;
+params->mode = SPARSE_DENSE_58_VER2;
+params->data_type = SPARSE;
+
 switch(params->mode){
-    case 1:
+    case SPARSE_DENSE_46:
         H = params->H_param = 46LL;
     break;
-    case 2:
-    case 3:
+    case SPARSE_DENSE_58_VER2:
+    case SPARSE_DENSE_58_VER3:
         H =params->H_param = 58LL;
-        break;
+    break;
     default:
     printf("There isn`t this pattern\n");
     exit(1);
     
 }
-float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
-sparse_rate_index = 6;
-sparse_rate_len = 6;
+sparse_rate_index = 11;
 int A_H_pad = 0;
 //はみ出た時の拡張
 if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
