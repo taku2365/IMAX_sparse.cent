@@ -130,7 +130,7 @@ Uint size_array[6] = {1024,512,256,128,64,32};
 sparse_rate_len = 10;
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
 biased_percent_len = 9;
-float biased_percent[9] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+float biased_percent[9] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
 int A_H_pad = 0;
 char* name = "result.csv";
 if(argc == 2){name = argv[1];}
