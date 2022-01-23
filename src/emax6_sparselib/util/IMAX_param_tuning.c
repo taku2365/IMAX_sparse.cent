@@ -96,6 +96,7 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
         fprintf(stderr,"tuning fail\n");
         exit(1);
     }
+    // A_col_blk = 1;
     params->A_col_blk_param = A_col_blk;
     params->B_col_blk_param = B_col_blk;
     params->C_col_blk_param = B_col_blk;
@@ -193,6 +194,7 @@ void IMAX_param_tunig(emax6_param* params){
         break;
     case 2:
         IMAX_param_tunig_impl2(params);
+        break;
     case 3:
         IMAX_param_tunig_impl3(params);
         break;
