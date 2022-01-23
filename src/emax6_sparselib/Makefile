@@ -19,7 +19,7 @@ EMAX6_SPARSE_SRC = $(EMAX6_SPARSE_KERNEL_SRC) $(EMAX6_SPARSE_UTIL_SRC)
 EMAX6_SPARSE_ARM_SRC = $(EMAX6_SPARSE_KERNEL_ARM_SRC) $(EMAX6_SPARSE_UTIL_ARM_SRC)
 EMAX6_SPARSE_LIB = $(EMAX6_SPARSE_KERNEL_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
 EMAX6_SPARSE_ARM_LIB = $(EMAX6_SPARSE_KERNEL_ARM_OBJ) $(EMAX6_SPARSE_UTIL_OBJ)
-EMAX6_SPARSE_TEST = $(wildcard ./test/test_*$(SUFFIX)) $(wildcard ./test/test_cu_*$(SUFFIX1)) 
+EMAX6_SPARSE_TEST = $(wildcard ./test/test_*$(SUFFIX)) $(wildcard ./test/test_cu*$(SUFFIX1)) 
 EMAX6_INCLUDE = $(wildcard ./Include/*.h) 
 AR_TARGET = libsparse.a
 SHARED_TARGET = libsparse.so
@@ -183,4 +183,4 @@ endif
 
 
 clean:
-	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST))
+	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) 

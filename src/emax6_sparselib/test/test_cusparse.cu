@@ -159,13 +159,13 @@ void generate_candidate_blocks(int R, int C, int BS_R, int BS_C, int num_blocks,
 }
 cusparseHandle_t handle{nullptr};
 
-void test(int M, int N, int K, int BS_R, int BS_C, float density) {
+void test(int M, int N, int K, int BS_R, int BS_C, float sparsity) {
 
     float *data;
     float *weight;
     int *weight_ind;
     int *weight_ptr;
-    int nnz = int(density * M * N);
+    int nnz = int((1-sparsity) * M * N);
     int num_blocks = int(nnz / (BS_R * BS_C)) + 1;
 
     data = (float*)malloc(M*K*sizeof(float));
@@ -190,12 +190,13 @@ void test(int M, int N, int K, int BS_R, int BS_C, float density) {
     int *weight_ptr_cuda;
     float *output_cuda;
     
+    float* output = (float*)malloc(M*N*sizeof(float));
     cudaMalloc(&data_cuda, M*K*sizeof(float));
     cudaMalloc(&weight_cuda, K*N*sizeof(float));
     cudaMalloc(&weight_ind_cuda, num_blocks*sizeof(int));
     cudaMalloc(&weight_ptr_cuda, (N+1)*sizeof(int));
     cudaMalloc(&output_cuda, M*N*sizeof(float));
-
+    
 
     cudaMemcpy(data_cuda, data, M*K*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(weight_cuda, weight, num_blocks*BS_R*BS_C*sizeof(float), cudaMemcpyHostToDevice);
@@ -214,9 +215,13 @@ void test(int M, int N, int K, int BS_R, int BS_C, float density) {
     float beta = 0.0;
 
     GpuTimer timer;
-    int n_runs = 1;
+    int n_runs =200;
     timer.Start();
     for (int i = 0; i < n_runs; i++) {
+    cudaMemcpy(data_cuda, data, M*K*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(weight_cuda, weight, num_blocks*BS_R*BS_C*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(weight_ind_cuda, weight_ind, num_blocks*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(weight_ptr_cuda, weight_ptr, (N+1)*sizeof(int), cudaMemcpyHostToDevice);
     CHECK_CUSPARSE_ERROR(
       cusparseSbsrmm(handle,
                CUSPARSE_DIRECTION_ROW,
@@ -226,27 +231,29 @@ void test(int M, int N, int K, int BS_R, int BS_C, float density) {
                descr, weight_cuda, weight_ptr_cuda, weight_ind_cuda, BS_R,
                data_cuda, K,
                &beta, output_cuda, N));
+    cudaMemcpy( output, output_cuda, M*N*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
     }
     
     timer.Stop();
-    std::cout << "M = " << M << " N = " << N << " K = " << K << " BS_R " << BS_R << " BS_C " << BS_C << " density " << density << std::endl;
+    std::cout << "M = " << M << " N = " << N << " K = " << K << " BS_R " << BS_R << " BS_C " << BS_C << " sparsity " << sparsity << std::endl;
     std::cout << timer.Elapsed() / n_runs << " ms" << std::endl;
 }
 
 
-int main(int argc, char** argv) {
+int main() {
   CHECK_CUSPARSE_ERROR(cusparseCreate(&handle));
-  if (argc != 2) {
-      printf("arg fail\n");
-      exit(0);
-  }
-  float density = atof(argv[1]);
+  // if (argc != 2) {
+  //     printf("arg fail\n");
+  //     exit(0);
+  // }
+  // float density = atof(argv[1]);
   for (int M : {1024})
   for (int N : {1024}) 
   for (int K : {1024}) 
-  for (int BS_R : {64}) 
-  for (float density_tmp : {density}) 
-  test(M, N, K, BS_R, BS_R, density_tmp);
+  for (int BS_R : {64,32}) 
+  for (float sparsity : {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95}) 
+  test(M, N, K, BS_R, BS_R, sparsity);
 
   return 0;
 }

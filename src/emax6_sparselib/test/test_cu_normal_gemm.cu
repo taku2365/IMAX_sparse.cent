@@ -203,8 +203,7 @@ static const char *_cuBlasGetErrorEnum(cublasStatus_t error)
 long     nanosec_sav, nanosec;
 double  tmssave, tms;
 long    ticksave, ticks;
-int nIter = 50;
-int nIter2 = 1;
+int nIter = 200;
 
 void reset_nanosec()
 {
@@ -285,37 +284,37 @@ int main(int argc, char** argv) {
         }
     }
 
-    checkCudaErrors(cudaMemcpy( d_A, h_A, bytes, cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy( d_B, h_B, bytes, cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpy( d_A, h_A, bytes, cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpy( d_B, h_B, bytes, cudaMemcpyHostToDevice));
     
     cudaEvent_t start, stop;
     checkCudaErrors(cudaEventCreate(&start));
     checkCudaErrors(cudaEventCreate(&stop));
     float msecTotal = 0;
 
-    checkCudaErrors(cudaMemcpy( d_C, h_C, bytes, cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaEventRecord(start));
+    // checkCudaErrors(cudaMemcpy( d_C, h_C, bytes, cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaEventRecord(start));
 
-    for (int run = 0 ; run < nIter; run ++ ) {
-        dim3 dimBlock(BLOCK_SIZE_N / THREAD_SIZE_X, BLOCK_SIZE_M / THREAD_SIZE_Y);
-        dim3 dimGrid(N / BLOCK_SIZE_N, M / BLOCK_SIZE_M);
-        MatrixMulCUDA6<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X, ENABLE_DOUBLE_BUFFER> 
-        <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, K, N);
+    // for (int run = 0 ; run < nIter; run ++ ) {
+    //     dim3 dimBlock(BLOCK_SIZE_N / THREAD_SIZE_X, BLOCK_SIZE_M / THREAD_SIZE_Y);
+    //     dim3 dimGrid(N / BLOCK_SIZE_N, M / BLOCK_SIZE_M);
+    //     MatrixMulCUDA6<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X, ENABLE_DOUBLE_BUFFER> 
+    //     <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, K, N);
 
-    }
-    checkCudaErrors(cudaEventRecord(stop));
-    checkCudaErrors(cudaEventSynchronize(stop));
-    checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
+    // }
+    // checkCudaErrors(cudaEventRecord(stop));
+    // checkCudaErrors(cudaEventSynchronize(stop));
+    // checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
 
 
-    checkCudaErrors(cudaMemcpy( h_C, d_C, bytes, cudaMemcpyDeviceToHost));
+    // checkCudaErrors(cudaMemcpy( h_C, d_C, bytes, cudaMemcpyDeviceToHost));
 
-    msecPerMatrixMul[0] = msecTotal / nIter;
-    gigaFlops[0] = (flopsPerMatrixMul * 1.0e-9f) / (msecPerMatrixMul[0] / 1000.0f);
-    printf( "My gemm Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops,\n",
-        gigaFlops[0],
-        msecPerMatrixMul[0],
-        flopsPerMatrixMul);
+    // msecPerMatrixMul[0] = msecTotal / nIter;
+    // gigaFlops[0] = (flopsPerMatrixMul * 1.0e-9f) / (msecPerMatrixMul[0] / 1000.0f);
+    // printf( "My gemm Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops,\n",
+    //     gigaFlops[0],
+    //     msecPerMatrixMul[0],
+    //     flopsPerMatrixMul);
 
     // cublas
     cublasHandle_t blas_handle;  
@@ -342,8 +341,8 @@ int main(int argc, char** argv) {
     }
 
     checkCudaErrors(cudaEventRecord(start));
-    reset_nanosec();
-    for (int run = 0 ; run < nIter2; run ++ ) {
+    // reset_nanosec();
+    for (int run = 0 ; run < nIter; run ++ ) {
     checkCudaErrors(cudaMemcpy( d_A, h_A, bytes, cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy( d_B, h_B, bytes, cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy( d_C, h_C, bytes, cudaMemcpyHostToDevice));
@@ -356,13 +355,13 @@ int main(int argc, char** argv) {
     checkCudaErrors(cudaMemcpy( h_C1, d_C, bytes, cudaMemcpyDeviceToHost));
     cudaDeviceSynchronize();
     }
-    show_nanosec(nIter2);
+    // show_nanosec(nIter);
     checkCudaErrors(cudaEventRecord(stop));
     checkCudaErrors(cudaEventSynchronize(stop));
     checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
 
 
-    msecPerMatrixMul[1] = msecTotal / nIter2;
+    msecPerMatrixMul[1] = msecTotal / nIter;
     gigaFlops[1] = (flopsPerMatrixMul * 1.0e-9f) / (msecPerMatrixMul[1] / 1000.0f);
     printf( "CuBlas Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops,\n",
         gigaFlops[1],
@@ -372,26 +371,26 @@ int main(int argc, char** argv) {
     cublasDestroy(blas_handle); 
 
     
-    double eps = 1.e-6;  // machine zero
-    bool correct = true;
-    for (int i = 0; i < M * N; i++) {
-        // h_C1 是转置
-        int row = i / N;
-        int col = i % N;
-        double abs_err = fabs(h_C[i] - h_C1[col * M + row]);
-        double dot_length = M;
-        double abs_val = fabs(h_C[i]);
-        double rel_err = abs_err / abs_val / dot_length;
-        if (rel_err > eps) {
-            printf("Error! Matrix[%05d]=%.8f, ref=%.8f error term is > %E\n",
-                    i, h_C[i], h_C1[col * M + row], eps);
-            correct = false;
-            break;
-        }
-    }
+    // double eps = 1.e-6;  // machine zero
+    // bool correct = true;
+    // for (int i = 0; i < M * N; i++) {
+    //     // h_C1 是转置
+    //     int row = i / N;
+    //     int col = i % N;
+    //     double abs_err = fabs(h_C[i] - h_C1[col * M + row]);
+    //     double dot_length = M;
+    //     double abs_val = fabs(h_C[i]);
+    //     double rel_err = abs_err / abs_val / dot_length;
+    //     if (rel_err > eps) {
+    //         printf("Error! Matrix[%05d]=%.8f, ref=%.8f error term is > %E\n",
+    //                 i, h_C[i], h_C1[col * M + row], eps);
+    //         correct = false;
+    //         break;
+    //     }
+    // }
 
-    printf("%s\n", correct ? "Result= PASS" : "Result= FAIL");
-    printf("ratio= %f\n", gigaFlops[0] / gigaFlops[1]);
+    // printf("%s\n", correct ? "Result= PASS" : "Result= FAIL");
+    // printf("ratio= %f\n", gigaFlops[0] / gigaFlops[1]);
     
     // Free Memory
     cudaFree(d_A);
