@@ -85,10 +85,10 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 1024LL;
-A_col_size_ini = A_col_size = 1024LL;
-B_row_size_ini = B_row_size = 1024LL;
-B_col_size_ini = B_col_size = 1024LL;
+A_row_size_ini = A_row_size = 4048LL;
+A_col_size_ini = A_col_size = 4048LL;
+B_row_size_ini = B_row_size = 4048LL;
+B_col_size_ini = B_col_size = 4048LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
@@ -111,7 +111,7 @@ switch(params->mode){
     exit(1);
     
 }
-float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
+float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.99};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
 sparse_rate_index = 11;
 int A_H_pad = 0;
@@ -135,7 +135,7 @@ params->B_col_blk_param      = B_col_blk     ;
 params->NCHIP_param      = NCHIP     ;
 params->W_param          = W         ;
 params->A_col_blk_param  = A_col_blk ;
-IMAX_param_tunig(params);
+// IMAX_param_tunig(params);
 
 printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
 params->LMM_usage_rate,params->LMM_usage_kbyte,\
@@ -171,6 +171,7 @@ fprintf(stderr,"coo NULL \n");
 }
 reset_nanosec();
 A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
+exit(1);
 get_nanosec(0);
 show_nanosec();
 
@@ -180,6 +181,7 @@ get_nanosec(0);
 show_nanosec();
 
 orig(coo->val,B_debug,C0,params);
+
 for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
         count2++;
