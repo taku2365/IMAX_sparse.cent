@@ -1,10 +1,15 @@
-head	1.37;
+head	1.38;
 access;
 symbols;
 locks
-	nakashim:1.37; strict;
+	nakashim:1.38; strict;
 comment	@ * @;
 
+
+1.38
+date	2021.09.21.07.42.10;	author nakashim;	state Exp;
+branches;
+next	1.37;
 
 1.37
 date	2020.11.26.01.00.11;	author nakashim;	state Exp;
@@ -196,7 +201,7 @@ desc
 @@
 
 
-1.37
+1.38
 log
 @*** empty log message ***
 @
@@ -242,6 +247,7 @@ for                  { return(CGRA_FOR); }
 cex                  { return(CGRA_CEX); }
 ex4                  { return(CGRA_EX4); }
 exe                  { return(CGRA_EXE); }
+mex                  { return(CGRA_MEX); }
 mo4                  { return(CGRA_MO4); }
 mop                  { return(CGRA_MOP); }
 \-\-                 {
@@ -405,6 +411,15 @@ INIT[0-3] { /* INIT[23] not available */
     }
     return(ASIS);
 }
+@
+
+
+1.37
+log
+@*** empty log message ***
+@
+text
+@d42 1
 @
 
 

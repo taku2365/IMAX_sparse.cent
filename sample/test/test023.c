@@ -1,4 +1,3 @@
-
 static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_lf/RCS/mm.c,v 1.4 2018/02/04 10:28:53 nakashim Exp nakashim $";
 
 /*                          Copyright (C) 2013- by NAIST */
@@ -268,8 +267,6 @@ main()
   count1 = sparse_multiply_imax1(A_sparse,B,C1,M2,params);
   end = clock();
   printf("sparse %.2f\n",(double)(end-start)/CLOCKS_PER_SEC);
-  
-
  
 
 
@@ -853,5 +850,3 @@ void imax_debug(const emax6_sparse1* const A_sparse,const Uint* const B, Uint* C
 }
 
 #endif
-
-

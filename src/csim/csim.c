@@ -157,7 +157,7 @@ main(argc, argv)
 
   /*emax_lmm_init();*/
 
-  x11_open();
+  // x11_open();
 
   restme();
 
@@ -475,7 +475,7 @@ void onintr_exit(x) int x;
 
   if (x == 0) {
     printf("==== Program normal end. ==== Hit any key in X.\n");
-    while (x11_checkevent());
+    // while (x11_checkevent());
   }
   else
     printf("==== Interrupt end. ====\n");
@@ -586,7 +586,7 @@ exec_svc(tid, opcd) Uint tid; Uint opcd;
     retval = SVC_MEM_NOUPDATE;
     goto end;
   case 0xfe: /* _updateX */
-    x11_update();
+    //x11_update();
     grw(tid, 0, 0LL);
     retval = SVC_MEM_NOUPDATE;
     goto end;

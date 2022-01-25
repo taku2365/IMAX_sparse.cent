@@ -1,0 +1,1527 @@
+../../bin/aarch64-elf-gcc -I. -O3 -Wno-attributes -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA -c test022-emax6.c
+test022-emax6.c: In function ‘mmp’:
+test022-emax6.c:2383:24: warning: initialization makes pointer from integer without a cast [enabled by default]
+       Ull (*trans)() = top;
+                        ^
+test022-emax6.c: In function ‘sysinit’:
+test022-emax6.c:2396:7: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+   if ((int)membase & (alignment-1))
+       ^
+test022-emax6.c:2397:24: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+     membase = (void*)(((int)membase & ~(alignment-1))+alignment);
+                        ^
+test022-emax6.c:2397:15: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+     membase = (void*)(((int)membase & ~(alignment-1))+alignment);
+               ^
+test022-emax6.c:2404:22: warning: assignment makes integer from pointer without a cast [enabled by default]
+   emax_info.ddr_phys = membase;
+                      ^
+test022-emax6.c: In function ‘main’:
+test022-emax6.c:2427:31: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+   printf("membase: %08.8x\n", (Uint)membase);
+                               ^
+test022-emax6.c: In function ‘imax’:
+test022-emax6.c:2538:32: warning: no semicolon at end of struct or union [enabled by default]
+       typedef struct {Uint i[8]} Ui8;
+                                ^
+test022-emax6.c:2545:7: warning: assignment from incompatible pointer type [enabled by default]
+  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+       ^
+test022-emax6.c:2545:46: warning: assignment from incompatible pointer type [enabled by default]
+  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+                                              ^
+test022-emax6.c:2545:69: warning: assignment from incompatible pointer type [enabled by default]
+  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+                                                                     ^
+test022-emax6.c:2545:92: warning: assignment from incompatible pointer type [enabled by default]
+  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
+                                                                                            ^
+test022-emax6.c:2551:11: warning: assignment from incompatible pointer type [enabled by default]
+  c0[CHIP] = C1+(CHIP*480LL/4 +top)*480LL;
+           ^
+test022-emax6.c:2552:11: warning: assignment from incompatible pointer type [enabled by default]
+  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+           ^
+test022-emax6.c:2552:41: warning: assignment from incompatible pointer type [enabled by default]
+  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+                                         ^
+test022-emax6.c:2552:71: warning: assignment from incompatible pointer type [enabled by default]
+  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+                                                                       ^
+test022-emax6.c:2552:101: warning: assignment from incompatible pointer type [enabled by default]
+  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
+                                                                                                     ^
+test022-emax6.c:2566:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][1][0][emax6.lmmic].top = b[0];
+                                       ^
+test022-emax6.c:2569:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][2][0][emax6.lmmic].top = b[1];
+                                       ^
+test022-emax6.c:2572:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][3][0][emax6.lmmic].top = b[2];
+                                       ^
+test022-emax6.c:2575:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][4][0][emax6.lmmic].top = b[3];
+                                       ^
+test022-emax6.c:2578:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][5][0][emax6.lmmic].top = b[4];
+                                       ^
+test022-emax6.c:2581:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][6][0][emax6.lmmic].top = b[5];
+                                       ^
+test022-emax6.c:2584:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][7][0][emax6.lmmic].top = b[6];
+                                       ^
+test022-emax6.c:2587:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][8][0][emax6.lmmic].top = b[7];
+                                       ^
+test022-emax6.c:2590:39: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][9][0][emax6.lmmic].top = b[8];
+                                       ^
+test022-emax6.c:2593:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][10][0][emax6.lmmic].top = b[9];
+                                        ^
+test022-emax6.c:2596:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][11][0][emax6.lmmic].top = b[10];
+                                        ^
+test022-emax6.c:2599:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][12][0][emax6.lmmic].top = b[11];
+                                        ^
+test022-emax6.c:2602:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][13][0][emax6.lmmic].top = b[12];
+                                        ^
+test022-emax6.c:2605:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][14][0][emax6.lmmic].top = b[13];
+                                        ^
+test022-emax6.c:2608:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][15][0][emax6.lmmic].top = b[14];
+                                        ^
+test022-emax6.c:2611:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][16][0][emax6.lmmic].top = b[15];
+                                        ^
+test022-emax6.c:2614:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][17][0][emax6.lmmic].top = b[16];
+                                        ^
+test022-emax6.c:2617:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][18][0][emax6.lmmic].top = b[17];
+                                        ^
+test022-emax6.c:2620:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][19][0][emax6.lmmic].top = b[18];
+                                        ^
+test022-emax6.c:2623:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][20][0][emax6.lmmic].top = b[19];
+                                        ^
+test022-emax6.c:2626:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][21][0][emax6.lmmic].top = b[20];
+                                        ^
+test022-emax6.c:2629:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][22][0][emax6.lmmic].top = b[21];
+                                        ^
+test022-emax6.c:2632:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][23][0][emax6.lmmic].top = b[22];
+                                        ^
+test022-emax6.c:2635:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][24][0][emax6.lmmic].top = b[23];
+                                        ^
+test022-emax6.c:2638:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][25][0][emax6.lmmic].top = b[24];
+                                        ^
+test022-emax6.c:2641:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][26][0][emax6.lmmic].top = b[25];
+                                        ^
+test022-emax6.c:2644:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][27][0][emax6.lmmic].top = b[26];
+                                        ^
+test022-emax6.c:2647:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][28][0][emax6.lmmic].top = b[27];
+                                        ^
+test022-emax6.c:2650:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][29][0][emax6.lmmic].top = b[28];
+                                        ^
+test022-emax6.c:2653:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][30][0][emax6.lmmic].top = b[29];
+                                        ^
+test022-emax6.c:2656:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][31][0][emax6.lmmic].top = b[30];
+                                        ^
+test022-emax6.c:2659:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][32][0][emax6.lmmic].top = b[31];
+                                        ^
+test022-emax6.c:2662:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][33][0][emax6.lmmic].top = b[32];
+                                        ^
+test022-emax6.c:2665:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][34][0][emax6.lmmic].top = b[33];
+                                        ^
+test022-emax6.c:2668:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][35][0][emax6.lmmic].top = b[34];
+                                        ^
+test022-emax6.c:2671:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][36][0][emax6.lmmic].top = b[35];
+                                        ^
+test022-emax6.c:2674:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][37][0][emax6.lmmic].top = b[36];
+                                        ^
+test022-emax6.c:2677:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][38][0][emax6.lmmic].top = b[37];
+                                        ^
+test022-emax6.c:2680:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][39][0][emax6.lmmic].top = b[38];
+                                        ^
+test022-emax6.c:2683:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][40][0][emax6.lmmic].top = b[39];
+                                        ^
+test022-emax6.c:2686:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][41][0][emax6.lmmic].top = b[40];
+                                        ^
+test022-emax6.c:2689:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][42][0][emax6.lmmic].top = b[41];
+                                        ^
+test022-emax6.c:2692:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][43][0][emax6.lmmic].top = b[42];
+                                        ^
+test022-emax6.c:2695:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][44][0][emax6.lmmic].top = b[43];
+                                        ^
+test022-emax6.c:2698:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][45][0][emax6.lmmic].top = b[44];
+                                        ^
+test022-emax6.c:2701:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][46][0][emax6.lmmic].top = b[45];
+                                        ^
+test022-emax6.c:2704:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][47][0][emax6.lmmic].top = b[46];
+                                        ^
+test022-emax6.c:2707:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][48][0][emax6.lmmic].top = b[47];
+                                        ^
+test022-emax6.c:2710:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][49][0][emax6.lmmic].top = b[48];
+                                        ^
+test022-emax6.c:2713:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][50][0][emax6.lmmic].top = b[49];
+                                        ^
+test022-emax6.c:2716:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][51][0][emax6.lmmic].top = b[50];
+                                        ^
+test022-emax6.c:2719:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][52][0][emax6.lmmic].top = b[51];
+                                        ^
+test022-emax6.c:2722:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][53][0][emax6.lmmic].top = b[52];
+                                        ^
+test022-emax6.c:2725:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][54][0][emax6.lmmic].top = b[53];
+                                        ^
+test022-emax6.c:2728:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][55][0][emax6.lmmic].top = b[54];
+                                        ^
+test022-emax6.c:2731:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][56][0][emax6.lmmic].top = b[55];
+                                        ^
+test022-emax6.c:2734:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][57][0][emax6.lmmic].top = b[56];
+                                        ^
+test022-emax6.c:2737:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][58][0][emax6.lmmic].top = b[57];
+                                        ^
+test022-emax6.c:2740:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][59][0][emax6.lmmic].top = b[58];
+                                        ^
+test022-emax6.c:2743:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][60][0][emax6.lmmic].top = b[59];
+                                        ^
+test022-emax6.c:2746:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][60][2][emax6.lmmic].top = a0[0];
+                                        ^
+test022-emax6.c:2749:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[1][60][2][emax6.lmmic].top = a0[1];
+                                        ^
+test022-emax6.c:2752:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[2][60][2][emax6.lmmic].top = a0[2];
+                                        ^
+test022-emax6.c:2755:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[3][60][2][emax6.lmmic].top = a0[3];
+                                        ^
+test022-emax6.c:2758:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[0][62][0][emax6.lmmic].top = c0[0];
+                                        ^
+test022-emax6.c:2761:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[1][62][0][emax6.lmmic].top = c0[1];
+                                        ^
+test022-emax6.c:2764:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[2][62][0][emax6.lmmic].top = c0[2];
+                                        ^
+test022-emax6.c:2767:40: warning: assignment makes integer from pointer without a cast [enabled by default]
+  emax6.lmmi[3][62][0][emax6.lmmic].top = c0[3];
+                                        ^
+test022-emax6.c:2774:22: warning: comparison between pointer and integer [enabled by default]
+  if (emax6.last_conf == emax6_conf_mm) {
+                      ^
+test022-emax6.c:2782:22: warning: comparison between pointer and integer [enabled by default]
+  if (emax6.last_conf != emax6_conf_mm) {
+                      ^
+test022-emax6.c:2786:20: warning: assignment makes integer from pointer without a cast [enabled by default]
+    emax6.last_conf = emax6_conf_mm;
+                    ^
+test022-emax6.c:3320:31: warning: initialization makes pointer from integer without a cast [enabled by default]
+  {struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+                               ^
+test022-emax6.c:3699:31: warning: initialization makes pointer from integer without a cast [enabled by default]
+  {struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+                               ^
+test022-emax6.c:4741:32: warning: initialization makes pointer from integer without a cast [enabled by default]
+    struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+                                ^
+../../bin/aarch64-elf-ld -static -M ../..//lib/asim64-lib/_map -o test022-csim.emax6+dma ../..//lib/asim64-lib/_start.o test022-emax6.o -L../..//lib/gcc/aarch64-elf/4.8.2/ -L../..//aarch64-elf/lib/ -L../../src/emax6_sparselib/ --start-group -lgcc -lm -lc -lsparse --end-group
+Archive member included because of file (symbol)
+
+../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+                              test022-emax6.o (fflush)
+../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o) (__sinit)
+../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o) (_free_r)
+../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o) (_fwalk)
+../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o) (_global_impure_ptr)
+../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+                              ../..//lib/asim64-lib/_start.o (__libc_init_array)
+../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+                              test022-emax6.o (malloc)
+../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o) (_malloc_r)
+../..//aarch64-elf/lib//libc.a(lib_a-memset.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o) (memset)
+../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-freer.o) (__malloc_lock)
+../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+                              test022-emax6.o (printf)
+../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+                              test022-emax6.o (puts)
+../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-freer.o) (_sbrk_r)
+../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o) (__sread)
+../..//aarch64-elf/lib//libc.a(lib_a-strlen.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-puts.o) (strlen)
+../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-printf.o) (_vfprintf_r)
+../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o) (_write_r)
+../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (__swsetup_r)
+../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o) (_close_r)
+../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (_dtoa_r)
+../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o) (fclose)
+../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-puts.o) (__sfvwrite_r)
+../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (_localeconv_r)
+../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o) (_lseek_r)
+../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o) (__smakebuf_r)
+../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (memchr)
+../..//aarch64-elf/lib//libc.a(lib_a-memcpy.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o) (memcpy)
+../..//aarch64-elf/lib//libc.a(lib_a-memmove.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o) (memmove)
+../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o) (_Balloc)
+../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o) (_read_r)
+../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o) (_realloc_r)
+../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o) (errno)
+../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (__fpclassifyd)
+../..//aarch64-elf/lib//libc.a(lib_a-strcmp.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-locale.o) (strcmp)
+../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (__sprint_r)
+../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o) (_calloc_r)
+../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o) (_fputwc_r)
+../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o) (_fstat_r)
+../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o) (_isatty_r)
+../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o) (__swbuf_r)
+../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o) (_wcrtomb_r)
+../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o) (__wctomb)
+../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+                              ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o) (__trunctfdf2)
+../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+                              ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o) (__sfp_handle_exceptions)
+
+Allocating common symbols
+Common symbol       size              file
+
+C1                  0x8               test022-emax6.o
+emax_info           0x68              test022-emax6.o
+conf                0x2000            test022-emax6.o
+n                   0x4               test022-emax6.o
+count2              0x4               test022-emax6.o
+errno               0x4               ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+nanosec_sav         0x8               test022-emax6.o
+current_nchip       0x4               test022-emax6.o
+A                   0x8               test022-emax6.o
+range_bitmap        0x20              test022-emax6.o
+w                   0x4               test022-emax6.o
+current_mapdist     0x4               test022-emax6.o
+emax6_unaligned_load_valid
+                    0x4               test022-emax6.o
+trans_pc            0x4               test022-emax6.o
+lmmi_first_loc      0x4               test022-emax6.o
+top                 0x4               test022-emax6.o
+B                   0x8               test022-emax6.o
+insn                0x2e000           test022-emax6.o
+current_prefix      0x4               test022-emax6.o
+range_link          0x100             test022-emax6.o
+regv                0x6000            test022-emax6.o
+C0                  0x8               test022-emax6.o
+membase             0x8               test022-emax6.o
+blk                 0x4               test022-emax6.o
+enable_x11          0x4               test022-emax6.o
+emax6_unaligned_load_high
+                    0x8               test022-emax6.o
+dec                 0x10000           test022-emax6.o
+col                 0x4               test022-emax6.o
+nanosec             0x40              test022-emax6.o
+tconf               0x200             test022-emax6.o
+count1              0x4               test022-emax6.o
+Z                   0x4b000           test022-emax6.o
+h                   0x4               test022-emax6.o
+count0              0x4               test022-emax6.o
+lmmi                0x1000            test022-emax6.o
+trans               0x380             test022-emax6.o
+last_insn           0x4               test022-emax6.o
+bus                 0x13000           test022-emax6.o
+lmmi_bitmap         0x20              test022-emax6.o
+lmmx                0x1000            test022-emax6.o
+emax6               0x81b0            test022-emax6.o
+current_lmmwb       0x4               test022-emax6.o
+row                 0x4               test022-emax6.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD ../..//lib/asim64-lib/_map
+LOAD ../..//lib/asim64-lib/_start.o
+LOAD test022-emax6.o
+START GROUP
+LOAD ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a
+LOAD ../..//aarch64-elf/lib//libm.a
+LOAD ../..//aarch64-elf/lib//libc.a
+LOAD ../../src/emax6_sparselib//libsparse.a
+END GROUP
+                0x0000000000400000                PROVIDE (__executable_start, 0x400000)
+                0x0000000000400000                . = 0x400000
+
+.interp
+ *(.interp)
+
+.note.gnu.build-id
+ *(.note.gnu.build-id)
+
+.hash
+ *(.hash)
+
+.gnu.hash
+ *(.gnu.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rela.dyn       0x0000000000400000        0x0
+ *(.rela.init)
+ *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
+ *(.rela.fini)
+ *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)
+ *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)
+ *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)
+ *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)
+ *(.rela.ctors)
+ *(.rela.dtors)
+ *(.rela.got)
+ *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
+                0x0000000000400000                PROVIDE (__rel_iplt_start, .)
+                0x0000000000400000                PROVIDE (__rel_iplt_end, .)
+                0x0000000000400000                PROVIDE (__rela_iplt_start, .)
+ *(.rela.iplt)
+                0x0000000000400000                PROVIDE (__rela_iplt_end, .)
+
+.rela.plt
+ *(.rela.plt)
+
+.init
+ *(SORT(.init))
+
+.plt
+ *(.plt)
+
+.iplt
+ *(.iplt)
+
+.text           0x0000000000010000    0x14940
+ *(.text.unlikely .text.*_unlikely)
+ *(.text.exit .text.exit.*)
+ *(.text.startup .text.startup.*)
+ .text.startup  0x0000000000010000      0x120 ../..//lib/asim64-lib/_start.o
+                0x0000000000010000                _start
+                0x0000000000010020                exit
+                0x0000000000010020                _exit
+                0x0000000000010020                _halt
+                0x0000000000010040                _init
+                0x0000000000010044                _gettid
+                0x000000000001004c                _barrier
+                0x0000000000010058                pthread_create
+                0x0000000000010060                pthread_join
+                0x0000000000010068                tcureg_valid
+                0x0000000000010070                tcureg_ready
+                0x0000000000010078                tcureg_last
+                0x0000000000010080                tcureg_term
+                0x0000000000010088                tcureg
+                0x0000000000010090                _getclk
+                0x0000000000010098                _getpa
+                0x00000000000100a0                emax_start_with_keep_cache
+                0x00000000000100a8                emax_start_with_drain_cache
+                0x00000000000100b0                emax_drain_dirty_lmm
+                0x00000000000100b8                emax_pre_with_keep_cache
+                0x00000000000100c0                emax_pre_with_drain_cache
+                0x00000000000100c8                _copyX
+                0x00000000000100d0                _updateX
+                0x00000000000100d8                _read
+                0x00000000000100e0                _write
+                0x00000000000100e8                _open
+                0x00000000000100f0                _lseek
+                0x00000000000100f8                _close
+                0x0000000000010100                _isatty
+                0x0000000000010108                _sbrk
+                0x0000000000010110                _fstat
+                0x0000000000010118                _times
+ .text.startup  0x0000000000010120      0x3d8 test022-emax6.o
+                0x0000000000010120                main
+ *(.text.hot .text.hot.*)
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text          0x00000000000104f8        0x0 ../..//lib/asim64-lib/_start.o
+ *fill*         0x00000000000104f8        0x8 
+ .text          0x0000000000010500     0xb100 test022-emax6.o
+                0x000000000001054c                reset_nanosec
+                0x0000000000010598                get_nanosec
+                0x00000000000105f0                show_nanosec
+                0x0000000000010644                emax6_kick_dma
+                0x00000000000108c0                emax6_check_lmmi_and_dma
+                0x0000000000011478                emax6_pre_with_keep_cache
+                0x000000000001147c                emax6_pre_with_drain_cache
+                0x0000000000011480                cex
+                0x0000000000011520                convf32tou7
+                0x0000000000011588                convf32tou8
+                0x00000000000115f0                convu8tof32
+                0x0000000000011620                urand
+                0x0000000000011644                shfl
+                0x0000000000011858                softu64
+                0x0000000000011da0                exe
+                0x0000000000013198                ex4
+                0x0000000000013448                eag
+                0x000000000001351c                eag1
+                0x0000000000013634                mop
+                0x000000000001397c                mop_debug
+                0x0000000000013ab4                mop2_debug
+                0x0000000000013c30                mo2
+                0x0000000000013fc0                mo4
+                0x0000000000014308                mmp
+                0x0000000000014588                sysinit
+                0x000000000001464c                copy_Z
+                0x000000000001496c                orig
+                0x0000000000014a44                imax
+                0x00000000000192a0                emax6_conf_mm
+                0x000000000001b2a0                emax6_conf_end_mm
+ .text          0x000000000001b600      0x2a4 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+                0x000000000001b600                __sflush_r
+                0x000000000001b82c                _fflush_r
+                0x000000000001b87c                fflush
+ .text          0x000000000001b8a4      0x340 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+                0x000000000001b8b4                _cleanup_r
+                0x000000000001b8c0                __sfmoreglue
+                0x000000000001b924                _cleanup
+                0x000000000001b938                __sinit
+                0x000000000001bab4                __sfp
+                0x000000000001bbac                __sfp_lock_acquire
+                0x000000000001bbb0                __sfp_lock_release
+                0x000000000001bbb4                __sinit_lock_acquire
+                0x000000000001bbb8                __sinit_lock_release
+                0x000000000001bbbc                __fp_lock_all
+                0x000000000001bbd0                __fp_unlock_all
+ .text          0x000000000001bbe4      0x3f4 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+                0x000000000001bbe4                _malloc_trim_r
+                0x000000000001bcf0                _free_r
+ .text          0x000000000001bfd8      0x17c ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+                0x000000000001bfd8                _fwalk
+                0x000000000001c08c                _fwalk_reent
+ .text          0x000000000001c154        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ *fill*         0x000000000001c154        0x4 
+ .text          0x000000000001c158       0xa0 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+                0x000000000001c158                __libc_init_array
+ .text          0x000000000001c1f8       0x20 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+                0x000000000001c1f8                malloc
+                0x000000000001c208                free
+ .text          0x000000000001c218      0x8c4 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+                0x000000000001c218                _malloc_r
+ *fill*         0x000000000001cadc       0x24 
+ .text          0x000000000001cb00      0x100 ../..//aarch64-elf/lib//libc.a(lib_a-memset.o)
+                0x000000000001cb00                memset
+ .text          0x000000000001cc00        0x8 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+                0x000000000001cc00                __malloc_lock
+                0x000000000001cc04                __malloc_unlock
+ .text          0x000000000001cc08      0x128 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+                0x000000000001cc08                _printf_r
+                0x000000000001cc94                printf
+ .text          0x000000000001cd30       0xa4 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+                0x000000000001cd30                _puts_r
+                0x000000000001cdc4                puts
+ .text          0x000000000001cdd4       0x4c ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+                0x000000000001cdd4                _sbrk_r
+ .text          0x000000000001ce20      0x118 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+                0x000000000001ce20                __sread
+                0x000000000001ce70                __seofread
+                0x000000000001ce78                __swrite
+                0x000000000001cee0                __sseek
+                0x000000000001cf30                __sclose
+ *fill*         0x000000000001cf38        0x8 
+ .text          0x000000000001cf40       0xc0 ../..//aarch64-elf/lib//libc.a(lib_a-strlen.o)
+                0x000000000001cf40                strlen
+ .text          0x000000000001d000     0x2188 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+                0x000000000001d000                _vfprintf_r
+                0x000000000001f07c                vfprintf
+ .text          0x000000000001f188       0x58 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+                0x000000000001f188                _write_r
+ .text          0x000000000001f1e0      0x138 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+                0x000000000001f1e0                __swsetup_r
+ .text          0x000000000001f318       0x4c ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+                0x000000000001f318                _close_r
+ *fill*         0x000000000001f364        0x4 
+ .text          0x000000000001f368     0x12a0 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+                0x000000000001f504                _dtoa_r
+ .text          0x0000000000020608       0xf4 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+                0x0000000000020608                _fclose_r
+                0x00000000000206ec                fclose
+ .text          0x00000000000206fc      0x4d0 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+                0x00000000000206fc                __sfvwrite_r
+ .text          0x0000000000020bcc       0xf4 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                0x0000000000020bcc                _setlocale_r
+                0x0000000000020c54                __locale_charset
+                0x0000000000020c60                __locale_mb_cur_max
+                0x0000000000020c70                __locale_msgcharset
+                0x0000000000020c80                __locale_cjk_lang
+                0x0000000000020c88                _localeconv_r
+                0x0000000000020c98                setlocale
+                0x0000000000020cb0                localeconv
+ .text          0x0000000000020cc0       0x58 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+                0x0000000000020cc0                _lseek_r
+ .text          0x0000000000020d18      0x170 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+                0x0000000000020d18                __smakebuf_r
+ .text          0x0000000000020e88       0xe4 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+                0x0000000000020e88                memchr
+ *fill*         0x0000000000020f6c       0x14 
+ .text          0x0000000000020f80      0x100 ../..//aarch64-elf/lib//libc.a(lib_a-memcpy.o)
+                0x0000000000020f80                memcpy
+ .text          0x0000000000021080      0x140 ../..//aarch64-elf/lib//libc.a(lib_a-memmove.o)
+                0x0000000000021080                memmove
+ .text          0x00000000000211c0      0xe4c ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+                0x00000000000211c0                _Balloc
+                0x0000000000021260                _Bfree
+                0x0000000000021280                __multadd
+                0x0000000000021364                __s2b
+                0x0000000000021494                __hi0bits
+                0x00000000000214f8                __lo0bits
+                0x000000000002159c                __i2b
+                0x00000000000215cc                __multiply
+                0x0000000000021778                __pow5mult
+                0x0000000000021888                __lshift
+                0x00000000000219cc                __mcmp
+                0x0000000000021a2c                __mdiff
+                0x0000000000021b7c                __ulp
+                0x0000000000021bf0                __b2d
+                0x0000000000021d18                __d2b
+                0x0000000000021e3c                __ratio
+                0x0000000000021ee8                _mprec_log10
+                0x0000000000021f1c                __copybits
+                0x0000000000021f84                __any_on
+ .text          0x000000000002200c       0x58 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+                0x000000000002200c                _read_r
+ .text          0x0000000000022064      0x504 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+                0x0000000000022064                _realloc_r
+ .text          0x0000000000022568      0x130 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+                0x0000000000022568                cleanup_glue
+                0x000000000002259c                _reclaim_reent
+ .text          0x0000000000022698       0x6c ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+                0x0000000000022698                __fpclassifyd
+ *fill*         0x0000000000022704       0x3c 
+ .text          0x0000000000022740       0xc0 ../..//aarch64-elf/lib//libc.a(lib_a-strcmp.o)
+                0x0000000000022740                strcmp
+ .text          0x0000000000022800     0x17c4 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+                0x00000000000228e4                __sprint_r
+                0x00000000000228fc                _vfiprintf_r
+                0x0000000000023eb8                vfiprintf
+ .text          0x0000000000023fc4       0xa4 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+                0x0000000000023fc4                _calloc_r
+ .text          0x0000000000024068      0x1b8 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+                0x0000000000024068                _fputwc_r
+                0x00000000000241d4                fputwc
+ .text          0x0000000000024220       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+                0x0000000000024220                _fstat_r
+ .text          0x0000000000024270       0x4c ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+                0x0000000000024270                _isatty_r
+ .text          0x00000000000242bc      0x164 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+                0x00000000000242bc                __swbuf_r
+                0x0000000000024408                __swbuf
+ .text          0x0000000000024420      0x138 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+                0x0000000000024420                _wcrtomb_r
+                0x00000000000244b4                wcrtomb
+ .text          0x0000000000024558       0x80 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+                0x0000000000024558                __ascii_wctomb
+                0x0000000000024588                _wctomb_r
+ .text          0x00000000000245d8      0x2fc ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+                0x00000000000245d8                __trunctfdf2
+ .text          0x00000000000248d4       0x6c ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+                0x00000000000248d4                __sfp_handle_exceptions
+ *(.gnu.warning)
+ *(.text)
+
+.fini
+ *(SORT(.fini))
+                0x0000000000024940                PROVIDE (__etext, .)
+                0x0000000000024940                PROVIDE (_etext, .)
+                0x0000000000024940                PROVIDE (etext, .)
+
+.rodata         0x0000000000024940      0x830
+ *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata        0x0000000000024940      0x17c test022-emax6.o
+ *fill*         0x0000000000024abc        0x4 
+ .rodata.str1.8
+                0x0000000000024ac0      0x332 test022-emax6.o
+                                        0x338 (size before relaxing)
+ *fill*         0x0000000000024df2        0x6 
+ .rodata        0x0000000000024df8        0x8 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+                0x0000000000024df8                _global_impure_ptr
+ .rodata.str1.8
+                0x0000000000024e00        0x2 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+                                          0x8 (size before relaxing)
+ .rodata.str1.8
+                0x0000000000000000        0x2 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+                                          0x8 (size before relaxing)
+ *fill*         0x0000000000024e02        0x6 
+ .rodata        0x0000000000024e08       0xd8 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .rodata.str1.8
+                0x0000000000024ee0       0x5a ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+                                         0x60 (size before relaxing)
+ *fill*         0x0000000000024f3a        0x2 
+ .rodata        0x0000000000024f3c        0x8 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ *fill*         0x0000000000024f44        0x4 
+ .rodata.str1.8
+                0x0000000000024f48       0x14 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+                                         0x20 (size before relaxing)
+ *fill*         0x0000000000024f5c        0x4 
+ .rodata.str1.8
+                0x0000000000024f60       0x10 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                                         0x20 (size before relaxing)
+ .rodata        0x0000000000024f70      0x128 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+                0x0000000000024f80                __mprec_tens
+                0x0000000000025048                __mprec_tinytens
+                0x0000000000025070                __mprec_bigtens
+ .rodata        0x0000000000025098       0xd8 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .rodata.str1.8
+                0x0000000000000000       0x38 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+
+.rodata1
+ *(.rodata1)
+
+.eh_frame_hdr
+ *(.eh_frame_hdr)
+
+.eh_frame
+ *(.eh_frame)
+
+.gcc_except_table
+ *(.gcc_except_table .gcc_except_table.*)
+
+.exception_ranges
+ *(.exception_ranges .exception_ranges*)
+                0x0000000000035170                . = (ALIGN (0x10000) + (. & 0xffff))
+
+.eh_frame
+ *(.eh_frame)
+
+.gcc_except_table
+ *(.gcc_except_table .gcc_except_table.*)
+
+.exception_ranges
+ *(.exception_ranges .exception_ranges*)
+
+.tdata
+ *(.tdata .tdata.* .gnu.linkonce.td.*)
+
+.tbss
+ *(.tbss .tbss.* .gnu.linkonce.tb.*)
+ *(.tcommon)
+
+.preinit_array  0x0000000000035170        0x0
+                0x0000000000035170                PROVIDE (__preinit_array_start, .)
+ *(.preinit_array)
+                0x0000000000035170                PROVIDE (__preinit_array_end, .)
+
+.init_array     0x0000000000035170        0x0
+                0x0000000000035170                PROVIDE (__init_array_start, .)
+ *(SORT(.init_array.*))
+ *(.init_array)
+                0x0000000000035170                PROVIDE (__init_array_end, .)
+
+.fini_array     0x0000000000035170        0x0
+                0x0000000000035170                PROVIDE (__fini_array_start, .)
+ *(SORT(.fini_array.*))
+ *(.fini_array)
+                0x0000000000035170                PROVIDE (__fini_array_end, .)
+
+.ctors
+ *crtbegin.o(.ctors)
+ *crtbegin?.o(.ctors)
+ *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+
+.dtors
+ *crtbegin.o(.dtors)
+ *crtbegin?.o(.dtors)
+ *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+
+.jcr
+ *(.jcr)
+
+.data.rel.ro
+ *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*)
+ *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
+
+.dynamic
+ *(.dynamic)
+
+.got
+ *(.got)
+ *(.igot)
+
+.got.plt
+ *(.got.plt)
+ *(.igot.plt)
+
+.data           0x0000000000035170     0x1080
+                0x0000000000035170                __data_start = .
+ *(.data .data.* .gnu.linkonce.d.*)
+ .data          0x0000000000035170        0x0 ../..//lib/asim64-lib/_start.o
+ .data          0x0000000000035170       0x60 test022-emax6.o
+                0x00000000000351b0                HT
+                0x00000000000351b4                WD
+                0x00000000000351b8                VECSTEP
+                0x00000000000351bc                VECHT
+                0x00000000000351c0                VECWD
+                0x00000000000351c4                SCRHT
+                0x00000000000351c8                SCRWD
+                0x00000000000351cc                BITMAP
+ .data          0x00000000000351d0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .data          0x00000000000351d0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .data          0x00000000000351d0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .data          0x00000000000351d0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .data          0x00000000000351d0      0x750 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+                0x00000000000351d0                _impure_ptr
+ .data          0x0000000000035920        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .data          0x0000000000035920        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .data          0x0000000000035920      0x820 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+                0x0000000000035920                __malloc_av_
+                0x0000000000036130                __malloc_sbrk_base
+                0x0000000000036138                __malloc_trim_threshold
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memset.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-strlen.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .data          0x0000000000036140        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .data          0x0000000000036140       0xa8 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                0x0000000000036160                __mb_cur_max
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memcpy.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memmove.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-strcmp.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .data          0x00000000000361e8        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .data          0x00000000000361e8        0x8 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+                0x00000000000361e8                __wctomb
+ .data          0x00000000000361f0        0x0 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .data          0x00000000000361f0        0x0 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.data1
+ *(.data1)
+                0x00000000000361f0                _edata = .
+                0x00000000000361f0                PROVIDE (edata, .)
+                0x00000000000361f0                . = .
+                0x00000000000361f0                __bss_start = .
+                0x00000000000361f0                __bss_start__ = .
+
+.bss            0x00000000000361f0    0xaea04
+ *(.dynbss)
+ *(.bss .bss.* .gnu.linkonce.b.*)
+ .bss           0x00000000000361f0        0x0 ../..//lib/asim64-lib/_start.o
+ .bss           0x00000000000361f0        0x0 test022-emax6.o
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .bss           0x00000000000361f0        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .bss           0x00000000000361f0       0x40 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+                0x00000000000361f0                __malloc_top_pad
+                0x00000000000361f8                __malloc_current_mallinfo
+                0x0000000000036220                __malloc_max_sbrked_mem
+                0x0000000000036228                __malloc_max_total_mem
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memset.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-strlen.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .bss           0x0000000000036230        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .bss           0x0000000000036230       0x10 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                0x0000000000036230                _PathLocale
+                0x0000000000036238                __mlocale_changed
+                0x000000000003623c                __nlocale_changed
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memcpy.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-memmove.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-strcmp.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .bss           0x0000000000036240        0x0 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .bss           0x0000000000036240        0x0 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .bss           0x0000000000036240        0x0 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+ *(COMMON)
+ COMMON         0x0000000000036240    0xae9b0 test022-emax6.o
+                0x0000000000036240                C1
+                0x0000000000036248                emax_info
+                0x00000000000362b0                conf
+                0x00000000000382b0                n
+                0x00000000000382b4                count2
+                0x00000000000382b8                nanosec_sav
+                0x00000000000382c0                current_nchip
+                0x00000000000382c8                A
+                0x00000000000382d0                range_bitmap
+                0x00000000000382f0                w
+                0x00000000000382f4                current_mapdist
+                0x00000000000382f8                emax6_unaligned_load_valid
+                0x00000000000382fc                trans_pc
+                0x0000000000038300                lmmi_first_loc
+                0x0000000000038304                top
+                0x0000000000038308                B
+                0x0000000000038310                insn
+                0x0000000000066310                current_prefix
+                0x0000000000066318                range_link
+                0x0000000000066418                regv
+                0x000000000006c418                C0
+                0x000000000006c420                membase
+                0x000000000006c428                blk
+                0x000000000006c42c                enable_x11
+                0x000000000006c430                emax6_unaligned_load_high
+                0x000000000006c438                dec
+                0x000000000007c438                col
+                0x000000000007c440                nanosec
+                0x000000000007c480                tconf
+                0x000000000007c680                count1
+                0x000000000007c688                Z
+                0x00000000000c7688                h
+                0x00000000000c768c                count0
+                0x00000000000c7690                lmmi
+                0x00000000000c8690                trans
+                0x00000000000c8a10                last_insn
+                0x00000000000c8a18                bus
+                0x00000000000dba18                lmmi_bitmap
+                0x00000000000dba38                lmmx
+                0x00000000000dca38                emax6
+                0x00000000000e4be8                current_lmmwb
+                0x00000000000e4bec                row
+ COMMON         0x00000000000e4bf0        0x4 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+                0x00000000000e4bf0                errno
+                0x00000000000e4bf4                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x00000000000e4bf4                _bss_end__ = .
+                0x00000000000e4bf4                __bss_end__ = .
+                0x00000000000e4bf4                . = ALIGN (0x4)
+                0x00000000000e4bf4                . = ALIGN (0x4)
+                0x00000000000e4bf4                __end__ = .
+                0x00000000000e4bf4                _end = .
+                0x00000000000e4bf4                PROVIDE (end, .)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x0000000000000000       0x11
+ *(.comment)
+ .comment       0x0000000000000000       0x11 test022-emax6.o
+                                         0x12 (size before relaxing)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .comment       0x0000000000000000       0x12 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .comment       0x0000000000000000       0x12 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .comment       0x0000000000000000       0x12 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x0000000000000000      0x740
+ *(.debug_aranges)
+ .debug_aranges
+                0x0000000000000000       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_aranges
+                0x0000000000000030       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_aranges
+                0x0000000000000060       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_aranges
+                0x0000000000000090       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_aranges
+                0x00000000000000c0       0x20 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .debug_aranges
+                0x00000000000000e0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_aranges
+                0x0000000000000110       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_aranges
+                0x0000000000000140       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_aranges
+                0x0000000000000170       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .debug_aranges
+                0x00000000000001a0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_aranges
+                0x00000000000001d0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_aranges
+                0x0000000000000200       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_aranges
+                0x0000000000000230       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_aranges
+                0x0000000000000260       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_aranges
+                0x0000000000000290       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_aranges
+                0x00000000000002c0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_aranges
+                0x00000000000002f0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_aranges
+                0x0000000000000320       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_aranges
+                0x0000000000000350       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_aranges
+                0x0000000000000380       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_aranges
+                0x00000000000003b0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_aranges
+                0x00000000000003e0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_aranges
+                0x0000000000000410       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_aranges
+                0x0000000000000440       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_aranges
+                0x0000000000000470       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_aranges
+                0x00000000000004a0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_aranges
+                0x00000000000004d0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_aranges
+                0x0000000000000500       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_aranges
+                0x0000000000000530       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_aranges
+                0x0000000000000560       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_aranges
+                0x0000000000000590       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_aranges
+                0x00000000000005c0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_aranges
+                0x00000000000005f0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_aranges
+                0x0000000000000620       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_aranges
+                0x0000000000000650       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_aranges
+                0x0000000000000680       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_aranges
+                0x00000000000006b0       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_aranges
+                0x00000000000006e0       0x30 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_aranges
+                0x0000000000000710       0x30 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info     0x0000000000000000    0x19e07
+ *(.debug_info .gnu.linkonce.wi.*)
+ .debug_info    0x0000000000000000      0xb06 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_info    0x0000000000000b06      0xe1a ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_info    0x0000000000001920      0xc60 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_info    0x0000000000002580      0x9c2 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_info    0x0000000000002f42      0x8a4 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .debug_info    0x00000000000037e6      0x112 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_info    0x00000000000038f8      0x939 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_info    0x0000000000004231      0xde5 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_info    0x0000000000005016      0x8d0 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .debug_info    0x00000000000058e6      0x9fb ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_info    0x00000000000062e1      0xa3f ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_info    0x0000000000006d20      0x90c ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_info    0x000000000000762c      0xbdd ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_info    0x0000000000008209     0x1940 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_info    0x0000000000009b49      0x941 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_info    0x000000000000a48a      0x95b ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_info    0x000000000000ade5      0x8f8 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_info    0x000000000000b6dd     0x1449 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_info    0x000000000000cb26      0xa25 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_info    0x000000000000d54b      0xcbd ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_info    0x000000000000e208      0xc62 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_info    0x000000000000ee6a      0x924 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_info    0x000000000000f78e      0xb05 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_info    0x0000000000010293      0x13b ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_info    0x00000000000103ce     0x17cc ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_info    0x0000000000011b9a      0x93a ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_info    0x00000000000124d4      0xc92 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_info    0x0000000000013166      0xa57 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_info    0x0000000000013bbd      0x15e ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_info    0x0000000000013d1b     0x16ad ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_info    0x00000000000153c8      0x9fc ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_info    0x0000000000015dc4      0xb01 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_info    0x00000000000168c5      0xa76 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_info    0x000000000001733b      0x8f8 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_info    0x0000000000017c33      0x9ea ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_info    0x000000000001861d      0xaa7 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_info    0x00000000000190c4      0x9c9 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_info    0x0000000000019a8d      0x2a0 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_info    0x0000000000019d2d       0xda ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_abbrev   0x0000000000000000     0x54c7
+ *(.debug_abbrev)
+ .debug_abbrev  0x0000000000000000      0x28f ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_abbrev  0x000000000000028f      0x35e ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_abbrev  0x00000000000005ed      0x288 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_abbrev  0x0000000000000875      0x1cf ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_abbrev  0x0000000000000a44      0x18d ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .debug_abbrev  0x0000000000000bd1       0xba ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_abbrev  0x0000000000000c8b      0x207 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_abbrev  0x0000000000000e92      0x2af ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_abbrev  0x0000000000001141      0x1a7 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .debug_abbrev  0x00000000000012e8      0x225 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_abbrev  0x000000000000150d      0x242 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_abbrev  0x000000000000174f      0x20a ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_abbrev  0x0000000000001959      0x246 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_abbrev  0x0000000000001b9f      0x3e1 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_abbrev  0x0000000000001f80      0x201 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_abbrev  0x0000000000002181      0x218 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_abbrev  0x0000000000002399      0x1fc ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_abbrev  0x0000000000002595      0x2bc ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_abbrev  0x0000000000002851      0x280 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_abbrev  0x0000000000002ad1      0x254 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_abbrev  0x0000000000002d25      0x2b0 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_abbrev  0x0000000000002fd5      0x20b ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_abbrev  0x00000000000031e0      0x213 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_abbrev  0x00000000000033f3       0xab ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_abbrev  0x000000000000349e      0x3aa ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_abbrev  0x0000000000003848      0x1fc ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_abbrev  0x0000000000003a44      0x26d ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_abbrev  0x0000000000003cb1      0x269 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_abbrev  0x0000000000003f1a       0xca ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_abbrev  0x0000000000003fe4      0x3b7 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_abbrev  0x000000000000439b      0x220 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_abbrev  0x00000000000045bb      0x2b0 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_abbrev  0x000000000000486b      0x20b ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_abbrev  0x0000000000004a76      0x1fc ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_abbrev  0x0000000000004c72      0x268 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_abbrev  0x0000000000004eda      0x229 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_abbrev  0x0000000000005103      0x210 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_abbrev  0x0000000000005313      0x140 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_abbrev  0x0000000000005453       0x74 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_line     0x0000000000000000     0xf958
+ *(.debug_line)
+ .debug_line    0x0000000000000000      0x67b ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_line    0x000000000000067b      0x86c ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_line    0x0000000000000ee7      0x71e ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_line    0x0000000000001605      0x31e ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_line    0x0000000000001923      0x10e ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+ .debug_line    0x0000000000001a31      0x196 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_line    0x0000000000001bc7      0x1b3 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_line    0x0000000000001d7a      0xd2d ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_line    0x0000000000002aa7      0x13e ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .debug_line    0x0000000000002be5      0x2df ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_line    0x0000000000002ec4      0x2aa ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_line    0x000000000000316e      0x1e8 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_line    0x0000000000003356      0x38a ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_line    0x00000000000036e0     0x2939 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_line    0x0000000000006019      0x24d ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_line    0x0000000000006266      0x3a6 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_line    0x000000000000660c      0x1e9 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_line    0x00000000000067f5     0x1baf ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_line    0x00000000000083a4      0x324 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_line    0x00000000000086c8      0x92c ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_line    0x0000000000008ff4      0x314 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_line    0x0000000000009308      0x1e9 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_line    0x00000000000094f1      0x3d3 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_line    0x00000000000098c4      0x26c ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_line    0x0000000000009b30     0x19e6 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_line    0x000000000000b516      0x24c ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_line    0x000000000000b762      0x797 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_line    0x000000000000bef9      0x347 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_line    0x000000000000c240      0x20f ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_line    0x000000000000c44f     0x1da7 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_line    0x000000000000e1f6      0x1c9 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_line    0x000000000000e3bf      0x373 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_line    0x000000000000e732      0x206 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_line    0x000000000000e938      0x1ea ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_line    0x000000000000eb22      0x3b1 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_line    0x000000000000eed3      0x2f0 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_line    0x000000000000f1c3      0x23b ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_line    0x000000000000f3fe      0x40b ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_line    0x000000000000f809      0x14f ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_frame    0x0000000000000000     0x1720
+ *(.debug_frame)
+ .debug_frame   0x0000000000000000       0xb8 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_frame   0x00000000000000b8      0x1c0 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_frame   0x0000000000000278       0xa8 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_frame   0x0000000000000320       0xb8 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_frame   0x00000000000003d8       0x48 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_frame   0x0000000000000420       0x40 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_frame   0x0000000000000460       0xc0 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_frame   0x0000000000000520       0x40 ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+ .debug_frame   0x0000000000000560       0x70 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_frame   0x00000000000005d0       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_frame   0x0000000000000630       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_frame   0x0000000000000680       0xe8 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_frame   0x0000000000000768      0x120 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_frame   0x0000000000000888       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_frame   0x00000000000008d8       0x48 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_frame   0x0000000000000920       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_frame   0x0000000000000970       0xe0 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_frame   0x0000000000000a50       0x70 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_frame   0x0000000000000ac0       0x80 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_frame   0x0000000000000b40      0x100 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_frame   0x0000000000000c40       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_frame   0x0000000000000c90       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_frame   0x0000000000000cf0       0x28 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_frame   0x0000000000000d18      0x3c8 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_frame   0x00000000000010e0       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_frame   0x0000000000001130       0x78 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_frame   0x00000000000011a8       0x88 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_frame   0x0000000000001230       0x28 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_frame   0x0000000000001258      0x180 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_frame   0x00000000000013d8       0x48 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_frame   0x0000000000001420       0xa8 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_frame   0x00000000000014c8       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_frame   0x0000000000001518       0x50 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_frame   0x0000000000001568       0x68 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_frame   0x00000000000015d0       0x90 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_frame   0x0000000000001660       0x58 ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_frame   0x00000000000016b8       0x40 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_frame   0x00000000000016f8       0x28 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_str      0x0000000000000000     0x1a59
+ *(.debug_str)
+ .debug_str     0x0000000000000000      0x4cc ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+                                        0x56a (size before relaxing)
+ .debug_str     0x00000000000004cc      0x110 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+                                        0x617 (size before relaxing)
+ .debug_str     0x00000000000005dc      0x1c1 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+                                        0x663 (size before relaxing)
+ .debug_str     0x000000000000079d       0x37 ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+                                        0x50f (size before relaxing)
+ .debug_str     0x00000000000007d4       0x83 ../..//aarch64-elf/lib//libc.a(lib_a-impure.o)
+                                        0x50a (size before relaxing)
+ .debug_str     0x0000000000000857       0xd9 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+                                        0x181 (size before relaxing)
+ .debug_str     0x0000000000000930       0x36 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+                                        0x51e (size before relaxing)
+ .debug_str     0x0000000000000966       0xdf ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+                                        0x719 (size before relaxing)
+ .debug_str     0x0000000000000a45       0x3e ../..//aarch64-elf/lib//libc.a(lib_a-mlock.o)
+                                        0x513 (size before relaxing)
+ .debug_str     0x0000000000000a83       0x86 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+                                        0x55c (size before relaxing)
+ .debug_str     0x0000000000000b09       0x84 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+                                        0x559 (size before relaxing)
+ .debug_str     0x0000000000000b8d       0x33 ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+                                        0x501 (size before relaxing)
+ .debug_str     0x0000000000000bc0       0x88 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+                                        0x565 (size before relaxing)
+ .debug_str     0x0000000000000c48      0x2db ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+                                        0x915 (size before relaxing)
+ .debug_str     0x0000000000000f23       0x29 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+                                        0x4fe (size before relaxing)
+ .debug_str     0x0000000000000f4c       0x36 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+                                        0x529 (size before relaxing)
+ .debug_str     0x0000000000000f82       0x29 ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+                                        0x4ee (size before relaxing)
+ .debug_str     0x0000000000000fab      0x14d ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+                                        0x65c (size before relaxing)
+ .debug_str     0x00000000000010f8       0x3a ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+                                        0x556 (size before relaxing)
+ .debug_str     0x0000000000001132       0x5b ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+                                        0x59c (size before relaxing)
+ .debug_str     0x000000000000118d      0x160 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+                                        0x767 (size before relaxing)
+ .debug_str     0x00000000000012ed       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+                                        0x4fc (size before relaxing)
+ .debug_str     0x000000000000131d      0x111 ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+                                        0x60c (size before relaxing)
+ .debug_str     0x000000000000142e       0x8c ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+                                        0x153 (size before relaxing)
+ .debug_str     0x00000000000014ba       0x94 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+                                        0x616 (size before relaxing)
+ .debug_str     0x000000000000154e       0x28 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+                                        0x4fc (size before relaxing)
+ .debug_str     0x0000000000001576       0x4e ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+                                        0x5eb (size before relaxing)
+ .debug_str     0x00000000000015c4       0x54 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+                                        0x529 (size before relaxing)
+ .debug_str     0x0000000000001618       0xa1 ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+                                        0x18b (size before relaxing)
+ .debug_str     0x00000000000016b9       0x29 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+                                        0x707 (size before relaxing)
+ .debug_str     0x00000000000016e2        0xf ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+                                        0x543 (size before relaxing)
+ .debug_str     0x00000000000016f1       0x47 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+                                        0x56a (size before relaxing)
+ .debug_str     0x0000000000001738       0x36 ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+                                        0x5e1 (size before relaxing)
+ .debug_str     0x000000000000176e       0x32 ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+                                        0x4f8 (size before relaxing)
+ .debug_str     0x00000000000017a0       0x2f ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+                                        0x52e (size before relaxing)
+ .debug_str     0x00000000000017cf       0x43 ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+                                        0x541 (size before relaxing)
+ .debug_str     0x0000000000001812       0x4c ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+                                        0x54a (size before relaxing)
+ .debug_str     0x000000000000185e      0x17d ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+                                        0x1dc (size before relaxing)
+ .debug_str     0x00000000000019db       0x7e ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+                                        0x125 (size before relaxing)
+
+.debug_loc      0x0000000000000000    0x1948c
+ *(.debug_loc)
+ .debug_loc     0x0000000000000000      0x534 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_loc     0x0000000000000534      0x532 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_loc     0x0000000000000a66      0x776 ../..//aarch64-elf/lib//libc.a(lib_a-freer.o)
+ .debug_loc     0x00000000000011dc      0x3fa ../..//aarch64-elf/lib//libc.a(lib_a-fwalk.o)
+ .debug_loc     0x00000000000015d6       0xe4 ../..//aarch64-elf/lib//libc.a(lib_a-init.o)
+ .debug_loc     0x00000000000016ba       0x98 ../..//aarch64-elf/lib//libc.a(lib_a-malloc.o)
+ .debug_loc     0x0000000000001752     0x1655 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_loc     0x0000000000002da7       0xf4 ../..//aarch64-elf/lib//libc.a(lib_a-printf.o)
+ .debug_loc     0x0000000000002e9b      0x161 ../..//aarch64-elf/lib//libc.a(lib_a-puts.o)
+ .debug_loc     0x0000000000002ffc       0xae ../..//aarch64-elf/lib//libc.a(lib_a-sbrkr.o)
+ .debug_loc     0x00000000000030aa      0x551 ../..//aarch64-elf/lib//libc.a(lib_a-stdio.o)
+ .debug_loc     0x00000000000035fb     0x53a7 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_loc     0x00000000000089a2      0x146 ../..//aarch64-elf/lib//libc.a(lib_a-writer.o)
+ .debug_loc     0x0000000000008ae8      0x11a ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_loc     0x0000000000008c02       0xae ../..//aarch64-elf/lib//libc.a(lib_a-closer.o)
+ .debug_loc     0x0000000000008cb0     0x4135 ../..//aarch64-elf/lib//libc.a(lib_a-dtoa.o)
+ .debug_loc     0x000000000000cde5      0x250 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_loc     0x000000000000d035      0xa49 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_loc     0x000000000000da7e      0x1f1 ../..//aarch64-elf/lib//libc.a(lib_a-locale.o)
+ .debug_loc     0x000000000000dc6f      0x146 ../..//aarch64-elf/lib//libc.a(lib_a-lseekr.o)
+ .debug_loc     0x000000000000ddb5      0x23f ../..//aarch64-elf/lib//libc.a(lib_a-makebuf.o)
+ .debug_loc     0x000000000000dff4      0x2e2 ../..//aarch64-elf/lib//libc.a(lib_a-memchr.o)
+ .debug_loc     0x000000000000e2d6     0x318e ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_loc     0x0000000000011464      0x146 ../..//aarch64-elf/lib//libc.a(lib_a-readr.o)
+ .debug_loc     0x00000000000115aa     0x1655 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_loc     0x0000000000012bff      0x231 ../..//aarch64-elf/lib//libc.a(lib_a-reent.o)
+ .debug_loc     0x0000000000012e30       0xda ../..//aarch64-elf/lib//libc.a(lib_a-s_fpclassify.o)
+ .debug_loc     0x0000000000012f0a     0x4594 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_loc     0x000000000001749e      0x3c3 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_loc     0x0000000000017861      0x570 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_loc     0x0000000000017dd1       0xfa ../..//aarch64-elf/lib//libc.a(lib_a-fstatr.o)
+ .debug_loc     0x0000000000017ecb       0xae ../..//aarch64-elf/lib//libc.a(lib_a-isattyr.o)
+ .debug_loc     0x0000000000017f79      0x347 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_loc     0x00000000000182c0      0x3dd ../..//aarch64-elf/lib//libc.a(lib_a-wcrtomb.o)
+ .debug_loc     0x000000000001869d      0x1bb ../..//aarch64-elf/lib//libc.a(lib_a-wctomb_r.o)
+ .debug_loc     0x0000000000018858      0xbfb ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+ .debug_loc     0x0000000000019453       0x39 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(sfp-exceptions.o)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+
+.debug_pubtypes
+ *(.debug_pubtypes)
+
+.debug_ranges   0x0000000000000000      0xb80
+ *(.debug_ranges)
+ .debug_ranges  0x0000000000000000       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-fflush.o)
+ .debug_ranges  0x0000000000000060       0xa0 ../..//aarch64-elf/lib//libc.a(lib_a-findfp.o)
+ .debug_ranges  0x0000000000000100       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-mallocr.o)
+ .debug_ranges  0x0000000000000160      0x260 ../..//aarch64-elf/lib//libc.a(lib_a-vfprintf.o)
+ .debug_ranges  0x00000000000003c0       0x40 ../..//aarch64-elf/lib//libc.a(lib_a-wsetup.o)
+ .debug_ranges  0x0000000000000400       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-fclose.o)
+ .debug_ranges  0x0000000000000430       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-fvwrite.o)
+ .debug_ranges  0x0000000000000490       0x90 ../..//aarch64-elf/lib//libc.a(lib_a-mprec.o)
+ .debug_ranges  0x0000000000000520      0x200 ../..//aarch64-elf/lib//libc.a(lib_a-reallocr.o)
+ .debug_ranges  0x0000000000000720      0x330 ../..//aarch64-elf/lib//libc.a(lib_a-vfiprintf.o)
+ .debug_ranges  0x0000000000000a50       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-callocr.o)
+ .debug_ranges  0x0000000000000ab0       0x60 ../..//aarch64-elf/lib//libc.a(lib_a-fputwc.o)
+ .debug_ranges  0x0000000000000b10       0x30 ../..//aarch64-elf/lib//libc.a(lib_a-wbuf.o)
+ .debug_ranges  0x0000000000000b40       0x40 ../..//lib/gcc/aarch64-elf/4.8.2//libgcc.a(trunctfdf2.o)
+
+.debug_macro
+ *(.debug_macro)
+
+.stack          0x0000000000080000        0x0
+                0x0000000000080000                _stack = .
+ *(.stack)
+
+.ARM.attributes
+ *(.ARM.attributes)
+ *(.gnu.attributes)
+
+.note.gnu.arm.ident
+ *(.note.gnu.arm.ident)
+
+/DISCARD/
+ *(.note.GNU-stack)
+ *(.gnu_debuglink)
+ *(.gnu.lto_*)
+OUTPUT(test022-csim.emax6+dma elf64-littleaarch64)

@@ -14,14 +14,12 @@
 %o      500
 
 %{
-#include "yacc_lex_util.h"
 double      atof();
 void        *malloc();
 static int  indx;
 %}
 
 %%
-
 \n                   { ++y_lineno; return(EOL); }
 ^[^\/\n].*           { return(ARMV8); }
 ^\/[^-\n].*          { return(ARMV8); }
@@ -41,6 +39,7 @@ for                  { return(CGRA_FOR); }
 cex                  { return(CGRA_CEX); }
 ex4                  { return(CGRA_EX4); }
 exe                  { return(CGRA_EXE); }
+mex                  { return(CGRA_MEX); }
 mo4                  { return(CGRA_MO4); }
 mop                  { return(CGRA_MOP); }
 \-\-                 {
@@ -204,5 +203,3 @@ INIT[0-3] { /* INIT[23] not available */
     }
     return(ASIS);
 }
-
-%%

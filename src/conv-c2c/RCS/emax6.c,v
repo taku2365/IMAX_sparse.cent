@@ -1,10 +1,60 @@
-head	1.87;
+head	1.97;
 access;
 symbols;
 locks
-	nakashim:1.87; strict;
+	nakashim:1.97; strict;
 comment	@ * @;
 
+
+1.97
+date	2021.12.21.03.59.49;	author nakashim;	state Exp;
+branches;
+next	1.96;
+
+1.96
+date	2021.12.16.14.28.32;	author nakashim;	state Exp;
+branches;
+next	1.95;
+
+1.95
+date	2021.12.16.10.44.50;	author nakashim;	state Exp;
+branches;
+next	1.94;
+
+1.94
+date	2021.12.16.09.22.27;	author nakashim;	state Exp;
+branches;
+next	1.93;
+
+1.93
+date	2021.12.16.05.39.51;	author nakashim;	state Exp;
+branches;
+next	1.92;
+
+1.92
+date	2021.12.16.00.09.52;	author nakashim;	state Exp;
+branches;
+next	1.91;
+
+1.91
+date	2021.12.15.23.31.09;	author nakashim;	state Exp;
+branches;
+next	1.90;
+
+1.90
+date	2021.12.08.00.58.43;	author nakashim;	state Exp;
+branches;
+next	1.89;
+
+1.89
+date	2021.09.21.07.42.15;	author nakashim;	state Exp;
+branches;
+next	1.88;
+
+1.88
+date	2021.08.11.10.54.45;	author nakashim;	state Exp;
+branches;
+next	1.87;
 
 1.87
 date	2021.08.11.04.45.48;	author nakashim;	state Exp;
@@ -446,13 +496,13 @@ desc
 @@
 
 
-1.87
+1.97
 log
 @*** empty log message ***
 @
 text
 @
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.86 2021/06/18 03:04:05 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.96 2021/12/16 14:28:32 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*         Copyright (C) 2012 by NAIST */
@@ -470,14 +520,18 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
   int c, i, j, k, flag;
   int last_row = -1; /* last location */
   int last_col = -1; /* last location */
+  int last_mex = -1; /* 0:mex0, 1:mex1 */
   int last_mop = -1; /* 0:mop0, 1:mop1 */
   int folding;
   struct cex *dcex;
   struct exu *dexu;
+  struct mex *dmex0, *dmex1;
   struct mop *dmop0, *dmop1;
 
-  if (mode == 1) /* emit drain */
+  if (mode == 1) { /* emit drain */
+    fprintf(ofile, "#ifndef EMAXSC\n");
     goto mode_drain_dirty_lmm;
+  }
 
   /**********************************************************************************************************/
   /* ●insn[]に格納されるオペランド種類（★は絶対位置指定因子）                                             */
@@ -1012,7 +1066,7 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
       /*          │                --row#6--  */
       /*          exe                          */
       /*          □AR6                        *//*    mm+rmm.cの例                                    */
-      /*          │                           *//* (1)mop(OP_LDUWR, &BR[7][0][1])                     */
+      /*          │                           *//* (1)mop(OP_LDWR,  &BR[7][0][1])                     */
       /*          □BR6                        *//* (2)exe(OP_FAD,   &AR[7][0], AR[6][0], BR[7][0][1]) */
       /*  (1)     │      (2)   (3) --row#7--  *//*    ★dst:rowのAR,src:rowのBRの場合,                */
       /*  eag ┌─│─┬┐exe   eag            *//*      srcへのパスは一旦rowのBRまで繋ぎ,             */
@@ -1052,6 +1106,7 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         get_valid_row(ITYPE_EXE, 0, insn[i].iexe.src2v, insn[i].iexe.src2h, rdep);
         insn[i].iexe.src3v = T_NONE; /* delete */
         break;
+      case OP_CFMA:   /* 3 */
       case OP_FMA:    /* 3 */
       case OP_FMS:    /* 3 */
       case OP_ADD3:   /* 3 */
@@ -1269,6 +1324,100 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
                                    : -1;          /* ★★★ col位置は固定なので-1にしておく */
       insn[i].iheader.fixed = 1;
       break;
+    case ITYPE_MEX: /* MEX */
+      /* mex(OP_CMPA_LE, &b0[h],       INIT0?b:b0[h],                INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
+      /* mex(OP_CMPA_GE, &a0[h][CHIP], INIT0?a[h][CHIP]:a0[h][CHIP], INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
+      /* mop(OP_LDR, 3,  &BR[r][2][1], b0[h],       bofs, MSK_W1, b,          2*LP*RMGRP,  0, 0, NULL, 2*LP*RMGRP); */
+      /* mop(OP_LDR, 3,  &BR[r][2][0], a0[h][CHIP], cofs, MSK_W1, a[h][CHIP], 2*LP,        0, 0, NULL, 2*LP); */
+      switch (insn[i].imex.op) {
+      case OP_CMPA_LE:
+      case OP_CMPA_GE:
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src1v, insn[i].imex.src1h, rdep);
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src2v, insn[i].imex.src2h, rdep);
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src3v, insn[i].imex.src3h, rdep);
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src4v, insn[i].imex.src4h, rdep);
+        break;
+      case OP_ALWAYS:
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src1v, insn[i].imex.src1h, rdep);
+        get_valid_row(ITYPE_MEX, 0, insn[i].imex.src2v, insn[i].imex.src2h, rdep);
+        break;
+      }
+
+      folding = 1; /* set */
+
+      if (row < 0) { /* OP_ALWAYSの場合,BR[][]指定無し */
+        /* 1-2a */
+	if (last_row < *rdep) { /* 間を空けて配置可能 */
+	  last_row = *rdep;
+	  last_col = 0;
+	}
+	else { /* last_row >= *rdep *//* 最終位置と依存関係制約位置が一致 */
+	  last_col++; /* overflowはあとで検査.EXEがWIDTH以上あれば次段へ移動 */
+	  if (last_col >= EMAX_WIDTH) {
+	    last_row++;
+	    last_col = 0;
+	  }
+	}
+      }
+      else { /* WHILE/ALR/BDR is specified */
+        /* 1-2b */
+        if (row < *rdep) {
+	  printf("in %s: mex cannot locate destination BDRNO (row=%d)\n", id[current_prefix].name, row);
+	  exit(1);
+	}
+	else if (row < last_row) {
+          printf("in %s: mex found violation of sequence (row=%d < last_row=%d)\n", id[current_prefix].name, row, last_row);
+          exit(1);
+        }
+        else {
+          last_row = row;
+          last_col = col;
+        }
+      }
+      /* 1-3 */
+      //printf("ITYPE_MEX: row=%d col=%d rdep=%d last_row=%d last_col=%d\n", row, col, *rdep, last_row, last_col);
+      if (last_row >= EMAX_DEPTH || last_col >= EMAX_WIDTH) { /* copy前に検査 */
+        printf("in %s: [%d][%d] mex exceeds EMAX_DEPTH/EMAX_WIDTH\n", id[current_prefix].name, last_row, last_col);
+        exit(1);
+      }
+      if      (!dec[last_row][last_col].dmex1.op)
+	last_mex = 1;
+      else if (!dec[last_row][last_col].dmex0.op)
+	last_mex = 0;
+      else {
+        printf("in %s: [%d][%d] mex conflicts\n", id[current_prefix].name, last_row, last_col);
+        exit(1);
+      }
+      /* 1-4 */
+      dmex0 = &dec[last_row][last_col].dmex0;
+      dmex1 = &dec[last_row][last_col].dmex1;
+      if (last_mex==1) /* load */
+        *dmex1 = insn[i].imex;
+      else /* store/load */
+        *dmex0 = insn[i].imex;
+      /* 1-5 */
+      /* BR[][][1],BR[][][0]からの戻りは常時接続なのでselector追加不要 */
+      /* ea14woofs,ea04woofsからの戻りは常時接続なのでselector追加不要 */
+      if (last_mex==1) { /* first */
+        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmex1->src1v, dmex1->src1h, dmex1->src1s);
+      }
+      else { /* second */
+        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 0, dmex0->src1v, dmex0->src1h, dmex0->src1s);
+      }
+      /* 1-6 */
+      /* BR[][][1],BR[][][0]からの戻りは常時接続なのでbus設定不要 */
+      /* ea14woofs,ea04woofsからの戻りは常時接続なのでbus設定不要 */
+      if (last_mex==1) { /* first */
+	/* do nothing */
+      }
+      else { /* second */
+	/* do nothing */
+      }
+      id[insn[i].imex.mexdh].itype = ITYPE_MEX;
+      id[insn[i].imex.mexdh].row   = last_row;
+      id[insn[i].imex.mexdh].col   = last_col;
+      insn[i].iheader.fixed = 1;
+      break;
     case ITYPE_MO4: /* MO4 */
       /**************************************************/
       /* 1-1                                            */
@@ -1359,15 +1508,15 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         dexu->ex1v   = dmop0->basev; /* id.type */
         dexu->ex1h   = dmop0->baseh; /* hash val */
         dexu->ex1s   = dmop0->bases; /* suffix for var[s], bdr[][][s] */
-        dexu->ex1e   = EXP_H3210;    /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+        dexu->ex1e   = EXP_H3210;    /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
         dexu->ex2v   = dmop0->offsv; /* id.type */
         dexu->ex2h   = dmop0->offsh; /* hash val */
         dexu->ex2s   = dmop0->offss; /* suffix for var[s], bdr[][][s] */
-        dexu->ex2e   = EXP_H3210;    /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+        dexu->ex2e   = EXP_H3210;    /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
         dexu->ex3v   = T_NONE;       /* id.type */
         dexu->ex3h   = -1;           /* hash val */
         dexu->ex3s   = -1;           /* suffix for var[s], bdr[][][s] */
-        dexu->ex3e   =  0;           /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+        dexu->ex3e   =  0;           /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
         dexu->e2iv   = T_NONE;       /* id.type */
         dexu->e2ih   = -1;           /* hash val */
         dexu->e2is   =  0;           /* selector 0:e2imm, 1:ex2, 2:ex3 */
@@ -1377,13 +1526,13 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         dexu->exdv   = dmop0->basev; /* id.type */
         dexu->exdh   = dmop0->baseh; /* hash val */
         dexu->exds   = dmop0->bases; /* suffix for var[s], bdr[][][s] */
-        dmop1->updt  = 1;  /* for internal update of ea1 */
-        dmop1->offsm = 15; /* for internal update of ea1 */
+        dmop1->updt  = 1;            /* for internal update of ea1 */
+        dmop1->offsm = 14;           /* for internal update of ea1 */
       }
       else if (insn[i].imop.mtype == MTYPE_TRANS) { /* MTYPE_TRANSのPARAM*4送信設定 */
         /*-------------★★★★★★★★-----------------*/
-        dmop1->updt  = 1;  /* for internal update of ea1 */
-        dmop1->offsm = 15; /* for internal update of ea1 */
+        dmop1->updt  = 1;            /* for internal update of ea1 */
+        dmop1->offsm = 14;           /* for internal update of ea1 */
       }
       /* 1-5 */
       if (insn[i].imop.mtype == MTYPE_RLOAD) { /* mop1 */
@@ -1394,7 +1543,7 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         /* LD with force-read=0 and ptop!=NULL generates current(lmr) and next(lmp). mapdist==0                  ofs=ptop-top curr  1  top  blk  len   0  0  1 */
         /*                                                                                                               p=1の場合,pref-addrは常にlmmi.top+ofs */
         /* LDDMQ set f=1 and p=1 in lmmc automatically                                                                        curr  1  top  -    -     0  1  1 */
-        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
+	set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
         set_reg_path(last_row, last_col, 0, type, RTYPE_OFFS, 1, dmop1->offsv, dmop1->offsh, dmop1->offss);
         if (dmop1->topv  == T_VARIABLE) {
 	  int rw = (dmop1->mtype==MTYPE_RLOAD||dmop1->mtype==MTYPE_DLOAD)?0:1;
@@ -1736,12 +1885,9 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         current_lmmwb = 1; /* mark as dirty L1 shold be flushed+cleared before starting EMAX */
         get_valid_row(ITYPE_MOP, 1, insn[i].imop.mopdv, insn[i].imop.mopdh, rdep);
       case OP_LDR:  /* 64bit */
-      case OP_LDWR: /* 32bit signed */
-      case OP_LDUWR:/* 32bit unsigned */
-//    case OP_LDHR: /* 16bit signed */
-//    case OP_LDUHR:/* 16bit unsigned */
-      case OP_LDBR: /*  8bit signed */
-      case OP_LDUBR:/*  8bit unsigned */
+      case OP_LDWR: /* 32bit unsigned */
+//    case OP_LDHR: /* 16bit unsigned */
+      case OP_LDBR: /*  8bit unsigned */
         get_valid_row(ITYPE_MOP, 1, insn[i].imop.exv,   insn[i].imop.exh,   rdep);
         get_valid_row(ITYPE_MOP, 0, insn[i].imop.basev, insn[i].imop.baseh, rdep);
         get_valid_row(ITYPE_MOP, 0, insn[i].imop.offsv, insn[i].imop.offsh, rdep);
@@ -1839,8 +1985,17 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
                                    && (blk == insn[i].imop.blk)
                                    && (fcev== insn[i].imop.forcev)
                                    && (fceh== insn[i].imop.forceh);
+          int mex2_and_op0_is_empty = (op1 && !op0) && (typ == MTYPE_RLOAD)
+                                   && (typ == insn[i].imop.mtype)
+                                   && (blk == insn[i].imop.blk)
+                                   && (fcev== insn[i].imop.forcev)
+                                   && (fceh== insn[i].imop.forceh)
+	                           && (dec[last_row][last_col].dmex0.op)
+	                           && (dec[last_row][last_col].dmex1.op);
           if (ldx2_and_op0_is_empty)
             last_mop = 0; /* load */
+	  else if (mex2_and_op0_is_empty) /* mex should merge op1(map to LMM/col2) and op0(map to LMM/col1) w/ different top */
+	    last_mop = 0; /* mex load */
 	  else if (insn[i].imop.mtype == MTYPE_RSTORE) { /* first pair of EXE0->ST0;EXE1->ST1 */
 	    if (dec[last_row][last_col].dexu.fold) { /* exeがfoldなら同一unit.storeも無条件でfold */
 	      printf("load-exe-store folding assumed ");
@@ -1863,12 +2018,28 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         exit(1);
       }
       /* 1-4 */
+      dmex0 = &dec[last_row][last_col].dmex0;
+      dmex1 = &dec[last_row][last_col].dmex1;
       dmop0 = &dec[last_row][last_col].dmop0;
       dmop1 = &dec[last_row][last_col].dmop1;
-      if (last_mop==1) /* load */
+      if (last_mop==1) { /* load */
         *dmop1 = insn[i].imop;
-      else /* store/load */
+	if (dmex1->op && insn[i].imex.op) {
+	  printf("in %s: [%d][%d] mex1 & mop1(adr++) conflicts\n", id[current_prefix].name, last_row, last_col);
+	  exit(1);
+	}
+	else if (insn[i].imex.op)
+	  *dmex1 = insn[i].imex;
+      }
+      else { /* store/load */
         *dmop0 = insn[i].imop;
+	if (dmex0->op && insn[i].imex.op) {
+	  printf("in %s: [%d][%d] mex0 & mop0(adr++) conflicts\n", id[current_prefix].name, last_row, last_col);
+	  exit(1);
+	}
+	else if (insn[i].imex.op)
+	  *dmex0 = insn[i].imex;
+      }
       /* 1-5 */
       if (last_mop==1) { /* load */
         /* LD with force-read=0 and ptop==NULL generates current(lmr) and reuse LMM. same as lmr in EMAX4                     curr  1  top  blk  len   0  0  0 */
@@ -1878,12 +2049,16 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         /* LD with force-read=0 and ptop!=NULL generates current(lmr) and next(lmp). mapdist==0                  ofs=ptop-top curr  1  top  blk  len   0  0  1 */
         /*                                                                                                               p=1の場合,pref-addrは常にlmmi.top+ofs */
         /* LDDMQ set f=1 and p=1 in lmmc automatically                                                                        curr  1  top  -    -     0  1  1 */
-        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
+	if (!(dmex1->op && dmex1->mexdh == dmop1->baseh))
+	  set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
         set_reg_path(last_row, last_col, 0, type, RTYPE_OFFS, 1, dmop1->offsv, dmop1->offsh, dmop1->offss);
         if (dmop1->topv  == T_VARIABLE) {
 	  int rw = (dmop1->mtype==MTYPE_RLOAD||dmop1->mtype==MTYPE_DLOAD)?0:1;
 	  int f  = id[dmop1->forceh].val;
 	  int p  = 0; /* initial value */
+          if (dmop1->mtype == MTYPE_RLOAD && dmex1->op == OP_CMPA_LE || dmex1->op == OP_CMPA_GE) {
+	    //printf("MOP1 CMPA RLOAD\n");
+	  }
 	  switch ((rw<<2)|(f<<1)|p) { /* AXI->LMM write対象(lmr/lmf/lmp/lmxの場合1:rw_f_p=000,010,001,110) *//* AXI<-LMM read対象(lmw/lmx/lmdの場合1:rw_f_p=100,110,101) */
 	  case 0: /* lmr */ case 1: /* lmp */ case 2: /* lmf */ conf[last_row][last_col].cdw2.lmm_axiw = 1; conf[last_row][last_col].cdw2.lmm_axir = 0; break;
 	  case 4: /* lmw */ case 5: /* lmd */                   conf[last_row][last_col].cdw2.lmm_axiw = 0; conf[last_row][last_col].cdw2.lmm_axir = 1; break;
@@ -1958,36 +2133,49 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
         /* TR    set f=1 and p=1 in lmmc automatically                                                                        curr  1  top  -    -     1  1  1 */
         if (insn[i].imop.mtype == MTYPE_RSTORE)
           set_reg_path(last_row, last_col, folding, type, RTYPE_DATA, 0, dmop0->mopdv, dmop0->mopdh, dmop0->mopds);
-        set_reg_path(last_row, last_col, folding, type, RTYPE_BASE, 0, dmop0->basev, dmop0->baseh, dmop0->bases);
+	if (!(dmex0->op && dmex0->mexdh == dmop0->baseh))
+	  set_reg_path(last_row, last_col, folding, type, RTYPE_BASE, 0, dmop0->basev, dmop0->baseh, dmop0->bases);
         set_reg_path(last_row, last_col, folding, type, RTYPE_OFFS, 0, dmop0->offsv, dmop0->offsh, dmop0->offss);
         if (dmop0->topv  == T_VARIABLE) {
-          if (insn[i].imop.mtype == MTYPE_RLOAD) {
+	  int rw = (dmop0->mtype==MTYPE_RLOAD||dmop0->mtype==MTYPE_DLOAD)?0:1;
+	  int f  = id[dmop0->forceh].val;
+	  int p  = 0; /* initial value */
+          if (dmop0->mtype == MTYPE_RLOAD && !(dmex0->op == OP_CMPA_LE || dmex0->op == OP_CMPA_GE)) {
             /* if ldx2_and_op0_is_empty==true, dmop0 can share lmmi with dmop1 */
           }
-          else {
-	    int rw = (dmop0->mtype==MTYPE_RLOAD||dmop0->mtype==MTYPE_DLOAD)?0:1;
-	    int f  = id[dmop0->forceh].val;
-	    int p  = 0; /* initial value */
-	    switch ((rw<<2)|(f<<1)|p) { /* AXI->LMM write対象(lmr/lmf/lmp/lmxの場合1:rw_f_p=000,010,001,110) *//* AXI<-LMM read対象(lmw/lmx/lmdの場合1:rw_f_p=100,110,101) */
-	    case 0: /* lmr */ case 1: /* lmp */ case 2: /* lmf */ conf[last_row][last_col].cdw2.lmm_axiw = 1; conf[last_row][last_col].cdw2.lmm_axir = 0; break;
-	    case 4: /* lmw */ case 5: /* lmd */                   conf[last_row][last_col].cdw2.lmm_axiw = 0; conf[last_row][last_col].cdw2.lmm_axir = 1; break;
-	    case 6: /* lmx */                                     conf[last_row][last_col].cdw2.lmm_axiw = 1; conf[last_row][last_col].cdw2.lmm_axir = 1; break;
-	    case 3: /* lddmq */ case 7: /* tr */                  conf[last_row][last_col].cdw2.lmm_axiw = 0; conf[last_row][last_col].cdw2.lmm_axir = 0; break;
+          else { /* includes dmop0->mtype == MTYPE_RLOAD && (dmex0->op == OP_CMPA_LE || dmex0->op == OP_CMPA_GE) */
+	    int last_col_mex;
+	    if (dmex0->op == OP_CMPA_LE || dmex0->op == OP_CMPA_GE) {
+	      //printf("MOP0 CMPA RLOAD\n");
+	      if (last_col < 2) {
+		printf("in %s: [%d][%d] mex0 should be located col>=2\n", id[current_prefix].name, last_row, last_col);
+		exit(1);
+	      }
+	      last_col_mex = last_col-1;
+	      printf("dmex0.lmm moved from col%d to col%d ", last_col, last_col_mex);
 	    }
-	    conf[last_row][last_col].cdw2.lmm_mode = 3;
-            lmmi[last_row][last_col].v     = 1;
-            lmmi[last_row][last_col].rw    = rw;
-            lmmi[last_row][last_col].f     = f;
-            lmmi[last_row][last_col].p     = p;
-            lmmi[last_row][last_col].blk   = dmop0->blk;
-	    lmmi[last_row][last_col].cidx  = id[dmop0->toph].cidx;
-            lmmi[last_row][last_col].len   = id[dmop0->lenh].val-1;
-            lmmi[last_row][last_col].ofs   = 0; /* initial value */
-            lmmi[last_row][last_col].top   = (Ull)id[dmop0->toph].name;
-            lmmx[last_row][last_col].forcev= dmop0->forcev;
-            lmmx[last_row][last_col].forceh= dmop0->forceh;
-            lmmx[last_row][last_col].lenv  = dmop0->lenv;
-            lmmx[last_row][last_col].lenh  = dmop0->lenh;
+	    else /* normal mop w/o mex */
+	      last_col_mex = last_col;
+	    switch ((rw<<2)|(f<<1)|p) { /* AXI->LMM write対象(lmr/lmf/lmp/lmxの場合1:rw_f_p=000,010,001,110) *//* AXI<-LMM read対象(lmw/lmx/lmdの場合1:rw_f_p=100,110,101) */
+	    case 0: /* lmr */ case 1: /* lmp */ case 2: /* lmf */ conf[last_row][last_col_mex].cdw2.lmm_axiw = 1; conf[last_row][last_col_mex].cdw2.lmm_axir = 0; break;
+	    case 4: /* lmw */ case 5: /* lmd */                   conf[last_row][last_col_mex].cdw2.lmm_axiw = 0; conf[last_row][last_col_mex].cdw2.lmm_axir = 1; break;
+	    case 6: /* lmx */                                     conf[last_row][last_col_mex].cdw2.lmm_axiw = 1; conf[last_row][last_col_mex].cdw2.lmm_axir = 1; break;
+	    case 3: /* lddmq */ case 7: /* tr */                  conf[last_row][last_col_mex].cdw2.lmm_axiw = 0; conf[last_row][last_col_mex].cdw2.lmm_axir = 0; break;
+	    }
+	    conf[last_row][last_col_mex].cdw2.lmm_mode = 3;
+            lmmi[last_row][last_col_mex].v     = 1;
+            lmmi[last_row][last_col_mex].rw    = rw;
+            lmmi[last_row][last_col_mex].f     = f;
+            lmmi[last_row][last_col_mex].p     = p;
+            lmmi[last_row][last_col_mex].blk   = dmop0->blk;
+	    lmmi[last_row][last_col_mex].cidx  = id[dmop0->toph].cidx;
+            lmmi[last_row][last_col_mex].len   = id[dmop0->lenh].val-1;
+            lmmi[last_row][last_col_mex].ofs   = 0; /* initial value */
+            lmmi[last_row][last_col_mex].top   = (Ull)id[dmop0->toph].name;
+            lmmx[last_row][last_col_mex].forcev= dmop0->forcev;
+            lmmx[last_row][last_col_mex].forceh= dmop0->forceh;
+            lmmx[last_row][last_col_mex].lenv  = dmop0->lenv;
+            lmmx[last_row][last_col_mex].lenh  = dmop0->lenh;
           }
         }
         if (dmop0->ptopv == T_VARIABLE) { /* lmd */
@@ -2151,6 +2339,7 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
       conf[i][j].cdw0.e3is   = dec[i][j].dexu.e3is;
       conf[i][j].cdw0.init   = dec[i][j].dexu.init; /* case of updt=0: bit0:activate s2+INIT0 bit1:activate s3+INIT1 */
       conf[i][j].cdw0.fold   = dec[i][j].dexu.fold; /* for load-exe-store folding */
+      //printf("conf[%d][%d]: init=%d fold=%d\n", i, j, conf[i][j].cdw0.init, conf[i][j].cdw0.fold);
 
       /* 2-2 */
       /* cs[0-3] depends on busmap[i][j].br[prev][] and decode[i][j].dcex.bit[0-3] */
@@ -2159,20 +2348,72 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
       conf[i][j].cdw1.cs2    = search_prev_br0(i, dec[i][j].dexu.fold, dec[i][j].dcex.bit2v, dec[i][j].dcex.bit2h, -1);
       conf[i][j].cdw1.cs3    = search_prev_br0(i, dec[i][j].dexu.fold, dec[i][j].dcex.bit3v, dec[i][j].dcex.bit3h, -1);
       conf[i][j].cdw1.cex_tab= dec[i][j].dcex.op ? dec[i][j].dcex.table : 0xffff; /* always true */
+
+      /* mex0/mop0 */
+      conf[i][j].cdw0.mex0op   = dec[i][j].dmex0.op;
+      conf[i][j].cdw0.mex0init = dec[i][j].dmex0.init;
+      switch (id[dec[i][j].dmex0.disth].val) { /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
+      case  0: conf[i][j].cdw0.mex0dist = 0; break;
+      case  1: conf[i][j].cdw0.mex0dist = 1; break;
+      case  2: conf[i][j].cdw0.mex0dist = 2; break;
+      case  4: conf[i][j].cdw0.mex0dist = 3; break;
+      case  8: conf[i][j].cdw0.mex0dist = 4; break;
+      case 16: conf[i][j].cdw0.mex0dist = 5; break;
+      case 32: conf[i][j].cdw0.mex0dist = 6; break;
+      default: conf[i][j].cdw0.mex0dist = 7; break;
+      }
+      /* mex0.mexdh and mop0.mopdh */
+      if (dec[i][j].dmex0.op && dec[i][j].dmex0.mexdh == dec[i][j].dmop0.baseh) {
+	printf("[%d][%d] detected dmex0.dst==mop0.base.", i, j);
+	                    dec[i][j].dmop0.updt  = 1;
+	regv[i][j].ea0b_v = dec[i][j].dmop0.basev = dec[i][j].dmex0.src1v; /* replace mop0.base to base in mex(&base0, INIT0?base:base0) */
+	regv[i][j].ea0b_h = dec[i][j].dmop0.baseh = dec[i][j].dmex0.src1h; /* replace mop0.base to base in mex(&base0, INIT0?base:base0) */
+	regv[i][j].ea0b_s = dec[i][j].dmop0.bases = dec[i][j].dmex0.src1s; /* replace mop0.base to base in mex(&base0, INIT0?base:base0) */
+	printf(" mop0 renamed from %s to %s\n", id[dec[i][j].dmex0.mexdh].name, id[dec[i][j].dmop0.baseh].name);
+      }
+
       /* ea[bo] depends on busmap[i][j].br[prev][] and decode[i][j].dmop.ex[123] */
       /* mapdist=0の場合,dmop0.op=OP_IM_PREFの可能性あり,比較対象外 */
-      conf[i][j].cdw1.ea0op  = dec[i][j].dmop0.op;
-      conf[i][j].cdw1.ea0bs  =((!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0brv?0:2)|(dec[i][j].dmop0.updt?1:0); /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
-      conf[i][j].cdw1.ea0os  = (!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0orv?0:1;                             /* 0:ea0or, 1:eaobrs */
+      conf[i][j].cdw1.ea0op    = dec[i][j].dmop0.op;
+      conf[i][j].cdw1.ea0bs    = ((!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0brv?0:2)|(dec[i][j].dmop0.updt?1:0); /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+      conf[i][j].cdw1.ea0os  = (!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0orv?0:1; /* 0:ea0or, 1:eaobrs */
       conf[i][j].cdw1.ea0msk = dec[i][j].dmop0.offsm;
+
+      /* mex1/mop1 */
+      conf[i][j].cdw0.mex1op   = dec[i][j].dmex1.op;
+      conf[i][j].cdw0.mex1init = dec[i][j].dmex1.init;
+      switch (id[dec[i][j].dmex1.disth].val) { /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
+      case  0: conf[i][j].cdw0.mex1dist = 0; break;
+      case  1: conf[i][j].cdw0.mex1dist = 1; break;
+      case  2: conf[i][j].cdw0.mex1dist = 2; break;
+      case  4: conf[i][j].cdw0.mex1dist = 3; break;
+      case  8: conf[i][j].cdw0.mex1dist = 4; break;
+      case 16: conf[i][j].cdw0.mex1dist = 5; break;
+      case 32: conf[i][j].cdw0.mex1dist = 6; break;
+      default: conf[i][j].cdw0.mex1dist = 7; break;
+      }
+      /* mex1.mexdh and mop1.mopdh */
+      if (dec[i][j].dmex1.op && dec[i][j].dmex1.mexdh == dec[i][j].dmop1.baseh) {
+	printf("[%d][%d] detected dmex1.dst==mop1.base.", i, j);
+	                    dec[i][j].dmop1.updt  = 1;
+	regv[i][j].ea1b_v = dec[i][j].dmop1.basev = dec[i][j].dmex1.src1v; /* replace mop1.base to base in mex(&base0, INIT0?base:base0) */
+	regv[i][j].ea1b_h = dec[i][j].dmop1.baseh = dec[i][j].dmex1.src1h; /* replace mop1.base to base in mex(&base0, INIT0?base:base0) */
+	regv[i][j].ea1b_s = dec[i][j].dmop1.bases = dec[i][j].dmex1.src1s; /* replace mop1.base to base in mex(&base0, INIT0?base:base0) */
+	printf(" mop1 renamed from %s to %s\n", id[dec[i][j].dmex1.mexdh].name, id[dec[i][j].dmop1.baseh].name);
+      }
+
+      /* ea[bo] depends on busmap[i][j].br[prev][] and decode[i][j].dmop.ex[123] */
       /* mapdist=0の場合,dmop1.op=OP_IM_DRAINの可能性あり,比較対象外 */
       if (dec[i][j].dmop0.op == OP_LDDMQ || dec[i][j].dmop0.op == OP_TR)
-        conf[i][j].cdw1.ea1op  = dec[i][j].dmop0.op;
+        conf[i][j].cdw1.ea1op = dec[i][j].dmop0.op;
       else
-        conf[i][j].cdw1.ea1op  = dec[i][j].dmop1.op;
-      conf[i][j].cdw1.ea1bs  =((!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1brv?0:2)|(dec[i][j].dmop1.updt?1:0); /* 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
-      conf[i][j].cdw1.ea1os  = (!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1orv?0:1;                             /* 0:ea1or, 1:eaobrs */
+        conf[i][j].cdw1.ea1op = dec[i][j].dmop1.op;
+      conf[i][j].cdw1.ea1bs  = ((!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1brv?0:2)|(dec[i][j].dmop1.updt?1:0); /* 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
+      conf[i][j].cdw1.ea1os  = (!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1orv?0:1; /* 0:ea1or, 1:eaobrs */
       conf[i][j].cdw1.ea1msk = dec[i][j].dmop1.offsm;
+
+      //printf("conf[%d][%d]: mex0=%d.%d.%d mex1=%d.%d.%d\n", i, j, conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0init, conf[i][j].cdw0.mex0dist, conf[i][j].cdw0.mex1op, conf[i][j].cdw0.mex1init, conf[i][j].cdw0.mex1dist);
+
       if (conf[i][j].cdw1.ea0bs&2) /* find source of eabbrs */
         ea0rs = search_prev_br0(i, dec[i][j].dexu.fold, dec[i][j].dmop0.basev, dec[i][j].dmop0.baseh, dec[i][j].dmop0.bases);
       else
@@ -2870,13 +3111,688 @@ emit_emax6a(int mode) /* 0:array, 1:drain */
     }
   }
   /**********************************************************************************************************/
-  /* Step 7 ... emit all                                                                                    */
+  /* Step 7 ... emit EMAX6 SC (soft-CGRA for manycore)                                                      */
+  /**********************************************************************************************************/
+  fprintf(pfile, "#ifdef EMAXSC\n");
+  fprintf(pfile, "/* EMAXSC start */\n");
+  fprintf(pfile, "#ifndef UTYPEDEF\n");
+  fprintf(pfile, "#define UTYPEDEF\n");
+  fprintf(pfile, "typedef unsigned char      Uchar;\n");
+  fprintf(pfile, "typedef unsigned short     Ushort;\n");
+  fprintf(pfile, "typedef unsigned int       Uint;\n");
+  fprintf(pfile, "typedef unsigned long long Ull;\n");
+  fprintf(pfile, "typedef long long int      Sll;\n");
+  fprintf(pfile, "#if __AARCH64EL__ == 1\n");
+  fprintf(pfile, "typedef long double Dll;\n");
+  fprintf(pfile, "#else\n");
+  fprintf(pfile, "typedef struct {Ull u[2];} Dll;\n");
+  fprintf(pfile, "#endif\n");
+  fprintf(pfile, "#endif\n");
+  fprintf(pfile, "#define EMAX_NCHIP %d\n", EMAX_NCHIP);
+  fprintf(pfile, "#define EMAX_DEPTH %d\n", EMAX_DEPTH);
+  fprintf(pfile, "#define EMAX_WIDTH %d\n", EMAX_WIDTH);
+  fprintf(pfile, "#define UNIT_WIDTH %d\n", UNIT_WIDTH);
+  fprintf(pfile, "Uint    uLOOP[EMAX_DEPTH][EMAX_NCHIP];\n");
+  fprintf(pfile, "Ull     INIT1[EMAX_NCHIP], INIT0[EMAX_NCHIP];\n");
+  fprintf(pfile, "struct  {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM0[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag0 */
+  fprintf(pfile, "struct  {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM1[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag1 */
+  fprintf(pfile, "struct  {Ull r[EMAX_NCHIP][EMAX_WIDTH];}                                                                                     SCAR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* alu  */
+  fprintf(pfile, "struct  {Ull r[EMAX_NCHIP][2][EMAX_WIDTH*UNIT_WIDTH],enq[EMAX_NCHIP],d0[4],deq[EMAX_NCHIP],d1[4];}                           SCBR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* br   */
+  fprintf(pfile, "#undef  EMAX_NCHIP\n");
+  fprintf(pfile, "#undef  EMAX_DEPTH\n");
+  fprintf(pfile, "#undef  EMAX_WIDTH\n");
+  fprintf(pfile, "#undef  UNIT_WIDTH\n");
+
+  /* multithreading IMAX2 */
+  for (i=0; i<=last_row; i++) {
+    /*********************************************************************************************************/
+    fprintf(pfile, "void emax6sc_pth_%s_%02.2d(struct pth *param) {\n", id[current_prefix].name, i);
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++) { /* unit%d */\n", current_nchip, i);
+    if (conf[0][0].cdw0.op1 == OP_WHILE)
+      fprintf(pfile, "LOOP1=1;uLOOP[%d][CHIP]=LOOP0=%s;\n", i, id[dec[i][j].dexu.ex1h].name);
+    else if (conf[0][1].cdw0.op1 == OP_FOR)
+      fprintf(pfile, "uLOOP[%d][CHIP]=LOOP1*LOOP0;\n", i);
+    else
+      fprintf(pfile, "LOOP1=1;uLOOP[%d][CHIP]=LOOP0;\n", i);
+    fprintf(pfile, "}\n");
+    fprintf(pfile, "while (1) {\n");
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++)\n", current_nchip);
+    fprintf(pfile, "if (uLOOP[%d][CHIP]) break;\n", i);
+    fprintf(pfile, "if (CHIP==%d) break;\n", current_nchip);
+    fprintf(pfile, "for (CHIP=0; CHIP<%d; CHIP++) {\n", current_nchip); /* 各unit内でsoft-multithreading */
+    fprintf(pfile, "if (uLOOP[%d][CHIP]==0) continue;\n", i);
+    fprintf(pfile, "if ((%d && SCBR[%d].enq[CHIP]==SCBR[%d].deq[CHIP]) || SCBR[%d].enq[CHIP]!=SCBR[%d].deq[CHIP]) continue;\n", i, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i, i);
+    fprintf(pfile, "INIT1[CHIP]=(uLOOP[%d][CHIP]>LOOP1*LOOP0-LOOP0);\n", i);
+    fprintf(pfile, "INIT0[CHIP]=(uLOOP[%d][CHIP]-(uLOOP[%d][CHIP]/LOOP0*LOOP0)==0);\n", i);
+    fprintf(pfile, "SCBR[%d].deq[CHIP] = 1-SCBR[%d].deq[CHIP];\n", (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH);
+    /* BR[i-1][0]             |  r  r     |           |  r  r     |        */
+    /* BR[i-1][1]             |           |  r  r     |           |  r  r  */
+    /* deq-          0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  */
+    /*                        V           V           V           V        */
+    /* exe[i]                 *  *  * (E) *  *  * (E) *  *  * (E) *  *  *  ((先頭||enq-!=deq-) && enq0==deq0)なら,deq-=1-deq-,exe開始. exe後enq0=1-enq0 */
+    /*                        A  |  |  V  A  |  |  V  A  |  |  V  A  |  |              */
+    /* enq0          0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0  0  */
+    /* BR[i][0]               |  w  w  |  r  r     |     w  w  |  r  r     |     w  w  */
+    /* BR[i][1]               |        |     w  w  |  r  r     |     w  w  |  r  r     */
+    /* deq0          0  0  0  0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  0  */
+    /*                                 V        A  V        A  V        A  V           */
+    /* exe[i+1]                        *  *  * (E) *  *  * (E) *  *  * (E) *  *  * ((先頭||enq0!=deq0) && enq1==deq1)なら,deq0=1-deq0,exe開始. exe後enq1=1-enq1 */
+    /*                                 A  |  |  V  A  |  |  V  A  |  |  V  A  |  |  
+    /* enq1          0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0  0  */
+    /* BR[i+1][0]                      |  w  w  |  r  r     |     w  w  |  r  r     |     w  w  */
+    /* BR[i+1][1]                      |        |     w  w  |  r  r     |     w  w  |  r  r     */
+    /* deq1          0  0  0  0  0  0  0  0  0  0->1  1  1  1->0  0  0  0->1  1  1  1->0  0  0  */
+
+    for (j=0; j<EMAX_WIDTH; j++) {
+      fprintf(pfile, "{ Ull adr, mexdist, load64;\n");
+      fprintf(pfile, "  static int emax6_unaligned_load_valid;\n");
+      fprintf(pfile, "  static Ull emax6_unaligned_load_high;\n");
+      /*********************************************************************************************************/
+      if (conf[i][j].cdw1.ea1op && conf[i][j].cdw1.ea1op < OP_IM_BUFRD) { /* LOAD */
+	int eab   = conf[i][j].cdw1.eabbrs;
+	int eao   = conf[i][j].cdw1.eaobrs;
+	int ea1bs = conf[i][j].cdw1.ea1bs;  /* 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
+	int ea1os = conf[i][j].cdw1.ea1os;  /* 0:ea1or, 1:eaobrs */
+
+	fprintf(pfile, "SCM1[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM1[%d].b[CHIP][%d]) : SCM1[%d].awoo[CHIP][%d];\n", i, j, ea1bs, ea1bs, i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(pfile, "SCM1[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM1[%d].o[CHIP][%d], %d);\n", i, j, ea1os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea1msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex1op, conf[i][j].cdw0.mex1dist==0? 0: conf[i][j].cdw0.mex1dist==1? 1: conf[i][j].cdw0.mex1dist==2? 2:
+                                                                                      conf[i][j].cdw0.mex1dist==3? 4: conf[i][j].cdw0.mex1dist==4? 8: conf[i][j].cdw0.mex1dist==5?16:
+                                                                                      conf[i][j].cdw0.mex1dist==6?32:64);
+	switch (conf[i][j].cdw0.mex1op) {
+	case OP_NOP:
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  break;
+	case OP_CMPA_LE:
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM1[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)<=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  break;
+	case OP_CMPA_GE:
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM1[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)>=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  break;
+	case OP_ALWAYS: /* base++ 対応 */
+	  fprintf(pfile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].mex1op=%d\n", i, j, conf[i][j].cdw0.mex1op);
+	  break;
+	}  
+
+#if defined(__i386)
+	fprintf(pfile, "adr = (Uint)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#else
+	fprintf(pfile, "adr = (Ull)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#endif
+
+	switch (conf[i][j].cdw1.ea1op) {
+	case OP_LDR: /* 64bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(pfile, "if ((adr&7) == 0)\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(pfile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else { /* BR[][][0] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(pfile, "}\n");
+	  break;
+	case OP_LDWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
+	  break;
+	case OP_LDBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+1);
+	  break;
+	case OP_LDRQ: /* 64bit*4 lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].cdw1.ea1op=%d\n", i, j, conf[i][j].cdw1.ea1op);
+	  break;
+	}
+      }
+
+      /*********************************************************************************************************/
+      if (conf[i][j].cdw1.ea0op && conf[i][j].cdw1.ea0op < OP_IM_BUFRD) { /* LOAD */
+	int eab   = conf[i][j].cdw1.eabbrs;
+	int eao   = conf[i][j].cdw1.eaobrs;
+	int ea0bs = conf[i][j].cdw1.ea0bs;  /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+	int ea0os = conf[i][j].cdw1.ea0os;  /* 0:ea0or, 1:eaobrs */
+	
+	fprintf(pfile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(pfile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+                                                                                      conf[i][j].cdw0.mex0dist==3? 4: conf[i][j].cdw0.mex0dist==4? 8: conf[i][j].cdw0.mex0dist==5?16:
+                                                                                      conf[i][j].cdw0.mex0dist==6?32:64);
+	switch (conf[i][j].cdw0.mex0op) {
+	case OP_NOP:
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  break;
+	case OP_CMPA_LE:
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM0[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)<=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  break;
+	case OP_CMPA_GE:
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:((SCM0[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)>=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+	  break;
+	case OP_ALWAYS: /* base++ 対応 */
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+	  break;
+	}  
+
+#if defined(__i386)
+	fprintf(pfile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#else
+	fprintf(pfile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#endif
+
+	switch (conf[i][j].cdw1.ea0op) {
+	case OP_LDR: /* 64bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(pfile, "if ((adr&7) == 0)\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(pfile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else { /* BR[][][0] */\n");
+	  fprintf(pfile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(pfile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(pfile, "}\n");
+	  break;
+	case OP_LDWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
+	  break;
+	case OP_LDBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+0);
+	  break;
+	case OP_LDRQ: /* 64bit*4 lmm LMM is preloaded, random-access */
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].cdw1.ea0op=%d\n", i, j, conf[i][j].cdw1.ea0op);
+	  break;
+	}
+      }
+      fprintf(pfile, "}\n");
+    }
+
+    for (j=0; j<EMAX_WIDTH; j++) {
+      fprintf(pfile, "{ union { Uint i; float f; } f3, f2, f1, f0; Ull t3, t2, t1, t0, ex1, ex2, ex3, ex4, ex5, c1, c0, ex1_outd, ex2_outd;\n");
+      /*********************************************************************************************************/
+      if (conf[i][j].cdw0.op1 || conf[i][j].cdw0.op2 || conf[i][j].cdw0.op3) {
+	int ex1brs = conf[i][j].cdw0.ex1brs; /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int ex1s   = conf[i][j].cdw0.ex1s;   /* 0:ex1brs, 1:exdr(self-loop) */
+	int ex1exp = conf[i][j].cdw0.ex1exp; /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
+	int ex2brs = conf[i][j].cdw0.ex2brs; /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int ex2exp = conf[i][j].cdw0.ex2exp; /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
+	int ex3brs = conf[i][j].cdw0.ex3brs; /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int ex3exp = conf[i][j].cdw0.ex3exp; /* 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
+	Ull e2imm  = conf[i][j].cdw3.e2imm;
+	int e2is   = conf[i][j].cdw0.e2is;   /* 0:e2imm, 1:ex2, 2:ex3 */
+	int e3imm  = conf[i][j].cdw0.e3imm;
+	int e3is   = conf[i][j].cdw0.e3is;   /* 0:e3imm, 1:ex3 */
+	int init   = conf[i][j].cdw0.init;   /* bit0:activate s1+INIT0 bit1:activate s2+INIT0 */
+	int fold   = conf[i][j].cdw0.fold;   /* 0:normal, 1:load-exe-store folding */
+
+	/* foldの場合も,1サイクル送らせる必要はなく,LDに続けてexe-stを実行すれば良い */
+	switch (conf[i][j].cdw0.op1) {
+	case OP_NOP:
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex1_outd = ex1;\n");
+	  break;
+	case OP_WHILE:
+	case OP_FOR:
+	  break;
+	case OP_CFMA: /* [idx|32bit]*2 3in =(idx2==idx3)?r1+r2*r3:r1 */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(pfile, "if (f2.i != -1 && f2.i == f3.i) {\n");
+	  fprintf(pfile, "  f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "  f3.i = (Uint)(ex3);\n");
+	  fprintf(pfile, "  f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "else {\n");
+	  fprintf(pfile, "  f0.f = f1.f;\n");
+	  fprintf(pfile, "}\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = t0;\n");
+	  break;
+	case OP_FMA: /* 32bit*2 3in floating-point r1+r2*r3 */
+	case OP_FMS: /* 32bit*2 3in floating-point r1-r2*r3 */
+	  /* *(double*)&ex1_outd = *(double*)&r1 + (*(double*)&r2 * *(double*)&r3);*/
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(pfile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(pfile, "f3.i = (Uint)(ex3);\n");
+	  fprintf(pfile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_FAD: /* 32bit*2 3in floating-point r1+r2 */
+	  /* *(double*)&ex1_outd = *(double*)&r1 + *(double*)&r2;*/
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_FML: /* 32bit*2 3in floating-point r1*r2 */
+	  /* *(double*)&ex1_outd = *(double*)&r1 * *(double*)&r2;*/
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(pfile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(pfile, "t2 = f0.i;\n");
+	  fprintf(pfile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(pfile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(pfile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(pfile, "t0 = f0.i;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_ADD3: /* 32bit*2 3in integer add s1+(s2+s3) */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)+((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)+((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_SUB3: /* 32bit*2 3in integer subtract s1-(s2+s3) */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)-((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)-((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_ADD: /* 32bit*2 2in integer add s1+s2 */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)+(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)+(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_SUB: /* 32bit*2 2in integer subtract s1-s2 */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "t2 = (ex1>>32&0x00000000ffffffffLL)-(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "t0 = (ex1    &0x00000000ffffffffLL)-(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(pfile, "ex1_outd = (t2<<32)|(t0);\n");
+	  break;
+	case OP_CMP_EQ: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) == (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) == (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMP_NE: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) != (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) != (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMP_LT: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) < (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) < (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMP_LE: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) <= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) <= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMP_GT: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) > (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) > (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMP_GE: /* 32bit*2 2in compare and set 1*2bit-CC */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "c1 = (ex1>>32&0x00000000ffffffffLL) >= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "c0 = (ex1    &0x00000000ffffffffLL) >= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = (c1<<32)|c0;\n");
+	  break;
+	case OP_CMOV: /* 32bit*2 3in 2bit conditional move */
+	  fprintf(pfile, "ex1 = exm(!%d||(INIT1[CHIP]&&INIT0[CHIP])||((%d&1)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(pfile, "ex2 = exm(((%d&2)&&INIT0[CHIP]) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(pfile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(pfile, "c1 = ex1>>32&1;\n");
+	  fprintf(pfile, "c0 = ex1    &1;\n");
+	  fprintf(pfile, "t2 = c1 ? (ex2&0xffffffff00000000LL) : (ex3&0xffffffff00000000LL);\n");
+	  fprintf(pfile, "t0 = c0 ? (ex2&0x00000000ffffffffLL) : (ex3&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "ex1_outd = t2 | t0;\n");
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op1=%d\n", i, j, conf[i][j].cdw0.op1);
+	  break;
+	}
+
+	switch (conf[i][j].cdw0.op2) {
+	case OP_NOP:
+	  if (conf[i][j].cdw0.op1 != OP_WHILE && conf[i][j].cdw0.op1 != OP_FOR)
+	  fprintf(pfile, "ex2_outd = ex1_outd;\n");
+	  break;
+	case OP_AND: /* 64bit 2in logical and s1&s2 */
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd & ex4;\n");
+	  break;
+	case OP_OR: /* 64bit 2in logical or s1|s2 */
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd | ex4;\n");
+	  break;
+	case OP_XOR: /* 64bit 2in logical xor s1^s2 */
+	  fprintf(pfile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "ex2_outd = ex1_outd ^ ex4;\n");
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op2=%d\n", i, j, conf[i][j].cdw0.op2);
+	  break;
+	}
+	
+	switch (conf[i][j].cdw0.op3) {
+	case OP_NOP:
+	  if (conf[i][j].cdw0.op1 != OP_WHILE && conf[i][j].cdw0.op1 != OP_FOR)
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = ex2_outd;\n", i, j);
+	  break;
+	case OP_SLL: /* 32bit*2 2in 32bit logical shift to left */
+	  fprintf(pfile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "t1 = (Ull)(ex2_outd     &0xffffffff00000000LL)<<ex5;\n");
+	  fprintf(pfile, "t0 = (Ull)(ex2_outd<<ex5&0x00000000ffffffffLL);\n");
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+	  break;
+	case OP_SRL: /* 32bit*2 2in 32bit logical shift to right */
+	  fprintf(pfile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(pfile, "t1 = (Ull)(ex2_outd>>ex5&0xffffffff00000000LL);\n");
+	  fprintf(pfile, "t0 = (Ull)(ex2_outd     &0x00000000ffffffffLL)>>ex5;\n");
+	  fprintf(pfile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].cdw0.op3=%d\n", i, j, conf[i][j].cdw0.op3);
+	  break;
+	}
+      }
+      fprintf(pfile, "}\n");
+    }
+
+    for (j=0; j<EMAX_WIDTH; j++) {
+      fprintf(pfile, "{ Ull cs0, cs1, cs2, cs3, cex, adr, mexdist;\n");
+      /*********************************************************************************************************/
+      if (dec[i][j].dcex.op) { /* confに存在しない */
+	int fold    = conf[i][j].cdw0.fold;    /* 0:normal, 1:load-exe-store folding */
+	int cs0     = conf[i][j].cdw1.cs0;     /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int cs1     = conf[i][j].cdw1.cs1;     /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int cs2     = conf[i][j].cdw1.cs2;     /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int cs3     = conf[i][j].cdw1.cs3;     /* 0:br0_0, 1:br0_1, ... 15:3_3 */
+	int cex_tab = conf[i][j].cdw1.cex_tab; /* c3.c2.c1.c0の組合せ (cop=NOPの場合,ffff) */
+
+	fprintf(pfile, "cs0 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs0);
+	fprintf(pfile, "cs1 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs1);
+	fprintf(pfile, "cs2 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs2);
+	fprintf(pfile, "cs3 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs3);
+	fprintf(pfile, "cex = ((0x%04.4x>>(((cs3>>32&1)<<3)|((cs2>>32&1)<<2)|((cs1>>32&1)<<1)|(cs0>>32&1))&1)?2:0) | ((0x%04.4x>>(((cs3&1)<<3)|((cs2&1)<<2)|((cs1&1)<<1)|(cs0&1))&1)?1:0);\n", cex_tab, cex_tab);
+      }
+
+      /*********************************************************************************************************/
+      if (conf[i][j].cdw1.ea0op > OP_IM_BUFRD) { /* STORE */
+	int fold  = conf[i][j].cdw0.fold;   /* 0:normal, 1:load-exe-store folding */
+	int eab   = conf[i][j].cdw1.eabbrs;
+	int eao   = conf[i][j].cdw1.eaobrs;
+	int ea0bs = conf[i][j].cdw1.ea0bs;  /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+	int ea0os = conf[i][j].cdw1.ea0os;  /* 0:ea0or, 1:eaobrs */
+	int ts0   = conf[i][j].cdw2.ts0;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	int ts1   = conf[i][j].cdw2.ts1;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	int ts2   = conf[i][j].cdw2.ts2;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	int ts3   = conf[i][j].cdw2.ts3;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	int mws0  = conf[i][j].cdw2.mws0;   /* 0:lmwd0, 1:exdr, 2:ts0 */
+	int mws1  = conf[i][j].cdw2.mws1;   /* 0:lmwd1, 1:exdr, 2:ts1 */
+	int mws2  = conf[i][j].cdw2.mws2;   /* 0:lmwd2, 1:exdr, 2:ts2 */
+	int mws3  = conf[i][j].cdw2.mws3;   /* 0:lmwd3, 1:exdr, 2:ts3 */
+
+	if (!dec[i][j].dcex.op)
+	  fprintf(pfile, "cex = 3;\n");
+
+	fprintf(pfile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0[CHIP]) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(pfile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(pfile, "mexdist = (%d || INIT0[CHIP]) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+                                                                                      conf[i][j].cdw0.mex0dist==3? 4: conf[i][j].cdw0.mex0dist==4? 8: conf[i][j].cdw0.mex0dist==5?16:
+                                                                                      conf[i][j].cdw0.mex0dist==6?32:64);
+	switch (conf[i][j].cdw0.mex0op) {
+	case OP_NOP:
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+	  break;
+	case OP_ALWAYS: /* base++ 対応 */
+	  fprintf(pfile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0[CHIP]?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0[CHIP]?0:mexdist);\n", i, j, i, j, i, j);
+	  break;
+	default:
+	  printf("EMAXSC:undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+	  break;
+	}  
+
+#if defined(__i386)
+	fprintf(pfile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#else
+	fprintf(pfile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+#endif
+	  
+	switch (conf[i][j].cdw1.ea0op) {
+	case OP_STR: /* 64bit lmm LMM is drained. random-access */
+	  fprintf(pfile, "if (cex>>1&1) *((Uint*)(adr&~7LL)+1) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d])>>32;\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "if (cex   &1) *((Uint*)(adr&~7LL)  ) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n",     mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  break;
+	case OP_STWR: /* 32bit lmm LMM is drained. random-access */
+	  fprintf(pfile, "if (cex   &1) *(Uint*)(adr&~3LL) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  break;
+	case OP_STBR: /* 8bit lmm LMM is drained. random-access */
+	  fprintf(pfile, "if (cex   &1) *(Uchar*)adr = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  break;
+	case OP_STRQ: /* 64bit*4 lmm LMM is drained. random-access */
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+0) = (%d==1? SCAR[%d].r[CHIP][0] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+1) = (%d==1? SCAR[%d].r[CHIP][1] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws1, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts1);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+2) = (%d==1? SCAR[%d].r[CHIP][2] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws2, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts2);
+	  fprintf(pfile, "*((Ull*)(adr&~31LL)+3) = (%d==1? SCAR[%d].r[CHIP][3] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws3, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts3);
+	  break;
+	default:
+	  printf("emax6lib: mmp: undefined op_mm=%d\n", dec[i][j].dmop0.op);
+	  break;
+	}
+      }
+      fprintf(pfile, "}\n");
+    }
+
+    for (j=0; j<EMAX_WIDTH; j++) {
+      fprintf(pfile, "{\n");
+      /*********************************************************************************************************/
+      if (conf[i][j].cdw2.brs0 == 2) { /* 0:off, 1:mr10, 2:tr0, 3:mr0  */
+	int ts0   = conf[i][j].cdw2.ts0;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+0, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts0);
+      }
+      if (conf[i][j].cdw2.brs1 == 2) { /* 0:off, 1:mr10, 2:tr0, 3:mr0  */
+	int ts1   = conf[i][j].cdw2.ts1;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+1, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts1);
+      }
+      if (conf[i][j].cdw2.brs2 == 2) { /* 0:off, 1:mr12, 2:tr2, 3:exdr */
+	int ts2   = conf[i][j].cdw2.ts2;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+2, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts2);
+      }
+      if (conf[i][j].cdw2.brs2 == 3) { /* 0:off, 1:mr12, 2:tr2, 3:exdr */
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCAR[%d].r[CHIP][%d];\n", i, i, j*UNIT_WIDTH+2, i, j);
+      }
+      if (conf[i][j].cdw2.brs3 == 2) { /* 0:off, 1:mr13, 2:tr3         */
+	int ts3   = conf[i][j].cdw2.ts3;    /* 0:br0_0, 1:br0_1, ... 15:br3_3 */
+	fprintf(pfile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+3, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts3);
+      }
+      fprintf(pfile, "}\n");
+    }
+    fprintf(pfile, "uLOOP[%d][CHIP]--;\n", i);
+    fprintf(pfile, "SCBR[%d].enq[CHIP] = 1-SCBR[%d].enq[CHIP];\n", i, i);
+    fprintf(pfile, "}\n"); /* for (CHIP) */
+    fprintf(pfile, "}\n"); /* while (1) */
+    fprintf(pfile, "}\n"); /* pth_func() */
+  }
+
+  fprintf(pfile, "/* EMAXSC end */\n");
+  fprintf(pfile, "#endif\n");
+  /**********************************************************************************************************/
+  fprintf(ofile, "#ifdef EMAXSC\n");
+  fprintf(ofile, "/* EMAXSC start */\n");
+    
+  /* init REGV(breg) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      for (k=0; k<UNIT_WIDTH; k++) {
+	if (regv[i][j].br[k].v) {
+	  if (id[regv[i][j].br[k].h].chip) { /* CHIP */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	    }
+	  }
+	  else if (id[regv[i][j].br[k].h].cidx) { /* xxx[CHIP] */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	    }
+	  }
+	  else if (regv[i][j].br[k].s < 0) {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	    }
+	  }
+	  else {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  /* init REGV(eag) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      if (regv[i][j].ea0b_v) {
+	if (id[regv[i][j].ea0b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, c);
+	}
+	else if (regv[i][j].ea0b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+	}
+      }
+      if (regv[i][j].ea0o_v) {
+	if (id[regv[i][j].ea0o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, c);
+	}
+	else if (regv[i][j].ea0o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+	}
+      }
+      if (regv[i][j].ea1b_v) {
+	if (id[regv[i][j].ea1b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, c);
+	}
+	else if (regv[i][j].ea1b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+	}
+      }
+      if (regv[i][j].ea1o_v) {
+	if (id[regv[i][j].ea1o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, c);
+	}
+	else if (regv[i][j].ea1o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+	}
+      }
+    }
+  }
+
+//for (i=0; i<=last_raw; i++)
+//  pthread_create(&th_emax6sc[i], NULL, emax6sc_pth_yyy, param_emax6sc[i]);
+//for (i=0; i<=last_raw; i++)
+//  pthread_join(th_emax6sc[i], NULL);
+
+  fprintf(ofile, "/* EMAXSC end */\n");
+  fprintf(ofile, "#endif\n");
+  /**********************************************************************************************************/
+  /* Step 8 ... emit EMAX6 CGRA                                                                             */
   /**********************************************************************************************************/
   /* resolve lmmi -> host-lmmi */
+  fprintf(ofile, "#ifndef EMAXSC\n");
   fprintf(ofile, "\temax6.lmmio = emax6.lmmic;\n");
   fprintf(ofile, "\temax6.lmmic = 1-emax6.lmmic;\n");
   fprintf(ofile, "\temax6.mapdist = %d;\n", current_mapdist);
-  fprintf(ofile, "\temax6.lastdist = 0;\n");
   lmmi_first_loc = -1;
   for (j=0; j<EMAX_WIDTH; j++) {
     lmmi_bitmap[j] = 0LL;
@@ -3001,8 +3917,10 @@ mode_drain_dirty_lmm:
 
   fprintf(ofile, "\tget_nanosec(NANOS_DRAIN);\n");/*=================================*/
 
-  if (mode == 1) /* emit drain */
+  if (mode == 1) { /* emit drain */
+    fprintf(ofile, "#endif\n");
     return (0);
+  }
 
   /* conf */
   fprintf(ofile, "\tif (emax6.last_conf != emax6_conf_%s) {\n", id[current_prefix].name);
@@ -3010,6 +3928,7 @@ mode_drain_dirty_lmm:
   fprintf(ofile, "\t  int i,j;\n");
   fprintf(ofile, "\t  emax6.status = STATUS_CONF;\n");
   fprintf(ofile, "\t  emax6.last_conf = emax6_conf_%s;\n", id[current_prefix].name);
+  fprintf(ofile, "\t  emax6.lastdist = 0;\n");
   fprintf(ofile, "\t  dst = (Dll*)(((struct reg_ctrl*)emax6.reg_ctrl)->i[0].conf);\n");
   fprintf(ofile, "\t  src = (Dll*)emax6_conf_%s;\n", id[current_prefix].name);
   fprintf(ofile, "\t  for (i=0; i<sizeof(conf)/sizeof(Dll); i++)\n");
@@ -3110,42 +4029,42 @@ mode_drain_dirty_lmm:
       if (regv[i][j].ea0b_v) {
 	if (id[regv[i][j].ea0b_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0b = %s[%d];\n", c, i, j, id[regv[i][j].ea0b_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0b = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea0b_h].name, c);
 	}
 	else if (regv[i][j].ea0b_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s;\n", i, j, id[regv[i][j].ea0b_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = (Ull)%s;\n", i, j, id[regv[i][j].ea0b_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s[%d];\n", i, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
       }
       if (regv[i][j].ea0o_v) {
 	if (id[regv[i][j].ea0o_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0o = %s[%d];\n", c, i, j, id[regv[i][j].ea0o_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0o = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea0o_h].name, c);
 	}
 	else if (regv[i][j].ea0o_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s;\n", i, j, id[regv[i][j].ea0o_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = (Ull)%s;\n", i, j, id[regv[i][j].ea0o_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s[%d];\n", i, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
       }
       if (regv[i][j].ea1b_v) {
 	if (id[regv[i][j].ea1b_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1b = %s[%d];\n", c, i, j, id[regv[i][j].ea1b_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1b = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea1b_h].name, c);
 	}
 	else if (regv[i][j].ea1b_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s;\n", i, j, id[regv[i][j].ea1b_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = (Ull)%s;\n", i, j, id[regv[i][j].ea1b_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s[%d];\n", i, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
       }
       if (regv[i][j].ea1o_v) {
 	if (id[regv[i][j].ea1o_h].cidx) {
 	  for (c=0; c<current_nchip; c++)
-	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1o = %s[%d];\n", c, i, j, id[regv[i][j].ea1o_h].name, c);
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1o = (Ull)%s[%d];\n", c, i, j, id[regv[i][j].ea1o_h].name, c);
 	}
 	else if (regv[i][j].ea1o_s < 0)
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s;\n", i, j, id[regv[i][j].ea1o_h].name);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = (Ull)%s;\n", i, j, id[regv[i][j].ea1o_h].name);
 	else
-	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s[%d];\n", i, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = (Ull)%s[%d];\n", i, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
       }
     }
   }
@@ -3309,8 +4228,9 @@ mode_drain_dirty_lmm:
   }
   fprintf(ofile, "\".global emax6_conf_end_%s\\n\"\n\"emax6_conf_end_%s:\\n\"\n", id[current_prefix].name, id[current_prefix].name);
   fprintf(ofile, ");\n");
+  fprintf(ofile, "#endif\n");
   /**********************************************************************************************************/
-  /* Step 8 ... emit tgif                                                                                   */
+  /* Step 9 ... emit tgif                                                                                   */
   /**********************************************************************************************************/
   strncpy(figfile = (char*)malloc(strlen(srcprog)+1+strlen(id[current_prefix].name)+strlen(FIGSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-func.obj */
   for (i=0; i<strlen(srcprog); i++) {
@@ -3384,11 +4304,8 @@ get_mop_type(int op)
   switch (op) {
   case OP_LDR:
   case OP_LDWR:
-  case OP_LDUWR:
 //case OP_LDHR:
-//case OP_LDUHR:
   case OP_LDBR:
-  case OP_LDUBR:
   case OP_LDRQ:
     retval = MTYPE_RLOAD; /* random_load on mop1->BR (+implicit AXI->mop0->MW) */
     break;
@@ -3470,8 +4387,8 @@ set_reg_path(int last_row, int last_col, int folding, int insn_type, int reg_typ
      /* last_row:  配置先行位置 */
      /* last_col:  配置先列位置 */
      /* insn_type: 命令種別     ITYPE_WHILE, ITYPE_FOR, ITYPE_CEX, ITYPE_EX4, ITYPE_EXE, ITYPE_MO4, ITYPE_MOP */
-     /* reg_type:  ITYPE_MO4/ITYPE_MOPの場合のみ有効: レジスタ種別 RTYPE_DATA, RTYPE_BASE, RTYPE_OFFS */
-     /* reg_loc:   ITYPE_MO4/ITYPE_MOPの場合のみ有効: MO4/MOPのbase/offsの位置 0:mop0, 1:mop1 */
+     /* reg_type:  ITYPE_MEX/ITYPE_MO4/ITYPE_MOPの場合のみ有効: レジスタ種別 RTYPE_DATA, RTYPE_BASE, RTYPE_OFFS */
+     /* reg_loc:   ITYPE_MEX/ITYPE_MO4/ITYPE_MOPの場合のみ有効: MO4/MOPのbase/offsの位置 0:mop0, 1:mop1 */
      /* src_type:  T_NONE, T_IMMEDIATE, T_EXRNO, T_ALRNO, T_BDRNO, T_INITNO, T_LOOPNO, T_VARIABLE */
      /* src_hash:  id[src_hash] */
      /* src_sidx:  subindex of VAR[]/AR[]/BR[] */
@@ -3484,15 +4401,15 @@ set_reg_path(int last_row, int last_col, int folding, int insn_type, int reg_typ
   if (src_type == T_EXRNO) /* T_EXRNOは同一UNITにて消費するため，busmap不要 */
     return 0;
   if (id[src_hash].row < 0) { /* initialized by ARM (T_IMMEDIATE, T_VARIABLE) */
-    if (insn_type == ITYPE_MO4 || insn_type == ITYPE_MOP) { /* store4/store1 */
+    if (insn_type == ITYPE_MEX || insn_type == ITYPE_MO4 || insn_type == ITYPE_MOP) { /* store4/store1 */
       switch (reg_type) {
       case RTYPE_DATA:
-        printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot store constant variable %s\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+        printf("in %s: [%d][%d] ITYPE_MEX/ITYPE_MO4/ITYPE_MOP cannot store constant variable %s\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
         exit(1);
       case RTYPE_BASE:
         if (reg_loc==0) {
           if (bus[last_row][last_col].ea0brv) {
-            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+            printf("in %s: [%d][%d] ITYPE_MEX/ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
             exit(1);
           }
           bus[last_row][last_col].ea0brv = src_type;
@@ -3505,7 +4422,7 @@ set_reg_path(int last_row, int last_col, int folding, int insn_type, int reg_typ
         }
         else {
           if (bus[last_row][last_col].ea1brv) {
-            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+            printf("in %s: [%d][%d] ITYPE_MEX/ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
             exit(1);
           }
           bus[last_row][last_col].ea1brv = src_type;
@@ -3520,7 +4437,7 @@ set_reg_path(int last_row, int last_col, int folding, int insn_type, int reg_typ
       case RTYPE_OFFS: /* prefetch/drainの設定にも使用（値は,バイトアドレスで64bit*4が1単位,即ち32. N+1回参照し,alignされていない場合でもFSMが調整）*/
         if (reg_loc==0) {
           if (bus[last_row][last_col].ea0orv) {
-            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+            printf("in %s: [%d][%d] ITYPE_MEX/ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
             exit(1);
           }
           bus[last_row][last_col].ea0orv = src_type;
@@ -3531,7 +4448,7 @@ set_reg_path(int last_row, int last_col, int folding, int insn_type, int reg_typ
         }
         else {
           if (bus[last_row][last_col].ea1orv) {
-            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+            printf("in %s: [%d][%d] ITYPE_MEX/ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
             exit(1);
           }
           bus[last_row][last_col].ea1orv = src_type;
@@ -3941,11 +4858,11 @@ emit_tgif(int i, int j)
            conf[i][j].cdw0.fold,   /*:  1; 0:normal, 1:load-exe-store folding */
            conf[i][j].cdw0.ex1brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
            conf[i][j].cdw0.ex1s,   /*:  1; 0:ex1brs, 1:exdr(self-loop) */
-           conf[i][j].cdw0.ex1exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+           conf[i][j].cdw0.ex1exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
            conf[i][j].cdw0.ex2brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-           conf[i][j].cdw0.ex2exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+           conf[i][j].cdw0.ex2exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
            conf[i][j].cdw0.ex3brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-           conf[i][j].cdw0.ex3exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+           conf[i][j].cdw0.ex3exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
            conf[i][j].cdw3.e2imm,  /*: 64; */
            conf[i][j].cdw0.e2is,   /*:  2; 0:e2imm, 1:ex2, 2:ex3 */
            conf[i][j].cdw0.e3imm,  /*:  E3IMMBITS; */
@@ -3962,21 +4879,28 @@ emit_tgif(int i, int j)
            );
 
   draw_ea0(e0b_x, e0b_y,
-           conf[i][j].cdw1.ea0op,  /*:  5; mem_opcd */
-           conf[i][j].cdw1.ea0bs,  /*:  2; 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
-           conf[i][j].cdw1.ea0os,  /*:  1; 0:ea0or, 1:eaobrs */
-           conf[i][j].cdw1.ea0msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
-           conf[i][j].cdw1.eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-           conf[i][j].cdw1.eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.ea0op,   /*:  5; mem_opcd */
+           conf[i][j].cdw1.ea0bs,   /*:  2; 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+           conf[i][j].cdw1.ea0os,   /*:  1; 0:ea0or, 1:eaobrs */
+           conf[i][j].cdw1.ea0msk,  /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
+           conf[i][j].cdw1.eabbrs,  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.eaobrs,  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+	   conf[i][j].cdw0.mex0op,  /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+	   conf[i][j].cdw0.mex0init,/* mex(sparse matrix) 0:none, 1:INIT0? */
+	   conf[i][j].cdw0.mex0dist /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
+
            );
 
   draw_ea1(e1b_x, e1b_y,
-           conf[i][j].cdw1.ea1op,  /*:  5; mem_opcd */
-           conf[i][j].cdw1.ea1bs,  /*:  2; 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(self-loop) */
-           conf[i][j].cdw1.ea1os,  /*:  1; 0:ea1or, 1:eaobrs */
-           conf[i][j].cdw1.ea1msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
-           conf[i][j].cdw1.eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-           conf[i][j].cdw1.eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.ea1op,   /*:  5; mem_opcd */
+           conf[i][j].cdw1.ea1bs,   /*:  2; 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
+           conf[i][j].cdw1.ea1os,   /*:  1; 0:ea1or, 1:eaobrs */
+           conf[i][j].cdw1.ea1msk,  /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
+           conf[i][j].cdw1.eabbrs,  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.eaobrs,  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+	   conf[i][j].cdw0.mex1op,  /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+	   conf[i][j].cdw0.mex1init,/* mex(sparse matrix) 0:none, 1:INIT0? */
+	   conf[i][j].cdw0.mex1dist /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
            );
 
   draw_trx(trb_x, trb_y,
@@ -3995,13 +4919,15 @@ emit_tgif(int i, int j)
            );
 
   draw_lmx(lmb_x, lmb_y,
-           conf[i][j].cdw1.ea0op,  /*:  5; mem_opcd */
-           conf[i][j].cdw2.mwsa,   /*:  1; 0:lmwa,  1:ea0d        */
-           conf[i][j].cdw2.mws0,   /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
-           conf[i][j].cdw2.mws1,   /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
-           conf[i][j].cdw2.mws2,   /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
-           conf[i][j].cdw2.mws3,   /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
-           conf[i][j].cdw2.lmm_mode/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+	   lmmi[i][j].v,            /*:  1; valid */
+           conf[i][j].cdw1.ea0op,   /*:  5; mem_opcd */
+           conf[i][j].cdw2.mwsa,    /*:  1; 0:lmwa,  1:ea0d        */
+           conf[i][j].cdw2.mws0,    /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
+           conf[i][j].cdw2.mws1,    /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
+           conf[i][j].cdw2.mws2,    /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
+           conf[i][j].cdw2.mws3,    /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
+           conf[i][j].cdw2.lmm_mode,/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+           lmmi[i][j].top
            );
 
   draw_bri(bri_x, bri_y,
@@ -4013,12 +4939,16 @@ emit_tgif(int i, int j)
            conf[i][j].cdw2.brs3,   /*:  2; 0:off, 1:mr13, 2:tr3         */
            bus[i][j].br[0].v,
            bus[i][j].br[0].h,
+           bus[i][j].br[0].s,
            bus[i][j].br[1].v,
            bus[i][j].br[1].h,
+           bus[i][j].br[1].s,
            bus[i][j].br[2].v,
            bus[i][j].br[2].h,
+           bus[i][j].br[2].s,
            bus[i][j].br[3].v,
-           bus[i][j].br[3].h
+           bus[i][j].br[3].h,
+           bus[i][j].br[3].s
            );
 
   draw_lmr(bri_x, bri_y,
@@ -4256,11 +5186,11 @@ draw_exe(int exb_x, int exb_y,
          int fold,   /*:  1; 0:normal, 1:load-exe-store folding */
          int ex1brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
          int ex1s,   /*:  1; 0:ex1brs, 1:exdr(self-loop) */
-         int ex1exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+         int ex1exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
          int ex2brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-         int ex2exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+         int ex2exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
          int ex3brs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-         int ex3exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+         int ex3exp, /*:  3; 0:H3210, 1:H1010, 2:H3232, 3:B5410, 4:B7632 */
          Ull e2imm,  /*: 64; */
          int e2is,   /*:  2; 0:e2imm, 1:ex2, 2:ex3 */
          int e3imm,  /*:  E3IMMBITS; */
@@ -4419,13 +5349,16 @@ draw_ea0(int e0b_x, int e0b_y,
          int ea0os,  /*:  1; 0:ea0or, 1:eaobrs */
          int ea0msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
          int eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-         int eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+         int eaobrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+	 int mex0op,
+	 int mex0init,
+	 int mex0dist
          )
 {
 #define E0LABELMAX 30
   char opcd[E0LABELMAX];
   int col, thi;
-  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
+  int ea0singleload = (ea0op && (ea0op <= OP_LDBR));
 
   /* EA0 */
   if (ea0op) {
@@ -4482,7 +5415,9 @@ draw_ea0(int e0b_x, int e0b_y,
   draw_line (e0b_x-30, e0b_y-170+eabbrs*5+10, e0b_x-30, e0b_y-70, thi, col);
   draw_line (e0b_x-30, e0b_y-70,              e0b_x+30, e0b_y-70, thi, col);
   draw_arrow(e0b_x+30, e0b_y-70,              e0b_x+30, e0b_y-10, thi, col);
-  if (ea0bs & 1) { /* feedback-loop */
+
+  /* feedback-loop */
+  if (ea0bs & 1) {
     col=1; /*red*/
     thi=3;
   }
@@ -4493,6 +5428,21 @@ draw_ea0(int e0b_x, int e0b_y,
   draw_line (e0b_x+50, e0b_y+190,             e0b_x+50, e0b_y+200,     thi, col);
   draw_line (e0b_x+50, e0b_y+200,             e0b_x+20, e0b_y+200,     thi, col);
   draw_arrow(e0b_x+20, e0b_y+200,             e0b_x+20, e0b_y-10,      thi, col);
+
+  /* mex-loop */
+  if (mex0op==OP_CMPA_LE || mex0op==OP_CMPA_GE) {
+    col=2; /*green*/
+    thi=3;
+  }
+  else {
+    col=0; /*black*/
+    thi=1;
+  }
+  draw_line (e0b_x+65, e0b_y+360,             e0b_x+80, e0b_y+360,     thi, col);
+  draw_arrow(e0b_x+65, e0b_y+360,             e0b_x+65, e0b_y-40,      thi, col);
+  snprintf(opcd, E0LABELMAX, "%s-%d-%d", mex0op==OP_CMPA_LE?"LE":mex0op==OP_CMPA_GE?"GE":mex0op==OP_ALWAYS?"AL":"NA", mex0init, mex0dist);
+  draw_text(e0b_x+30, e0b_y-40, opcd, 1, 0);
+
   /* SRC2 */
   if (ea0op && !(ea0os & 1)) { /* ea0or */
     col=1; /*red*/
@@ -4522,13 +5472,16 @@ draw_ea1(int e1b_x, int e1b_y,
          int ea1os,  /*:  1; 0:ea1or, 1:eaobrs */
          int ea1msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
          int eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
-         int eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+         int eaobrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+	 int mex1op,
+	 int mex1init,
+	 int mex1dist
          )
 {
 #define E1LABELMAX 30
   char opcd[E1LABELMAX];
   int col, thi;
-  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+  int ea1singleload = (ea1op && (ea1op <= OP_LDBR));
 
   /* EA1 */
   if (ea1op) {
@@ -4585,7 +5538,9 @@ draw_ea1(int e1b_x, int e1b_y,
   draw_line (e1b_x+90, e1b_y-170+eabbrs*5+10, e1b_x+90, e1b_y-70, thi, col);
   draw_line (e1b_x+90, e1b_y-70,              e1b_x+30, e1b_y-70, thi, col);
   draw_arrow(e1b_x+30, e1b_y-70,              e1b_x+30, e1b_y-10, thi, col);
-  if (ea1bs & 1) { /* feedback-loop */
+
+  /* feedback-loop */
+  if (ea1bs & 1) {
     col=4; /*blue*/
     thi=3;
   }
@@ -4596,6 +5551,21 @@ draw_ea1(int e1b_x, int e1b_y,
   draw_line (e1b_x+50, e1b_y+190,             e1b_x+50, e1b_y+200,     thi, col);
   draw_line (e1b_x+50, e1b_y+200,             e1b_x+20, e1b_y+200,     thi, col);
   draw_arrow(e1b_x+20, e1b_y+200,             e1b_x+20, e1b_y-10,      thi, col);
+
+  /* mex-loop */
+  if (mex1op==OP_CMPA_LE || mex1op==OP_CMPA_GE) {
+    col=2; /*green*/
+    thi=3;
+  }
+  else {
+    col=0; /*black*/
+    thi=1;
+  }
+  draw_line (e1b_x+65, e1b_y+360,             e1b_x+80, e1b_y+360,     thi, col);
+  draw_arrow(e1b_x+65, e1b_y+360,             e1b_x+65, e1b_y-40,      thi, col);
+  snprintf(opcd, E1LABELMAX, "%s-%d-%d", mex1op==OP_CMPA_LE?"LE":mex1op==OP_CMPA_GE?"GE":mex1op==OP_ALWAYS?"AL":"NA", mex1init, mex1dist);
+  draw_text(e1b_x+30, e1b_y-40, opcd, 1, 0);
+
   /* SRC2 */
   if (ea1op && !(ea1os & 1)) { /* ea1or */
     col=4; /*blue*/
@@ -4697,22 +5667,24 @@ draw_trx(int trb_x, int trb_y,
 }
 
 draw_lmx(int lmb_x, int lmb_y,
-         int ea0op,  /* MWSAに加え,LDDMQおよびSTOREの場合にもMW有効 */
-         int mwsa,   /*:  1; 0:lmwa,  1:ea0d        */
-         int mws0,   /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
-         int mws1,   /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
-         int mws2,   /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
-         int mws3,   /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
-	 int lmm_mode/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+	 int lmmi_v,
+         int ea0op,   /* MWSAに加え,LDDMQおよびSTOREの場合にもMW有効 */
+         int mwsa,    /*:  1; 0:lmwa,  1:ea0d        */
+         int mws0,    /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
+         int mws1,    /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
+         int mws2,    /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
+         int mws3,    /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
+	 int lmm_mode,/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+	 Ull top
          )
 {
 #define LMLABELMAX 30
   char opcd[LMLABELMAX];
   int col, thi;
-  int ea0store = (ea0op&0x10);
+  int ea0store = lmmi_v && ((ea0op&0x10)||mwsa==0);
 
   /* MWA */
-  if (mwsa==0) {
+  if (ea0store) {
     col=1; /*red*/
     thi=3;
   }
@@ -4723,7 +5695,7 @@ draw_lmx(int lmb_x, int lmb_y,
   draw_arrow(lmb_x+340,   lmb_y-110, lmb_x+340, lmb_y-30,  thi, col);
 
   /* MW0 */
-  if (ea0store || mwsa==0) {
+  if (ea0store) {
     col=1; /*red*/
     thi=3;
   }
@@ -4738,18 +5710,18 @@ draw_lmx(int lmb_x, int lmb_y,
   draw_box  (lmb_x+360,   lmb_y+50,  lmb_x+420, lmb_y+60,  1, 0);
   draw_line (lmb_x+365,   lmb_y-60,  lmb_x+405, lmb_y-60,  thi, col);
   draw_line (lmb_x+370,   lmb_y-60,  lmb_x+370, lmb_y,     thi, col);
-  if ((ea0store || mwsa==0) && mws0==0) { col=1; /*red*/   thi=3; } /* lmwd0 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws0==0) { col=1; /*red*/   thi=3; } /* lmwd0 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+400,   lmb_y-110, lmb_x+400, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws0==1) { col=1; /*red*/   thi=3; } /* exdr */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws0==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+380,   lmb_y-150, lmb_x+380, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws0==2) { col=1; /*red*/   thi=3; } /* ts0 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws0==2) { col=1; /*red*/   thi=3; } /* ts0 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+390,   lmb_y-370, lmb_x+390, lmb_y-60,  thi, col);
 
   /* MW1 */
-  if (ea0store || mwsa==0) {
+  if (ea0store) {
     col=1; /*red*/
     thi=3;
   }
@@ -4764,18 +5736,18 @@ draw_lmx(int lmb_x, int lmb_y,
   draw_box  (lmb_x+240,   lmb_y+50,  lmb_x+300, lmb_y+60,  1, 0);
   draw_line (lmb_x+245,   lmb_y-60,  lmb_x+285, lmb_y-60,  thi, col);
   draw_line (lmb_x+250,   lmb_y-60,  lmb_x+250, lmb_y,     thi, col);
-  if ((ea0store || mwsa==0) && mws1==0) { col=1; /*red*/   thi=3; } /* lmwd1 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws1==0) { col=1; /*red*/   thi=3; } /* lmwd1 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+280,   lmb_y-110, lmb_x+280, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws1==1) { col=1; /*red*/   thi=3; } /* exdr */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws1==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+260,   lmb_y-150, lmb_x+260, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws1==2) { col=1; /*red*/   thi=3; } /* ts1 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws1==2) { col=1; /*red*/   thi=3; } /* ts1 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+270,   lmb_y-370, lmb_x+270, lmb_y-60,  thi, col);
 
   /* MW2 */
-  if (ea0store || mwsa==0) {
+  if (ea0store) {
     col=1; /*red*/
     thi=3;
   }
@@ -4790,18 +5762,18 @@ draw_lmx(int lmb_x, int lmb_y,
   draw_box  (lmb_x+120,   lmb_y+50,  lmb_x+180, lmb_y+60,  1, 0);
   draw_line (lmb_x+125,   lmb_y-60,  lmb_x+165, lmb_y-60,  thi, col);
   draw_line (lmb_x+130,   lmb_y-60,  lmb_x+130, lmb_y,     thi, col);
-  if ((ea0store || mwsa==0) && mws2==0) { col=1; /*red*/   thi=3; } /* lmwd2 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws2==0) { col=1; /*red*/   thi=3; } /* lmwd2 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+160,   lmb_y-110, lmb_x+160, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws2==1) { col=1; /*red*/   thi=3; } /* exdr */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws2==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+140,   lmb_y-150, lmb_x+140, lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws2==2) { col=1; /*red*/   thi=3; } /* ts2 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws2==2) { col=1; /*red*/   thi=3; } /* ts2 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+150,   lmb_y-370, lmb_x+150, lmb_y-60,  thi, col);
 
   /* MW3 */
-  if (ea0store || mwsa==0) {
+  if (ea0store) {
     col=1; /*red*/
     thi=3;
   }
@@ -4816,30 +5788,31 @@ draw_lmx(int lmb_x, int lmb_y,
   draw_box  (lmb_x,       lmb_y+50,  lmb_x+60,  lmb_y+60,  1, 0);
   draw_line (lmb_x+5,     lmb_y-60,  lmb_x+45,  lmb_y-60,  thi, col);
   draw_line (lmb_x+10,    lmb_y-60,  lmb_x+10,  lmb_y,     thi, col);
-  if ((ea0store || mwsa==0) && mws3==0) { col=1; /*red*/   thi=3; } /* lmwd3 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws3==0) { col=1; /*red*/   thi=3; } /* lmwd3 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+40,    lmb_y-110, lmb_x+40 , lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws3==1) { col=1; /*red*/   thi=3; } /* exdr */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws3==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+20,    lmb_y-150, lmb_x+20,  lmb_y-60,  thi, col);
-  if ((ea0store || mwsa==0) && mws3==2) { col=1; /*red*/   thi=3; } /* ts3 */
-  else                               { col=0; /*black*/ thi=1; }
+  if (ea0store && mws3==2) { col=1; /*red*/   thi=3; } /* ts3 */
+  else                     { col=0; /*black*/ thi=1; }
   draw_arrow(lmb_x+30,    lmb_y-370, lmb_x+30,  lmb_y-60,  thi, col);
 
   switch (lmm_mode) {
   case 0:
-    draw_text(lmb_x+430, lmb_y+15, "M0", 1, 0);
+    draw_text(lmb_x+405, lmb_y-25, "M0(N/A)", 1, 0);
     break;
   case 1:
-    draw_text(lmb_x+430, lmb_y+15, "M1", 1, 0);
+    draw_text(lmb_x+405, lmb_y-25, "M1(64KB)", 1, 0);
     break;
   case 2:
-    draw_text(lmb_x+430, lmb_y+15, "M2", 1, 0);
+    draw_text(lmb_x+405, lmb_y-25, "M2(32KB)", 1, 0);
     break;
   case 3:
-    draw_text(lmb_x+430, lmb_y+15, "M3", 1, 0);
+    draw_text(lmb_x+405, lmb_y-25, "M3(16KB)", 1, 0);
     break;
   }
+  draw_text(lmb_x+405, lmb_y-5, (char*)top, 1, 0);
 }
 
 draw_bri(int bri_x, int bri_y,
@@ -4851,19 +5824,23 @@ draw_bri(int bri_x, int bri_y,
          int brs3,   /*:  2; 0:off, 1:mr13, 2:tr3         */
          int br0v,
          int br0h,
+         int br0s,
          int br1v,
          int br1h,
+         int br1s,
          int br2v,
          int br2h,
+         int br2s,
          int br3v,
-         int br3h
+         int br3h,
+         int br3s
          )
 {
 #define BRLABELMAX 30
   char opcd[BRLABELMAX];
   int col, thi;
-  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
-  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+  int ea0singleload = (ea0op && (ea0op <= OP_LDBR));
+  int ea1singleload = (ea1op && (ea1op <= OP_LDBR));
 
   /* BR0 */
   if (brs0) {
@@ -4942,7 +5919,11 @@ draw_bri(int bri_x, int bri_y,
   }
   if (col) {
     draw_box (bri_x+360,   bri_y,    bri_x+420, bri_y+15,  thi, col);
-    draw_text(bri_x+365,   bri_y+14, id[br0h].name, 1, 0);
+    if (br0s == -1)
+      snprintf(opcd, BRLABELMAX, "%s", id[br0h].name);
+    else
+      snprintf(opcd, BRLABELMAX, "%s[%d]", id[br0h].name, br0s);
+    draw_text(bri_x+365,   bri_y+14, opcd, 1, 0);
   }
 
   /* BR1 */
@@ -5018,7 +5999,11 @@ draw_bri(int bri_x, int bri_y,
   }
   if (col) {
     draw_box (bri_x+240,   bri_y,    bri_x+300, bri_y+15,  thi, col);
-    draw_text(bri_x+245,   bri_y+14, id[br1h].name, 1, 0);
+    if (br1s == -1)
+      snprintf(opcd, BRLABELMAX, "%s", id[br1h].name);
+    else
+      snprintf(opcd, BRLABELMAX, "%s[%d]", id[br1h].name, br1s);
+    draw_text(bri_x+245,   bri_y+14, opcd, 1, 0);
   }
 
   /* BR2 */
@@ -5078,7 +6063,11 @@ draw_bri(int bri_x, int bri_y,
   }
   if (col) {
     draw_box (bri_x+120,   bri_y,    bri_x+180, bri_y+15,  thi, col);
-    draw_text(bri_x+125,   bri_y+14, id[br2h].name, 1, 0);
+    if (br2s == -1)
+      snprintf(opcd, BRLABELMAX, "%s", id[br2h].name);
+    else
+      snprintf(opcd, BRLABELMAX, "%s[%d]", id[br2h].name, br2s);
+    draw_text(bri_x+125,   bri_y+14, opcd, 1, 0);
   }
 
   /* BR3 */
@@ -5133,7 +6122,11 @@ draw_bri(int bri_x, int bri_y,
   }
   if (col) {
     draw_box (bri_x,       bri_y,    bri_x+60,  bri_y+15,  thi, col);
-    draw_text(bri_x+5,     bri_y+14, id[br3h].name, 1, 0);
+    if (br3s == -1)
+      snprintf(opcd, BRLABELMAX, "%s", id[br3h].name);
+    else
+      snprintf(opcd, BRLABELMAX, "%s[%d]", id[br3h].name, br3s);
+    draw_text(bri_x+5,     bri_y+14, opcd, 1, 0);
   }
 }
 
@@ -5271,6 +6264,1125 @@ draw_text(int x0, int y0, char *str, int size, int color)
   fprintf(ffile, "])\n");
   fprintf(ffile, "])]).\n");
 }
+@
+
+
+1.96
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.95 2021/12/16 10:44:50 nakashim Exp nakashim $";
+d566 1
+a566 1
+      /*          │                           *//* (1)mop(OP_LDUWR, &BR[7][0][1])                     */
+d1385 3
+a1387 6
+      case OP_LDWR: /* 32bit signed */
+      case OP_LDUWR:/* 32bit unsigned */
+//    case OP_LDHR: /* 16bit signed */
+//    case OP_LDUHR:/* 16bit unsigned */
+      case OP_LDBR: /*  8bit signed */
+      case OP_LDUBR:/*  8bit unsigned */
+d2613 29
+a2641 111
+  fprintf(ofile, "#ifdef EMAXSC\n");
+  fprintf(ofile, "/* EMAXSC start */\n");
+  fprintf(ofile, "#define EMAX_NCHIP %d\n", EMAX_NCHIP);
+  fprintf(ofile, "#define EMAX_DEPTH %d\n", EMAX_DEPTH);
+  fprintf(ofile, "#define EMAX_WIDTH %d\n", EMAX_WIDTH);
+  fprintf(ofile, "#define UNIT_WIDTH %d\n", UNIT_WIDTH);
+  fprintf(ofile, "struct {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM0[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag0 */
+  fprintf(ofile, "struct {Ull b[EMAX_NCHIP][EMAX_WIDTH],o[EMAX_NCHIP][EMAX_WIDTH],awoo[EMAX_NCHIP][EMAX_WIDTH],d[EMAX_NCHIP][EMAX_WIDTH][2];} SCM1[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* eag1 */
+  fprintf(ofile, "struct {Ull r[EMAX_NCHIP][EMAX_WIDTH];}                                                                                     SCAR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* alu  */
+  fprintf(ofile, "struct {Ull r[EMAX_NCHIP][2][EMAX_WIDTH*UNIT_WIDTH],enq[EMAX_NCHIP],d0[4],deq[EMAX_NCHIP],d1[4];}                           SCBR[EMAX_DEPTH] __attribute__((aligned(64)));\n"); /* br   */
+  fprintf(ofile, "#undef  EMAX_NCHIP\n");
+  fprintf(ofile, "#undef  EMAX_DEPTH\n");
+  fprintf(ofile, "#undef  EMAX_WIDTH\n");
+  fprintf(ofile, "#undef  UNIT_WIDTH\n");
+  fprintf(ofile, "Uint uLOOP1, uLOOP0;\n");
+    
+  /* init REGV(breg) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      for (k=0; k<UNIT_WIDTH; k++) {
+	if (regv[i][j].br[k].v) {
+	  if (id[regv[i][j].br[k].h].chip) { /* CHIP */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %d;\n", i, c, j*UNIT_WIDTH+k, c);
+	    }
+	  }
+	  else if (id[regv[i][j].br[k].h].cidx) { /* xxx[CHIP] */
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+	    }
+	  }
+	  else if (regv[i][j].br[k].s < 0) {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s;\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+	    }
+	  }
+	  else {
+	    for (c=0; c<current_nchip; c++) {
+	      fprintf(ofile, "SCBR[%d].r[%d][0][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	      fprintf(ofile, "SCBR[%d].r[%d][1][%d] = %s[%d];\n", i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  /* init REGV(eag) */
+  for (i=0; i<EMAX_DEPTH; i++) {
+    for (j=0; j<EMAX_WIDTH; j++) {
+      if (regv[i][j].ea0b_v) {
+	if (id[regv[i][j].ea0b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, c);
+	}
+	else if (regv[i][j].ea0b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+	}
+      }
+      if (regv[i][j].ea0o_v) {
+	if (id[regv[i][j].ea0o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, c);
+	}
+	else if (regv[i][j].ea0o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea0o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM0[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+	}
+      }
+      if (regv[i][j].ea1b_v) {
+	if (id[regv[i][j].ea1b_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, c);
+	}
+	else if (regv[i][j].ea1b_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1b_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].b[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+	}
+      }
+      if (regv[i][j].ea1o_v) {
+	if (id[regv[i][j].ea1o_h].cidx) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, c);
+	}
+	else if (regv[i][j].ea1o_s < 0) {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s;\n", i, c, j, id[regv[i][j].ea1o_h].name);
+	}
+	else {
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "SCM1[%d].o[%d][%d] = (Ull)%s[%d];\n", i, c, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+	}
+      }
+    }
+  }
+d2646 37
+a2682 50
+    if (conf[0][0].cdw0.op1 == OP_WHILE) {
+      fprintf(ofile, "INIT1=1;\n");
+      fprintf(ofile, "for (INIT0=1,uLOOP0=%s; uLOOP0--; INIT0=0) {\n", id[dec[i][j].dexu.ex1h].name);
+    }
+    else {
+      int c;
+      if (conf[0][1].cdw0.op1 == OP_FOR) {
+	if (forinit_cidx[1]) { /* NCHIP */
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "\t%s;\n", forinit[1][c]);
+	}
+	else
+	  fprintf(ofile, "\t%s;\n", forinit[1][0]);
+	fprintf(ofile, "for (INIT1=1,uLOOP1=LOOP1; uLOOP1--; INIT1=0) {\n");
+      }
+      else
+	fprintf(ofile, "INIT1=1;\n");
+      if (conf[0][0].cdw0.op1 == OP_FOR) {
+	if (forinit_cidx[0]) { /* NCHIP */
+	  for (c=0; c<current_nchip; c++)
+	    fprintf(ofile, "\t%s;\n", forinit[0][c]);
+	}
+	else
+	  fprintf(ofile, "\t%s;\n", forinit[0][0]);
+	fprintf(ofile, "for (INIT0=1,uLOOP0=LOOP0; uLOOP0--; INIT0=0) {\n");
+      }
+    }
+    fprintf(ofile, "for (CHIP=0; CHIP<%d; CHIP++) {\n", current_nchip); /* 各unit内でsoft-multithreading */
+    fprintf(ofile, "if ((%d && SCBR[%d].enq[CHIP]==SCBR[%d].deq[CHIP]) || SCBR[%d].deq[CHIP]!=SCBR[%d].enq[CHIP]) continue;\n", i, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i);
+    /* BR[i-1][0]                r  r                    r  r                      */
+    /* BR[i-1][1]                            r  r                    r  r          */
+    /* deq-       0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
+    /*                            any0↑          ↑          ↑                   */
+    /* exe[i]                 ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (先頭 && deq-==enq0)ならexe開始.exe後deq-=1-deq-, enq0==deq0ならenq0=1-enq0 */
+    /*                      deq-==enq0   ↓          ↓          ↓          ↓                */
+    /* enq0          0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0          */
+    /* BR[i][0]                  w  w    /   r  r    /   w  w    /   r  r    /   w  w          */
+    /* BR[i][1]                         /    w  w   /    r  r   /    w  w   /    r  r          */
+    /* deq0          0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
+    /*                                  enq0!=deq0↑          ↑          ↑                   */
+    /* exe[i+1]                           ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (enq0!=deq0 && deq0==enq1)★ならexe開始.exe後deq0=1-deq0, enq1==dec1ならenq1=1-enq1 */
+    /*                                  deq0==enq1   ↓          ↓          ↓          ↓                */
+    /* enq1          0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0          */
+    /* BR[i+1][0]                            w  w    /   r  r    /   w  w    /   r  r    /   w  w          */
+    /* BR[i+1][1]                                   /    w  w   /    r  r   /    w  w   /    r  r          */
+    /* deq1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1          */
+    /*                                              enq1!=deq1↑          ↑          ↑                   */
+    /* exe[i+2]                                       ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (enq1!=deq1 && deq1==enq2)★ならexe開始.exe後deq1=1-deq1, enq2==dec2ならenq2=1-enq2 */
+    /*                                              deq1==enq2   ↓          ↓          ↓          ↓                */
+    /* enq2                      0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0             */
+d2684 3
+a2686 3
+      fprintf(ofile, "{ Ull adr, mexdist, load64;\n");
+      fprintf(ofile, "  static int emax6_unaligned_load_valid;\n");
+      fprintf(ofile, "  static Ull emax6_unaligned_load_high;\n");
+d2694 3
+a2696 3
+	fprintf(ofile, "SCM1[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM1[%d].b[CHIP][%d]) : SCM1[%d].awoo[CHIP][%d];\n", i, j, ea1bs, ea1bs, i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(ofile, "SCM1[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM1[%d].o[CHIP][%d], %d);\n", i, j, ea1os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea1msk);
+	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex1op, conf[i][j].cdw0.mex1dist==0? 0: conf[i][j].cdw0.mex1dist==1? 1: conf[i][j].cdw0.mex1dist==2? 2:
+d2701 1
+a2701 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+d2704 1
+a2704 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0?0:((SCM1[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)<=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2707 1
+a2707 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0?0:((SCM1[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)>=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2710 1
+a2710 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+(INIT0?0:mexdist);\n", i, j, i, j, i, j);
+d2713 1
+a2713 1
+	  printf("undefined conf[%d][%d].mex1op=%d\n", i, j, conf[i][j].cdw0.mex1op);
+d2718 1
+a2718 1
+	fprintf(ofile, "adr = (Uint)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d2720 1
+a2720 1
+	fprintf(ofile, "adr = (Ull)(SCM1[%d].awoo[CHIP][%d] + SCM1[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d2725 12
+a2736 18
+	  fprintf(ofile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(ofile, "if ((adr&7) == 0)\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(ofile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(ofile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(ofile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(ofile, "}\n");
+	  fprintf(ofile, "else { /* BR[][][0] */\n");
+	  fprintf(ofile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM1[%d].d[CHIP][%d][1] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+1, i, j);
+	  fprintf(ofile, "}\n");
+	  break;
+	case OP_LDWR: /* s32bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
+	  break;
+	case OP_LDUWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+1);
+d2738 2
+a2739 2
+	case OP_LDBR: /* s8bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;\n", i, i, j*UNIT_WIDTH+1);
+d2741 2
+a2742 2
+	case OP_LDUBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+1);
+d2745 4
+a2748 4
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+d2751 1
+a2751 1
+	  printf("undefined conf[%d][%d].cdw1.ea1op=%d\n", i, j, conf[i][j].cdw1.ea1op);
+d2763 3
+a2765 3
+	fprintf(ofile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(ofile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+d2770 1
+a2770 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+d2773 1
+a2773 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0?0:((SCM0[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)<=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2776 1
+a2776 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0?0:((SCM0[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)>=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0);\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2779 1
+a2779 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0?0:mexdist);\n", i, j, i, j, i, j);
+d2782 1
+a2782 1
+	  printf("undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+d2787 1
+a2787 1
+	fprintf(ofile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d2789 1
+a2789 1
+	fprintf(ofile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d2794 12
+a2805 15
+	  fprintf(ofile, "load64 = *(Ull*)(adr&~7LL);\n");
+	  fprintf(ofile, "if ((adr&7) == 0)\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(ofile, "else if (!emax6_unaligned_load_valid) { /* BR[][][1] */\n");
+	  fprintf(ofile, "  emax6_unaligned_load_valid = 1;\n");
+	  fprintf(ofile, "  emax6_unaligned_load_high = load64;\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(ofile, "}\n");
+	  fprintf(ofile, "else { /* BR[][][0] */\n");
+	  fprintf(ofile, "  emax6_unaligned_load_valid = 0;\n");
+	  fprintf(ofile, "  SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCM0[%d].d[CHIP][%d][0] = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;\n", i, i, j*UNIT_WIDTH+0, i, j);
+	  fprintf(ofile, "}\n");
+	  break;
+	case OP_LDWR: /* s32bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
+d2807 2
+a2808 2
+	case OP_LDUWR: /* u32bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);\n", i, i, j*UNIT_WIDTH+0);
+d2810 2
+a2811 5
+	case OP_LDBR: /* s8bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;\n", i, i, j*UNIT_WIDTH+0);
+	  break;
+	case OP_LDUBR: /* u8bit lmm LMM is preloaded, random-access */
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;\n", i, i, j*UNIT_WIDTH+0);
+d2814 4
+a2817 4
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+0);\n", i, i, j*UNIT_WIDTH+0);
+          fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+1);\n", i, i, j*UNIT_WIDTH+1);
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+2);\n", i, i, j*UNIT_WIDTH+2);
+	  fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = *((Ull*)(adr&~31LL)+3);\n", i, i, j*UNIT_WIDTH+3);
+d2820 1
+a2820 1
+	  printf("undefined conf[%d][%d].cdw1.ea0op=%d\n", i, j, conf[i][j].cdw1.ea0op);
+d2824 1
+a2824 1
+      fprintf(ofile, "}\n");
+d2828 1
+a2828 1
+      fprintf(ofile, "{ union { Uint i; float f; } f3, f2, f1, f0; Ull t3, t2, t1, t0, ex1, ex2, ex3, ex4, ex5, c1, c0, ex1_outd, ex2_outd;\n");
+d2848 2
+a2849 2
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex1_outd = ex1;\n");
+d2855 16
+a2870 16
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(ofile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(ofile, "if (f2.i != -1 && f2.i == f3.i) {\n");
+	  fprintf(ofile, "  f2.i = (Uint)(ex2);\n");
+	  fprintf(ofile, "  f3.i = (Uint)(ex3);\n");
+	  fprintf(ofile, "  f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(ofile, "}\n");
+	  fprintf(ofile, "else {\n");
+	  fprintf(ofile, "  f0.f = f1.f;\n");
+	  fprintf(ofile, "}\n");
+	  fprintf(ofile, "t0 = f0.i;\n");
+	  fprintf(ofile, "ex1_outd = t0;\n");
+d2875 14
+a2888 14
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(ofile, "f1.i = (Uint)(ex1)>>32);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2>>32)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(ofile, "f3.i = (Uint)(ex3>>32);\n");
+	  fprintf(ofile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(ofile, "t2 = f0.i;\n");
+	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2)^%08.8x;\n", conf[i][j].cdw0.op1==OP_FMA?0:0x80000000);
+	  fprintf(ofile, "f3.i = (Uint)(ex3);\n");
+	  fprintf(ofile, "f0.f = f1.f + (f2.f * f3.f);\n");
+	  fprintf(ofile, "t0 = f0.i;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2892 11
+a2902 11
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(ofile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(ofile, "t2 = f0.i;\n");
+	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(ofile, "f0.f = f1.f + f2.f;\n");
+	  fprintf(ofile, "t0 = f0.i;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2906 11
+a2916 11
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "f1.i = (Uint)(ex1>>32);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2>>32);\n");
+	  fprintf(ofile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(ofile, "t2 = f0.i;\n");
+	  fprintf(ofile, "f1.i = (Uint)(ex1);\n");
+	  fprintf(ofile, "f2.i = (Uint)(ex2);\n");
+	  fprintf(ofile, "f0.f = f1.f * f2.f;\n");
+	  fprintf(ofile, "t0 = f0.i;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2919 8
+a2926 8
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)+((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)+((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2929 8
+a2936 8
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)-((ex2>>32&0x00000000ffffffffLL)+(ex3>>32&0x00000000ffffffffLL));\n");
+	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)-((ex2    &0x00000000ffffffffLL)+(ex3    &0x00000000ffffffffLL));\n");
+	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2939 7
+a2945 7
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)+(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)+(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2948 7
+a2954 7
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "t2 = (ex1>>32&0x00000000ffffffffLL)-(ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "t2 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "t0 = (ex1    &0x00000000ffffffffLL)-(ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "t0 &= 0x00000000ffffffffLL;\n");
+	  fprintf(ofile, "ex1_outd = (t2<<32)|(t0);\n");
+d2957 5
+a2961 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) == (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) == (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2964 5
+a2968 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) != (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) != (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2971 5
+a2975 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) < (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) < (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2978 5
+a2982 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) <= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) <= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2985 5
+a2989 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) > (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) > (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2992 5
+a2996 5
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "c1 = (ex1>>32&0x00000000ffffffffLL) >= (ex2>>32&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "c0 = (ex1    &0x00000000ffffffffLL) >= (ex2    &0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = (c1<<32)|c0;\n");
+d2999 8
+a3006 8
+	  fprintf(ofile, "ex1 = exm(!%d||(INIT1&&INIT0)||((%d&1)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCAR[%d].r[CHIP][%d], %d);\n", ex1s, init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex1brs, i, j, ex1exp);
+	  fprintf(ofile, "ex2 = exm(((%d&2)&&INIT0) ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : 0, %d);\n", init, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, i, j, ex2exp);
+	  fprintf(ofile, "ex3 = exm(SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d], %d);\n",                             !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs, i, j, ex3exp);
+	  fprintf(ofile, "c1 = ex1>>32&1;\n");
+	  fprintf(ofile, "c0 = ex1    &1;\n");
+	  fprintf(ofile, "t2 = c1 ? (ex2&0xffffffff00000000LL) : (ex3&0xffffffff00000000LL);\n");
+	  fprintf(ofile, "t0 = c0 ? (ex2&0x00000000ffffffffLL) : (ex3&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "ex1_outd = t2 | t0;\n");
+d3009 1
+a3009 1
+	  printf("undefined conf[%d][%d].cdw0.op1=%d\n", i, j, conf[i][j].cdw0.op1);
+d3016 1
+a3016 1
+	  fprintf(ofile, "ex2_outd = ex1_outd;\n");
+d3019 2
+a3020 2
+	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(ofile, "ex2_outd = ex1_outd & ex4;\n");
+d3023 2
+a3024 2
+	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(ofile, "ex2_outd = ex1_outd | ex4;\n");
+d3027 2
+a3028 2
+	  fprintf(ofile, "ex4 = %d==0 ? 0x%08.8x%08.8xLL : %d==1 ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e2is, (Uint)(e2imm>>32), (Uint)e2imm, e2is, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex2brs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(ofile, "ex2_outd = ex1_outd ^ ex4;\n");
+d3031 1
+a3031 1
+	  printf("undefined conf[%d][%d].cdw0.op2=%d\n", i, j, conf[i][j].cdw0.op2);
+d3038 1
+a3038 1
+	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = ex2_outd;\n", i, j);
+d3041 4
+a3044 4
+	  fprintf(ofile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(ofile, "t1 = (Ull)(ex2_outd     &0xffffffff00000000LL)<<ex5;\n");
+	  fprintf(ofile, "t0 = (Ull)(ex2_outd<<ex5&0x00000000ffffffffLL);\n");
+	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+d3047 4
+a3050 4
+	  fprintf(ofile, "ex5 = %d==0 ? 0x%08.8x : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", e3is, e3imm, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ex3brs);
+	  fprintf(ofile, "t1 = (Ull)(ex2_outd>>ex5&0xffffffff00000000LL);\n");
+	  fprintf(ofile, "t0 = (Ull)(ex2_outd     &0x00000000ffffffffLL)>>ex5;\n");
+	  fprintf(ofile, "SCAR[%d].r[CHIP][%d] = t1 | t0;\n", i, j);
+d3053 1
+a3053 1
+	  printf("undefined conf[%d][%d].cdw0.op3=%d\n", i, j, conf[i][j].cdw0.op3);
+d3057 1
+a3057 1
+      fprintf(ofile, "}\n");
+d3061 1
+a3061 1
+      fprintf(ofile, "{ Ull cs0, cs1, cs2, cs3, cex, adr, mexdist;\n");
+d3071 5
+a3075 5
+	fprintf(ofile, "cs0 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs0);
+	fprintf(ofile, "cs1 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs1);
+	fprintf(ofile, "cs2 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs2);
+	fprintf(ofile, "cs3 = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, cs3);
+	fprintf(ofile, "cex = ((0x%04.4x>>(((cs3>>32&1)<<3)|((cs2>>32&1)<<2)|((cs1>>32&1)<<1)|(cs0>>32&1))&1)?2:0) | ((0x%04.4x>>(((cs3&1)<<3)|((cs2&1)<<2)|((cs1&1)<<1)|(cs0&1))&1)?1:0);\n", cex_tab, cex_tab);
+d3095 1
+a3095 1
+	  fprintf(ofile, "cex = 3;\n");
+d3097 3
+a3099 3
+	fprintf(ofile, "SCM0[%d].b[CHIP][%d] = (!(%d&1)||INIT0) ? ((%d&2)?SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]:SCM0[%d].b[CHIP][%d]) : SCM0[%d].awoo[CHIP][%d];\n", i, j, ea0bs, ea0bs, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eab, i, j, i, j); /*初回 or mexinitの毎INIT0*/
+	fprintf(ofile, "SCM0[%d].o[CHIP][%d] = eam(%d ? SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] : SCM0[%d].o[CHIP][%d], %d);\n", i, j, ea0os, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, eao, i, j, (Uint)conf[i][j].cdw1.ea0msk);
+	fprintf(ofile, "mexdist = (%d || INIT0) ? 0 : %d;\n", conf[i][j].cdw0.mex0op, conf[i][j].cdw0.mex0dist==0? 0: conf[i][j].cdw0.mex0dist==1? 1: conf[i][j].cdw0.mex0dist==2? 2:
+d3104 1
+a3104 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d]);\n", i, j, i, j, i, j);
+d3107 1
+a3107 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+(INIT0?0:mexdist);\n", i, j, i, j, i, j);
+d3110 1
+a3110 1
+	  printf("undefined conf[%d][%d].mex0op=%d\n", i, j, conf[i][j].cdw0.mex0op);
+d3115 1
+a3115 1
+	fprintf(ofile, "adr = (Uint)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d3117 1
+a3117 1
+	fprintf(ofile, "adr = (Ull)(SCM0[%d].awoo[CHIP][%d] + SCM0[%d].o[CHIP][%d]);\n", i, j, i, j, i, j);
+d3122 2
+a3123 2
+	  fprintf(ofile, "if (cex>>1&1) *((Uint*)(adr&~7LL)+1) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d])>>32;\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(ofile, "if (cex   &1) *((Uint*)(adr&~7LL)  ) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n",     mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+d3126 1
+a3126 1
+	  fprintf(ofile, "if (cex   &1) *(Uint*)(adr&~3LL) = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+d3129 1
+a3129 1
+	  fprintf(ofile, "if (cex   &1) *(Uchar*)adr = (%d==1? SCAR[%d].r[CHIP][%d] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, j, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+d3132 4
+a3135 4
+	  fprintf(ofile, "*((Ull*)(adr&~31LL)+0) = (%d==1? SCAR[%d].r[CHIP][0] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws0, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts0);
+	  fprintf(ofile, "*((Ull*)(adr&~31LL)+1) = (%d==1? SCAR[%d].r[CHIP][1] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws1, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts1);
+	  fprintf(ofile, "*((Ull*)(adr&~31LL)+2) = (%d==1? SCAR[%d].r[CHIP][2] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws2, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts2);
+	  fprintf(ofile, "*((Ull*)(adr&~31LL)+3) = (%d==1? SCAR[%d].r[CHIP][3] : SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d]);\n", mws3, i, !fold?(i+EMAX_DEPTH-1)%EMAX_DEPTH:i, i, ts3);
+d3142 1
+a3142 1
+      fprintf(ofile, "}\n");
+d3146 1
+a3146 1
+      fprintf(ofile, "{\n");
+d3150 1
+a3150 1
+	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+0, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts0);
+d3154 1
+a3154 1
+	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+1, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts1);
+d3158 1
+a3158 1
+	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+2, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts2);
+d3161 1
+a3161 1
+	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCAR[%d].r[CHIP][%d];\n", i, i, j*UNIT_WIDTH+2, i, j);
+d3165 109
+a3273 1
+	fprintf(ofile, "SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d] = SCBR[%d].r[CHIP][SCBR[%d].enq[CHIP]][%d];\n", i, i, j*UNIT_WIDTH+3, (i+EMAX_DEPTH-1)%EMAX_DEPTH, ts3);
+a3274 1
+      fprintf(ofile, "}\n");
+a3275 8
+    fprintf(ofile, "SCBR[%d].deq[CHIP] = 1-SCBR[%d].deq[CHIP]; if (SCBR[%d].enq[CHIP] == SCBR[%d].deq[CHIP]) SCBR[%d].enq[CHIP] = 1-SCBR[%d].enq[CHIP];\n", (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i, i, i, i);
+    fprintf(ofile, "}\n"); /* for (CHIP) */
+    if (conf[0][0].cdw0.op1 == OP_WHILE)
+      fprintf(ofile, "}\n");
+    if (conf[0][0].cdw0.op1 == OP_FOR)
+      fprintf(ofile, "}\n");
+    if (conf[0][1].cdw0.op1 == OP_FOR)
+      fprintf(ofile, "}\n");
+d3278 5
+a3803 1
+  case OP_LDUWR:
+a3804 1
+//case OP_LDUHR:
+a3805 1
+  case OP_LDUBR:
+d4858 1
+a4858 1
+  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
+d4981 1
+a4981 1
+  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+d5339 2
+a5340 2
+  int ea0singleload = (ea0op && (ea0op <= OP_LDUBR));
+  int ea1singleload = (ea1op && (ea1op <= OP_LDUBR));
+@
+
+
+1.95
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.94 2021/12/16 09:22:27 nakashim Exp nakashim $";
+d2729 1
+a2729 1
+  for (i=0; i<last_row; i++) {
+@
+
+
+1.94
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.93 2021/12/16 05:39:51 nakashim Exp nakashim $";
+d2782 1
+a2782 1
+      fprintf(ofile, "{ Uint adr, mexdist, load64;\n");
+d2802 1
+a2802 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:((SCM1[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)<=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2805 1
+a2805 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:((SCM1[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM1[%d].d[CHIP][%d][1]>>32)>=(SCM1[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2808 1
+a2808 1
+	  fprintf(ofile, "SCM1[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM1[%d].b[CHIP][%d]:SCM1[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+d2877 1
+a2877 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:((SCM0[%d].d[CHIP][%d][0]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)<=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2880 1
+a2880 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:((SCM0[%d].d[CHIP][%d][1]>>32)!=0xffffffff && (SCM0[%d].d[CHIP][%d][1]>>32)>=(SCM0[%d].d[CHIP][%d][0]>>32))?mexdist:0;\n", i, j, i, j, i, j, i, j, i, j, i, j);
+d2883 1
+a2883 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+d3217 1
+a3217 1
+	  fprintf(ofile, "SCM0[%d].awoo[CHIP][%d] = (Ull)(INIT0?SCM0[%d].b[CHIP][%d]:SCM0[%d].awoo[CHIP][%d])+INIT0?0:mexdist;\n", i, j, i, j, i, j);
+d3279 1
+a3279 1
+    //fprintf(ofile, "SCBR[%d].deq[CHIP] = 1-SCBR[%d].deq[CHIP]; if (SCBR[%d].enq[CHIP] == SCBR[%d].deq[CHIP]) SCBR[%d].enq[CHIP] = 1- SCBR[%d].enq[CHIP];\n", (i+EMAX_DEPTH-1)%EMAX_DEPTH, (i+EMAX_DEPTH-1)%EMAX_DEPTH, i, i, i, i);
+@
+
+
+1.93
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.92 2021/12/16 00:09:52 nakashim Exp nakashim $";
+d2638 4
+a2641 2
+	    for (c=0; c<current_nchip; c++)
+	      fprintf(ofile, "SCBR[%d].r[%d][SCBR[%d].enq[%d]][%d] = %d;\n", i, c, i, c, j*UNIT_WIDTH+k, c);
+d2644 4
+a2647 2
+	    for (c=0; c<current_nchip; c++)
+	      fprintf(ofile, "SCBR[%d].r[%d][SCBR[%d].enq[%d]][%d] = %s[%d];\n", i, c, i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, c);
+d2650 4
+a2653 2
+	    for (c=0; c<current_nchip; c++)
+	      fprintf(ofile, "SCBR[%d].r[%d][SCBR[%d].enq[%d]][%d] = %s;\n", i, c, i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name);
+d2656 4
+a2659 2
+	    for (c=0; c<current_nchip; c++)
+	      fprintf(ofile, "SCBR[%d].r[%d][SCBR[%d].enq[%d]][%d] = %s[%d];\n", i, c, i, c, j*UNIT_WIDTH+k, id[regv[i][j].br[k].h].name, regv[i][j].br[k].s);
+d3279 2
+d3282 5
+a3286 5
+      fprintf(ofile, "}}\n");
+    else if (conf[0][1].cdw0.op1 == OP_FOR && conf[0][0].cdw0.op1 == OP_FOR)
+      fprintf(ofile, "}}}\n");
+    else /* if (conf[0][0].cdw0.op1 == OP_FOR) */
+      fprintf(ofile, "}}\n");
+@
+
+
+1.92
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.91 2021/12/15 23:31:09 nakashim Exp nakashim $";
+d2756 1
+a2756 1
+    /* exe[i]                 ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (先頭かつ deq-==enq0)なら exe開始.exe後deq-=1-deq-, enq0==deq0ならenq0=1-enq0 */
+d2763 1
+a2763 1
+    /* exe[i+1]                           ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (enq0!=deq0 && deq0==enq1)★なら exe開始.exe後deq0=1-deq0, enq1==dec1ならenq1=1-enq1 */
+d2770 1
+a2770 1
+    /* exe[i+2]                                       ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓    ★ ↓ ↓  (enq1!=deq1 && deq1==enq2)★なら exe開始.exe後deq1=1-deq1, enq2==dec2ならenq2=1-enq2 */
+@
+
+
+1.91
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.90 2021/12/08 00:58:43 nakashim Exp nakashim $";
+d2632 89
+@
+
+
+1.90
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.89 2021/09/21 07:42:15 nakashim Exp nakashim $";
+d3093 1
+a3093 1
+	int fold  = conf[i][j].cdw0.fold;    /* 0:normal, 1:load-exe-store folding */
+d3107 3
+@
+
+
+1.89
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.88 2021/08/11 10:54:45 nakashim Exp nakashim $";
+d28 2
+a29 1
+  if (mode == 1) /* emit drain */
+d31 1
+d1008 1
+a1008 1
+        dexu->ex1e   = EXP_H3210;    /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d1012 1
+a1012 1
+        dexu->ex2e   = EXP_H3210;    /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d1016 1
+a1016 1
+        dexu->ex3e   =  0;           /* 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d2614 577
+a3190 1
+  /* Step 7 ... emit all                                                                                    */
+d3193 1
+d3321 2
+a3322 1
+  if (mode == 1) /* emit drain */
+d3324 1
+d3632 1
+d3634 1
+a3634 1
+  /* Step 8 ... emit tgif                                                                                   */
+d4265 1
+a4265 1
+           conf[i][j].cdw0.ex1exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d4267 1
+a4267 1
+           conf[i][j].cdw0.ex2exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d4269 1
+a4269 1
+           conf[i][j].cdw0.ex3exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d4593 1
+a4593 1
+         int ex1exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d4595 1
+a4595 1
+         int ex2exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+d4597 1
+a4597 1
+         int ex3exp, /*:  2; 0:--, 1:B5410, 2:B7632, 3:H3210 */
+@
+
+
+1.88
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.87 2021/08/11 04:45:48 nakashim Exp nakashim $";
+d20 1
+d25 1
+d604 1
+d822 94
+d1024 2
+a1025 2
+        dmop1->updt  = 1;  /* for internal update of ea1 */
+        dmop1->offsm = 15; /* for internal update of ea1 */
+d1029 2
+a1030 2
+        dmop1->updt  = 1;  /* for internal update of ea1 */
+        dmop1->offsm = 15; /* for internal update of ea1 */
+d1041 1
+a1041 1
+        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
+d1486 7
+d1495 2
+d1519 2
+d1523 1
+a1523 1
+      if (last_mop==1) /* load */
+d1525 8
+a1532 1
+      else /* store/load */
+d1534 7
+d1550 2
+a1551 1
+        set_reg_path(last_row, last_col, 0, type, RTYPE_BASE, 1, dmop1->basev, dmop1->baseh, dmop1->bases);
+d1557 3
+d1634 2
+a1635 1
+        set_reg_path(last_row, last_col, folding, type, RTYPE_BASE, 0, dmop0->basev, dmop0->baseh, dmop0->bases);
+d1638 4
+a1641 1
+          if (insn[i].imop.mtype == MTYPE_RLOAD) {
+d1644 13
+a1656 4
+          else {
+	    int rw = (dmop0->mtype==MTYPE_RLOAD||dmop0->mtype==MTYPE_DLOAD)?0:1;
+	    int f  = id[dmop0->forceh].val;
+	    int p  = 0; /* initial value */
+d1658 19
+a1676 19
+	    case 0: /* lmr */ case 1: /* lmp */ case 2: /* lmf */ conf[last_row][last_col].cdw2.lmm_axiw = 1; conf[last_row][last_col].cdw2.lmm_axir = 0; break;
+	    case 4: /* lmw */ case 5: /* lmd */                   conf[last_row][last_col].cdw2.lmm_axiw = 0; conf[last_row][last_col].cdw2.lmm_axir = 1; break;
+	    case 6: /* lmx */                                     conf[last_row][last_col].cdw2.lmm_axiw = 1; conf[last_row][last_col].cdw2.lmm_axir = 1; break;
+	    case 3: /* lddmq */ case 7: /* tr */                  conf[last_row][last_col].cdw2.lmm_axiw = 0; conf[last_row][last_col].cdw2.lmm_axir = 0; break;
+	    }
+	    conf[last_row][last_col].cdw2.lmm_mode = 3;
+            lmmi[last_row][last_col].v     = 1;
+            lmmi[last_row][last_col].rw    = rw;
+            lmmi[last_row][last_col].f     = f;
+            lmmi[last_row][last_col].p     = p;
+            lmmi[last_row][last_col].blk   = dmop0->blk;
+	    lmmi[last_row][last_col].cidx  = id[dmop0->toph].cidx;
+            lmmi[last_row][last_col].len   = id[dmop0->lenh].val-1;
+            lmmi[last_row][last_col].ofs   = 0; /* initial value */
+            lmmi[last_row][last_col].top   = (Ull)id[dmop0->toph].name;
+            lmmx[last_row][last_col].forcev= dmop0->forcev;
+            lmmx[last_row][last_col].forceh= dmop0->forceh;
+            lmmx[last_row][last_col].lenv  = dmop0->lenv;
+            lmmx[last_row][last_col].lenh  = dmop0->lenh;
+d1840 1
+d1849 24
+d1875 3
+a1877 3
+      conf[i][j].cdw1.ea0op  = dec[i][j].dmop0.op;
+      conf[i][j].cdw1.ea0bs  =((!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0brv?0:2)|(dec[i][j].dmop0.updt?1:0); /* 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+      conf[i][j].cdw1.ea0os  = (!dec[i][j].dmop0.op||dec[i][j].dmop0.op==OP_IM_PREF )||bus[i][j].ea0orv?0:1;                             /* 0:ea0or, 1:eaobrs */
+d1879 25
+d1906 1
+a1906 1
+        conf[i][j].cdw1.ea1op  = dec[i][j].dmop0.op;
+d1908 3
+a1910 3
+        conf[i][j].cdw1.ea1op  = dec[i][j].dmop1.op;
+      conf[i][j].cdw1.ea1bs  =((!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1brv?0:2)|(dec[i][j].dmop1.updt?1:0); /* 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(eabbrs+self-loop) */
+      conf[i][j].cdw1.ea1os  = (!dec[i][j].dmop1.op||dec[i][j].dmop1.op==OP_IM_DRAIN)||bus[i][j].ea1orv?0:1;                             /* 0:ea1or, 1:eaobrs */
+d1912 3
+d2852 1
+a2852 1
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0b = %s[%d];\n", c, i, j, id[regv[i][j].ea0b_h].name, c);
+d2855 1
+a2855 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s;\n", i, j, id[regv[i][j].ea0b_h].name);
+d2857 1
+a2857 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0b = %s[%d];\n", i, j, id[regv[i][j].ea0b_h].name, regv[i][j].ea0b_s);
+d2862 1
+a2862 1
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea0o = %s[%d];\n", c, i, j, id[regv[i][j].ea0o_h].name, c);
+d2865 1
+a2865 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s;\n", i, j, id[regv[i][j].ea0o_h].name);
+d2867 1
+a2867 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea0o = %s[%d];\n", i, j, id[regv[i][j].ea0o_h].name, regv[i][j].ea0o_s);
+d2872 1
+a2872 1
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1b = %s[%d];\n", c, i, j, id[regv[i][j].ea1b_h].name, c);
+d2875 1
+a2875 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s;\n", i, j, id[regv[i][j].ea1b_h].name);
+d2877 1
+a2877 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1b = %s[%d];\n", i, j, id[regv[i][j].ea1b_h].name, regv[i][j].ea1b_s);
+d2882 1
+a2882 1
+	    fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[%d].addr[%d][%d].ea1o = %s[%d];\n", c, i, j, id[regv[i][j].ea1o_h].name, c);
+d2885 1
+a2885 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s;\n", i, j, id[regv[i][j].ea1o_h].name);
+d2887 1
+a2887 1
+	  fprintf(ofile, "\t((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[%d][%d].ea1o = %s[%d];\n", i, j, id[regv[i][j].ea1o_h].name, regv[i][j].ea1o_s);
+d3212 2
+a3213 2
+     /* reg_type:  ITYPE_MO4/ITYPE_MOPの場合のみ有効: レジスタ種別 RTYPE_DATA, RTYPE_BASE, RTYPE_OFFS */
+     /* reg_loc:   ITYPE_MO4/ITYPE_MOPの場合のみ有効: MO4/MOPのbase/offsの位置 0:mop0, 1:mop1 */
+d3226 1
+a3226 1
+    if (insn_type == ITYPE_MO4 || insn_type == ITYPE_MOP) { /* store4/store1 */
+d3229 1
+a3229 1
+        printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot store constant variable %s\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+d3234 1
+a3234 1
+            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+d3247 1
+a3247 1
+            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_BASE %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+d3262 1
+a3262 1
+            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with prefetch)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+d3273 1
+a3273 1
+            printf("in %s: [%d][%d] ITYPE_MO4/ITYPE_MOP cannot find empty reg for RTYPE_OFFS %s (may conflict with drain)\n", id[current_prefix].name, last_row, last_col, id[src_hash].name);
+d3704 10
+a3713 6
+           conf[i][j].cdw1.ea0op,  /*:  5; mem_opcd */
+           conf[i][j].cdw1.ea0bs,  /*:  2; 0:ea0br, 1:ea0dr(ea0br+self-loop), 2:eabbrs, 3:ea0dr(eabbrs+self-loop) */
+           conf[i][j].cdw1.ea0os,  /*:  1; 0:ea0or, 1:eaobrs */
+           conf[i][j].cdw1.ea0msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
+           conf[i][j].cdw1.eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+d3717 9
+a3725 6
+           conf[i][j].cdw1.ea1op,  /*:  5; mem_opcd */
+           conf[i][j].cdw1.ea1bs,  /*:  2; 0:ea1br, 1:ea1dr(ea1br+self-loop), 2:eabbrs, 3:ea1dr(self-loop) */
+           conf[i][j].cdw1.ea1os,  /*:  1; 0:ea1or, 1:eaobrs */
+           conf[i][j].cdw1.ea1msk, /*:  4; 14:64bit, 13:word1, 12:word0, 11-8:half3-0, 7-0:byte7-0 of offset */
+           conf[i][j].cdw1.eabbrs, /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+           conf[i][j].cdw1.eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+d3744 9
+a3752 7
+           conf[i][j].cdw1.ea0op,  /*:  5; mem_opcd */
+           conf[i][j].cdw2.mwsa,   /*:  1; 0:lmwa,  1:ea0d        */
+           conf[i][j].cdw2.mws0,   /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
+           conf[i][j].cdw2.mws1,   /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
+           conf[i][j].cdw2.mws2,   /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
+           conf[i][j].cdw2.mws3,   /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
+           conf[i][j].cdw2.lmm_mode/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+d3764 1
+d3767 1
+d3770 1
+d3772 2
+a3773 1
+           bus[i][j].br[3].h
+d4174 4
+a4177 1
+         int eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+d4240 3
+a4242 1
+  if (ea0bs & 1) { /* feedback-loop */
+d4253 15
+d4297 4
+a4300 1
+         int eaobrs  /*:  4; 0:br0_0, 1:br0_1, ... 15:3_3 */
+d4363 3
+a4365 1
+  if (ea1bs & 1) { /* feedback-loop */
+d4376 15
+d4492 9
+a4500 7
+         int ea0op,  /* MWSAに加え,LDDMQおよびSTOREの場合にもMW有効 */
+         int mwsa,   /*:  1; 0:lmwa,  1:ea0d        */
+         int mws0,   /*:  2; 0:lmwd0, 1:exdr, 2:ts0 */
+         int mws1,   /*:  2; 0:lmwd1, 1:exdr, 2:ts1 */
+         int mws2,   /*:  2; 0:lmwd2, 1:exdr, 2:ts2 */
+         int mws3,   /*:  2; 0:lmwd3, 1:exdr, 2:ts3 */
+	 int lmm_mode/*:  2; 0:無効, 1:分割無, 2:2分割, 3:4分割 */
+d4506 1
+a4506 1
+  int ea0store = (ea0op&0x10);
+d4509 1
+a4509 1
+  if (mwsa==0) {
+d4520 1
+a4520 1
+  if (ea0store || mwsa==0) {
+d4535 2
+a4536 2
+  if ((ea0store || mwsa==0) && mws0==0) { col=1; /*red*/   thi=3; } /* lmwd0 */
+  else                               { col=0; /*black*/ thi=1; }
+d4538 2
+a4539 2
+  if ((ea0store || mwsa==0) && mws0==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                               { col=0; /*black*/ thi=1; }
+d4541 2
+a4542 2
+  if ((ea0store || mwsa==0) && mws0==2) { col=1; /*red*/   thi=3; } /* ts0 */
+  else                               { col=0; /*black*/ thi=1; }
+d4546 1
+a4546 1
+  if (ea0store || mwsa==0) {
+d4561 2
+a4562 2
+  if ((ea0store || mwsa==0) && mws1==0) { col=1; /*red*/   thi=3; } /* lmwd1 */
+  else                               { col=0; /*black*/ thi=1; }
+d4564 2
+a4565 2
+  if ((ea0store || mwsa==0) && mws1==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                               { col=0; /*black*/ thi=1; }
+d4567 2
+a4568 2
+  if ((ea0store || mwsa==0) && mws1==2) { col=1; /*red*/   thi=3; } /* ts1 */
+  else                               { col=0; /*black*/ thi=1; }
+d4572 1
+a4572 1
+  if (ea0store || mwsa==0) {
+d4587 2
+a4588 2
+  if ((ea0store || mwsa==0) && mws2==0) { col=1; /*red*/   thi=3; } /* lmwd2 */
+  else                               { col=0; /*black*/ thi=1; }
+d4590 2
+a4591 2
+  if ((ea0store || mwsa==0) && mws2==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                               { col=0; /*black*/ thi=1; }
+d4593 2
+a4594 2
+  if ((ea0store || mwsa==0) && mws2==2) { col=1; /*red*/   thi=3; } /* ts2 */
+  else                               { col=0; /*black*/ thi=1; }
+d4598 1
+a4598 1
+  if (ea0store || mwsa==0) {
+d4613 2
+a4614 2
+  if ((ea0store || mwsa==0) && mws3==0) { col=1; /*red*/   thi=3; } /* lmwd3 */
+  else                               { col=0; /*black*/ thi=1; }
+d4616 2
+a4617 2
+  if ((ea0store || mwsa==0) && mws3==1) { col=1; /*red*/   thi=3; } /* exdr */
+  else                               { col=0; /*black*/ thi=1; }
+d4619 2
+a4620 2
+  if ((ea0store || mwsa==0) && mws3==2) { col=1; /*red*/   thi=3; } /* ts3 */
+  else                               { col=0; /*black*/ thi=1; }
+d4625 1
+a4625 1
+    draw_text(lmb_x+430, lmb_y+15, "M0", 1, 0);
+d4628 1
+a4628 1
+    draw_text(lmb_x+430, lmb_y+15, "M1", 1, 0);
+d4631 1
+a4631 1
+    draw_text(lmb_x+430, lmb_y+15, "M2", 1, 0);
+d4634 1
+a4634 1
+    draw_text(lmb_x+430, lmb_y+15, "M3", 1, 0);
+d4637 1
+d4649 1
+d4652 1
+d4655 1
+d4657 2
+a4658 1
+         int br3h
+d4744 5
+a4748 1
+    draw_text(bri_x+365,   bri_y+14, id[br0h].name, 1, 0);
+d4824 5
+a4828 1
+    draw_text(bri_x+245,   bri_y+14, id[br1h].name, 1, 0);
+d4888 5
+a4892 1
+    draw_text(bri_x+125,   bri_y+14, id[br2h].name, 1, 0);
+d4947 5
+a4951 1
+    draw_text(bri_x+5,     bri_y+14, id[br3h].name, 1, 0);
+@
+
+
+1.87
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/emax6.c,v 1.86 2021/06/18 03:04:05 nakashim Exp nakashim $";
+a2425 1
+  fprintf(ofile, "\temax6.lastdist = 0;\n");
+d2559 1
 @
 
 

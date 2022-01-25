@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/csim/RCS/emax6.c,v 1.390 2021/07/18 23:14:29 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/csim/RCS/emax6.c,v 1.395 2021/12/21 03:57:50 nakashim Exp nakashim $";
 
 /* EMAX6 Simulator                     */
 /*         Copyright (C) 2012 by NAIST */
@@ -76,8 +76,8 @@ struct axiif { /* axi status of EMAX6 */
 } axiif[MAXCORE]; /* used as EMAX_NCHIP */
 
 struct exring { /* ex status of EMAX6 */
-  Ull   cmd_busy        : 1; /* ★★★reg_ctrl.statに直接反映★★★ */
-  Ull   unit_busy       : 1; /* ★★★reg_ctrl.statに直接反映★★★ */
+  Ull   cmd_busy        : 1; /* reg_ctrl.statに直接反映 */
+  Ull   unit_busy       : 1; /* reg_ctrl.statに直接反映 */
   Ull   cycle           : 3;
 
   struct unit { /* hardware status of EMAX6 units */
@@ -93,7 +93,7 @@ struct exring { /* ex status of EMAX6 */
     Ull   one_shot_fold2: 1; /* folding用にone_shotから5τ遅延 */
     Ull   one_shot_fold3: 1; /* folding用にone_shotから6τ遅延 */
     Ull   one_shot_fold4: 1; /* folding用にone_shotから7τ遅延 */
-    Ull   unit1_exec    : 1; /* 次の動作を指示 (cex,exe,eag), 0:wait 1:exec *//* ★★★reg_ctrl.statに直接反映★★★ */
+    Ull   unit1_exec    : 1; /* 次の動作を指示 (cex,exe,eag), 0:wait 1:exec *//* reg_ctrl.statに直接反映 */
     Ull   unit1_fold    : 1; /* folding用にunit1_execから4τ遅延 */
     Ull   stage_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero stage2において毎サイクル生成 */
     Ull   unit1_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero 4τ毎に生成 */
@@ -105,7 +105,7 @@ struct exring { /* ex status of EMAX6 */
     Ull   unit1_arbrk   : 1; /* loop最終命令の実行完了を表示 */
     Ull   unit1_stop    : 1; /* 次の動作を指示 (cex,exe,eag), 0:wait 1:stop */
     Ull   tr_valid      : 1; /* TRの状態を表示 */
-    Ull   unit2_exec    : 1; /* 次の動作を指示 (lmm),         0:wait 1:exec *//* ★★★reg_ctrl.statに直接反映★★★ */
+    Ull   unit2_exec    : 1; /* 次の動作を指示 (lmm),         0:wait 1:exec *//* reg_ctrl.statに直接反映 */
     Ull   unit2_fold    : 1; /* folding用にunit2_execから4τ遅延 */
     Ull   unit2_forstat : 2; /* from for()for(), bit0:LOOP0=zero, bit1:LOOP1=zero */
     Ull   unit2_stop    : 1; /* 次の動作を指示 (lmm),         0:wait 1:stop */
@@ -148,18 +148,24 @@ struct exring { /* ex status of EMAX6 */
     Ull   ea0o          :64; /* reg  *//* in for EA0 */
     Ull   ea1b          :18; /* reg  *//* in for EA1 */
     Ull   ea1o          :64; /* reg  *//* in for EA1 */
-    Ull   ea02dr           ; /* reg  *//* for eag(&addr) */
-    Ull   ea12dr           ; /* reg  *//* for eag(&addr) */
-    Ull   ea03dr        :18; /* reg  */
-    Ull   ea13dr        :18; /* reg  */
+    Ull   ea02dofs         ; /* reg  *//* ★for passing eag offset */
+    Ull   ea02dr           ; /* reg  *//* for mex(&addr) pointer */
+    Ull   ea12dofs         ; /* reg  *//* ★for passing eag offset */
+    Ull   ea12dr           ; /* reg  *//* for mex(&addr) pointer */
+    Ull   ea03woofs     :18; /* reg  *//* ★for mex(&addr) feedback */
+    Ull   ea03dr           ; /* reg  *//* for eag(&addr) pointer */
+    Ull   ea13woofs     :18; /* reg  *//* ★for mex(&addr) feedback */
+    Ull   ea13dr           ; /* reg  *//* for eag(&addr) pointer */
     Ull   ea04_lmask    :18; /* wire *//* offset */
     Ull   ea04_umask    : 2; /* wire *//* partition */
-    Ull   ea04dr_prev   :18; /* reg  *//* for siml-loop only */
-    Ull   ea04dr        :18; /* reg  */
+    Ull   ea04woofs_prev:18; /* reg  *//* ★for siml-loop only */
+    Ull   ea04woofs     :18; /* reg  *//* ★for mex(&addr) feedback */
+    Ull   ea04dr        :18; /* reg  *//* base+mex+ofs */
     Ull   ea14_lmask    :18; /* wire *//* offset */
     Ull   ea14_umask    : 2; /* wire *//* partition */
-    Ull   ea14dr_prev   :18; /* reg  *//* for siml-loop only */
-    Ull   ea14dr        :18; /* reg  */
+    Ull   ea14woofs_prev:18; /* reg  *//* ★for siml-loop only */
+    Ull   ea14woofs     :18; /* reg  *//* ★for mex(&addr) feedback */
+    Ull   ea14dr        :18; /* reg  *//* base+mex+ofs */
     Ull   tx[UNIT_WIDTH]   ; /* reg  */
     Ull   tx2dr[UNIT_WIDTH]; /* reg  */
     Ull   tx3dr[UNIT_WIDTH]; /* reg  */
@@ -170,9 +176,9 @@ struct exring { /* ex status of EMAX6 */
     Ull   lmranger_ok   : 8; /* wire *//* lmring要求がread &ty==4&adr[col]<>lmm_range内 */
     Ull   lmrangew_ok   : 8; /* wire *//* lmring要求がwrite&ty==4&adr[col]<>lmm_range内 */
     Ull   lmlddmqw_ok   : 1; /* wire *//* lmring要求がwrite&ty==3&op1[col]==LDDMQ */
-    Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbr存在★★★4サイクルに分けて実行 */
-    Ull   lmea0strq     : 1; /* wire *//* ea0.strq存在     ★★★4サイクルに分けて実行 */
-    Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_col番号 ★★★4サイクルに分けて実行 */
+    Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbr存在 4サイクルに分けて実行 */
+    Ull   lmea0strq     : 1; /* wire *//* ea0.strq存在      4サイクルに分けて実行 */
+    Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_col番号  4サイクルに分けて実行 */
     Ull   lmring_ea0bsy : 1; /* wire *//* ea0有効 */
     Ull   lmring_ea1bsy : 1; /* wire *//* ea1有効 */
     Ull   lmring_ful    : 1; /* wire *//* (ful2==3)|(ful1 & (ful2==2)) */
@@ -214,6 +220,10 @@ struct exring { /* ex status of EMAX6 */
     Ull   mr1mux        : 2; /* mr1[3-0] -> brs1     */
     Ull   mr0d             ; /* muxed data for BR[0] */
     Ull   mr1d             ; /* muxed data for BR[1] */
+    Ull   mexmr0d_prev     ; /* ★for mex */
+    Ull   mexmr0d          ; /* ★for mex */
+    Ull   mexmr1d_prev     ; /* ★for mex */
+    Ull   mexmr1d          ; /* ★for mex */
     struct {Ull r[UNIT_WIDTH];} b[2][EMAX_WIDTH]; /* shadow_breg *//* constantは両方にセット */
 
     Ull   lmring_ful2   : 2; /* 0:empty, 3:full */
@@ -370,8 +380,8 @@ siml_emax6(cid, trace, trace_pipe)
   }
 
   /* find top_row */
-  for (row0=0; row0<EMAX_DEPTH; row0++)           /* ★★EXRINGは論理row0からsimlする必要があり,LMRINGも合わせる */
-    if (exring[cid].unit[row0].l_row == 0) break; /* ★★LMRINGは実際には物理row0がfsmに接続されているが,siml時は論理row0が先頭と考えて問題ない */
+  for (row0=0; row0<EMAX_DEPTH; row0++)           /* EXRINGは論理row0からsimlする必要があり,LMRINGも合わせる */
+    if (exring[cid].unit[row0].l_row == 0) break; /* LMRINGは実際には物理row0がfsmに接続されているが,siml時は論理row0が先頭と考えて問題ない */
 
   /********************************************************/
   siml_lmring_axi(cid, trace); /* LMRING->AXI */
@@ -442,8 +452,8 @@ siml_axi_iorq(cid, trace) Uint cid, trace;
   /*                             unit[].lmring_br -------  下からsiml.deq_waitが同一τにドミノ倒し.  */
   /*                                    |                  実機と違うがoutputの出方は同じ            */
   /* row0+DEPTH-1              1        |            V        ↑                                     */
-  /*   ★siml起点(broutは定数)   unit[].lmring_br -------  SIML起点(1τ前の次段deq_waitを使う.正常)  */
-  /* row0                     62        |            V   ★SIML最後(前段brの値が1τ未来になる)       */
+  /*     siml起点(broutは定数)   unit[].lmring_br -------  SIML起点(1τ前の次段deq_waitを使う.正常)  */
+  /* row0                     62        |            V     SIML最後(前段brの値が1τ未来になる)       */
   /*                             unit[].lmring_br -------     ↑                                     */
   /* row0+1                   63        |            V                                               */
   /*                             unit[].lmring_br -------bro_ful2                                    */
@@ -481,9 +491,9 @@ siml_axi_iorq(cid, trace) Uint cid, trace;
   /* iorq.BUF[2]                                                                -----<=D=====>---                                                                                                             */
   /* iorq.rob                                                                                                                                                                                                 */
   /* rdata[]    SLAVE                                                   -----<=D=====>---                                                                                                                     */
-  /* rvalid     SLAVE                                                   _____/~~~~~★\___                                                                                                                     */
+  /* rvalid     SLAVE                                                   _____/~~~~~~~\___                                                                                                                     */
   /* rlast      SLAVE                                                   _____/~~~~~~~\___                                                                                                                     */
-  /* rready    MASTER*                                                  _____/~~~~~★\___                                                                                                                     */
+  /* rready    MASTER*                                                  _____/~~~~~~~\___                                                                                                                     */
   /************************************************************************************************************************************************************************************************************/
 
   axiif[cid].axi_rready = 1; /* always 1 */
@@ -610,16 +620,16 @@ siml_iorq_axi(cid, trace) Uint cid, trace;
   /* iorq.rob                                                                                                                                                                                                 */
   /* awaddr    MASTER*  -----<=A=====>---                                                                                                                                                                     */
   /* awlen     MASTER*  -----<=0=====>---                                                                                                                                                                     */
-  /* awvalid   MASTER*  ___★/~~~~~~~\___ valid=1                                                                                                                                                             */
+  /* awvalid   MASTER*  _____/~~~~~~~\___ valid=1                                                                                                                                                             */
   /* awready    SLAVE   ~~~~~~~~~~~~~\___ ready=1時に授受                                                                                                                                                     */
   /* wstrb     MASTER*  -----<=M=====>---                                                                                                                                                                     */
   /* wdata[]   MASTER*  -----<=D=====>---                                                                                                                                                                     */
-  /* wvalid    MASTER*  ___★/~~~~~~~\___                                                                                                                                                                     */
+  /* wvalid    MASTER*  _____/~~~~~~~\___                                                                                                                                                                     */
   /* wlast     MASTER*  _____/~~~~~~~\___ PIOの場合,常に1                                                                                                                                                     */
   /* wready     SLAVE   ~~~~~~~~~~~~~\___                                                                                                                                                                     */
   /* araddr    MASTER*                                  -----<=A=====>---                                                                                                                                     */
   /* arlen     MASTER*                                  -----<=0=====>---                                                                                                                                     */
-  /* arvalid   MASTER*                                  ___★/~~~~~~~\___                                                                                                                                     */
+  /* arvalid   MASTER*                                  _____/~~~~~~~\___                                                                                                                                     */
   /* arready    SLAVE                                   ~~~~~~~~~~~~~\___                                                                                                                                     */
   /************************************************************************************************************************************************************************************************************/
 
@@ -887,8 +897,8 @@ siml_lmring_axi(cid, trace) Uint cid, trace;
   /*                             unit[].lmring_br -------  下からsiml.deq_waitが同一τにドミノ倒し.  */
   /*                                    |                  実機と違うがoutputの出方は同じ            */
   /* row0+DEPTH-1              1        |            V        ↑                                     */
-  /*   ★siml起点(broutは定数)   unit[].lmring_br -------  SIML起点(1τ前の次段deq_waitを使う.正常)  */
-  /* row0                     62        |            V   ★SIML最後(前段brの値が1τ未来になる)       */
+  /*     siml起点(broutは定数)   unit[].lmring_br -------  SIML起点(1τ前の次段deq_waitを使う.正常)  */
+  /* row0                     62        |            V     SIML最後(前段brの値が1τ未来になる)       */
   /*                             unit[].lmring_br -------     ↑                                     */
   /* row0+1                   63        |            V                                               */
   /*                             unit[].lmring_br -------bro_ful2                                    */
@@ -1063,17 +1073,17 @@ siml_axi_lmring(cid, trace) Uint cid, trace;
   /* clk                   _/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/~~~\___/ */
   /* awaddr    MASTER   -----<=A=====>---                                                                                                                                                                     */
   /* awlen     MASTER   -----<=0=====>---                                                                                                                                                                     */
-  /* awvalid   MASTER   _____/~~~~~★\___ valid=1                                                                                                                                                             */
-  /* awready    SLAVE*  ~~~~~~~~~~~★\___ ready=1の時に授受                                                                                                                                                   */
+  /* awvalid   MASTER   _____/~~~~~~~\___ valid=1                                                                                                                                                             */
+  /* awready    SLAVE*  ~~~~~~~~~~~~~\___ ready=1の時に授受                                                                                                                                                   */
   /* wstrb     MASTER   -----<=M=====>---                                                                                                                                                                     */
   /* wdata[]   MASTER   -----<=D=====>---                                                                                                                                                                     */
-  /* wvalid    MASTER   _____/~~~~~★\___                                                                                                                                                                     */
+  /* wvalid    MASTER   _____/~~~~~~~\___                                                                                                                                                                     */
   /* wlast     MASTER   _____/~~~~~~~\___ PIOの場合,常に1                                                                                                                                                     */
-  /* wready     SLAVE*  ~~~~~~~~~~~★\___                                                                                                                                                                     */
+  /* wready     SLAVE*  ~~~~~~~~~~~^~\___                                                                                                                                                                     */
   /* araddr    MASTER                A                          -----<=A=====>---                                                                                                                             */
   /* arlen     MASTER                |                          -----<=0=====>---                                                                                                                             */
-  /* arvalid   MASTER                |                          _____/~~~~~★\___                                                                                                                             */
-  /* arready    SLAVE*               |                          ~~~~~~~~~~~★\___                                                                                                                             */
+  /* arvalid   MASTER                |                          _____/~~~~~~~\___                                                                                                                             */
+  /* arready    SLAVE*               |                          ~~~~~~~~~~~~~\___                                                                                                                             */
   /* axiif_busy           *                                             _____/~~~~~~~~~~~                                                                                                                     */
   /* axiif_srw            *     -----<=1=====>---                       -----<=0=====>---                                                                                                                     */
   /* axiif_sadr           *     -----<=A=====>---                       -----<=A=====>---                                                                                                                     */
@@ -1511,7 +1521,7 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
 
       if (reg_ctrl.i[cid].conf[i][j].cdw0.fold) {
         xi = i;  /* refer current br */
-/*★*/  bi = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs&2)? i : pi; /* if ea0 takes eabbrs, shuold be i (else ea1(load) from pi) */
+        bi = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs&2)? i : pi; /* if ea0 takes eabbrs, shuold be i (else ea1(load) from pi) */
         oi = (reg_ctrl.i[cid].conf[i][j].cdw1.ea0os&1)? i : pi; /* if ea0 takes eaobrs, shuold be i (else ea1(load) from pi) */
       }
       else {
@@ -1550,18 +1560,53 @@ siml_unit_stage1(Uint cid, Uint i) /* stage-1 (BRIN->EX/TX) */
 	       (Uint)exring[cid].unit[xi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH], (Uint)exring[cid].unit[i].ex4dr_prev, (Uint)exring[cid].unit[i].ex2);
       }
 #endif
-/*★*/s = reg_ctrl.i[cid].conf[i][k].cdw1.eabbrs; exring[cid].unit[i].eab   = exring[cid].unit[bi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH]; //★ここがSFMA+STBRの起源
+#if 0
+//if (`conf_fold) begin
+//  wire [`EXRING_ADDR_BITS-1:0]    ea0bs   = (!ea0loop||first) ? (kea0bfromBR ? bi eabout              : regvk_ea0b)|ofs : ea0out;
+//  wire [`REG_DATA_BITS-1:0]       ea0os   = (!ea0loop||second)? (kea0ofromBR ? oi eaoout              : regvk_ea0o) : 0;
+//  wire [`EXRING_ADDR_BITS-1:0]    ea1bs   = (!ea1loop||first) ? ( ea1bfromBR ? bi(eab0BR?eabout:eabin):  regv_ea1b) : ea1out;
+//  wire [`REG_DATA_BITS-1:0]       ea1os   = (!ea1loop||second)? ( ea1ofromBR ? oi(eao0BR?eaoout:eaoin):  regv_ea1o) : 0;
+//end
+//else begin
+//  wire [`EXRING_ADDR_BITS-1:0]    ea0bs   = (!ea0loop||first) ? (kea0bfromBR ? bi eabin               : regvk_ea0b)|ofs : ea0out;
+//  wire [`REG_DATA_BITS-1:0]       ea0os   = (!ea0loop||second)? (kea0ofromBR ? oi eaoin               : regvk_ea0o) : 0;
+//  wire [`EXRING_ADDR_BITS-1:0]    ea1bs   = (!ea1loop||first) ? ( ea1bfromBR ? bi eabin               :  regv_ea1b) : ea1out;
+//  wire [`REG_DATA_BITS-1:0]       ea1os   = (!ea1loop||second)? ( ea1ofromBR ? oi eaoin               :  regv_ea1o) : 0;
+//end
+#endif
+      /* eab/eaoが上か下かは,foldとea0bs/ea0osのみによって決まる */
+      s = reg_ctrl.i[cid].conf[i][k].cdw1.eabbrs; exring[cid].unit[i].eab   = exring[cid].unit[bi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH]; //ここがSFMA+STBRの起源
       s = reg_ctrl.i[cid].conf[i][j].cdw1.eaobrs; exring[cid].unit[i].eao   = exring[cid].unit[oi].b[b][s/UNIT_WIDTH].r[s%UNIT_WIDTH];
 
+#if 0
+//    sb = reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs;
+//    if (sb & 1) { /* same as if (mex0op) */
+//	if (!exring[cid].unit[i].one_shot||(reg_ctrl.i[cid].conf[i][j].cdw0.mex0init && (exring[cid].unit[i].unit1_forstat&1)))
+//	  base = pi;
+//	else
+//	  base = ea04woofs_prev;
+//    }
+//    else
+//	base = pi;
+//
+//    offs = pi;
+#endif
       /* self_loop=0の場合の初期値はaddr+offs, self_loop=1かつ初回はaddr,以降addr+offs */
-      /* ★★★STRQ/SFMA+STBRはSTRを4サイクル分割実行★★★ */
-      /* ★★★exring[cid].unit[i].lmea0strq と exring[cid].unit[i].lmea0strqcol は siml_unit_stage4()にて先行セット */
-      ofs =                                   exring[cid].unit[i].lmea0strq  ? (j<<3)                           : 0;
-      sb = reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs; exring[cid].unit[i].ea0b  = (!(sb&1)||!exring[cid].unit[i].one_shot)?(((sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][k].ea0b)|ofs) : exring[cid].unit[i].ea04dr_prev;
-      so = reg_ctrl.i[cid].conf[i][k].cdw1.ea0os; exring[cid].unit[i].ea0o  = (!(sb&1)|| exring[cid].unit[i].one_shot)?( (so&1)?exring[cid].unit[i].eao:reg_ctrl.i[cid].addr[i][k].ea0o     ) : 0LL;
-      /* self_loop=0の場合の初期値はaddr+offs, self_loop=1かつ初回はaddr,以降addr+offs */
-      sb = reg_ctrl.i[cid].conf[i][j].cdw1.ea1bs; exring[cid].unit[i].ea1b  = (!(sb&1)||!exring[cid].unit[i].one_shot)?( (sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][j].ea1b     ) : exring[cid].unit[i].ea14dr_prev;
-      so = reg_ctrl.i[cid].conf[i][j].cdw1.ea1os; exring[cid].unit[i].ea1o  = (!(sb&1)|| exring[cid].unit[i].one_shot)?( (so&1)?exring[cid].unit[i].eao:reg_ctrl.i[cid].addr[i][j].ea1o     ) : 0LL;
+      /* STRQ/SFMA+STBRはSTRを4サイクル分割実行 */
+      /* exring[cid].unit[i].lmea0strq と exring[cid].unit[i].lmea0strqcol は siml_unit_stage4()にて先行セット */
+      ofs = exring[cid].unit[i].lmea0strq ? (j<<3) : 0;
+      sb = reg_ctrl.i[cid].conf[i][k].cdw1.ea0bs; exring[cid].unit[i].ea0b = (!(sb&1)||(!exring[cid].unit[i].one_shot||(reg_ctrl.i[cid].conf[i][j].cdw0.mex0init && (exring[cid].unit[i].unit1_forstat&1))))
+						    ? (((sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][k].ea0b)|ofs)
+						    : exring[cid].unit[i].ea04woofs_prev; /* ★ */
+      so = reg_ctrl.i[cid].conf[i][k].cdw1.ea0os; exring[cid].unit[i].ea0o = so
+						    ? exring[cid].unit[i].eao
+						    : reg_ctrl.i[cid].addr[i][k].ea0o;    /* ★ */
+      sb = reg_ctrl.i[cid].conf[i][j].cdw1.ea1bs; exring[cid].unit[i].ea1b = (!(sb&1)||(!exring[cid].unit[i].one_shot||(reg_ctrl.i[cid].conf[i][j].cdw0.mex1init && (exring[cid].unit[i].unit1_forstat&1))))
+						    ? ( (sb&2)?exring[cid].unit[i].eab:reg_ctrl.i[cid].addr[i][j].ea1b     )
+						    : exring[cid].unit[i].ea14woofs_prev; /* ★ */
+      so = reg_ctrl.i[cid].conf[i][j].cdw1.ea1os; exring[cid].unit[i].ea1o = so
+						    ? exring[cid].unit[i].eao
+						    : reg_ctrl.i[cid].addr[i][j].ea1o;    /* ★ */
     }
 
     if (exring[cid].unit[i].unit1_exec && (exring[cid].unit[i].l_row==0 || exring[cid].unit[(i+EMAX_DEPTH-1)%EMAX_DEPTH].brout_valid)) /* unit1   active */
@@ -1627,7 +1672,7 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
   /* mo4(OP_LDRQ,  1,  BR[r][2], (Ull)b0,                  (Ull)bofs,        MSK_W1,    (Ull)b,          L*RMGRP,   0,      0,    (Ull)NULL,   L*RMGRP);                                    */
   /* mo4(OP_LDRQ,  1,  BR[r][1], (Ull)a[s][CHIP],          (Ull)cofs,        MSK_W1,    (Ull)a[s][CHIP], L,         0,      0,    (Ull)NULL,   L);                                          */
   /* exe(OP_NOP,      &AR[r][0], 0LL,           EXP_H3210, 0LL,              EXP_H3210, 0LL,             EXP_H3210, OP_NOP, 0LL,  OP_NOP,      0LL);                                        */
-  /* mop(OP_LDUBR, 1, &b00,      (Ull)c0[s][CHIP],         (Ull)oofs,        MSK_W0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4);                                    */
+  /* mop(OP_LDBR,  1, &b00,      (Ull)c0[s][CHIP],         (Ull)oofs,        MSK_W0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4);                                    */
   /* ex4(OP_SFMA,     &b00,      INIT0?b00:b00, EXP_H3210, BR[r][1],         EXP_H3210, BR[r][2],        EXP_H3210, OP_NOP, 32LL, OP_NOP,      0LL);                                        */
   /* mop(OP_STBR,  1, &b00,      (Ull)oofs,                (Ull)c0[s][CHIP], MSK_D0,    (Ull)c[s][CHIP], RMGRP/4,   0,      1,    (Ull)NULL,   RMGRP/4)                                     */
   /******************************************************************************************************************************************************************************************/
@@ -1669,6 +1714,10 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
   Uint   ex1_retval;
   Ull    base0, offs0;
   Ull    base1, offs1;
+  Uint   mex0op,   mex1op;   /* ★ */
+  Uint   mex0init, mex1init; /* ★ */
+  Uint   mex0dist, mex1dist; /* ★ */
+  Uint   mex0ofs,  mex1ofs;  /* ★ */
 
   switch (exring[cid].unit[i].cmd) {
   case CMD_NOP:   /* nop */
@@ -1693,7 +1742,9 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
         exring[cid].unit[i].ex2dr_sfma5 = 0LL;
         exring[cid].unit[i].ex2dr_sfma6 = 0LL;
         exring[cid].unit[i].ex2dr_sfma7 = 0LL;
+        exring[cid].unit[i].ea02dofs    = 0; /* ★ */
         exring[cid].unit[i].ea02dr      = 0;
+        exring[cid].unit[i].ea12dofs    = 0; /* ★ */
         exring[cid].unit[i].ea12dr      = 0;
         exring[cid].unit[i].tx2dr[0]    = 0LL;
         exring[cid].unit[i].tx2dr[1]    = 0LL;
@@ -1770,9 +1821,59 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
       offs0 = exring[cid].unit[i].ea0o;
       base1 = exring[cid].unit[i].ea1b;
       offs1 = exring[cid].unit[i].ea1o;
-      k     = (exring[cid].unit[i].lmea0sfma || exring[cid].unit[i].lmea0strq) ? exring[cid].unit[i].lmea0strqcol : j;
-/*★*/eag(&exring[cid].unit[i].ea02dr, base0, offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk);
-      eag(&exring[cid].unit[i].ea12dr, base1, offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk);
+      mex0op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex0op;   /* ★ */
+      mex1op   = reg_ctrl.i[cid].conf[i][j].cdw0.mex1op;   /* ★ */
+      mex0init = reg_ctrl.i[cid].conf[i][j].cdw0.mex0init; /* ★ */
+      mex1init = reg_ctrl.i[cid].conf[i][j].cdw0.mex1init; /* ★ */
+      mex0dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex0dist; /* ★ */
+      mex1dist = reg_ctrl.i[cid].conf[i][j].cdw0.mex1dist; /* ★ */
+
+//    eag(&exring[cid].unit[i].ea02dr, base0, offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk);
+//    eag(&exring[cid].unit[i].ea12dr, base1, offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk);
+
+      if (mex0op) {  /* ★ */
+	if ((!one_shot2)||(mex0init && (forstat2 & 1))) /* ★ */
+	  mex0ofs = 0;        /* ★ */
+	else {                /* ★ */
+	  switch (mex0dist) { /* ★ */
+	  case  0: mex0ofs =  0; break; /* ★ */
+	  case  1: mex0ofs =  1; break; /* ★ */
+	  case  2: mex0ofs =  2; break; /* ★ */
+	  case  3: mex0ofs =  4; break; /* ★ */
+	  case  4: mex0ofs =  8; break; /* ★ */
+	  case  5: mex0ofs = 16; break; /* ★ */
+	  case  6: mex0ofs = 32; break; /* ★ */
+	  default: mex0ofs = 64; break; /* ★ */
+	  }
+	}
+      }
+      else           /* ★ */
+	mex0ofs = 0; /* ★ */
+      mex(mex0op, &exring[cid].unit[i].ea02dr, base0, mex0ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ★ */
+
+      if (mex1op) {  /* ★ */
+	if ((!one_shot2)||(mex1init && (forstat2 & 1))) /* ★ */
+	  mex1ofs = 0;        /* ★ */
+	else {                /* ★ */
+	  switch (mex1dist) { /* ★ */
+	  case  0: mex1ofs =  0; break; /* ★ */
+	  case  1: mex1ofs =  1; break; /* ★ */
+	  case  2: mex1ofs =  2; break; /* ★ */
+	  case  3: mex1ofs =  4; break; /* ★ */
+	  case  4: mex1ofs =  8; break; /* ★ */
+	  case  5: mex1ofs = 16; break; /* ★ */
+	  case  6: mex1ofs = 32; break; /* ★ */
+	  default: mex1ofs = 64; break; /* ★ */
+	  }
+	}
+      }
+      else           /* ★ */
+	mex1ofs = 0; /* ★ */
+      mex(mex1op, &exring[cid].unit[i].ea12dr, base1, mex1ofs, exring[cid].unit[i].mexmr1d_prev, exring[cid].unit[i].mexmr0d_prev); /* ★ */
+
+      k = (exring[cid].unit[i].lmea0sfma || exring[cid].unit[i].lmea0strq) ? exring[cid].unit[i].lmea0strqcol : j;
+      exring[cid].unit[i].ea02dofs = eam(offs0, reg_ctrl.i[cid].conf[i][k].cdw1.ea0msk); /* ★ */
+      exring[cid].unit[i].ea12dofs = eam(offs1, reg_ctrl.i[cid].conf[i][j].cdw1.ea1msk); /* ★ */
 
       /* tx -> tx2dr */
       exring[cid].unit[i].tx2dr[0] = exring[cid].unit[i].tx[0];
@@ -1803,6 +1904,9 @@ siml_unit_stage2(Uint cid, Uint i) /* stage-2 (EX/TX->1DR) */
 siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
 {
   int    j = (exring[cid].unit[i].cycle+(EMAX_WIDTH-2)) % EMAX_WIDTH; /* 2,3,0,1,2,3,0,1 */
+  int    k;            /* ★ */
+  Ull    base0, offs0; /* ★ */
+  Ull    base1, offs1; /* ★ */
 
   switch (exring[cid].unit[i].cmd) {
   case CMD_NOP:   /* nop */
@@ -1816,7 +1920,9 @@ siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
         exring[cid].unit[i].ex3passr2 = 0;
         exring[cid].unit[i].ex3passr3 = 0;
         exring[cid].unit[i].ex3dr     = 0LL;
+	exring[cid].unit[i].ea03woofs = 0; /* ★ */
         exring[cid].unit[i].ea03dr    = 0;
+	exring[cid].unit[i].ea13woofs = 0; /* ★ */
         exring[cid].unit[i].ea13dr    = 0;
         exring[cid].unit[i].tx3dr[0]  = 0LL;
         exring[cid].unit[i].tx3dr[1]  = 0LL;
@@ -1844,8 +1950,16 @@ siml_unit_stage3(Uint cid, Uint i) /* stage-3 (1DR->2DR) */
 	exring[cid].unit[i].ex3dr   = exring[cid].unit[i].ex2dr;
 
       /* ea2dr -> ea3dr */
-      exring[cid].unit[i].ea03dr = exring[cid].unit[i].ea02dr;
-      exring[cid].unit[i].ea13dr = exring[cid].unit[i].ea12dr;
+//    exring[cid].unit[i].ea03dr = exring[cid].unit[i].ea02dr;
+//    exring[cid].unit[i].ea13dr = exring[cid].unit[i].ea12dr;
+      exring[cid].unit[i].ea03woofs = exring[cid].unit[i].ea02dr;   /* ★ */
+      base0                         = exring[cid].unit[i].ea02dr;   /* ★ */
+      offs0                         = exring[cid].unit[i].ea02dofs; /* ★ */
+      exring[cid].unit[i].ea13woofs = exring[cid].unit[i].ea12dr;   /* ★ */
+      base1                         = exring[cid].unit[i].ea12dr;   /* ★ */
+      offs1                         = exring[cid].unit[i].ea12dofs; /* ★ */
+      eag(&exring[cid].unit[i].ea03dr, base0, offs0);               /* ★ */
+      eag(&exring[cid].unit[i].ea13dr, base1, offs1);               /* ★ */
 
       /* tx2dr -> tx3dr */
       exring[cid].unit[i].tx3dr[0] = exring[cid].unit[i].tx2dr[0];
@@ -1920,9 +2034,16 @@ siml_unit_stage4_pre(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRI
   exring[cid].unit[i].lmea0sfma      = reg_ctrl.i[cid].conf[i][0].cdw1.ea0op == OP_STBR && reg_ctrl.i[cid].conf[i][0].cdw0.op1 == OP_SFMA; /* SFMA+STBR */
   exring[cid].unit[i].lmea0strq      = reg_ctrl.i[cid].conf[i][0].cdw1.ea0op == OP_STRQ;                                                   /* STRQ */
   exring[cid].unit[i].lmea0strqcol   = 0; /* default (fixed to 0) */
-  exring[cid].unit[i].lmring_ea0bsy  =((!reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_exec) || (reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_fold))
-                                     &&((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFWR)||(exring[cid].unit[i].lmea0sfma||exring[cid].unit[i].lmea0strq));/*op0*/
-  exring[cid].unit[i].lmring_ea1bsy  = exring[cid].unit[i].stage4_exec &&  (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op && reg_ctrl.i[cid].conf[i][j].cdw1.ea1op <= OP_IM_BUFRD);      /* op1 */
+                                     /* MEX追加前: 行全体のea0       は[i][0].fold=0ならstage4_exec, fold=1ならstage4_foldに従う */
+                                     /* MEX追加後: 行全体のea0(load) はstage4_execに従う                                         */
+                                     /*            行全体のea0(store)は[i][0].fold=0ならstage4_exec, fold=1ならstage4_foldに従う */
+  exring[cid].unit[i].lmring_ea0bsy  = ((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFRD) /* ★ */
+                                     && exring[cid].unit[i].stage4_exec)/* op0 LD */                                                    /* ★ */
+                                   || (((reg_ctrl.i[cid].conf[i][j].cdw1.ea0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op <= OP_IM_BUFWR)||(exring[cid].unit[i].lmea0sfma||exring[cid].unit[i].lmea0strq))
+                                     &&((!reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_exec) || (reg_ctrl.i[cid].conf[i][0].cdw0.fold && exring[cid].unit[i].stage4_fold)));/*op0 ST */
+                                     /*            行全体のea1(load) はstage4_execに従う */
+  exring[cid].unit[i].lmring_ea1bsy  =  (reg_ctrl.i[cid].conf[i][j].cdw1.ea1op && reg_ctrl.i[cid].conf[i][j].cdw1.ea1op <= OP_IM_BUFRD) /* ★ */
+                                     && exring[cid].unit[i].stage4_exec;/* op1 LD */                                                    /* ★ */
   exring[cid].unit[i].lmring_ful     =(exring[cid].unit[i].lmring_ful2==LMRING_BR_BUF) || (exring[cid].unit[i].lmring_ful1 && exring[cid].unit[i].lmring_ful2==LMRING_BR_BUF-1); /* assign */
   exring[cid].unit[i].deq_wait       = exring[cid].unit[i].lmring_ful                  || (exring[cid].unit[i].lmranger_ok && exring[cid].unit[i].lmring_ea1bsy)
                                                                                        || (exring[cid].unit[i].lmrangew_ok && exring[cid].unit[i].lmring_ea0bsy)
@@ -2025,9 +2146,9 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   Ull   lmranger_ok   : 4; /* wire *//* lmring要求がread &ty==4&adr[col]<>lmm_range内 */
   Ull   lmrangew_ok   : 4; /* wire *//* lmring要求がwrite&ty==4&adr[col]<>lmm_range内 */
   Ull   lmlddmqw_ok   : 1; /* wire *//* lmring要求がwrite&ty==3&op1[col]==LDDMQ */
-  Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbr存在★★★4サイクルに分けて実行 */
-  Ull   lmea0strq     : 1; /* wire *//* ea0.strq存在     ★★★4サイクルに分けて実行 */
-  Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_col番号 ★★★4サイクルに分けて実行 */
+  Ull   lmea0sfma     : 1; /* wire *//* sfma+ea0.stbr存在 4サイクルに分けて実行 */
+  Ull   lmea0strq     : 1; /* wire *//* ea0.strq存在      4サイクルに分けて実行 */
+  Ull   lmea0strqcol  : 2; /* wire *//* ea0.strq_col番号  4サイクルに分けて実行 */
   Ull   lmring_ea0bsy : 1; /* wire *//* ea0有効 */
   Ull   lmring_ea1bsy : 1; /* wire *//* ea1有効 */
   Ull   lmring_ful    : 1; /* wire *//* (ful2==3)|(ful1 & (ful2==2)) */
@@ -2056,14 +2177,14 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   /* OP_LDDMQ        0x18     */
   /* OP_TR           0x19     */
   /* OP_IM_BUFWR     0x1e ----ここまでeagと干渉 */
-  /* OP_IM_PREF      0x1f lmring-write動作 ★自身なので干渉しない */
+  /* OP_IM_PREF      0x1f lmring-write動作 自身なので干渉しない */
 
   /* op1                      */
   /* OP_LDR          0x01 ... */
   /* OP_IM_BUFRD     0x0e ----ここまでeagと干渉 */
-  /* OP_IM_DRAIN     0x0f lmring-read動作 ★自身なので干渉しない */
-  /* OP_LDDMQ        0x18 lmring-read動作 ★自身なので干渉しない */
-  /* OP_TR           0x19 lmring-read動作 ★自身なので干渉しない */
+  /* OP_IM_DRAIN     0x0f lmring-read動作  自身なので干渉しない */
+  /* OP_LDDMQ        0x18 lmring-read動作  自身なので干渉しない */
+  /* OP_TR           0x19 lmring-read動作  自身なので干渉しない */
 
   /* lmmi[][]はmerge(copy=1)のみでsplit無.DMA対象はv=1,copy=0のみだがEXECがblockしていない限りLMM参照可 */
   /* conf.lmm_modeはmerge/split有.EXEC時にEA->LMMの際のアドレスマスクを制御 */
@@ -2133,12 +2254,14 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
   Ull   ex4dr            ; /* reg  *//* out for third-stage */
   Ull   ea04_lmask    :18; /* wire *//* offset */
   Ull   ea04_umask    : 2; /* wire *//* partition */
-  Ull   ea04dr_prev      ; /* reg  *//* for siml-loop only */
-  Ull   ea04dr           ; /* reg  */
+  Ull   ea04woofs_prev:18; /* reg  *//* for siml-loop only */
+  Ull   ea04woofs     :18; /* reg  *//* for mex(&addr) feedback */
+  Ull   ea04dr        :18; /* reg  */
   Ull   ea14_lmask    :18; /* wire *//* offset */
   Ull   ea14_umask    : 2; /* wire *//* partition */
-  Ull   ea14dr_prev      ; /* reg  *//* for siml-loop only */
-  Ull   ea14dr           ; /* reg  */
+  Ull   ea14woofs_prev:18; /* reg  *//* for siml-loop only */
+  Ull   ea14woofs     :18; /* reg  *//* for mex(&addr) feedback */
+  Ull   ea14dr        :18; /* reg  */
   Ull   tr_valid      : 1; /* TRの状態を表示 */
   Ull   tx4dr[UNIT_WIDTH]; /* reg  */
   Ull   mwmux[UNIT_WIDTH]; /* wire for mw0[] */
@@ -2162,9 +2285,9 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
       && (reg_ctrl.i[cid].cmd&3) == CMD_RESET) {
     exring[cid].unit[i].ex4dr_prev     = 0LL; /* siml-loop only */
     exring[cid].unit[i].ex4dr          = 0LL;
-    exring[cid].unit[i].ea04dr_prev    = 0;   /* siml-loop only */
+    exring[cid].unit[i].ea04woofs_prev = 0;   /* ★siml-loop only */
     exring[cid].unit[i].ea04dr         = 0;
-    exring[cid].unit[i].ea14dr_prev    = 0;   /* siml-loop only */
+    exring[cid].unit[i].ea14woofs_prev = 0;   /* ★siml-loop only */
     exring[cid].unit[i].ea14dr         = 0;
     exring[cid].unit[i].tx4dr[0]       = 0LL;
     exring[cid].unit[i].tx4dr[1]       = 0LL;
@@ -2213,7 +2336,8 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
     /* eaop0/eaop1を直接検査するので,conf.mwsaは使わなくて良い */
     /* (NOP | EXEC) & !deq_wait & lmrangew_okの時 lmwa->ea04dr */
     /* lmring_ea0bsy                         の時,ea0d->ea04dr */
-    exring[cid].unit[i].ea04dr_prev = exring[cid].unit[i].ea04dr; /* siml-loop only */
+    exring[cid].unit[i].ea04woofs_prev = exring[cid].unit[i].ea04woofs; /* ★siml-loop only */
+    exring[cid].unit[i].ea04woofs      = exring[cid].unit[i].ea03woofs; /* ★ */
     if ((exring[cid].unit[i].cmd == CMD_NOP || exring[cid].unit[i].cmd == CMD_EXEC)
       && ful2 && !deq_wait && exring[cid].unit[i].lmrangew_ok) { /* axi->lmm_write */
       /* LMEM_SIZE(128KB)/4 = 32KB... lmm_mode=1:adr=(block=col&0)*(LMEM_SIZE/4) | (ofs=adr&(LMEM_SIZE/1-1)) */
@@ -2234,22 +2358,34 @@ siml_unit_stage4(Uint cid, Uint i) /* stage-4 (2DR->3DR)  (LMRING_BRIN->LMRING_T
       exring[cid].unit[i].lmm.mw0[1]  = exring[cid].unit[i].lmwd[1];
       exring[cid].unit[i].lmm.mw0[2]  = exring[cid].unit[i].lmwd[2];
       exring[cid].unit[i].lmm.mw0[3]  = exring[cid].unit[i].lmwd[3];
+      // printf("place1 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+      // printf("place1 lmm_mode %x exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask %x  exring[cid].unit[i].lmco %x exring[cid].unit[i].ea04_umask %x exring[cid].unit[i].lmca %x exring[cid].unit[i].ea04_lmask %x\n",reg_ctrl.i[cid].conf[i][exring[cid].unit[i].lmco].cdw2.lmm_mode,exring[cid].unit[i].lmco & exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmco,exring[cid].unit[i].ea04_umask,exring[cid].unit[i].lmca,exring[cid].unit[i].ea04_lmask);
 #if 0
 printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%08.8x lmranger_ok=%x lmrangew_ok=%x top=%08.8x bot=%08.8x\n", i, br->col, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axir, reg_ctrl.i[cid].conf[i][br->col].cdw2.lmm_axiw, br->rw, br->ty, br->a, exring[cid].unit[i].lmranger_ok, exring[cid].unit[i].lmrangew_ok, reg_ctrl.i[cid].addr[i][br->col].top, reg_ctrl.i[cid].addr[i][br->col].bot);
 #endif
     }
     else if (exring[cid].unit[i].lmring_ea0bsy) { /* EXEC & ea0d->lmm_write/read (STRQ/SFMAの毎サイクル実行もここ) */
+      int kmex;
       k = (exring[cid].unit[i].lmea0sfma || exring[cid].unit[i].lmea0strq) ? exring[cid].unit[i].lmea0strqcol : j;
-      switch (reg_ctrl.i[cid].conf[i][k].cdw2.lmm_mode) {
+      /* ★★★★★★★★★★★MEX0用のADDR_MASK */
+      /* conf[][col=2]mex1opは,conf[][col=2].lmm_modeを参照 */
+      /* conf[][col=2]mex0opは,conf[][col=1].lmm_modeを参照 */
+      kmex = (reg_ctrl.i[cid].conf[i][j].cdw0.mex0op && reg_ctrl.i[cid].conf[i][j].cdw1.ea0op < OP_IM_BUFRD) ? ((k==3)?2:(k==2)?1:0) : k; /* ★ */
+      /* ★★★★★★★★★★★MEX0用のLD */
+      /* if (i==2 && k==2) printf("[2][2] mexop0=%d\n", reg_ctrl.i[cid].conf[i][k].cdw0.mex0op); */
+      switch (reg_ctrl.i[cid].conf[i][kmex].cdw2.lmm_mode) {   /* ★ */
       case 0: exring[cid].unit[i].ea04_umask = LMEM_UMASK0; exring[cid].unit[i].ea04_lmask = LMEM_LMASK0; break;
       case 1: exring[cid].unit[i].ea04_umask = LMEM_UMASK1; exring[cid].unit[i].ea04_lmask = LMEM_LMASK1; break;
       case 2: exring[cid].unit[i].ea04_umask = LMEM_UMASK2; exring[cid].unit[i].ea04_lmask = LMEM_LMASK2; break;
       case 3: exring[cid].unit[i].ea04_umask = LMEM_UMASK3; exring[cid].unit[i].ea04_lmask = LMEM_LMASK3; break;
       }
-      exring[cid].unit[i].ea04dr      = ((k & exring[cid].unit[i].ea04_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea03dr & exring[cid].unit[i].ea04_lmask);
-      exring[cid].unit[i].lmm.en0     = 1;
-      exring[cid].unit[i].lmm.rw0     = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0op & 0x10)!=0; /* read/write */
-      exring[cid].unit[i].lmm.ma0     = (exring[cid].unit[i].ea04dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
+      exring[cid].unit[i].ea04dr   = ((kmex & exring[cid].unit[i].ea04_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea03dr & exring[cid].unit[i].ea04_lmask); /* ★ */
+      /* if (i==2 && k==2) printf("kmex=%d lmm_mode=%d ea04dr=%08.8x\n", kmex, reg_ctrl.i[cid].conf[i][kmex].cdw2.lmm_mode, (Uint)exring[cid].unit[i].ea04dr); */
+      exring[cid].unit[i].lmm.en0  = 1;
+      exring[cid].unit[i].lmm.rw0  = (reg_ctrl.i[cid].conf[i][k].cdw1.ea0op & 0x10)!=0; /* read/write */
+      exring[cid].unit[i].lmm.ma0  = (exring[cid].unit[i].ea04dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
+      // printf("place2 ma0 %x exring[cid].unit[i].ea04dr %x exring[cid].unit[i].ea04dr percent LMEM_SIZE %x\n",exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].ea04dr,exring[cid].unit[i].ea04dr % LMEM_SIZE);
+
                                         /* OP_TR   の場合,eag0->WRITE,eag1->READ */
                                         /* OP_LDDMQの場合,eag0->WRITE,eag1->READ */
       /* mws[0-3]:2; 0:lmwd1, 1:exdr, 2:ts1 */
@@ -2308,15 +2444,15 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
         break;
       case OP_IM_PREF:
       case OP_IM_BUFWR:
-        exring[cid].unit[i].lmm.mm0    = 0xffffffff;         /* mask *//* ★★★暫定記述★★★ */
-        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* ★★★暫定記述★★★ */
-        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* ★★★暫定記述★★★ */
-        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* ★★★暫定記述★★★ */
-        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* ★★★暫定記述★★★ */
+        exring[cid].unit[i].lmm.mm0    = 0xffffffff;         /* mask *//* 暫定記述 */
+        exring[cid].unit[i].lmm.mw0[0] = exring[cid].unit[i].mwmux[0]; /* 暫定記述 */
+        exring[cid].unit[i].lmm.mw0[1] = exring[cid].unit[i].mwmux[1]; /* 暫定記述 */
+        exring[cid].unit[i].lmm.mw0[2] = exring[cid].unit[i].mwmux[2]; /* 暫定記述 */
+        exring[cid].unit[i].lmm.mw0[3] = exring[cid].unit[i].mwmux[3]; /* 暫定記述 */
         break;
       case OP_STRQ: /* OP_STRQ in target   slot */
         if (exring[cid].unit[i].lmea0strq) {
-          /* ★★★STRQはSTRを4サイクル分割実行★★★ */
+          /* STRQはSTRを4サイクル分割実行 */
           exring[cid].unit[i].lmm.mm0 = 0x000000ff << (j<<3);
           exring[cid].unit[i].lmm.mw0[j] = exring[cid].unit[i].mwmux[j]; /* align不要 */
         }
@@ -2331,7 +2467,8 @@ printf("====== WLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
 
     /* (NOP | EXEC) & !deq_wait & lmranger_okの時 lmra->ea14dr */
     /* lmring_ea1bsy                         の時,ea1d->ea14dr */
-    exring[cid].unit[i].ea14dr_prev = exring[cid].unit[i].ea14dr; /* siml-loop only */
+    exring[cid].unit[i].ea14woofs_prev = exring[cid].unit[i].ea14woofs; /* ★siml-loop only */
+    exring[cid].unit[i].ea14woofs      = exring[cid].unit[i].ea13woofs; /* ★ */
     if ((exring[cid].unit[i].cmd == CMD_NOP || exring[cid].unit[i].cmd == CMD_EXEC)
       && ful2 && !deq_wait && exring[cid].unit[i].lmranger_ok) { /* axi->lmm_read */
       /* LMEM_SIZE(128KB)/4 = 32KB... lmm_mode=1:adr=(block=col&0)*(LMEM_SIZE/4) | (ofs=adr&(LMEM_SIZE/1-1)) */
@@ -2352,20 +2489,23 @@ printf("====== RLMM row=%x br.col=%x ====axir=%x axiw=%x br->rw=%x br->ty=%x a=%
 #endif
     }
     else if (exring[cid].unit[i].lmring_ea1bsy) { /* EXEC & ea1d->lmm_read */
+      /* ★★★★★★★★★★★MEX1用のLD */
+      /* if (i==2 && j==2) printf("[2][2] mexop1=%d\n", reg_ctrl.i[cid].conf[i][j].cdw0.mex1op); */
       switch (reg_ctrl.i[cid].conf[i][j].cdw2.lmm_mode) {
       case 0: exring[cid].unit[i].ea14_umask = LMEM_UMASK0; exring[cid].unit[i].ea14_lmask = LMEM_LMASK0; break;
       case 1: exring[cid].unit[i].ea14_umask = LMEM_UMASK1; exring[cid].unit[i].ea14_lmask = LMEM_LMASK1; break;
       case 2: exring[cid].unit[i].ea14_umask = LMEM_UMASK2; exring[cid].unit[i].ea14_lmask = LMEM_LMASK2; break;
       case 3: exring[cid].unit[i].ea14_umask = LMEM_UMASK3; exring[cid].unit[i].ea14_lmask = LMEM_LMASK3; break;
       }
-      exring[cid].unit[i].ea14dr      = ((j & exring[cid].unit[i].ea14_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea13dr & exring[cid].unit[i].ea14_lmask);
-      exring[cid].unit[i].lmm.en1     = 1;
-      exring[cid].unit[i].lmm.rw1     = 0; /* read */
-      exring[cid].unit[i].lmm.ma1     = (exring[cid].unit[i].ea14dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
+      exring[cid].unit[i].ea14dr   = ((j & exring[cid].unit[i].ea14_umask) * (LMEM_SIZE/4)) | (exring[cid].unit[i].ea13dr & exring[cid].unit[i].ea14_lmask);
+      /* if (i==2 && k==2) printf("ea14dr=%08.8x\n", (Uint)exring[cid].unit[i].ea14dr); */
+      exring[cid].unit[i].lmm.en1  = 1;
+      exring[cid].unit[i].lmm.rw1  = 0; /* read */
+      exring[cid].unit[i].lmm.ma1  = (exring[cid].unit[i].ea14dr % LMEM_SIZE) & ~(sizeof(Ull)*UNIT_WIDTH-1);
       /*printf("===NLOAD read row=%d col=%d ea1d=%08.8x ea0d=%08.8x\n", i, j, (Uint)exring[cid].unit[i][j].ea1d, (Uint)exring[cid].unit[i][j].ea0d);*/
     }
     else
-      exring[cid].unit[i].lmm.en1     = 0;
+      exring[cid].unit[i].lmm.en1  = 0;
 
     /* lmwd/tx3dr -> tx4dr */
     if (exring[cid].unit[i].stage4_exec) { /* active */
@@ -2496,6 +2636,12 @@ siml_unit_stage5(Uint cid, Uint i) /* stage-5 (3DR->BROUT)(LMRING_TR->LMRING_BRO
   exring[cid].unit[i].mr0d   = exring[cid].unit[i].lmm.mr0[exring[cid].unit[i].mr0mux];
   exring[cid].unit[i].mr1mux = (a1/sizeof(Ull) & (UNIT_WIDTH-1)); /* mr1[3-0] -> mr0d */
   exring[cid].unit[i].mr1d   = exring[cid].unit[i].lmm.mr1[exring[cid].unit[i].mr1mux];
+
+  exring[cid].unit[i].mexmr0d_prev = exring[cid].unit[i].mexmr0d; /* ★ */
+  exring[cid].unit[i].mexmr0d      = exring[cid].unit[i].mr0d;    /* ★ */
+  exring[cid].unit[i].mexmr1d_prev = exring[cid].unit[i].mexmr1d; /* ★ */
+  exring[cid].unit[i].mexmr1d      = exring[cid].unit[i].mr1d;    /* ★ */
+
   for (k=0; k<UNIT_WIDTH; k++)
     exring[cid].unit[i].lmrd[k] = exring[cid].unit[i].lmm.mr1[k];
 
@@ -2547,10 +2693,10 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
       if      (tr->dm & 0xf0000000) { *((Uint*)((Uchar*)&reg_ctrl.i[cid].addr[i]+ofs)+7) = tr->d[3]>>32; }
       break;
     case 3: /* lddmq/tr */
-      if      (tr->dm & 0x000000ff) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+0) = tr->d[0];   }/* ★★★ only write is implemented */
-      if      (tr->dm & 0x0000ff00) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+1) = tr->d[1];   }/* ★★★ only write is implemented */
-      if      (tr->dm & 0x00ff0000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+2) = tr->d[2];   }/* ★★★ only write is implemented */
-      if      (tr->dm & 0xff000000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+3) = tr->d[3];   }/* ★★★ only write is implemented */
+      if      (tr->dm & 0x000000ff) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+0) = tr->d[0];   }/* only write is implemented */
+      if      (tr->dm & 0x0000ff00) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+1) = tr->d[1];   }/* only write is implemented */
+      if      (tr->dm & 0x00ff0000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+2) = tr->d[2];   }/* only write is implemented */
+      if      (tr->dm & 0xff000000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+3) = tr->d[3];   }/* only write is implemented */
       break;
     }
   }
@@ -2580,10 +2726,10 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
         if      (tr->dm & 0xf0000000) { *((Uint*)((Uchar*)&reg_ctrl.i[cid].addr[i]+ofs)+7) = tr->d[3]>>32; }
         break;
       case 3: /* lddmq/tr */
-        if      (tr->dm & 0x000000ff) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+0) = tr->d[0];   }/* ★★★ only write is implemented */
-        if      (tr->dm & 0x0000ff00) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+1) = tr->d[1];   }/* ★★★ only write is implemented */
-        if      (tr->dm & 0x00ff0000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+2) = tr->d[2];   }/* ★★★ only write is implemented */
-        if      (tr->dm & 0xff000000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+3) = tr->d[3];   }/* ★★★ only write is implemented */
+        if      (tr->dm & 0x000000ff) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+0) = tr->d[0];   }/* only write is implemented */
+        if      (tr->dm & 0x0000ff00) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+1) = tr->d[1];   }/* only write is implemented */
+        if      (tr->dm & 0x00ff0000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+2) = tr->d[2];   }/* only write is implemented */
+        if      (tr->dm & 0xff000000) { *((Ull *)((Uchar*)&reg_ctrl.i[cid].lddmrw[i]+ofs)+3) = tr->d[3];   }/* only write is implemented */
         break;
       }
     }
@@ -2600,20 +2746,11 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
 	default:     exring[cid].unit[i].b[b][j].r[0] = exring[cid].unit[i].mr1d << (8-(a0&7))*8 | exring[cid].unit[i].mr0d >> (a0&7)*8; break;
 	}
 	break;
-      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
-      case OP_LDUWR: exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
+      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)            (Uint)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
 #if 0
-      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
-      case OP_LDUHR: exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
+      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
 #endif
-      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
-      case OP_LDUBR: exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
+      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[0] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr0d >> ((a0 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
       }
     }
     /* load mr -> br1 *//* brs1: 0:off, 1:mr11, 2:tr1, 3:mr1 */
@@ -2629,20 +2766,11 @@ printf("====== WREG chip=%d cdx=%d l_row=%x row=%x cmd=%d ==== tr->ty=%x a=%08.8
 	default:     exring[cid].unit[i].b[b][j].r[1] =                          exring[cid].unit[i].mr1d >> (a1&7)*8; break;
 	}
         break;
-      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
-      case OP_LDUWR: exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL)<<32
-                                                      | (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
+      case OP_LDWR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)            (Uint)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)                           ))*8)) & 0x00000000ffffffffLL); break;
 #if 0
-      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)(int)(short)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
-      case OP_LDUHR: exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL)<<32
-                                                      | (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
+      case OP_LDHR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)    (Ushort)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)             ))*8)) & 0x000000000000ffffLL); break;
 #endif
-      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)(int) (char)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
-      case OP_LDUBR: exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL)<<32
-                                                      | (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
+      case OP_LDBR:  exring[cid].unit[i].b[b][j].r[1] = (Ull)(Uint)     (Uchar)((exring[cid].unit[i].mr1d >> ((a1 & (sizeof(int)|sizeof(short)|sizeof(char)))*8)) & 0x00000000000000ffLL); break;
       }
     }
     /* load mr -> br2 *//* brs2: 0:off, 1:mr12, 2:tr2, 3:exdr */
@@ -2800,13 +2928,15 @@ siml_unit_lmm(cid,  i) Uint cid, i;
     else { /* lmm write enabled */
       for (k=0; k<UNIT_WIDTH; k++)
         *((Ull*)&exring[cid].unit[i].lmm.m[a0al]+k) = (*((Ull*)&exring[cid].unit[i].lmm.m[a0al]+k) & ~mm0[k]) | (exring[cid].unit[i].lmm.mw0[k] & mm0[k]);
-#if 0
-      printf("%03.3d.%02.2d:LMM WR0 a=%08.8x m=%08.8x d=%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x\n",
-             cid, i, a0al, exring[cid].unit[i].lmm.mm0,
+#if 1
+      if(i == 3){
+      printf("%03.3d.%02.2d:LMM WR0 a=%08.8x a1 = %x m=%08.8x d=%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x_%08.8x%08.8x\n",
+             cid, i, a0al, (Uint)exring[cid].unit[i].lmm.ma0,exring[cid].unit[i].lmm.mm0,
              (Uint)(exring[cid].unit[i].lmm.mw0[3]>>32), (Uint)exring[cid].unit[i].lmm.mw0[3],
              (Uint)(exring[cid].unit[i].lmm.mw0[2]>>32), (Uint)exring[cid].unit[i].lmm.mw0[2],
              (Uint)(exring[cid].unit[i].lmm.mw0[1]>>32), (Uint)exring[cid].unit[i].lmm.mw0[1],
              (Uint)(exring[cid].unit[i].lmm.mw0[0]>>32), (Uint)exring[cid].unit[i].lmm.mw0[0]);
+      }       
 #endif
     }
   }

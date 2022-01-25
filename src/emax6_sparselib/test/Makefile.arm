@@ -1,0 +1,52 @@
+PROJTOP	      = ../../
+OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
+SUFFIX = .c
+EMAX6_SPARSE_TEST = $(wildcard test_*$(SUFFIX)) 
+EMAX6_SPARSE_TEST_BIN = $(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST))
+CPP           = cpp -P
+CC            = gcc
+#CFLAGS        = -I. -O3 -g3 $(OPTION)
+CFLAGS        = 
+AS            = as
+ASFLAGS       = 
+LD            = gcc
+LDFLAGS       =  -L../
+LIBS          = -lm -lc -lX11 -lXext -lsparse -lpthread
+LIBFLAGS      = 
+OBJS	      =	test_chipB_div-emax6.o test_chipA_div-emax6.o test_normal_mode.o 
+INCLUDE = -I../Include
+all:		$(EMAX6_SPARSE_TEST_BIN)
+SHARED_LINK = 0
+SHARED_PATH =
+LINK_FORMAT = static
+
+test_%+dma:     test_%.o test_depend
+		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
+
+test_%.o:		test_%.c
+		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
+
+#pthread_test:     pthread_test.o test_depend
+#		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
+
+#pthread_test.o:	pthread_test.c 
+#		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
+
+
+
+
+
+ifeq ($(LINK_FORMAT),static)
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+endif
+
+ifeq ($(LINK_FORMAT),shared)
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+
+endif
+
+# $(MAKE)はマクロも引き継がれる
+
+
+clean:		
+		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c 

@@ -25,132 +25,51 @@
 ## Makefile-zynq.emax6nc(ZYNQ+EMAX6NC  : -DARMZYNQ -DEMAX6)
 ## Makefile-zynq.emax6  (ZYNQ+EMAX6HW  : -DARMZYNQ -DEMAX6) emax6_start->udev_write
 
-PROJTOP	      = ../../
+PROJTOP	      = /home/takuya-s/IMAX_sparse.cent/
 OPTION        = -mstrict-align -DDEBUG -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-PROGRAM       = test000-zynq.emax6+dma test007-zynq.emax6+dma test008-zynq.emax6+dma test016-zynq.emax6+dma test017-zynq.emax6+dma test018-zynq.emax6+dma test019-zynq.emax6+dma test020-zynq.emax6+dma test021-zynq.emax6+dma
+PROGRAM       = test025-zynq.emax6+dma
 CPP           = cpp -P
 CC            = gcc
 CFLAGS        = -I. -O2 $(OPTION)
 AS            = as
 ASFLAGS       = 
 LD            = gcc
-LDFLAGS       = 
-LIBS          = -lm -lc -lX11 -lXext
+LDFLAGS       =  -L../../src/emax6_sparselib/
+LIBS          = -lm -lc -lX11 -lXext -lsparse
 LIBFLAGS      = 
-OBJS	      =	test000-emax6.o test007-emax6.o test008-emax6.o test016-emax6.o test017-emax6.o test018-emax6.o test019-emax6.o test020-emax6.o test021-emax6.o
-SRCS	      =	test000.c test007.c test008.c test016.c test017.c test018.c test019.c test020.c test021.c
-
+OBJS	      =	test024-emax6.o test025-emax6.o
+INCLUDE = -I../../src/emax6_sparselib/Include
 all:		$(PROGRAM)
+SHARED_LINK = 0
+SHARED_PATH =
+LINK_FORMAT = static
 
-clean:;		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c
 
-test000-zynq.emax6+dma:     test000-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test000-emax6.o:	test000-emax6.c
-		$(CC) $(CFLAGS) -c $<
 
-test000-emax6.c:	test000.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
+test025-emax6.o: $(PROJTOP)/src/conv-c2c/emax6.h $(PROJTOP)/src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
+
+test025-zynq.emax6+dma:     test025-emax6.o
+		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
+
+test025-emax6.o:	test025-emax6.c sparse_lib
+		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
+
+test025-emax6.c:	test025.c
+		perl $(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
+		$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
 		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
 
-test007-zynq.emax6+dma:     test007-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test007-emax6.o:	test007-emax6.c
-		$(CC) $(CFLAGS) -c $<
 
-test007-emax6.c:	test007.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
+test025-emax6.o: $(PROJTOP)/src/conv-c2c/emax6.h $(PROJTOP)/src/conv-c2c/emax6lib.c ../../src/emax6_sparselib/Include/emax6_sparselib.h
 
-test008-zynq.emax6+dma:     test008-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
 
-test008-emax6.o:	test008-emax6.c
-		$(CC) $(CFLAGS) -c $<
+#sparse_lib:
+#	(cd ../../src/emax6_sparselib; $(MAKE) ARM=1 LINK_FORMAT=$(LINK_FORMAT) $(LINK_FORMAT))
+# $(MAKE)はマクロも引き継がれる
 
-test008-emax6.c:	test008.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
 
-test016-zynq.emax6+dma:     test016-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test016-emax6.o:	test016-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test016-emax6.c:	test016.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-test017-zynq.emax6+dma:     test017-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test017-emax6.o:	test017-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test017-emax6.c:	test017.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-test018-zynq.emax6+dma:     test018-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test018-emax6.o:	test018-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test018-emax6.c:	test018.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-test019-zynq.emax6+dma:     test019-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test019-emax6.o:	test019-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test019-emax6.c:	test019.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-test020-zynq.emax6+dma:     test020-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test020-emax6.o:	test020-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test020-emax6.c:	test020.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-test021-zynq.emax6+dma:     test021-emax6.o
-		$(CC) $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test021-emax6.o:	test021-emax6.c
-		$(CC) $(CFLAGS) -c $<
-
-test021-emax6.c:	test021.c
-		$(PROJTOP)/src/conv-mark/conv-mark $< > $<-mark.c
-		$(CPP) $(OPTION) $<-mark.c > $<-cppo.c
-		$(PROJTOP)/src/conv-c2c/conv-c2c $<-cppo.c
-
-###
-
-test000-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test007-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test008-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test016-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test017-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test018-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test019-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test020-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
-test021-emax6.o: ../../src/conv-c2c/emax6.h ../../src/conv-c2c/emax6lib.c
+clean:		
+		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c 
+		(cd ../../src/emax6_sparselib; $(MAKE) clean)
