@@ -60,6 +60,7 @@ typedef struct {
     int* paddings; // pad operation  ex H=60 num=150 -> 150/60=2+1  120/60=2+0
     Ull* margin;   // A row per AcolH   0:omission of calculation else:Depth of A to be obtained 
     Ull* margin_sum;   // sum A row per AcolH   0:omission of calculation else:Depth of A to be obtained 
+    Ull* blk_ptr;
     
 } emax6_sparse2;
 
@@ -75,6 +76,12 @@ typedef struct {
     Sll B_row_blk_param  ;
     Sll C_col_blk_param  ;
     Sll C_row_blk_param  ;
+    Sll* A_col_blks_param  ;
+    Sll* A_row_blks_param  ;
+    Sll* B_col_blks_param  ;
+    Sll* B_row_blks_param  ;
+    Sll* C_col_blks_param  ;
+    Sll* C_row_blks_param  ;
     Sll NCHIP_param      ;
     Sll A_row_size_param ;
     Sll A_col_size_param ;
@@ -87,6 +94,9 @@ typedef struct {
     float LMM_usage_kbyte;
     float LMM_usage_rate ;    
 } emax6_param;
+
+
+
 
 typedef struct {    
     int nnz;
@@ -131,3 +141,5 @@ int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, con
 #define NORMAL 0 
 #define SPARSE 1
 #define BIASED_SPARSE 2
+
+#define LMM_MAX_LENGTH 1024

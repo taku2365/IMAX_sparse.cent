@@ -369,14 +369,14 @@ float zero_bias = 0.0;
 Sll A_H_pad = 0;
 
 
-A_row_size_ini = A_row_size = 1080LL;
-A_col_size_ini = A_col_size = 1080LL;
-B_row_size_ini = B_row_size = 1080LL;
-B_col_size_ini = B_col_size = 1080LL;
+A_row_size_ini = A_row_size = 4200LL;
+A_col_size_ini = A_col_size = 4200LL;
+B_row_size_ini = B_row_size = 4200LL;
+B_col_size_ini = B_col_size = 4200LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 C_col_blk_ini  = C_col_blk  = 0LL  ;
-NCHIP_ini      = NCHIP      = 4LL  ;
+NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 params->data_format = DENSE_DENSE;
@@ -405,7 +405,7 @@ switch(params->mode){
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
 size_array_len = 5;
 // Uint size_array[1] = {736};
-Uint size_array[5] = {1024,512,256,128,64,32};
+Uint size_array[5] = {4096,2048,1024,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 10;
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
@@ -548,20 +548,20 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       mem_release(memsize,&membase);
     
 
-}
-#if !defined(ARMZYNQ) && defined(EMAX6)
-if(membase != NULL){
-        free(membase);
-        membase = NULL;
-}
-#endif
-if(params != NULL){
-    free(params);
-    params = NULL;
-}
-#if !defined(CSIMDEBUG)
-fclose(fp);
-#endif
+  }
+  #if !defined(ARMZYNQ) && defined(EMAX6)
+  if(membase != NULL){
+          free(membase);
+          membase = NULL;
+  }
+  #endif
+  if(params != NULL){
+      free(params);
+      params = NULL;
+  }
+  #if !defined(CSIMDEBUG)
+  fclose(fp);
+  #endif
 } // main
 
 

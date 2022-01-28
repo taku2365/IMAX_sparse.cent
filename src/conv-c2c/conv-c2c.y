@@ -171,17 +171,12 @@ EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
 		  i += 4;
 		}
 	      }
-	      fprintf(ofile, "#ifndef EMAXSC\n");
 	      fprintf(ofile, "\t%s[%d] = %s;\n", id[$11].name, c, buf);
-	      fprintf(ofile, "#endif\n");
 	    }
 	    free(buf);
 	  }
-	  else {
-	    fprintf(ofile, "#ifndef EMAXSC\n");
+	  else
 	    fprintf(ofile, "\t%s = %s;\n", id[$11].name, id[$13].name);
-	    fprintf(ofile, "#endif\n");
-	  }
 	  insn[last_insn].iheader.type = 2; /* FOR */
 	  insn[last_insn].iheader.row  = 0; /* top */
 	  insn[last_insn].iheader.col  = loop_no;

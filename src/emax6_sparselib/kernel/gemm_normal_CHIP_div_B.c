@@ -242,7 +242,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_param* 
   #undef sparse_final1
 
 
-  #define NCHIP 4
+  #define NCHIP 1
   Sll A_row_size = params->A_row_size_param;   // 縛りなし
   Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
   Sll B_row_size = params->B_row_size_param;    // 縛りなし

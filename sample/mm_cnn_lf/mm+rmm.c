@@ -30,11 +30,7 @@ typedef struct {Ull u[2];} Dll;
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <pthread.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/cursorfont.h>
-#include <X11/extensions/Xdbe.h>
+
 #endif
 
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
@@ -61,6 +57,8 @@ sysinit(memsize, alignment) Uint memsize, alignment;
     exit(1);
   membase = emax_info.ddr_mmap;
   {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)membase+i)=0;}
+#elif __linux__ == 1
+  posix_memalign(&membase, alignment, memsize);
 #else
   membase = (void*)malloc(memsize+alignment);
   if ((int)membase & (alignment-1))
@@ -162,102 +160,17 @@ main()
       *(float*)&B[row*M2+col] = col%120+1;
   }
 
-#if !defined(ARMSIML)
-  x11_open(0);
-#endif
 
-  reset_nanosec();
-  orig();
-  get_nanosec(0);
-  show_nanosec();
 
   reset_nanosec();
   imax();
   get_nanosec(0);
   show_nanosec();
 
-#ifdef ARMSIML
-  copy_Z(0, C1); _copyX(0, Z);
-  copy_Z(1, C1); _copyX(1, Z);
-  copy_Z(4, C1); _copyX(4, Z);
-  copy_Z(5, C1); _copyX(5, Z);
-  copy_Z(8, C1); _copyX(8, Z);
-  copy_Z(9, C1); _copyX(9, Z);
-  _updateX();
-#endif
-#if !defined(ARMSIML)
-  copy_Z(0, C1); BGR_to_X(0, Z);
-  copy_Z(1, C1); BGR_to_X(1, Z);
-  copy_Z(4, C1); BGR_to_X(5, Z);
-  copy_Z(5, C1); BGR_to_X(6, Z);
-  copy_Z(8, C1); BGR_to_X(10,Z);
-  copy_Z(9, C1); BGR_to_X(11,Z);
-  x11_update();
-#endif
 
-  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
-
-  for (row=0; row<M1; row++) {
-    for (col=0; col<M2; col++) {
-      if (C0[row*M2+col] != C1[row*M2+col]) {
-        count2++;
-        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*M2+col],
-                                                row, col, (double)*(float*)&C1[row*M2+col]);
-      }
-    }
-  }
-  if (count2)
-    printf("Num of diffs: %d\n", count2);
-  else
-    printf("Results are equal\n");
-
-  show_nanosec();
-
-#if !defined(ARMSIML)
-  printf("==== Normal end. Type any in ImageWin ====\n");
-  while (!x11_checkevent());
-#endif
 }
 
-copy_Z(id, from)
-     int id; /* 0 .. 11 */
-     unsigned int *from;
-{
-  int i, j;
-  volatile unsigned int *to = Z;
-  unsigned int *offs;
 
-  switch (id) {
-  case 0:  offs = from;               break;
-  case 1:  offs = from + WD;          break;
-  case 2:  offs = from + WD*2;        break;
-  case 3:  offs = from + WD*3;        break;
-  case 4:  offs = from + M2*HT;        break;
-  case 5:  offs = from + M2*HT+WD;     break;
-  case 6:  offs = from + M2*HT+WD*2;   break;
-  case 7:  offs = from + M2*HT+WD*3;   break;
-  case 8:  offs = from + M2*HT*2;      break;
-  case 9:  offs = from + M2*HT*2+WD;   break;
-  case 10: offs = from + M2*HT*2+WD*2; break;
-  case 11: offs = from + M2*HT*2+WD*3; break;
-  case 12: offs = from + M2*HT*3;      break;
-  case 13: offs = from + M2*HT*3+WD;   break;
-  case 14: offs = from + M2*HT*3+WD*2; break;
-  case 15: offs = from + M2*HT*3+WD*3; break;
-  }
-  for (i=0; i<HT; i++, offs+=M2) {
-    if (offs<from+M1*M2) {
-      for (j=0; j<WD; j++) {
-	if (j+(id%4)*WD<M2) *to++ = (*(offs+j))>>0;
-	else                *to++ = 0;
-      }
-    }
-    else {
-      for (j=0; j<WD; j++)
-	*to++ = 0;
-    }
-  }
-}
 
 orig() {
   printf("<<<ORIG>>>\n");
@@ -330,7 +243,7 @@ imax() {
           /*                                                              RANGEは60行x480列x4B=115200を加算(lenは無変更)                                                                       */
           /*                                                                exe(OP_ADD, &ofs, ★INIT0, ofs, EXP_H3210, W*4, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);              */
           /*                                                                                            ↑Cの記述はそのまま.IMAXではBRに初期値が残っているので利用                             */
-          /*                                                                mop(OP_LDUWR,  1, &BR[1][0][1],  ★(Ull)b000, (Ull)ofs, MSK_D0, ★(Ull)b00, M/2, 0, 0, (Ull)NULL, M/2);            */
+          /*                                                                mop(OP_LDWR,   1, &BR[1][0][1],  ★(Ull)b000, (Ull)ofs, MSK_D0, ★(Ull)b00, M/2, 0, 0, (Ull)NULL, M/2);            */
           /*                                                                                            ↑Cの記述はそのまま.2重ループの範囲では増分指定不要                                    */
           /*                                                   1       X  IMAX終了                                                                                                             */
 
@@ -453,11 +366,11 @@ imax() {
 	    mop(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\
 	    mop(OP_LDR,  3, &BR[r][1][1],  (Ull)b2[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\
 	    mop(OP_LDR,  3, &BR[r][1][0],  (Ull)b3[rm1], (Ull)cofs, MSK_W1, (Ull)b[rm1], M2, 0, 0, (Ull)NULL, M2);\
-	    mop(OP_LDUWR,1, &BR[r][2][1],  (Ull)a[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP);\
-	    exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
-	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
-	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
-	    exe(OP_FMA, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[r][2][1], EXP_H3210, BR[r][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
+	    mop(OP_LDWR, 1, &BR[r][2][1],  (Ull)a[rm1][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP);\
+	    exe(OP_FMA, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][0][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][0][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[rp1][2], AR[r][2], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][1][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
+	    exe(OP_FMA, &AR[rp1][3], AR[r][3], EXP_H3210,  BR[r][2][1], EXP_H1010, BR[r][1][0], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL)
 
 #define sgemm00_final(r, rp1) \
 	    mop(OP_LDR,  3, &BR[rp1][0][1],  (Ull)c00[CHIP], (Ull)oofs, MSK_W0, (Ull)c0[CHIP], M2*RMGRP, 0, 1, (Ull)NULL, M2*RMGRP);\
@@ -485,11 +398,11 @@ imax() {
             mop(OP_LDR,  3, &BR[1][0][0],  (Ull)b1[0], (Ull)cofs, MSK_W1, (Ull)b[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
             mop(OP_LDR,  3, &BR[1][1][1],  (Ull)b2[0], (Ull)cofs, MSK_W1, (Ull)b[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 */
             mop(OP_LDR,  3, &BR[1][1][0],  (Ull)b3[0], (Ull)cofs, MSK_W1, (Ull)b[0], M2, 0, 0, (Ull)NULL, M2);             /* stage#1 2KB */
-            mop(OP_LDUWR,1, &BR[1][2][1],  (Ull)a[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP); /* stage#1 16KB */
-            exe(OP_FML, &AR[2][0], BR[1][0][1], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
-            exe(OP_FML, &AR[2][1], BR[1][0][0], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
-            exe(OP_FML, &AR[2][2], BR[1][1][1], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
-            exe(OP_FML, &AR[2][3], BR[1][1][0], EXP_H3210,  BR[1][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
+            mop(OP_LDWR, 1, &BR[1][2][1],  (Ull)a[0][CHIP],  (Ull)rofs, MSK_W1, (Ull)a0[CHIP], L*RMGRP, 0, 0, (Ull)NULL, L*RMGRP); /* stage#1 16KB */
+            exe(OP_FML, &AR[2][0], BR[1][0][1], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
+            exe(OP_FML, &AR[2][1], BR[1][0][0], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
+            exe(OP_FML, &AR[2][2], BR[1][1][1], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
+            exe(OP_FML, &AR[2][3], BR[1][1][0], EXP_H3210,  BR[1][2][1], EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#2 */
 
 	    sgemm00_core1( 2,  1,  3);
 	    sgemm00_core1( 3,  2,  4);

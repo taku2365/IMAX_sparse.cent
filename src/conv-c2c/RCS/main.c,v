@@ -1,10 +1,20 @@
-head	1.6;
+head	1.8;
 access;
 symbols;
 locks
-	nakashim:1.6; strict;
+	nakashim:1.8; strict;
 comment	@ * @;
 
+
+1.8
+date	2021.12.23.09.46.04;	author nakashim;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2021.12.23.06.26.43;	author nakashim;	state Exp;
+branches;
+next	1.6;
 
 1.6
 date	2021.12.21.04.00.00;	author nakashim;	state Exp;
@@ -41,13 +51,13 @@ desc
 @@
 
 
-1.6
+1.8
 log
 @*** empty log message ***
 @
 text
 @
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.5 2021/06/06 06:24:28 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.7 2021/12/23 06:26:43 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*        Copyright (C) 2012 by NAIST. */
@@ -100,15 +110,26 @@ main(argc, argv) int argc; char **argv;
     fprintf(stderr, "can't open output:\"%s\"\n", objprog);
     exit(1);
   }
-  strncpy(pthprog = (char*)malloc(strlen(srcprog)+strlen(PTHSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  strncpy(sc1prog = (char*)malloc(strlen(srcprog)+strlen(SC1SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
   for (i=0; i<strlen(srcprog); i++) {
-    if (pthprog[i] == '.' || pthprog[i] == '\0' ) {
-      strncpy(pthprog+i, PTHSUFX, strlen(PTHSUFX)+1);
+    if (sc1prog[i] == '.' || sc1prog[i] == '\0' ) {
+      strncpy(sc1prog+i, SC1SUFX, strlen(SC1SUFX)+1);
       break;
     }
   }
-  if ((pfile = fopen(pthprog, "w")) == NULL) {
-    fprintf(stderr, "can't open output:\"%s\"\n", pthprog);
+  if ((s1fil = fopen(sc1prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", sc1prog);
+    exit(1);
+  }
+  strncpy(sc2prog = (char*)malloc(strlen(srcprog)+strlen(SC2SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  for (i=0; i<strlen(srcprog); i++) {
+    if (sc2prog[i] == '.' || sc2prog[i] == '\0' ) {
+      strncpy(sc2prog+i, SC2SUFX, strlen(SC2SUFX)+1);
+      break;
+    }
+  }
+  if ((s2fil = fopen(sc2prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", sc2prog);
     exit(1);
   }
 
@@ -118,7 +139,8 @@ main(argc, argv) int argc; char **argv;
   while (yyparse());
   fclose(yyin);
   fclose(ofile);
-  fclose(pfile);
+  fclose(s1fil);
+  fclose(s2fil);
 
   if (y_errornum) exit(1);
 
@@ -136,6 +158,68 @@ version()
   for (           ; *i && *i==' '; i++);
   return (i);
 }
+@
+
+
+1.7
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.6 2021/12/21 04:00:00 nakashim Exp nakashim $";
+d55 1
+a55 1
+  strncpy(pt1prog = (char*)malloc(strlen(srcprog)+strlen(PT1SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+d57 2
+a58 2
+    if (pt1prog[i] == '.' || pt1prog[i] == '\0' ) {
+      strncpy(pt1prog+i, PT1SUFX, strlen(PT1SUFX)+1);
+d62 2
+a63 2
+  if ((pfile1 = fopen(pt1prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", pt1prog);
+d66 1
+a66 1
+  strncpy(pt2prog = (char*)malloc(strlen(srcprog)+strlen(PT2SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+d68 2
+a69 2
+    if (pt2prog[i] == '.' || pt2prog[i] == '\0' ) {
+      strncpy(pt2prog+i, PT2SUFX, strlen(PT2SUFX)+1);
+d73 2
+a74 2
+  if ((pfile2 = fopen(pt2prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", pt2prog);
+d84 2
+a85 2
+  fclose(pfile1);
+  fclose(pfile2);
+@
+
+
+1.6
+log
+@*** empty log message ***
+@
+text
+@d2 1
+a2 1
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.5 2021/06/06 06:24:28 nakashim Exp nakashim $";
+d55 1
+a55 1
+  strncpy(pthprog = (char*)malloc(strlen(srcprog)+strlen(PTHSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+d57 2
+a58 2
+    if (pthprog[i] == '.' || pthprog[i] == '\0' ) {
+      strncpy(pthprog+i, PTHSUFX, strlen(PTHSUFX)+1);
+d62 13
+a74 2
+  if ((pfile = fopen(pthprog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", pthprog);
+d84 2
+a85 1
+  fclose(pfile);
 @
 
 
