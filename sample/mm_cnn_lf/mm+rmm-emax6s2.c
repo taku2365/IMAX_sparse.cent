@@ -4,14 +4,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit0 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit0 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (0 && SCBR[63].enq[CHIP]==SCBR[63].deq[CHIP]) || (0<62 && SCBR[0].enq[CHIP]!=SCBR[0].deq[CHIP])) continue;
 SCBR[63].deq[CHIP] = 1-SCBR[63].deq[CHIP];
 enq[CHIP] = SCBR[0].enq[CHIP];
@@ -90,14 +90,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit1 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit1 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (1 && SCBR[0].enq[CHIP]==SCBR[0].deq[CHIP]) || (1<62 && SCBR[1].enq[CHIP]!=SCBR[1].deq[CHIP])) continue;
 SCBR[0].deq[CHIP] = 1-SCBR[0].deq[CHIP];
 enq[CHIP] = SCBR[1].enq[CHIP];
@@ -247,14 +247,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit2 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit2 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (2 && SCBR[1].enq[CHIP]==SCBR[1].deq[CHIP]) || (2<62 && SCBR[2].enq[CHIP]!=SCBR[2].deq[CHIP])) continue;
 SCBR[1].deq[CHIP] = 1-SCBR[1].deq[CHIP];
 enq[CHIP] = SCBR[2].enq[CHIP];
@@ -450,14 +450,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit3 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit3 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (3 && SCBR[2].enq[CHIP]==SCBR[2].deq[CHIP]) || (3<62 && SCBR[3].enq[CHIP]!=SCBR[3].deq[CHIP])) continue;
 SCBR[2].deq[CHIP] = 1-SCBR[2].deq[CHIP];
 enq[CHIP] = SCBR[3].enq[CHIP];
@@ -665,14 +665,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit4 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit4 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (4 && SCBR[3].enq[CHIP]==SCBR[3].deq[CHIP]) || (4<62 && SCBR[4].enq[CHIP]!=SCBR[4].deq[CHIP])) continue;
 SCBR[3].deq[CHIP] = 1-SCBR[3].deq[CHIP];
 enq[CHIP] = SCBR[4].enq[CHIP];
@@ -880,14 +880,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit5 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit5 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (5 && SCBR[4].enq[CHIP]==SCBR[4].deq[CHIP]) || (5<62 && SCBR[5].enq[CHIP]!=SCBR[5].deq[CHIP])) continue;
 SCBR[4].deq[CHIP] = 1-SCBR[4].deq[CHIP];
 enq[CHIP] = SCBR[5].enq[CHIP];
@@ -1095,14 +1095,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit6 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit6 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (6 && SCBR[5].enq[CHIP]==SCBR[5].deq[CHIP]) || (6<62 && SCBR[6].enq[CHIP]!=SCBR[6].deq[CHIP])) continue;
 SCBR[5].deq[CHIP] = 1-SCBR[5].deq[CHIP];
 enq[CHIP] = SCBR[6].enq[CHIP];
@@ -1310,14 +1310,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit7 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit7 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (7 && SCBR[6].enq[CHIP]==SCBR[6].deq[CHIP]) || (7<62 && SCBR[7].enq[CHIP]!=SCBR[7].deq[CHIP])) continue;
 SCBR[6].deq[CHIP] = 1-SCBR[6].deq[CHIP];
 enq[CHIP] = SCBR[7].enq[CHIP];
@@ -1525,14 +1525,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit8 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit8 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (8 && SCBR[7].enq[CHIP]==SCBR[7].deq[CHIP]) || (8<62 && SCBR[8].enq[CHIP]!=SCBR[8].deq[CHIP])) continue;
 SCBR[7].deq[CHIP] = 1-SCBR[7].deq[CHIP];
 enq[CHIP] = SCBR[8].enq[CHIP];
@@ -1740,14 +1740,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit9 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit9 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (9 && SCBR[8].enq[CHIP]==SCBR[8].deq[CHIP]) || (9<62 && SCBR[9].enq[CHIP]!=SCBR[9].deq[CHIP])) continue;
 SCBR[8].deq[CHIP] = 1-SCBR[8].deq[CHIP];
 enq[CHIP] = SCBR[9].enq[CHIP];
@@ -1955,14 +1955,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit10 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit10 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (10 && SCBR[9].enq[CHIP]==SCBR[9].deq[CHIP]) || (10<62 && SCBR[10].enq[CHIP]!=SCBR[10].deq[CHIP])) continue;
 SCBR[9].deq[CHIP] = 1-SCBR[9].deq[CHIP];
 enq[CHIP] = SCBR[10].enq[CHIP];
@@ -2170,14 +2170,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit11 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit11 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (11 && SCBR[10].enq[CHIP]==SCBR[10].deq[CHIP]) || (11<62 && SCBR[11].enq[CHIP]!=SCBR[11].deq[CHIP])) continue;
 SCBR[10].deq[CHIP] = 1-SCBR[10].deq[CHIP];
 enq[CHIP] = SCBR[11].enq[CHIP];
@@ -2385,14 +2385,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit12 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit12 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (12 && SCBR[11].enq[CHIP]==SCBR[11].deq[CHIP]) || (12<62 && SCBR[12].enq[CHIP]!=SCBR[12].deq[CHIP])) continue;
 SCBR[11].deq[CHIP] = 1-SCBR[11].deq[CHIP];
 enq[CHIP] = SCBR[12].enq[CHIP];
@@ -2600,14 +2600,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit13 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit13 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (13 && SCBR[12].enq[CHIP]==SCBR[12].deq[CHIP]) || (13<62 && SCBR[13].enq[CHIP]!=SCBR[13].deq[CHIP])) continue;
 SCBR[12].deq[CHIP] = 1-SCBR[12].deq[CHIP];
 enq[CHIP] = SCBR[13].enq[CHIP];
@@ -2815,14 +2815,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit14 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit14 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (14 && SCBR[13].enq[CHIP]==SCBR[13].deq[CHIP]) || (14<62 && SCBR[14].enq[CHIP]!=SCBR[14].deq[CHIP])) continue;
 SCBR[13].deq[CHIP] = 1-SCBR[13].deq[CHIP];
 enq[CHIP] = SCBR[14].enq[CHIP];
@@ -3030,14 +3030,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit15 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit15 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (15 && SCBR[14].enq[CHIP]==SCBR[14].deq[CHIP]) || (15<62 && SCBR[15].enq[CHIP]!=SCBR[15].deq[CHIP])) continue;
 SCBR[14].deq[CHIP] = 1-SCBR[14].deq[CHIP];
 enq[CHIP] = SCBR[15].enq[CHIP];
@@ -3245,14 +3245,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit16 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit16 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (16 && SCBR[15].enq[CHIP]==SCBR[15].deq[CHIP]) || (16<62 && SCBR[16].enq[CHIP]!=SCBR[16].deq[CHIP])) continue;
 SCBR[15].deq[CHIP] = 1-SCBR[15].deq[CHIP];
 enq[CHIP] = SCBR[16].enq[CHIP];
@@ -3460,14 +3460,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit17 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit17 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (17 && SCBR[16].enq[CHIP]==SCBR[16].deq[CHIP]) || (17<62 && SCBR[17].enq[CHIP]!=SCBR[17].deq[CHIP])) continue;
 SCBR[16].deq[CHIP] = 1-SCBR[16].deq[CHIP];
 enq[CHIP] = SCBR[17].enq[CHIP];
@@ -3675,14 +3675,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit18 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit18 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (18 && SCBR[17].enq[CHIP]==SCBR[17].deq[CHIP]) || (18<62 && SCBR[18].enq[CHIP]!=SCBR[18].deq[CHIP])) continue;
 SCBR[17].deq[CHIP] = 1-SCBR[17].deq[CHIP];
 enq[CHIP] = SCBR[18].enq[CHIP];
@@ -3890,14 +3890,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit19 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit19 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (19 && SCBR[18].enq[CHIP]==SCBR[18].deq[CHIP]) || (19<62 && SCBR[19].enq[CHIP]!=SCBR[19].deq[CHIP])) continue;
 SCBR[18].deq[CHIP] = 1-SCBR[18].deq[CHIP];
 enq[CHIP] = SCBR[19].enq[CHIP];
@@ -4105,14 +4105,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit20 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit20 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (20 && SCBR[19].enq[CHIP]==SCBR[19].deq[CHIP]) || (20<62 && SCBR[20].enq[CHIP]!=SCBR[20].deq[CHIP])) continue;
 SCBR[19].deq[CHIP] = 1-SCBR[19].deq[CHIP];
 enq[CHIP] = SCBR[20].enq[CHIP];
@@ -4320,14 +4320,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit21 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit21 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (21 && SCBR[20].enq[CHIP]==SCBR[20].deq[CHIP]) || (21<62 && SCBR[21].enq[CHIP]!=SCBR[21].deq[CHIP])) continue;
 SCBR[20].deq[CHIP] = 1-SCBR[20].deq[CHIP];
 enq[CHIP] = SCBR[21].enq[CHIP];
@@ -4535,14 +4535,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit22 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit22 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (22 && SCBR[21].enq[CHIP]==SCBR[21].deq[CHIP]) || (22<62 && SCBR[22].enq[CHIP]!=SCBR[22].deq[CHIP])) continue;
 SCBR[21].deq[CHIP] = 1-SCBR[21].deq[CHIP];
 enq[CHIP] = SCBR[22].enq[CHIP];
@@ -4750,14 +4750,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit23 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit23 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (23 && SCBR[22].enq[CHIP]==SCBR[22].deq[CHIP]) || (23<62 && SCBR[23].enq[CHIP]!=SCBR[23].deq[CHIP])) continue;
 SCBR[22].deq[CHIP] = 1-SCBR[22].deq[CHIP];
 enq[CHIP] = SCBR[23].enq[CHIP];
@@ -4965,14 +4965,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit24 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit24 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (24 && SCBR[23].enq[CHIP]==SCBR[23].deq[CHIP]) || (24<62 && SCBR[24].enq[CHIP]!=SCBR[24].deq[CHIP])) continue;
 SCBR[23].deq[CHIP] = 1-SCBR[23].deq[CHIP];
 enq[CHIP] = SCBR[24].enq[CHIP];
@@ -5180,14 +5180,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit25 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit25 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (25 && SCBR[24].enq[CHIP]==SCBR[24].deq[CHIP]) || (25<62 && SCBR[25].enq[CHIP]!=SCBR[25].deq[CHIP])) continue;
 SCBR[24].deq[CHIP] = 1-SCBR[24].deq[CHIP];
 enq[CHIP] = SCBR[25].enq[CHIP];
@@ -5395,14 +5395,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit26 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit26 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (26 && SCBR[25].enq[CHIP]==SCBR[25].deq[CHIP]) || (26<62 && SCBR[26].enq[CHIP]!=SCBR[26].deq[CHIP])) continue;
 SCBR[25].deq[CHIP] = 1-SCBR[25].deq[CHIP];
 enq[CHIP] = SCBR[26].enq[CHIP];
@@ -5610,14 +5610,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit27 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit27 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (27 && SCBR[26].enq[CHIP]==SCBR[26].deq[CHIP]) || (27<62 && SCBR[27].enq[CHIP]!=SCBR[27].deq[CHIP])) continue;
 SCBR[26].deq[CHIP] = 1-SCBR[26].deq[CHIP];
 enq[CHIP] = SCBR[27].enq[CHIP];
@@ -5825,14 +5825,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit28 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit28 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (28 && SCBR[27].enq[CHIP]==SCBR[27].deq[CHIP]) || (28<62 && SCBR[28].enq[CHIP]!=SCBR[28].deq[CHIP])) continue;
 SCBR[27].deq[CHIP] = 1-SCBR[27].deq[CHIP];
 enq[CHIP] = SCBR[28].enq[CHIP];
@@ -6040,14 +6040,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit29 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit29 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (29 && SCBR[28].enq[CHIP]==SCBR[28].deq[CHIP]) || (29<62 && SCBR[29].enq[CHIP]!=SCBR[29].deq[CHIP])) continue;
 SCBR[28].deq[CHIP] = 1-SCBR[28].deq[CHIP];
 enq[CHIP] = SCBR[29].enq[CHIP];
@@ -6255,14 +6255,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit30 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit30 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (30 && SCBR[29].enq[CHIP]==SCBR[29].deq[CHIP]) || (30<62 && SCBR[30].enq[CHIP]!=SCBR[30].deq[CHIP])) continue;
 SCBR[29].deq[CHIP] = 1-SCBR[29].deq[CHIP];
 enq[CHIP] = SCBR[30].enq[CHIP];
@@ -6470,14 +6470,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit31 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit31 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (31 && SCBR[30].enq[CHIP]==SCBR[30].deq[CHIP]) || (31<62 && SCBR[31].enq[CHIP]!=SCBR[31].deq[CHIP])) continue;
 SCBR[30].deq[CHIP] = 1-SCBR[30].deq[CHIP];
 enq[CHIP] = SCBR[31].enq[CHIP];
@@ -6685,14 +6685,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit32 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit32 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (32 && SCBR[31].enq[CHIP]==SCBR[31].deq[CHIP]) || (32<62 && SCBR[32].enq[CHIP]!=SCBR[32].deq[CHIP])) continue;
 SCBR[31].deq[CHIP] = 1-SCBR[31].deq[CHIP];
 enq[CHIP] = SCBR[32].enq[CHIP];
@@ -6900,14 +6900,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit33 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit33 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (33 && SCBR[32].enq[CHIP]==SCBR[32].deq[CHIP]) || (33<62 && SCBR[33].enq[CHIP]!=SCBR[33].deq[CHIP])) continue;
 SCBR[32].deq[CHIP] = 1-SCBR[32].deq[CHIP];
 enq[CHIP] = SCBR[33].enq[CHIP];
@@ -7115,14 +7115,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit34 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit34 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (34 && SCBR[33].enq[CHIP]==SCBR[33].deq[CHIP]) || (34<62 && SCBR[34].enq[CHIP]!=SCBR[34].deq[CHIP])) continue;
 SCBR[33].deq[CHIP] = 1-SCBR[33].deq[CHIP];
 enq[CHIP] = SCBR[34].enq[CHIP];
@@ -7330,14 +7330,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit35 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit35 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (35 && SCBR[34].enq[CHIP]==SCBR[34].deq[CHIP]) || (35<62 && SCBR[35].enq[CHIP]!=SCBR[35].deq[CHIP])) continue;
 SCBR[34].deq[CHIP] = 1-SCBR[34].deq[CHIP];
 enq[CHIP] = SCBR[35].enq[CHIP];
@@ -7545,14 +7545,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit36 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit36 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (36 && SCBR[35].enq[CHIP]==SCBR[35].deq[CHIP]) || (36<62 && SCBR[36].enq[CHIP]!=SCBR[36].deq[CHIP])) continue;
 SCBR[35].deq[CHIP] = 1-SCBR[35].deq[CHIP];
 enq[CHIP] = SCBR[36].enq[CHIP];
@@ -7760,14 +7760,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit37 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit37 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (37 && SCBR[36].enq[CHIP]==SCBR[36].deq[CHIP]) || (37<62 && SCBR[37].enq[CHIP]!=SCBR[37].deq[CHIP])) continue;
 SCBR[36].deq[CHIP] = 1-SCBR[36].deq[CHIP];
 enq[CHIP] = SCBR[37].enq[CHIP];
@@ -7975,14 +7975,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit38 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit38 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (38 && SCBR[37].enq[CHIP]==SCBR[37].deq[CHIP]) || (38<62 && SCBR[38].enq[CHIP]!=SCBR[38].deq[CHIP])) continue;
 SCBR[37].deq[CHIP] = 1-SCBR[37].deq[CHIP];
 enq[CHIP] = SCBR[38].enq[CHIP];
@@ -8190,14 +8190,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit39 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit39 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (39 && SCBR[38].enq[CHIP]==SCBR[38].deq[CHIP]) || (39<62 && SCBR[39].enq[CHIP]!=SCBR[39].deq[CHIP])) continue;
 SCBR[38].deq[CHIP] = 1-SCBR[38].deq[CHIP];
 enq[CHIP] = SCBR[39].enq[CHIP];
@@ -8405,14 +8405,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit40 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit40 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (40 && SCBR[39].enq[CHIP]==SCBR[39].deq[CHIP]) || (40<62 && SCBR[40].enq[CHIP]!=SCBR[40].deq[CHIP])) continue;
 SCBR[39].deq[CHIP] = 1-SCBR[39].deq[CHIP];
 enq[CHIP] = SCBR[40].enq[CHIP];
@@ -8620,14 +8620,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit41 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit41 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (41 && SCBR[40].enq[CHIP]==SCBR[40].deq[CHIP]) || (41<62 && SCBR[41].enq[CHIP]!=SCBR[41].deq[CHIP])) continue;
 SCBR[40].deq[CHIP] = 1-SCBR[40].deq[CHIP];
 enq[CHIP] = SCBR[41].enq[CHIP];
@@ -8835,14 +8835,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit42 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit42 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (42 && SCBR[41].enq[CHIP]==SCBR[41].deq[CHIP]) || (42<62 && SCBR[42].enq[CHIP]!=SCBR[42].deq[CHIP])) continue;
 SCBR[41].deq[CHIP] = 1-SCBR[41].deq[CHIP];
 enq[CHIP] = SCBR[42].enq[CHIP];
@@ -9050,14 +9050,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit43 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit43 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (43 && SCBR[42].enq[CHIP]==SCBR[42].deq[CHIP]) || (43<62 && SCBR[43].enq[CHIP]!=SCBR[43].deq[CHIP])) continue;
 SCBR[42].deq[CHIP] = 1-SCBR[42].deq[CHIP];
 enq[CHIP] = SCBR[43].enq[CHIP];
@@ -9265,14 +9265,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit44 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit44 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (44 && SCBR[43].enq[CHIP]==SCBR[43].deq[CHIP]) || (44<62 && SCBR[44].enq[CHIP]!=SCBR[44].deq[CHIP])) continue;
 SCBR[43].deq[CHIP] = 1-SCBR[43].deq[CHIP];
 enq[CHIP] = SCBR[44].enq[CHIP];
@@ -9480,14 +9480,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit45 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit45 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (45 && SCBR[44].enq[CHIP]==SCBR[44].deq[CHIP]) || (45<62 && SCBR[45].enq[CHIP]!=SCBR[45].deq[CHIP])) continue;
 SCBR[44].deq[CHIP] = 1-SCBR[44].deq[CHIP];
 enq[CHIP] = SCBR[45].enq[CHIP];
@@ -9695,14 +9695,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit46 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit46 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (46 && SCBR[45].enq[CHIP]==SCBR[45].deq[CHIP]) || (46<62 && SCBR[46].enq[CHIP]!=SCBR[46].deq[CHIP])) continue;
 SCBR[45].deq[CHIP] = 1-SCBR[45].deq[CHIP];
 enq[CHIP] = SCBR[46].enq[CHIP];
@@ -9910,14 +9910,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit47 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit47 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (47 && SCBR[46].enq[CHIP]==SCBR[46].deq[CHIP]) || (47<62 && SCBR[47].enq[CHIP]!=SCBR[47].deq[CHIP])) continue;
 SCBR[46].deq[CHIP] = 1-SCBR[46].deq[CHIP];
 enq[CHIP] = SCBR[47].enq[CHIP];
@@ -10125,14 +10125,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit48 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit48 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (48 && SCBR[47].enq[CHIP]==SCBR[47].deq[CHIP]) || (48<62 && SCBR[48].enq[CHIP]!=SCBR[48].deq[CHIP])) continue;
 SCBR[47].deq[CHIP] = 1-SCBR[47].deq[CHIP];
 enq[CHIP] = SCBR[48].enq[CHIP];
@@ -10340,14 +10340,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit49 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit49 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (49 && SCBR[48].enq[CHIP]==SCBR[48].deq[CHIP]) || (49<62 && SCBR[49].enq[CHIP]!=SCBR[49].deq[CHIP])) continue;
 SCBR[48].deq[CHIP] = 1-SCBR[48].deq[CHIP];
 enq[CHIP] = SCBR[49].enq[CHIP];
@@ -10555,14 +10555,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit50 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit50 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (50 && SCBR[49].enq[CHIP]==SCBR[49].deq[CHIP]) || (50<62 && SCBR[50].enq[CHIP]!=SCBR[50].deq[CHIP])) continue;
 SCBR[49].deq[CHIP] = 1-SCBR[49].deq[CHIP];
 enq[CHIP] = SCBR[50].enq[CHIP];
@@ -10770,14 +10770,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit51 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit51 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (51 && SCBR[50].enq[CHIP]==SCBR[50].deq[CHIP]) || (51<62 && SCBR[51].enq[CHIP]!=SCBR[51].deq[CHIP])) continue;
 SCBR[50].deq[CHIP] = 1-SCBR[50].deq[CHIP];
 enq[CHIP] = SCBR[51].enq[CHIP];
@@ -10985,14 +10985,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit52 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit52 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (52 && SCBR[51].enq[CHIP]==SCBR[51].deq[CHIP]) || (52<62 && SCBR[52].enq[CHIP]!=SCBR[52].deq[CHIP])) continue;
 SCBR[51].deq[CHIP] = 1-SCBR[51].deq[CHIP];
 enq[CHIP] = SCBR[52].enq[CHIP];
@@ -11200,14 +11200,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit53 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit53 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (53 && SCBR[52].enq[CHIP]==SCBR[52].deq[CHIP]) || (53<62 && SCBR[53].enq[CHIP]!=SCBR[53].deq[CHIP])) continue;
 SCBR[52].deq[CHIP] = 1-SCBR[52].deq[CHIP];
 enq[CHIP] = SCBR[53].enq[CHIP];
@@ -11415,14 +11415,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit54 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit54 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (54 && SCBR[53].enq[CHIP]==SCBR[53].deq[CHIP]) || (54<62 && SCBR[54].enq[CHIP]!=SCBR[54].deq[CHIP])) continue;
 SCBR[53].deq[CHIP] = 1-SCBR[53].deq[CHIP];
 enq[CHIP] = SCBR[54].enq[CHIP];
@@ -11630,14 +11630,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit55 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit55 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (55 && SCBR[54].enq[CHIP]==SCBR[54].deq[CHIP]) || (55<62 && SCBR[55].enq[CHIP]!=SCBR[55].deq[CHIP])) continue;
 SCBR[54].deq[CHIP] = 1-SCBR[54].deq[CHIP];
 enq[CHIP] = SCBR[55].enq[CHIP];
@@ -11845,14 +11845,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit56 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit56 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (56 && SCBR[55].enq[CHIP]==SCBR[55].deq[CHIP]) || (56<62 && SCBR[56].enq[CHIP]!=SCBR[56].deq[CHIP])) continue;
 SCBR[55].deq[CHIP] = 1-SCBR[55].deq[CHIP];
 enq[CHIP] = SCBR[56].enq[CHIP];
@@ -12060,14 +12060,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit57 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit57 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (57 && SCBR[56].enq[CHIP]==SCBR[56].deq[CHIP]) || (57<62 && SCBR[57].enq[CHIP]!=SCBR[57].deq[CHIP])) continue;
 SCBR[56].deq[CHIP] = 1-SCBR[56].deq[CHIP];
 enq[CHIP] = SCBR[57].enq[CHIP];
@@ -12275,14 +12275,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit58 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit58 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (58 && SCBR[57].enq[CHIP]==SCBR[57].deq[CHIP]) || (58<62 && SCBR[58].enq[CHIP]!=SCBR[58].deq[CHIP])) continue;
 SCBR[57].deq[CHIP] = 1-SCBR[57].deq[CHIP];
 enq[CHIP] = SCBR[58].enq[CHIP];
@@ -12490,14 +12490,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit59 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit59 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (59 && SCBR[58].enq[CHIP]==SCBR[58].deq[CHIP]) || (59<62 && SCBR[59].enq[CHIP]!=SCBR[59].deq[CHIP])) continue;
 SCBR[58].deq[CHIP] = 1-SCBR[58].deq[CHIP];
 enq[CHIP] = SCBR[59].enq[CHIP];
@@ -12705,14 +12705,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit60 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit60 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (60 && SCBR[59].enq[CHIP]==SCBR[59].deq[CHIP]) || (60<62 && SCBR[60].enq[CHIP]!=SCBR[60].deq[CHIP])) continue;
 SCBR[59].deq[CHIP] = 1-SCBR[59].deq[CHIP];
 enq[CHIP] = SCBR[60].enq[CHIP];
@@ -12918,14 +12918,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit61 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit61 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (61 && SCBR[60].enq[CHIP]==SCBR[60].deq[CHIP]) || (61<62 && SCBR[61].enq[CHIP]!=SCBR[61].deq[CHIP])) continue;
 SCBR[60].deq[CHIP] = 1-SCBR[60].deq[CHIP];
 enq[CHIP] = SCBR[61].enq[CHIP];
@@ -13052,14 +13052,14 @@ Ull  CHIP, LOOP0=param->LOOP0, LOOP1=param->LOOP1;
 Ull  INIT1[4], INIT0[4];
 Uint uLOOP[4], enq[4];
 Ull  awoo1[4][4], awoo0[4][4], mexd1[4][4], mexd0[4][4], alud[4][4];
-for (CHIP=0; CHIP<4; CHIP++) { /* unit62 */
+for (CHIP=0; CHIP<1; CHIP++) { /* unit62 */
 uLOOP[CHIP]=LOOP1*LOOP0;
 }
 while (1) {
-for (CHIP=0; CHIP<4; CHIP++)
+for (CHIP=0; CHIP<1; CHIP++)
 if (uLOOP[CHIP]) break;
-if (CHIP==4) break;
-for (CHIP=0; CHIP<4; CHIP++) {
+if (CHIP==1) break;
+for (CHIP=0; CHIP<1; CHIP++) {
 if (uLOOP[CHIP]==0 || (62 && SCBR[61].enq[CHIP]==SCBR[61].deq[CHIP]) || (62<62 && SCBR[62].enq[CHIP]!=SCBR[62].deq[CHIP])) continue;
 SCBR[61].deq[CHIP] = 1-SCBR[61].deq[CHIP];
 enq[CHIP] = SCBR[62].enq[CHIP];

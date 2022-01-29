@@ -232,13 +232,15 @@ coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percen
 
   switch (emax6_param->data_type)
   {
-  case 0:
-    coo = make_mat_0(emax6_param,sparsity);
-    break;
-  case 1:
+  case NORMAL:
+    // coo = make_mat_0(emax6_param,sparsity);
+    // break;
+    // coo = make_sparse_mat_1(emax6_param,sparsity,biased_percent);
+    // break;
+  case SPARSE:
     coo = make_sparse_mat_1(emax6_param,sparsity);
     break;
-  case 2:
+  case BIASED_SPARSE:
     coo = make_sparse_mat_2(emax6_param,sparsity,biased_percent);
     break;
   default:

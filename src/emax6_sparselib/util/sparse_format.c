@@ -21,8 +21,10 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     sparse_info->margin = NULL;
     sparse_info->margin_sum = NULL;
     sparse_info->col_num = NULL;
-
     Uint* val_index_set = (Uint*) val;
+    if(emax6_param->mode == DENSE_DENSE){
+        return sparse_info;
+    }
     int H = emax6_param->H_param;
     int A_col_blk = emax6_param->A_col_blk_param;
     int H_pad = 0;

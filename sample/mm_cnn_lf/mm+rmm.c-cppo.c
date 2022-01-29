@@ -8859,26 +8859,26 @@ imax() {
   Ull cc0, cc1, cc2, cc3, ex0, ex1;
   Ull cofs, rofs, oofs, k;
   printf("<<<IMAX>>>\n");
-  for (top=0; top<480LL/4; top+=15) {
+  for (top=0; top<480LL/1; top+=15) {
     for (blk=0; blk<480LL; blk+=60) {
       typedef struct {Uint i[8]} Ui8;
-      Uint *a0[4];
-      Uint *a[60][4];
+      Uint *a0[1];
+      Uint *a[60][1];
       Ui8 *b[60], *b0[60], *b1[60], *b2[60], *b3[60];
-      Ui8 *c0[4];
-      Ui8 *c00[4], *c01[4], *c02[4], *c03[4];
+      Ui8 *c0[1];
+      Ui8 *c00[1], *c01[1], *c02[1], *c03[1];
       for (k=0; k<60; k++) {
  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
       }
-      for (CHIP=0; CHIP<4; CHIP++) {
- a0[CHIP] = A+(CHIP*480LL/4 +top)*480LL;
+      for (CHIP=0; CHIP<1; CHIP++) {
+ a0[CHIP] = A+(CHIP*480LL/1 +top)*480LL;
  for (k=0; k<60; k++)
    a[k][CHIP] = a0[CHIP]+blk+k;
- c0[CHIP] = C1+(CHIP*480LL/4 +top)*480LL;
+ c0[CHIP] = C1+(CHIP*480LL/1 +top)*480LL;
  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
       }
 /-EMAX5AB-/ mm 0
-/-EMAX5AS-/ for (CHIP=0; CHIP<4; CHIP++) {
+/-EMAX5AS-/ for (CHIP=0; CHIP<1; CHIP++) {
 /-EMAX5AS-/ for (INIT1=1,LOOP1=""15"",rofs=""(0-480LL*4)<<32|((0-480LL*4)&0xffffffff)""; LOOP1--; INIT1=0) {
 /-EMAX5AS-/ for (INIT0=1,LOOP0=""480LL/4LL/2"",cofs=""(0-4LL*8)<<32|((0-4LL*8)&0xffffffff)""; LOOP0--; INIT0=0) {
 /-EMAX5AS-/ exe(0x16, &cofs, INIT0?cofs:cofs, 0, (4LL*8)<<32|(4LL*8), 0, 0LL, 0, 0x01, 0xffffffffffffffffLL, 0x00, 0LL);

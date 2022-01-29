@@ -403,9 +403,9 @@ switch(params->mode){
 // Uint size_array[1] = {32,64};
 // sparse_rate_len = 7;
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-size_array_len = 5;
-// Uint size_array[1] = {736};
-Uint size_array[5] = {4096,2048,1024,512,256,128,64,32};
+size_array_len = 6;
+Uint size_array[6] = {1020,512,256,128,64,32};
+// Uint size_array[8] = {4096,2048,1024,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 10;
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
@@ -508,23 +508,23 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       #endif
 
 
-    //   orig(A,B,C0,params);
-    //   sum = 0;
-    //   sum1 = 0;
-    //   for (col=0; col<B_col_size; col+=1){
-    //       for (row=0; row<A_row_size; row+=1) {
-    //           sum += *(float*)&C0[col+row*B_col_size];
-    //           sum1 += *(float*)&C1[row*B_col_size+col];
-    //           if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
-    //               count2++;
+      orig(A,B,C0,params);
+      sum = 0;
+      sum1 = 0;
+      for (col=0; col<B_col_size; col+=1){
+          for (row=0; row<A_row_size; row+=1) {
+              sum += *(float*)&C0[col+row*B_col_size];
+              sum1 += *(float*)&C1[row*B_col_size+col];
+              if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
+                  count2++;
 
-    //               printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
-    //                                                   row, col, *(float*)&C1[row*B_col_size+col]);
-    //               printf("sparse_rate_index %d \n",sparse_rate_index);                                        
-    //               exit(1);
-    //           }
-    //       }
-    //   }
+                  printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
+                                                      row, col, *(float*)&C1[row*B_col_size+col]);
+                  printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+                  exit(1);
+              }
+          }
+      }
       #if !defined(ARMZYNQ) && defined(EMAX6)
       if(abs(sum-sum1)>1){
           printf("sum %f \n",sum);

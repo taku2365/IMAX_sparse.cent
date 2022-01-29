@@ -77,7 +77,10 @@ void mem_release(Uint memsize,Uchar** membase){
     {int i; for (i=0; i<(memsize+sizeof(Dll)-1)/sizeof(Dll); i++) *((Dll*)*membase+i)=0;}
     
   #else
+  if(*membase != NULL){
     memset(*membase,0,memsize);
+    *membase = NULL;
+  }
   #endif
 
 }

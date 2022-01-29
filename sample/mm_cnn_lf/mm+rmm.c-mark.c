@@ -111,7 +111,7 @@ sysinit(memsize, alignment) Uint memsize, alignment;
 #define M2 480LL
 #define RMGRP 15
 /*#define NCHIP 4*/
-#define NCHIP 4
+#define NCHIP 1
 #define W  4LL
 #define H  60
 Uint *A;  /*[M1][L];*/

@@ -67,7 +67,7 @@ int count0, count1, count2;
 int nnz_A=0,nnz_B=0,nnz_B_debug=0;
 double sum=0,sum1=0;
 float zero_bias = 0.0;
-
+int index_tmp = 0;
 
 #define CSIMWD 320
 #define CSIMHT 240
@@ -85,20 +85,28 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 1024*4LL;
-A_col_size_ini = A_col_size = 1024*4LL;
-B_row_size_ini = B_row_size = 1024*4LL;
-B_col_size_ini = B_col_size = 1024*4LL;
+A_row_size_ini = A_row_size = 1020LL;
+A_col_size_ini = A_col_size = 1020LL;
+B_row_size_ini = B_row_size = 1020LL;
+B_col_size_ini = B_col_size = 1020LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 A_col_blk_ini  = A_col_blk  = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->data_format = JDS_INDEX_VAL_SET;
-params->mode = SPARSE_DENSE_58_VER2;
-params->data_type = SPARSE;
+params->data_format = DENSE_NORMAL;
+params->mode = DENSE_DENSE;
+params->data_type = NORMAL;
+
+// params->data_format = JDS_INDEX_VAL_SET;
+// params->mode = SPARSE_DENSE_58_VER2;
+// params->data_type = SPARSE;
+
 
 switch(params->mode){
+    case DENSE_DENSE:
+        H = params->H_param = 60LL;
+    break;
     case SPARSE_DENSE_46:
         H = params->H_param = 46LL;
     break;
@@ -107,19 +115,19 @@ switch(params->mode){
         H =params->H_param = 58LL;
     break;
     default:
-    printf("There isn`t this pattern\n");
+    printf("this pattern does not exist\n");
     exit(1);
     
 }
 float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
-sparse_rate_index = 11;
+sparse_rate_index = 0;
 int A_H_pad = 0;
+A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
 //はみ出た時の拡張
-if((A_col_size%H) != 0) A_H_pad = -A_col_size%H + H;
 Uchar* membase = NULL;
 Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
-            +B_row_size*B_col_size*sizeof(Uint)
+            +(B_row_size+A_H_pad)*B_col_size*sizeof(Uint)
             +A_row_size*B_col_size*sizeof(Uint)
             // +A_row_size*B_col_size*sizeof(Uint)
             +A_row_size*sizeof(Uint)
@@ -136,7 +144,6 @@ params->NCHIP_param      = NCHIP     ;
 params->W_param          = W         ;
 params->A_col_blk_param  = A_col_blk ;
 IMAX_param_tunig(params);
-exit(1);
 printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
 params->LMM_usage_rate,params->LMM_usage_kbyte,\
 params->LMM_usage_A_rate,params->LMM_usage_A_kbyte,\
@@ -151,13 +158,13 @@ A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
 printf("A_H_pad %d \n",A_H_pad);
 A  = (Uint*)membase;
 B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
-C1 = (Uint*)((Uchar*)B  + B_row_size*B_col_size*sizeof(Uint));
+C1 = (Uint*)((Uchar*)B  + (B_row_size+A_H_pad)*B_col_size*sizeof(Uint));
 sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
 C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
 
 
 C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-B_debug = (Uint*)calloc(B_col_size*B_row_size,sizeof(Uint));
+B_debug = (Uint*)calloc(B_col_size*(B_row_size+A_H_pad),sizeof(Uint));
 
 
 // make A sparse matrix with sparsity percent
@@ -168,6 +175,11 @@ make_random_mat(params,B,B_debug);
 
 if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
+}
+if(params->mode == DENSE_DENSE){
+    for(index_tmp=0;index_tmp<(params->A_row_size_param*(params->A_col_size_param+A_H_pad));index_tmp++){
+        *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
+    }
 }
 reset_nanosec();
 A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
@@ -206,8 +218,7 @@ for (col=0; col<B_col_size; col+=1){
 
         printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
                                                 row, col, *(float*)&C_debug[col*A_row_size+row]);                                        
-        exit(1);
-        // exit(1);       
+        exit(1);       
     }
 }
 }
