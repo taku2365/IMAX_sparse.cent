@@ -233,7 +233,6 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     Ull c_index,c_index1;
     Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
-
     #define NCHIP 1
     Sll A_row_size = params->A_row_size_param;   // 縛りなし
     Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
@@ -260,6 +259,8 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size+A_H_pad);
     Sll A_col_add_A_H_pad = A_col_size + A_H_pad;
+    Ull B_col_pad = 0;
+    B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;    
     Uint *a[H],*a0[H],*a_index[H],*a_debug[H+1];
     Uint  *b[NCHIP], *b0[H][NCHIP], *b1[H][NCHIP], *b2[H][NCHIP], *b3[H][NCHIP];
     Uint  *c0[NCHIP],*c0_debug[NCHIP];
@@ -276,10 +277,10 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
             }
         }
         if(A_col_blk_tmp == 0){break;}
-    for (top=0; top<B_col_size/NCHIP; top+=B_col_blk) {
+    for (top=0; top<(B_col_size+B_col_pad)/NCHIP; top+=B_col_blk) {
         for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
-                b[CHIP] = B+(CHIP*B_col_size/NCHIP+top)*(B_row_size+A_H_pad);
+                b[CHIP] = B+(CHIP*(B_col_size+B_col_pad)/NCHIP+top)*(B_row_size+A_H_pad);
                 for (k=0; k<H; k++){
                     b0[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+0                     +k*A_col_blk_tmp*2; 
                     b1[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+(B_row_size+A_H_pad)*2+k*A_col_blk_tmp*2; 
@@ -287,7 +288,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
                     b3[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+(B_row_size+A_H_pad)*6+k*A_col_blk_tmp*2; 
                 }
 
-                c0[CHIP] = C+(CHIP*B_col_size/NCHIP+top)*A_row_size;
+                c0[CHIP] = C+(CHIP*(B_col_size+B_col_pad)/NCHIP+top)*A_row_size;
                 c00[CHIP]= (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+0; c01[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*2; c02[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*4; c03[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*6;
 
             }
@@ -316,6 +317,8 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
 
         // A_row_size*2*4*2は二か所で使用する　ブロードキャスト的な？
 
+
+
     #define sgemm00_core1(r, rm1, rp1) \
             mop(OP_LDR,  3, &BR[r][0][1],  (Ull)b0[rm1][CHIP], (Ull)cofs, MSK_W0, (Ull)b[CHIP], B_col_blk_mul_B_row_size, 0, 0, (Ull)NULL, B_col_blk_mul_B_row_size);\
             mop(OP_LDR,  3, &BR[r][0][0],  (Ull)b1[rm1][CHIP], (Ull)cofs, MSK_W0, (Ull)b[CHIP], B_col_blk_mul_B_row_size, 0, 0, (Ull)NULL, B_col_blk_mul_B_row_size);\
@@ -341,7 +344,7 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
             mop(OP_STR,  3, &AR[rp1][2],     (Ull)c_rofs, (Ull)c02[CHIP], MSK_D0, (Ull)c0[CHIP], A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk);\
             mop(OP_STR,  3, &AR[rp1][3],     (Ull)c_rofs, (Ull)c03[CHIP], MSK_D0, (Ull)c0[CHIP], A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk)
 
-//EMAX5A begin mm2 mapdist=0
+//EMAX5A begin mm0 mapdist=0
 /*3*/  for (CHIP=0; CHIP<NCHIP; CHIP++) { /* will be parallelized by multi-chip (M/#chip) */
         //LOOP1--はLOOP1==1で終了するので、LOOP1はrow+1がよい
    /*1*/ for (INIT1=1,LOOP1=A_col_blk_tmp,cofs=cofs_init; LOOP1--; INIT1=0) {      /* stage#0 *//* mapped to FOR() on BR[63][0][0] */
@@ -349,77 +352,76 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
             exe(OP_ADD,    &rofs, INIT0?rofs:rofs, EXP_H3210, 1*4LL<<32|1*8LL, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffffffffffffLL, OP_NOP, 0LL);/* stage#0 */ //1*8LL<<32|1*4LLとしてはいけない!!!!
             exe(OP_ADD,    &cofs, cofs, EXP_H3210, INIT0?A_row_size_mul_4_8:0, EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#0 */
             exe(OP_ADD,    &a_rofs, rofs, EXP_H3210, cofs, EXP_H3232, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);            /* stage#1 */
-            // exe(OP_ADD,    &b_rofs, rofs, EXP_H3210, cofs, EXP_H1010, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);            /* stage#1 */
             exe(OP_ADD,    &c_rofs, rofs, EXP_H1010, 0LL, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
-            mop(OP_LDR,  3, &BR[1][0][1],  (Ull)b0[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
-            mop(OP_LDR,  3, &BR[1][0][0],  (Ull)b1[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
-            mop(OP_LDR,  3, &BR[1][1][1],  (Ull)b2[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
-            mop(OP_LDR,  3, &BR[1][1][0],  (Ull)b3[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
-            mop(OP_LDWR, 1, &BR[1][2][1],  (Ull)a[0],       (Ull)a_rofs, MSK_W1, (Ull)a[0]   ,A_row_size_mul_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_mul_A_col_blk);
-            exe(OP_FML, &AR[2][0], BR[1][2][1], EXP_H1010, BR[1][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-            exe(OP_FML, &AR[2][1], BR[1][2][1], EXP_H1010, BR[1][0][0], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-            exe(OP_FML, &AR[2][2], BR[1][2][1], EXP_H1010, BR[1][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-            exe(OP_FML, &AR[2][3], BR[1][2][1], EXP_H1010, BR[1][1][0], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+            mop(OP_LDR,  3, &BR[2][0][1],  (Ull)b0[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
+            mop(OP_LDR,  3, &BR[2][0][0],  (Ull)b1[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
+            mop(OP_LDR,  3, &BR[2][1][1],  (Ull)b2[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
+            mop(OP_LDR,  3, &BR[2][1][0],  (Ull)b3[0][CHIP],(Ull)cofs,   MSK_W0, (Ull)b[CHIP],B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
+            mop(OP_LDWR, 1, &BR[2][2][1],  (Ull)a[0],       (Ull)a_rofs, MSK_W1, (Ull)a[0]   ,A_row_size_mul_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_mul_A_col_blk);
+            exe(OP_FML, &AR[3][0], BR[2][2][1], EXP_H1010, BR[2][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+            exe(OP_FML, &AR[3][1], BR[2][2][1], EXP_H1010, BR[2][0][0], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+            exe(OP_FML, &AR[3][2], BR[2][2][1], EXP_H1010, BR[2][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
+            exe(OP_FML, &AR[3][3], BR[2][2][1], EXP_H1010, BR[2][1][0], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
             
-            sgemm00_core1( 2,  1,  3);
-            sgemm00_core1( 3,  2,  4);
-            sgemm00_core1( 4,  3,  5);
-            sgemm00_core1( 5,  4,  6);
-            sgemm00_core1( 6,  5,  7);
-            sgemm00_core1( 7,  6,  8);
-            sgemm00_core1( 8,  7,  9);
-            sgemm00_core1( 9,  8, 10);
-            sgemm00_core1(10,  9, 11);
-            sgemm00_core1(11, 10, 12);
-            sgemm00_core1(12, 11, 13);
-            sgemm00_core1(13, 12, 14);
-            sgemm00_core1(14, 13, 15);
-            sgemm00_core1(15, 14, 16);
-            sgemm00_core1(16, 15, 17);
-            sgemm00_core1(17, 16, 18);
-            sgemm00_core1(18, 17, 19);
-            sgemm00_core1(19, 18, 20);
-            sgemm00_core1(20, 19, 21);
-            sgemm00_core1(21, 20, 22);
-            sgemm00_core1(22, 21, 23);
-            sgemm00_core1(23, 22, 24);
-            sgemm00_core1(24, 23, 25);
-            sgemm00_core1(25, 24, 26);
-            sgemm00_core1(26, 25, 27);
-            sgemm00_core1(27, 26, 28);
-            sgemm00_core1(28, 27, 29);
-            sgemm00_core1(29, 28, 30);
-            sgemm00_core1(30, 29, 31);
-            sgemm00_core1(31, 30, 32);
-            sgemm00_core1(32, 31, 33);
-            sgemm00_core1(33, 32, 34);
-            sgemm00_core1(34, 33, 35);
-            sgemm00_core1(35, 34, 36);
-            sgemm00_core1(36, 35, 37);
-            sgemm00_core1(37, 36, 38);
-            sgemm00_core1(38, 37, 39);
-            sgemm00_core1(39, 38, 40);
-            sgemm00_core1(40, 39, 41);
-            sgemm00_core1(41, 40, 42);
-            sgemm00_core1(42, 41, 43);
-            sgemm00_core1(43, 42, 44);
-            sgemm00_core1(44, 43, 45);
-            sgemm00_core1(45, 44, 46);
-            sgemm00_core1(46, 45, 47);
-            sgemm00_core1(47, 46, 48);
-            sgemm00_core1(48, 47, 49);
-            sgemm00_core1(49, 48, 50);
-            sgemm00_core1(50, 49, 51);
-            sgemm00_core1(51, 50, 52);
-            sgemm00_core1(52, 51, 53);
-            sgemm00_core1(53, 52, 54);
-            sgemm00_core1(54, 53, 55);
-            sgemm00_core1(55, 54, 56);
-            sgemm00_core1(56, 55, 57);
-            sgemm00_core1(57, 56, 58);
-            sgemm00_core1(58, 57, 59);
-            sgemm00_core1(59, 58, 60);
-            sgemm00_core1(60, 59, 61);
+
+            sgemm00_core1( 3, 1 ,  4 );
+            sgemm00_core1( 4, 2 ,  5 );
+            sgemm00_core1( 5, 3 ,  6 );
+            sgemm00_core1( 6, 4 ,  7 );
+            sgemm00_core1( 7, 5 ,  8 );
+            sgemm00_core1( 8, 6 ,  9 );
+            sgemm00_core1( 9, 7 ,  10);
+            sgemm00_core1(10, 8 ,  11);
+            sgemm00_core1(11, 9 ,  12);
+            sgemm00_core1(12, 10 , 13);
+            sgemm00_core1(13, 11 , 14);
+            sgemm00_core1(14, 12 , 15);
+            sgemm00_core1(15, 13 , 16);
+            sgemm00_core1(16, 14 , 17);
+            sgemm00_core1(17, 15 , 18);
+            sgemm00_core1(18, 16 , 19);
+            sgemm00_core1(19, 17 , 20);
+            sgemm00_core1(20, 18 , 21);
+            sgemm00_core1(21, 19 , 22);
+            sgemm00_core1(22, 20 , 23);
+            sgemm00_core1(23, 21 , 24);
+            sgemm00_core1(24, 22 , 25);
+            sgemm00_core1(25, 23 , 26);
+            sgemm00_core1(26, 24 , 27);
+            sgemm00_core1(27, 25 , 28);
+            sgemm00_core1(28, 26 , 29);
+            sgemm00_core1(29, 27 , 30);
+            sgemm00_core1(30, 28 , 31);
+            sgemm00_core1(31, 29 , 32);
+            sgemm00_core1(32, 30 , 33);
+            sgemm00_core1(33, 31 , 34);
+            sgemm00_core1(34, 32 , 35);
+            sgemm00_core1(35, 33 , 36);
+            sgemm00_core1(36, 34 , 37);
+            sgemm00_core1(37, 35 , 38);
+            sgemm00_core1(38, 36 , 39);
+            sgemm00_core1(39, 37 , 40);
+            sgemm00_core1(40, 38 , 41);
+            sgemm00_core1(41, 39 , 42);
+            sgemm00_core1(42, 40 , 43);
+            sgemm00_core1(43, 41 , 44);
+            sgemm00_core1(44, 42 , 45);
+            sgemm00_core1(45, 43 , 46);
+            sgemm00_core1(46, 44 , 47);
+            sgemm00_core1(47, 45 , 48);
+            sgemm00_core1(48, 46 , 49);
+            sgemm00_core1(49, 47 , 50);
+            sgemm00_core1(50, 48 , 51);
+            sgemm00_core1(51, 49 , 52);
+            sgemm00_core1(52, 50 , 53);
+            sgemm00_core1(53, 51 , 54);
+            sgemm00_core1(54, 52 , 55);
+            sgemm00_core1(55, 53 , 56);
+            sgemm00_core1(56, 54 , 57);
+            sgemm00_core1(57, 55 , 58);
+            sgemm00_core1(58, 56 , 59);
+            sgemm00_core1(59, 57 , 60);
+            sgemm00_core1(60, 58 , 61);
 
             /****final*****/
             sgemm00_final(61,     62);

@@ -3,7 +3,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_
 /*                          Copyright (C) 2013- by NAIST */
 /*                           Primary writer: Y.Nakashima */
 /*                                  nakashim@is.naist.jp */
-
+#define _GNU_SOURCE
 #ifndef UTYPEDEF
 #define UTYPEDEF
 typedef unsigned char      Uchar;
@@ -30,7 +30,6 @@ typedef struct {Ull u[2];} Dll;
 #include <sys/resource.h>
 #include <pthread.h>
 #endif
-
 
 int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
 
@@ -73,6 +72,8 @@ int index_tmp = 0;
 #define CSIMHT 240
 #define CSIMBM (CSIMWD*CSIMHT)
 
+
+
 main()
 { 
 Sll H;
@@ -85,10 +86,10 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 1020LL;
-A_col_size_ini = A_col_size = 1020LL;
-B_row_size_ini = B_row_size = 1020LL;
-B_col_size_ini = B_col_size = 1020LL;
+A_row_size_ini = A_row_size = 512LL;
+A_col_size_ini = A_col_size = 512LL;
+B_row_size_ini = B_row_size = 512LL;
+B_col_size_ini = B_col_size = 512LL;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
@@ -97,7 +98,7 @@ params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 params->data_format = DENSE_NORMAL;
 params->mode = DENSE_DENSE;
 params->data_type = NORMAL;
-
+printf("\n");
 // params->data_format = JDS_INDEX_VAL_SET;
 // params->mode = SPARSE_DENSE_58_VER2;
 // params->data_type = SPARSE;
@@ -105,7 +106,7 @@ params->data_type = NORMAL;
 
 switch(params->mode){
     case DENSE_DENSE:
-        H = params->H_param = 60LL;
+        H = params->H_param = 59LL;
     break;
     case SPARSE_DENSE_46:
         H = params->H_param = 46LL;
@@ -122,13 +123,15 @@ switch(params->mode){
 float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
 sparse_rate_index = 0;
-int A_H_pad = 0;
+Uint A_H_pad = 0;
 A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
+Uint B_col_pad = 0;
+B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;
 //はみ出た時の拡張
 Uchar* membase = NULL;
 Uint memsize = 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint)
-            +(B_row_size+A_H_pad)*B_col_size*sizeof(Uint)
-            +A_row_size*B_col_size*sizeof(Uint)
+            +(B_row_size+A_H_pad)*(B_col_size+B_col_pad)*sizeof(Uint)
+            +A_row_size*(B_col_size+B_col_pad)*sizeof(Uint)
             // +A_row_size*B_col_size*sizeof(Uint)
             +A_row_size*sizeof(Uint)
             ;
@@ -158,13 +161,13 @@ A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
 printf("A_H_pad %d \n",A_H_pad);
 A  = (Uint*)membase;
 B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size+A_H_pad))*sizeof(Uint));
-C1 = (Uint*)((Uchar*)B  + (B_row_size+A_H_pad)*B_col_size*sizeof(Uint));
-sort_index = (Uint*)((Uchar*)C1 + A_row_size*B_col_size*sizeof(Uint));
-C0 = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
+C1 = (Uint*)((Uchar*)B  + (B_row_size+A_H_pad)*(B_col_size+B_col_pad)*sizeof(Uint));
+sort_index = (Uint*)((Uchar*)C1 + A_row_size*(B_col_size+B_col_pad)*sizeof(Uint));
+C0 = (Uint*)calloc(A_row_size*(B_col_size+B_col_pad),sizeof(Uint));
 
 
-C_debug = (Uint*)calloc(A_row_size*B_col_size,sizeof(Uint));
-B_debug = (Uint*)calloc(B_col_size*(B_row_size+A_H_pad),sizeof(Uint));
+C_debug = (Uint*)calloc(A_row_size*(B_col_size+B_col_pad)*2,sizeof(Uint));
+B_debug = (Uint*)calloc((B_col_size+B_col_pad)*(B_row_size+A_H_pad),sizeof(Uint));
 
 
 // make A sparse matrix with sparsity percent
@@ -192,9 +195,14 @@ sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, params);
 get_nanosec(0);
 show_nanosec();
 
-orig(coo->val,B_debug,C0,params);
+// orig(coo->val,B_debug,C0,params);
 
-for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
+printf("Reshape\n");
+reset_nanosec();
+
+
+
+for (col=0,col1=0; col<(B_col_size+B_col_pad)/2;col1+=2,col+=1){
     for (row=0,row1=0; row<2*A_row_size;row1+=1,row+=2) {
         count2++;
     #ifdef CSIMDEBUG
@@ -204,14 +212,18 @@ for (col=0,col1=0; col<B_col_size/2;col1+=2,col+=1){
         *(float*)&C_debug[(col1+1)*A_row_size+row1] = *(float*)&C1[col*2*A_row_size+row+1];
         // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
     
+    }
 }
-}
+
+
+get_nanosec(0);
+show_nanosec();
 
 sum = 0;
 sum1 = 0;
-for (col=0; col<B_col_size; col+=1){
+for (col=0; col<(B_col_size+B_col_pad); col+=1){
     for (row=0; row<A_row_size; row+=1) {
-    sum += *(float*)&C0[col+row*B_col_size];
+    sum += *(float*)&C0[col+row*(B_col_size+B_col_pad)];
     sum1 += *(float*)&C_debug[col*A_row_size+row];
     if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
         count2++;

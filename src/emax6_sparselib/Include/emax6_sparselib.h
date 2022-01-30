@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sched.h>
 #include "./emax6.h"
 #define LIMIT 1.0e-30
 #define LMM_SIZE                    65536
@@ -20,7 +23,16 @@ typedef struct {Ull u[2];} Dll;
 #endif
 #endif
 
-
+typedef struct {
+	float *dst;
+	const float *src;
+    Uint row_size;
+    // Uint row_range_start; 
+    Uint row_range_end; 
+    // Uint col_range_start; 
+    Uint col_range_end;
+    size_t thread_id; 
+} imax_buf;
 
 
 
