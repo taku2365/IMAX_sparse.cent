@@ -146,10 +146,7 @@ emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* c
 int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
-#endif
-
-
-
+Sll get_H_param(emax6_param* params);
 //mode    
 #define DENSE_DENSE 0
 #define SPARSE_DENSE_46 1
@@ -166,3 +163,39 @@ int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, con
 #define BIASED_SPARSE 2
 
 #define LMM_MAX_LENGTH 1024
+
+#define STORE_CSV_INI(fp) do { \
+    fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,LMM_usage_A_rate,LMM_usage_A_kbyte,LMM_usage_B_rate,LMM_usage_B_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total\n"); \
+    }\
+    while (0)
+
+
+#define STORE_CSV(fp) do { \
+        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
+        params.LMM_usage_rate,params.LMM_usage_kbyte,\
+        params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
+        params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
+        sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+        (int)B_row_size,(int)B_col_size,\
+        (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
+        (int)params.C_col_blk_param,(int)NCHIP,(int)W,\
+        nanosec[NANOS_ARM],nanosec[NANOS_DRAIN],nanosec[NANOS_CONF],nanosec[NANOS_REGV],\
+        nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); \
+    }\
+    while (0)
+
+
+#define PRINT_PARAM(params) do { \
+        printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
+            params.LMM_usage_rate,params.LMM_usage_kbyte,\
+            params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
+            params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
+            sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+            (int)B_row_size,(int)B_col_size,\
+            (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
+            (int)params.C_col_blk_param,(int)NCHIP,(int)W);}\
+    while (0)
+
+#endif
+
+

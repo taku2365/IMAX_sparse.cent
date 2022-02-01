@@ -105,30 +105,15 @@ params.data_format = JDS_INDEX_VAL_SET;
 params.mode = SPARSE_DENSE_58_VER2;
 params.data_type = SPARSE;
 
-switch(params.mode){
-    case DENSE_DENSE:
-    H = params.H_param = 59LL;
-    break;
-    case SPARSE_DENSE_46:
-        H = params.H_param = 46LL;
-    break;
-    case SPARSE_DENSE_58_VER2:
-    case SPARSE_DENSE_58_VER3:
-        H =params.H_param = 58LL;
-    break;
-    default:
-    printf("this pattern does not exist\n");
-    exit(1);
-    
-}
+H = get_H_param(&params);
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
 // sparse_rate_len = 7;
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
 // size_array_len = 6;
 // Uint size_array[6] = {1024,512,256,128,64,32};
-size_array_len = 6;
-Uint size_array[6] = {1024,512,256,128,64,32};
+size_array_len = 1;
+Uint size_array[1] = {32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
@@ -153,7 +138,7 @@ if((fp=fopen(name,"w"))==NULL){
 #endif
 
 #if !defined(CSIMDEBUG)
-fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,LMM_usage_A_rate,LMM_usage_A_kbyte,LMM_usage_B_rate,LMM_usage_B_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total\n");
+STORE_CSV_INI(fp);
 #endif
 //はみ出た時の拡張
 Uchar* membase = NULL;
@@ -193,16 +178,8 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         params.W_param          = W         ;
         IMAX_param_tunig(&params);
 
-        // printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.1f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",
+        PRINT_PARAM(params);
 
-        printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
-            params.LMM_usage_rate,params.LMM_usage_kbyte,\
-            params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
-            params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
-            sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
-            (int)B_row_size,(int)B_col_size,\
-            (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
-            (int)params.C_col_blk_param,(int)NCHIP,(int)W); 
         Base_p  = (Uint*)((Uchar*)membase);
         A  = (Uint*)((Uchar*)Base_p);
         B  = (Uint*)((Uchar*)A  + 2*(A_row_size*(A_col_size_pad))*sizeof(Uint));
@@ -233,17 +210,9 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, &params);
         get_nanosec(0);
         show_nanosec();
+        
         #if !defined(CSIMDEBUG)
-        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
-        params.LMM_usage_rate,params.LMM_usage_kbyte,\
-        params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
-        params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
-        sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
-        (int)B_row_size,(int)B_col_size,\
-        (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
-        (int)params.C_col_blk_param,(int)NCHIP,(int)W,\
-        nanosec[NANOS_ARM],nanosec[NANOS_DRAIN],nanosec[NANOS_CONF],nanosec[NANOS_REGV],\
-        nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); 
+        STORE_CSV(fp);
         #endif
 
         orig(coo->val,B_debug,C0,&params);

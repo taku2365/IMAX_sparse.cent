@@ -93,6 +93,11 @@ A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
+emax6_param params;
+params.data_format = JDS_INDEX_VAL_SET;
+params.mode = SPARSE_DENSE_58_VER2;
+params.data_type = SPARSE;
+H = get_H_param(&params);
 Uint A_row_H_pad = 0;
 Uint A_col_H_pad = 0;
 Uint B_row_H_pad = 0;
@@ -105,32 +110,13 @@ A_col_size_pad = A_col_size+A_col_H_pad;
 B_row_size_pad = B_row_size+B_row_H_pad;
 B_col_size_pad = B_col_size+B_col_pad  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-emax6_param params;
 // params.data_format = DENSE_NORMAL;
 // params.mode = DENSE_DENSE;
 // params.data_type = NORMAL;
 printf("\n");
-params.data_format = JDS_INDEX_VAL_SET;
-params.mode = SPARSE_DENSE_58_VER2;
-params.data_type = SPARSE;
 
 
-switch(params.mode){
-    case DENSE_DENSE:
-        H = params.H_param = 59LL;
-    break;
-    case SPARSE_DENSE_46:
-        H = params.H_param = 46LL;
-    break;
-    case SPARSE_DENSE_58_VER2:
-    case SPARSE_DENSE_58_VER3:
-        H =params.H_param = 58LL;
-    break;
-    default:
-    printf("this pattern does not exist\n");
-    exit(1);
-    
-}
+
 float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
 sparse_rate_index = 10;
@@ -158,14 +144,8 @@ params.B_col_blk_param  = B_col_blk ;
 params.NCHIP_param      = NCHIP     ;
 params.W_param          = W         ;
 IMAX_param_tunig(&params);
-printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d \n",\
-params.LMM_usage_rate,params.LMM_usage_kbyte,\
-params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
-params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
-sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
-(int)B_row_size,(int)B_col_size,\
-(int)params.A_col_blk_param,(int)params.B_col_blk_param,\
-(int)params.C_col_blk_param,(int)NCHIP,(int)W); 
+
+PRINT_PARAM(params);
 
 H = params.H_param;
 A  = (Uint*)membase;
@@ -189,7 +169,7 @@ if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
 }
 if(params.mode == DENSE_DENSE){
-    for(index_tmp=0;index_tmp<(params.A_row_size_param*(A_col_size_pad));index_tmp++){
+    for(index_tmp=0;index_tmp<(A_row_size*(A_col_size_pad));index_tmp++){
         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
     }
 }

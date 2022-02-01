@@ -9,23 +9,24 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
     Sll A_col_size = params->A_col_size_param;
     Sll B_row_size = params->B_row_size_param;
     Sll B_col_size = params->B_col_size_param;
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
     Sll W          = params->W_param         ;
     Sll H          = params->H_param         ;
-    Uint A_H_pad   = 0                       ;
     Uint B_col_pad = 0;
-    B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
 
-    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
     do{
         A_col_blk += 1;
-    }while(A_row_size*A_col_blk*4<=(LMM_SIZE>>1)&&((A_row_size*A_col_blk*H)<=A_row_size*(A_col_size+A_H_pad)));
+    }while(A_row_size*A_col_blk*4<=(LMM_SIZE>>1)&&((A_row_size*A_col_blk*H)<=A_row_size*(A_col_size_pad)));
     A_col_blk -= 1;
     //32kよりBの確保範囲が小さいかつB_col*B_rowをCHIP数で割った数より小さいかつ64kよりCの確保範囲が小さいかつA_row*B_colをCHIP数で割った数より小さい
     if((A_col_blk == 0)){
@@ -36,10 +37,10 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
     do{
         B_col_blk += W*2;
     }while(
-    ((B_row_size+A_H_pad)*B_col_blk*4<=(LMM_SIZE>>1))
-    &&((B_row_size+A_H_pad)*B_col_blk<=((B_col_size+B_col_pad)*(B_row_size+A_H_pad)/NCHIP))
+    ((B_row_size_pad)*B_col_blk*4<=(LMM_SIZE>>1))
+    &&((B_row_size_pad)*B_col_blk<=((B_col_size_pad)*(B_row_size_pad)/NCHIP))
     &&((A_row_size*B_col_blk*4)<=LMM_SIZE)
-    &&((A_row_size*B_col_blk)<=A_row_size*(B_col_size+B_col_pad)/NCHIP)
+    &&((A_row_size*B_col_blk)<=A_row_size*(B_col_size_pad)/NCHIP)
     );
     B_col_blk -= W*2;
     if((B_col_blk == 0)){
@@ -47,7 +48,7 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
         exit(1);
     }
 
-    while(((B_col_size+B_col_pad)%(B_col_blk*NCHIP)) != 0){
+    while(((B_col_size_pad)%(B_col_blk*NCHIP)) != 0){
         //B全体が収容できるようにするため
         B_col_blk -= W*2;
         if((B_col_blk == 0)){
@@ -320,34 +321,34 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     Sll A_col_size = params->A_col_size_param;
     Sll B_row_size = params->B_row_size_param;
     Sll B_col_size = params->B_col_size_param;
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
     Sll W          = params->W_param         ;
     Sll H          = params->H_param         ;
-    Uint A_H_pad   = 0                       ;
-    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
-    Uint B_col_pad = 0;
-    B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
     do{
         A_col_blk += 1;
-    }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size+A_H_pad)*2));
+    }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size_pad)*2));
     A_col_blk -= 1;
     //32kよりBの確保範囲が小さいかつB_col*B_rowをCHIP数で割った数より小さいかつ64kよりCの確保範囲が小さいかつA_row*B_colをCHIP数で割った数より小さい
     do{
         B_col_blk += W*2;
     }while(
     (B_row_size*B_col_blk*4<=(LMM_SIZE>>1))
-    &&(B_row_size*B_col_blk<=((B_col_size+B_col_pad)*B_row_size/NCHIP))
+    &&(B_row_size*B_col_blk<=((B_col_size_pad)*B_row_size/NCHIP))
     &&((A_row_size*B_col_blk*4)<=LMM_SIZE)
-    &&((A_row_size*B_col_blk)<=A_row_size*(B_col_size+B_col_pad)/NCHIP)
+    &&((A_row_size*B_col_blk)<=A_row_size*(B_col_size_pad)/NCHIP)
     );
     B_col_blk -= W*2;
-    while(((B_col_size+B_col_pad)%(B_col_blk*NCHIP)) != 0){
+    while(((B_col_size_pad)%(B_col_blk*NCHIP)) != 0){
         //B全体が収容できるようにするため
         B_col_blk -= W*2;
         if((B_col_blk == 0)){
@@ -379,21 +380,23 @@ static void IMAX_param_tunig_impl3(emax6_param* params){
     Sll A_col_size = params->A_col_size_param;
     Sll B_row_size = params->B_row_size_param;
     Sll B_col_size = params->B_col_size_param;
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 0                       ;
     Sll C_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
     Sll W          = params->W_param         ;
     Sll H          = params->H_param         ;
-    Uint A_H_pad   = 0                       ;
-    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
     do{
         A_col_blk += 1;
-    }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size+A_H_pad)*2));
+    }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size_pad)*2));
     A_col_blk -= 1;
     //32kよりBの確保範囲が小さいかつB_col*B_rowをCHIP数で割った数より小さいかつ64kよりCの確保範囲が小さいかつA_row*B_colをCHIP数で割った数より小さい
     do{
