@@ -63,7 +63,10 @@ static void make_simd_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug)
   float val = 0,sum=0,sum1=0;
   Uint B_col_pad = 0;
   B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;
-
+  if(B_debug == NULL){
+    fprintf(stderr,"make_simd_random_mat B_debug NULL %d \n",__LINE__);
+    
+  }
   for (row=0; row<B_row_size; row++) {
     for (col=0; col<(B_col_size+B_col_pad); col++){
       // *(float*)&B[col*(B_col_size+B_col_pad)+row] = (float) tmp;

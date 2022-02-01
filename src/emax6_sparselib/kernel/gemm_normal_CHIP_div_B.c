@@ -209,6 +209,8 @@
 // }
 
 
+
+
 void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* params) {
     // args: A IMAX_CSR_format
     // arg B fortran continues simd format
@@ -238,6 +240,10 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
     Sll B_row_size = params->B_row_size_param;    // 縛りなし
     Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
     // #define B_col_blk 16
     Sll B_col_blk = params->B_col_blk_param;
     /*Sll NCHIP 4*/
@@ -246,7 +252,6 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     Sll H  = params->H_param;
     // Sll A_col_blk = 1;
     Sll A_col_blk = params->A_col_blk_param;
-    Sll A_H_pad = 0;
     Sll A_row_size_mul_mul_A_col_blk = A_row_size*A_col_blk;
     Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
     Sll A_row_size_mul_4 = A_row_size*4;
@@ -256,39 +261,38 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     Ull Force,Force_reverse;
     Force = 1;
     // Force_reverse = ~Force;
-    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
-    Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size+A_H_pad);
-    Sll A_col_add_A_H_pad = A_col_size + A_H_pad;
+    Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size_pad);
+    // Sll A_col_add_A_H_pad = A_col_size + A_H_pad;
     Ull B_col_pad = 0;
-    B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;    
+    B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;    
     Uint *a[H],*a0[H],*a_index[H],*a_debug[H+1];
     Uint  *b[NCHIP], *b0[H][NCHIP], *b1[H][NCHIP], *b2[H][NCHIP], *b3[H][NCHIP];
     Uint  *c0[NCHIP],*c0_debug[NCHIP];
     Uint  *c00[NCHIP], *c01[NCHIP], *c02[NCHIP], *c03[NCHIP];
 
     printf("IMAX\n");
-    for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_mul_A_col_blk = A_row_size*A_col_blk; blk<(A_col_size+A_H_pad); blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
+    for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_mul_A_col_blk = A_row_size*A_col_blk; blk<(A_col_size_pad); blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
         // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
         for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk);blk_iter_tmp++){
 
-            if ((blk_iter_tmp*H>=(A_col_size+A_H_pad))){
+            if ((blk_iter_tmp*H>=(A_col_size_pad))){
                 A_row_size_mul_mul_A_col_blk -= A_row_size;
                 A_col_blk_tmp -= 1;
             }
         }
         if(A_col_blk_tmp == 0){break;}
-    for (top=0; top<(B_col_size+B_col_pad)/NCHIP; top+=B_col_blk) {
+    for (top=0; top<(B_col_size_pad)/NCHIP; top+=B_col_blk) {
         for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
-                b[CHIP] = B+(CHIP*(B_col_size+B_col_pad)/NCHIP+top)*(B_row_size+A_H_pad);
+                b[CHIP] = B+(CHIP*(B_col_size_pad)/NCHIP+top)*(B_row_size_pad);
                 for (k=0; k<H; k++){
-                    b0[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+0                     +k*A_col_blk_tmp*2; 
-                    b1[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+(B_row_size+A_H_pad)*2+k*A_col_blk_tmp*2; 
-                    b2[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+(B_row_size+A_H_pad)*4+k*A_col_blk_tmp*2;  
-                    b3[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size+A_H_pad)+(B_row_size+A_H_pad)*6+k*A_col_blk_tmp*2; 
+                    b0[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+0                     +k*A_col_blk_tmp*2; 
+                    b1[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+(B_row_size_pad)*2+k*A_col_blk_tmp*2; 
+                    b2[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+(B_row_size_pad)*4+k*A_col_blk_tmp*2;  
+                    b3[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+(B_row_size_pad)*6+k*A_col_blk_tmp*2; 
                 }
 
-                c0[CHIP] = C+(CHIP*(B_col_size+B_col_pad)/NCHIP+top)*A_row_size;
+                c0[CHIP] = C+(CHIP*(B_col_size_pad)/NCHIP+top)*A_row_size;
                 c00[CHIP]= (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+0; c01[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*2; c02[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*4; c03[CHIP] = (Uint*)c0[CHIP]+b_col_B_col_blk*A_row_size+A_row_size*6;
 
             }

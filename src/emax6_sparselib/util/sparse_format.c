@@ -157,7 +157,18 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
                 // tmp != paddings[row] 変化した次のrowを代入している
                 // ex margin[iter_num-1]-1 == 736-1 = 735  paddings[margin[iter_num-1]-1]=2
                 // 4 -> 2のようにいきなりpaddingが二個飛びで変化するケースに対応している。
-                for(iter=paddings[margin[iter_num-1]-1];iter<paddings[row]; iter++){
+                if(iter_num != 0) {
+                    margin_tmp = margin[iter_num-1]-1;
+                }
+                else if(paddings[row+1] == 0){
+                    //一個もnnzがあるrowが見つかってない偏りがあるパターン
+                    margin_tmp = row+1;
+                }
+                else{
+                    fprintf(stderr,"fail format LINE %d",__LINE__);
+                }
+    
+                for(iter=paddings[margin_tmp];iter<paddings[row]; iter++){
                     //row+1が入る multiplyのfor文で扱いやすくするため。 for (rofs=0; rofs<A_margin[blk_iter]; rofs++) 
                     margin[iter_num++] = row+1;
                 } 
@@ -175,7 +186,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
             paddings[row] = count[row]/H + (int)(count[row]%H != 0); 
             if(paddings[row]>pad_max){pad_max = paddings[row];}   
         }
-        for(iter=0;iter<(pad_max+1); iter++){
+        for(iter=0;iter<(pad_max); iter++){
             margin[iter_num++] = row_size; //row+1
         }
     }

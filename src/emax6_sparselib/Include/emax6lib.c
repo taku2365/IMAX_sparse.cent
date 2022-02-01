@@ -499,14 +499,14 @@ show_nanosec()
 	 (Uint)(nanosec[NANOS_TOTAL]/1000));
 #else
   printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 (Uint)(nanosec[NANOS_ARM]),
-	 (Uint)(nanosec[NANOS_DRAIN]),
-	 (Uint)(nanosec[NANOS_CONF]),
-	 (Uint)(nanosec[NANOS_REGV]),
-	 (Uint)(nanosec[NANOS_RANGE]),
-	 (Uint)(nanosec[NANOS_LOAD]),
-	 (Uint)(nanosec[NANOS_EXEC]),
-	 (Uint)(nanosec[NANOS_TOTAL]));
+	 (nanosec[NANOS_ARM]),
+	 (nanosec[NANOS_DRAIN]),
+	 (nanosec[NANOS_CONF]),
+	 (nanosec[NANOS_REGV]),
+	 (nanosec[NANOS_RANGE]),
+	 (nanosec[NANOS_LOAD]),
+	 (nanosec[NANOS_EXEC]),
+	 (nanosec[NANOS_TOTAL]));
 #endif
 }
 

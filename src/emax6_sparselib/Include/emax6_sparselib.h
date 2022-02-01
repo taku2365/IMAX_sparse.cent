@@ -76,37 +76,48 @@ typedef struct {
     
 } emax6_sparse2;
 
+typedef struct{
+    Sll row_subsize;
+    Sll col_subsize;
+    Sll col_blk_param;
+} A_blk_set;
+
+typedef struct{
+    Sll row_subsize;
+    Sll col_subsize;
+    Sll col_blk_param;
+} B_blk_set;
+
 typedef struct {
     Uint mode;    // 0:dense dense  1:sparse dense H=46 ver  2:sparse dense H=58 ver 3:sparse dense H=58 C_col_blk != B_col_blk ver
     Uint data_format; // 0:dense normal  1:csr index val set  2:jds index val separate  3:jds index val set 
     Uint data_type; // 0:normal 1:sparse 2:biased sparse
     Sll H_param;
     Sll W_param;
-    Sll A_col_blk_param  ;
-    Sll A_row_blk_param  ;
-    Sll B_col_blk_param  ;
-    Sll B_row_blk_param  ;
-    Sll C_col_blk_param  ;
-    Sll C_row_blk_param  ;
-    Sll* A_col_blks_param  ;
-    Sll* A_row_blks_param  ;
-    Sll* B_col_blks_param  ;
-    Sll* B_row_blks_param  ;
-    Sll* C_col_blks_param  ;
-    Sll* C_row_blks_param  ;
-    Sll NCHIP_param      ;
-    Sll A_row_size_param ;
-    Sll A_col_size_param ;
-    Sll B_row_size_param ;
-    Sll B_col_size_param ;  
-    float LMM_usage_A_kbyte;
-    float LMM_usage_A_rate ;
-    float LMM_usage_B_kbyte;
-    float LMM_usage_B_rate ;
-    float LMM_usage_kbyte;
-    float LMM_usage_rate ;    
+    Sll A_col_blk_param     ;
+    Sll A_row_blk_param     ;
+    Sll B_col_blk_param     ;
+    Sll B_row_blk_param     ;
+    Sll C_col_blk_param     ;
+    Sll C_row_blk_param     ;
+    Sll NCHIP_param         ;
+    Sll A_row_size_param    ;
+    Sll A_col_size_param    ;
+    Sll B_row_size_param    ;
+    Sll B_col_size_param    ;
+    Sll A_row_size_pad_param;
+    Sll A_col_size_pad_param;
+    Sll B_row_size_pad_param;
+    Sll B_col_size_pad_param;  
+    A_blk_set* A_blk_set    ;
+    B_blk_set* B_blk_set    ;
+    float LMM_usage_A_kbyte ;
+    float LMM_usage_A_rate  ;
+    float LMM_usage_B_kbyte ;
+    float LMM_usage_B_rate  ;
+    float LMM_usage_kbyte   ;
+    float LMM_usage_rate    ;    
 } emax6_param;
-
 
 
 

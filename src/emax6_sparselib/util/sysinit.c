@@ -79,7 +79,6 @@ void mem_release(Uint memsize,Uchar** membase){
   #else
   if(*membase != NULL){
     memset(*membase,0,memsize);
-    *membase = NULL;
   }
   #endif
 
