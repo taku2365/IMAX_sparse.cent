@@ -85,18 +85,21 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 512LL;
-A_col_size_ini = A_col_size = 512LL;
-B_row_size_ini = B_row_size = 512LL;
-B_col_size_ini = B_col_size = 512LL;
+A_row_size_ini = A_row_size = 4096LL;
+A_col_size_ini = A_col_size = 4096LL;
+B_row_size_ini = B_row_size = 4096LL;
+B_col_size_ini = B_col_size = 4096LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 emax6_param params;
-params.data_format = JDS_INDEX_VAL_SET;
-params.mode = SPARSE_DENSE_58_VER2;
-params.data_type = SPARSE;
+// params.data_format = JDS_INDEX_VAL_SET;
+// params.mode = SPARSE_DENSE_58_VER2;
+// params.data_type = SPARSE;
+params.data_format = DENSE_NORMAL;
+params.mode = DENSE_DENSE;
+params.data_type = NORMAL;
 H = get_H_param(&params);
 Uint A_row_H_pad = 0;
 Uint A_col_H_pad = 0;
@@ -113,7 +116,6 @@ B_col_size_pad = B_col_size+B_col_pad  ;
 // params.data_format = DENSE_NORMAL;
 // params.mode = DENSE_DENSE;
 // params.data_type = NORMAL;
-printf("\n");
 
 
 

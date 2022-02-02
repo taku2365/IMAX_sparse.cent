@@ -88,57 +88,53 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
     Uint A_H_pad   = 0                       ;
     Uint B_col_pad = 0;
     Uint LMM_MAX_LENGTH_modify = LMM_MAX_LENGTH - LMM_MAX_LENGTH%H;
+    Uint LMM_MAX_LENGTH_modify1 = 0;
+    Uint LMM_MAX_LENGTH_modify2 = 0;
     B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
     A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     Uint blk_iter_Arow = ((A_row_size%LMM_MAX_LENGTH_modify) != 0) ? (int)A_row_size/LMM_MAX_LENGTH_modify+1:(int)A_row_size/LMM_MAX_LENGTH_modify;
     Uint blk_iter_Acol = (((A_col_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(A_col_size)/LMM_MAX_LENGTH_modify+1:(int)(A_col_size)/LMM_MAX_LENGTH_modify;
     Uint blk_iter_Brow = (((B_row_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_row_size)/LMM_MAX_LENGTH_modify+1:(int)(B_row_size)/LMM_MAX_LENGTH_modify;
     Uint blk_iter_Bcol = (((B_col_size+B_col_pad)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify+1:(int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify;
-    A_blk_set* A_blk_set = calloc(blk_iter_Acol*blk_iter_Arow,sizeof(Uint));
-    B_blk_set* B_blk_set = calloc(blk_iter_Brow,sizeof(Uint));
-    Uint* A_row_lens = calloc(blk_iter_Arow,sizeof(Uint));
-    Uint* A_col_lens = calloc(blk_iter_Acol,sizeof(Uint));
-    Uint* B_row_lens = calloc(blk_iter_Brow,sizeof(Uint));
-    Uint* B_col_lens = calloc(blk_iter_Bcol,sizeof(Uint));
+    // typedefの影響で A_blk_set* A_blk_setと宣言するとバグる
+    A_blk_set* A_blk_sets = calloc(blk_iter_Arow*blk_iter_Acol,sizeof(A_blk_set));
+    B_blk_set* B_blk_sets =  calloc(blk_iter_Brow,sizeof(B_blk_set));
     Uint blk_iter_tmp = 0;
-    Sll* A_row_blks = calloc(blk_iter_Arow,sizeof(Sll));
-    Sll* A_col_blks = calloc(blk_iter_Acol,sizeof(Sll));
-    Sll* B_row_blks = calloc(blk_iter_Brow,sizeof(Sll));
-    Sll* B_col_blks = calloc(blk_iter_Bcol,sizeof(Sll));
     Sll* LMM_MAX_LENGTH_modify_pad = 0;
     Sll A_row_blk_mean = 0;
     Sll A_col_blk_mean = 0;
     Sll B_row_blk_mean = 0;
     Sll B_col_blk_mean = 0;
     Sll tmp = 0;
+    Sll tmp1 = 0;
     Sll tmp_pad = 0;
     
-    //最後から一つ手前は1024maxで頑張る
-    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Arow-1);blk_iter_tmp++){
-        A_blk_set[blk_iter_tmp].row_subsize = LMM_MAX_LENGTH_modify;
+    //LMM_MAX_LENGTH_modifyはHで割り切れる最大のブロックサイズを表している
+    //LMM_MAX_LENGTH_modify1は分割後のHで割り切れるブロックサイズを表している
+    //LMM_MAX_LENGTH_modifyで行列サイズを割った数+1が必要なブロック数で最後のrow一回はHで割れるように再調整している
+    tmp = (int)(A_row_size/blk_iter_Arow);
+    LMM_MAX_LENGTH_modify1 = (int)((tmp%H) != 0) ? -tmp%H + H + tmp : tmp;  
+    LMM_MAX_LENGTH_modify2 = (int)((B_col_size%(W*2)) != 0) ?-B_col_size%(W*2) + (W*2) + B_col_size : B_col_size;
+    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Arow)*(blk_iter_Acol);blk_iter_tmp++){
+        A_blk_sets[blk_iter_tmp].row_subsize = LMM_MAX_LENGTH_modify1;
+        A_blk_sets[blk_iter_tmp].col_subsize = LMM_MAX_LENGTH_modify1;
+        if((blk_iter_tmp%(blk_iter_Arow-1)) == 0){
+            // rowの一番下
+            tmp = A_row_size - (blk_iter_Arow-1)*LMM_MAX_LENGTH_modify1;
+            A_blk_sets[blk_iter_tmp].row_subsize = ((int)((tmp%H) != 0) ? -tmp%H + H + tmp : tmp);
+            tmp1 = A_col_size - (blk_iter_Acol-1)*LMM_MAX_LENGTH_modify1;
+            A_blk_sets[blk_iter_tmp].col_subsize = ((int)((tmp1%H) != 0) ? -tmp1%H + H + tmp1 : tmp1);
+        }
     }
-    //最後だけ端数  1024以下だとそのまま値が入る
-    A_blk_set[blk_iter_Arow-1].row_subsize = A_row_size - LMM_MAX_LENGTH_modify*blk_iter_tmp;
-
-    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Acol-1);blk_iter_tmp++){
-        //1024を超えない範囲かつHで割り切れる
-        A_blk_set[blk_iter_tmp].col_subsize = LMM_MAX_LENGTH_modify;
-        B_blk_set[blk_iter_tmp].row_subsize = LMM_MAX_LENGTH_modify;
-    }
-    //さいごに残った部分を最後のblkにまとめる blkは小さくなるが仕方がない
-    // tmp = (A_col_size) - (LMM_MAX_LENGTH_modify)*blk_iter_tmp;
-    tmp = (A_col_size) - (LMM_MAX_LENGTH_modify)*blk_iter_tmp;
-    tmp_pad = ((tmp%H) != 0) ?-tmp%H + H :tmp_pad;
-    A_blk_set[blk_iter_Acol-1].col_subsize =  tmp + tmp_pad;
-    B_blk_set[blk_iter_Acol-1].row_subsize =  tmp + tmp_pad;
-
-    //使わない？
-    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Bcol-1);blk_iter_tmp++){
-        B_blk_set[blk_iter_tmp].col_subsize = LMM_MAX_LENGTH_modify;
+    //colはW*2のpadだけ
+    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Brow-1);blk_iter_tmp++){
+        B_blk_sets[blk_iter_tmp].row_subsize = LMM_MAX_LENGTH_modify1;
+        B_blk_sets[blk_iter_tmp].col_subsize = LMM_MAX_LENGTH_modify2;
     }   
-    tmp = (B_col_size) - (LMM_MAX_LENGTH_modify)*blk_iter_tmp;
-    tmp_pad = ((tmp%(W*2)) != 0) ?-tmp%(W*2) + (W*2) :tmp_pad;
-    B_blk_set[blk_iter_Bcol-1].col_subsize = tmp + tmp_pad;
+    tmp = B_row_size - (blk_iter_Brow-1)*LMM_MAX_LENGTH_modify1;
+    B_blk_sets[blk_iter_Brow-1].row_subsize = ((int)((tmp%H) != 0) ? -tmp%H + H + tmp : tmp);
+    B_blk_sets[blk_iter_Brow-1].col_subsize = (LMM_MAX_LENGTH_modify2);
+
     
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
@@ -146,53 +142,62 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換)
     for(blk_iter_tmp=0;blk_iter_tmp<blk_iter_Arow*blk_iter_Acol;blk_iter_tmp++){
         do{
-            A_blk_set[blk_iter_tmp].col_blk_param += 1;
-        }while(A_blk_set[blk_iter_tmp].row_subsize*A_blk_set[blk_iter_tmp].col_blk_param*4<=(LMM_SIZE>>1)
-        &&((A_blk_set[blk_iter_tmp].row_subsize*A_blk_set[blk_iter_tmp].col_blk_param*H)<=A_blk_set[blk_iter_tmp].row_subsize*(A_blk_set[blk_iter_tmp].col_blk_param)));
-        A_blk_set[blk_iter_tmp].col_blk_param -= 1;
+            A_blk_sets[blk_iter_tmp].col_blk_param += 1;
+        }while(A_blk_sets[blk_iter_tmp].row_subsize*A_blk_sets[blk_iter_tmp].col_blk_param*4<=(LMM_SIZE>>1)
+        &&((A_blk_sets[blk_iter_tmp].row_subsize*A_blk_sets[blk_iter_tmp].col_blk_param*H)<=A_blk_sets[blk_iter_tmp].row_subsize*(A_blk_sets[blk_iter_tmp].col_subsize)));
+        A_blk_sets[blk_iter_tmp].col_blk_param -= 1;
         //32kよりBの確保範囲が小さいかつB_col*B_rowをCHIP数で割った数より小さいかつ64kよりCの確保範囲が小さいかつA_row*B_colをCHIP数で割った数より小さい
-        if((A_blk_set[blk_iter_tmp].col_blk_param == 0)){
+        if((A_blk_sets[blk_iter_tmp].col_blk_param == 0)){
                 fprintf(stderr,"tuning fail line %d \n",__LINE__);
             exit(1);
         }
     }
 
-    for(blk_iter_tmp=0;blk_iter_tmp<blk_iter_Brow*blk_iter_Bcol;blk_iter_tmp++){
+    // Cの制約条件につかうA_blk_setsは一列目だけ使う
+    for(blk_iter_tmp=0;blk_iter_tmp<blk_iter_Brow;blk_iter_tmp++){
         do{
-            B_blk_set[blk_iter_tmp].col_blk_param += W*2;
+            B_blk_sets[blk_iter_tmp].col_blk_param += W*2;
         }while(
-        ((B_blk_set[blk_iter_tmp].row_subsize)*B_blk_set[blk_iter_tmp].col_blk_param*4<=(LMM_SIZE>>1))
-        &&((B_blk_set[blk_iter_tmp].row_subsize)*B_blk_set[blk_iter_tmp].col_blk_param<=((B_blk_set[blk_iter_tmp].col_subsize)*(B_blk_set[blk_iter_tmp].row_subsize)/NCHIP))
-        &&((A_row_lens[blk_iter_tmp]*B_blk_set[blk_iter_tmp].col_blk_param*4)<=LMM_SIZE)
-        &&((A_row_lens[blk_iter_tmp]*B_blk_set[blk_iter_tmp].col_blk_param)<=A_row_lens[blk_iter_tmp]*(B_blk_set[blk_iter_tmp].col_subsize)/NCHIP)
+        ((B_blk_sets[blk_iter_tmp].row_subsize)*B_blk_sets[blk_iter_tmp].col_blk_param*4<=(LMM_SIZE>>1))
+        &&((B_blk_sets[blk_iter_tmp].row_subsize)*B_blk_sets[blk_iter_tmp].col_blk_param<=((B_blk_sets[blk_iter_tmp].col_subsize)*(B_blk_sets[blk_iter_tmp].row_subsize)/NCHIP))
+        &&((A_blk_sets[blk_iter_tmp].row_subsize*B_blk_sets[blk_iter_tmp].col_blk_param*4)<=LMM_SIZE)
+        &&((A_blk_sets[blk_iter_tmp].row_subsize*B_blk_sets[blk_iter_tmp].col_blk_param)<=A_blk_sets[blk_iter_tmp].row_subsize*(B_blk_sets[blk_iter_tmp].col_subsize)/NCHIP)
         );
-        B_blk_set[blk_iter_tmp].col_blk_param -= W*2;
-        if((B_blk_set[blk_iter_tmp].col_blk_param == 0)){
+        B_blk_sets[blk_iter_tmp].col_blk_param -= W*2;
+        if((B_blk_sets[blk_iter_tmp].col_blk_param == 0)){
             fprintf(stderr,"tuning fail line %d \n",__LINE__);
             exit(1);
         }
 
-        while(((B_blk_set[blk_iter_tmp].col_subsize)%(B_blk_set[blk_iter_tmp].col_blk_param*NCHIP)) != 0){
+        while(((B_blk_sets[blk_iter_tmp].col_subsize)%(B_blk_sets[blk_iter_tmp].col_blk_param*NCHIP)) != 0){
             //B全体が収容できるようにするため
-            B_blk_set[blk_iter_tmp].col_blk_param -= W*2;
-            if((B_blk_set[blk_iter_tmp].col_blk_param == 0)){
+            B_blk_sets[blk_iter_tmp].col_blk_param -= W*2;
+            if((B_blk_sets[blk_iter_tmp].col_blk_param == 0)){
                 fprintf(stderr,"tuning fail line %d \n",__LINE__);
                 exit(1);
             }
         }
     }
+    for(blk_iter_tmp=0;blk_iter_tmp<blk_iter_Acol*blk_iter_Arow;blk_iter_tmp++){
+        A_col_blk_mean += A_blk_sets[blk_iter_tmp].col_blk_param;
+    }
+    for(blk_iter_tmp=0;blk_iter_tmp<(blk_iter_Bcol);blk_iter_tmp++){
+        B_col_blk_mean += B_blk_sets[blk_iter_tmp].col_blk_param;
+    }
+    A_col_blk_mean = A_col_blk_mean/(blk_iter_Arow*blk_iter_Acol);
+    B_col_blk_mean = B_col_blk_mean/blk_iter_Bcol;
     // A_col_blk = 1;
-    params->A_blk_set = A_blk_set;
-    params->B_blk_set = B_blk_set;
+    params->A_blk_sets = A_blk_sets;
+    params->B_blk_sets = B_blk_sets;
     params->A_col_blk_param = NULL;
     params->B_col_blk_param = NULL;
     params->C_col_blk_param = NULL;
-    params->LMM_usage_A_kbyte = ((A_row_size*A_col_blk)*4)/1000;
-    params->LMM_usage_B_kbyte = ((B_row_size*B_col_blk)*4)/1000;
-    params->LMM_usage_kbyte   =  ((B_row_size*B_col_blk+A_row_size*A_col_blk)*4)/1000;
-    params->LMM_usage_A_rate  = (float)((A_row_size*A_col_blk)*4)/(float)(LMM_SIZE/2);
-    params->LMM_usage_B_rate  = (float)((B_row_size*B_col_blk)*4)/(float)(LMM_SIZE/2);
-    params->LMM_usage_rate    = (float)((B_row_size*B_col_blk+A_row_size*A_col_blk)*4)/(float)LMM_SIZE;
+    params->LMM_usage_A_kbyte = ((A_row_size*A_col_blk_mean)*4)/1000;
+    params->LMM_usage_B_kbyte = ((B_row_size*B_col_blk_mean)*4)/1000;
+    params->LMM_usage_kbyte   =  ((B_row_size*B_col_blk_mean+A_row_size*A_col_blk_mean)*4)/1000;
+    params->LMM_usage_A_rate  = (float)((A_row_size*A_col_blk_mean)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_B_rate  = (float)((B_row_size*B_col_blk_mean)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_rate    = (float)((B_row_size*B_col_blk_mean+A_row_size*A_col_blk_mean)*4)/(float)LMM_SIZE;
 
 }
 

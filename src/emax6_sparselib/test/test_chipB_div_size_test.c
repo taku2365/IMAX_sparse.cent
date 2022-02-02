@@ -110,10 +110,10 @@ H = get_H_param(&params);
 // Uint size_array[1] = {32,64};
 // sparse_rate_len = 7;
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-// size_array_len = 6;
-// Uint size_array[6] = {1024,512,256,128,64,32};
-size_array_len = 1;
-Uint size_array[1] = {32};
+size_array_len = 6;
+Uint size_array[6] = {1024,512,256,128,64,32};
+// size_array_len = 1;
+// Uint size_array[1] = {32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
@@ -210,7 +210,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         sparse_gemm_CHIP_div_B(C1, A, B, A_sparse, &params);
         get_nanosec(0);
         show_nanosec();
-        
+
         #if !defined(CSIMDEBUG)
         STORE_CSV(fp);
         #endif

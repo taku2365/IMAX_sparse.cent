@@ -109,8 +109,8 @@ typedef struct {
     Sll A_col_size_pad_param;
     Sll B_row_size_pad_param;
     Sll B_col_size_pad_param;  
-    A_blk_set* A_blk_set    ;
-    B_blk_set* B_blk_set    ;
+    A_blk_set* A_blk_sets    ;
+    B_blk_set* B_blk_sets    ;
     float LMM_usage_A_kbyte ;
     float LMM_usage_A_rate  ;
     float LMM_usage_B_kbyte ;
@@ -195,6 +195,8 @@ Sll get_H_param(emax6_param* params);
             (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
             (int)params.C_col_blk_param,(int)NCHIP,(int)W);}\
     while (0)
+
+
 
 #endif
 
