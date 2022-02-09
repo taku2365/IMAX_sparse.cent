@@ -206,7 +206,7 @@ if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
 }
 if(params.mode == DENSE_DENSE){
-    for(index_tmp=0;index_tmp<(A_row_size*(A_col_size_pad));index_tmp++){
+    for(index_tmp=0;index_tmp<(A_row_size_pad*(A_col_size_pad));index_tmp++){
         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
     }
 }

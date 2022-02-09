@@ -47,11 +47,15 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
   int col,row,tmp,tmp1,nnz=0;
   int A_row_size = emax6_param->A_row_size_param;
   int A_col_size = emax6_param->A_col_size_param;
+  int A_row_size_pad = emax6_param->A_row_size_pad_param;
+  int A_col_size_pad = emax6_param->A_col_size_pad_param;
+  int B_row_size_pad = emax6_param->B_row_size_pad_param;
+  int B_col_size_pad = emax6_param->B_col_size_pad_param;
   double sum = 0;
   coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
-  Uint* col_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-  Uint* row_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-  Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
+  Uint* col_index = (Uint *)calloc(A_row_size_pad*A_col_size_pad,sizeof(Uint));
+  Uint* row_index = (Uint *)calloc(A_row_size_pad*A_col_size_pad,sizeof(Uint));
+  Uint* A_tmp = (Uint *)calloc(A_row_size_pad*A_col_size_pad,sizeof(Uint));
   if((sparsity>1)||(sparsity<0)){
       fprintf(stderr,"make_sparse_mat fail \n");
       exit(1);
@@ -167,6 +171,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
     // tmp = (int) rand()%3;
     // tmp = (int) ((tmp == 0)||(tmp == 1));
     // rnad()%x 0~x-1の間の数字をとる
+    if(emax6_param->mode == DENSE_DENSE){A_row_size = A_row_size_pad;}
     *(float*)&A_tmp[row+col*A_row_size] = (float)(tmp1) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
@@ -191,10 +196,14 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
   int col,row,tmp,tmp1,nnz=0;
   int A_row_size = emax6_param->A_row_size_param;
   int A_col_size = emax6_param->A_col_size_param;
+  int A_row_size_pad = emax6_param->A_row_size_pad_param;
+  int A_col_size_pad = emax6_param->A_col_size_pad_param;
+  int B_row_size_pad = emax6_param->B_row_size_pad_param;
+  int B_col_size_pad = emax6_param->B_col_size_pad_param;
   coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
-  Uint* col_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-  Uint* row_index = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
-  Uint* A_tmp = (Uint *)calloc(A_row_size*A_col_size,sizeof(Uint));
+  Uint* col_index = (Uint *)calloc(A_row_size_pad*A_col_size,sizeof(Uint));
+  Uint* row_index = (Uint *)calloc(A_row_size_pad*A_col_size,sizeof(Uint));
+  Uint* A_tmp = (Uint *)calloc(A_row_size_pad*A_col_size,sizeof(Uint));
   if((sparsity>1)||(sparsity<0)){
       fprintf(stderr,"make_sparse_mat fail \n");
       exit(1);
@@ -208,6 +217,7 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
     if((col<(int)(A_col_size*(sparsity+biased_percent)))&&((int)(row<(A_row_size*biased_percent)))){
       tmp = 0;
     }
+    if(emax6_param->mode == DENSE_DENSE){A_row_size = A_row_size_pad;}
     *(float*)&A_tmp[row+col*A_row_size] = (float)(tmp) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){

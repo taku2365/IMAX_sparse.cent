@@ -85,10 +85,10 @@ Sll NCHIP_ini     ,NCHIP     ;
 Sll W_ini         ,W         ;
 Sll A_col_blk_ini ,A_col_blk ;
 
-A_row_size_ini = A_row_size = 4096LL;
-A_col_size_ini = A_col_size = 4096LL;
-B_row_size_ini = B_row_size = 4096LL;
-B_col_size_ini = B_col_size = 4096LL;
+A_row_size_ini = A_row_size = 512LL;
+A_col_size_ini = A_col_size = 512LL;
+B_row_size_ini = B_row_size = 512LL;
+B_col_size_ini = B_col_size = 512LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
@@ -121,7 +121,7 @@ B_col_size_pad = B_col_size+B_col_pad  ;
 
 float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 // float sparse_rate[4] = {0,0.3,0.5,0.9};
-sparse_rate_index = 10;
+sparse_rate_index = 5;
 //はみ出た時の拡張
 Uchar* membase = NULL;
 Uint memsize = 2*(A_row_size*(A_col_size_pad))*sizeof(Uint)
@@ -171,7 +171,7 @@ if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
 }
 if(params.mode == DENSE_DENSE){
-    for(index_tmp=0;index_tmp<(A_row_size*(A_col_size_pad));index_tmp++){
+    for(index_tmp=0;index_tmp<(A_row_size_pad*(A_col_size_pad));index_tmp++){
         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
     }
 }
