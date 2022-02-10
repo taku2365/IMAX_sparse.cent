@@ -94,28 +94,18 @@ B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 emax6_param params;
-// params.data_format = JDS_INDEX_VAL_SET;
+// params.data_format = JDS_INDEX_VAL_SET_FORMAT;
 // params.mode = SPARSE_DENSE_58_VER2;
-// params.data_type = SPARSE;
-params.data_format = DENSE_NORMAL;
-params.mode = DENSE_DENSE;
-params.data_type = NORMAL;
+// params.data_type = SPARSE_TYPE;
+params.data_format = DENSE_DENSE_FORMAT;
+params.mode = DENSE_DENSE_MODE;
+params.data_type = DENSE_TYPE;
 H = get_H_param(&params);
-Uint A_row_H_pad = 0;
-Uint A_col_H_pad = 0;
-Uint B_row_H_pad = 0;
-Uint B_col_pad = 0;
-A_row_H_pad = ((A_row_size%H) != 0) ? -A_row_size%H + H : A_row_H_pad;
-B_row_H_pad = A_col_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_col_H_pad;
-B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
-A_row_size_pad = A_row_size+A_row_H_pad;
-A_col_size_pad = A_col_size+A_col_H_pad;
-B_row_size_pad = B_row_size+B_row_H_pad;
-B_col_size_pad = B_col_size+B_col_pad  ;
-// params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-// params.data_format = DENSE_NORMAL;
-// params.mode = DENSE_DENSE;
-// params.data_type = NORMAL;
+A_row_size_pad = A_row_size;
+// GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
+GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
 
 
 
@@ -170,7 +160,7 @@ make_random_mat(&params,B,B_debug);
 if(coo == NULL){
 fprintf(stderr,"coo NULL \n");
 }
-if(params.mode == DENSE_DENSE){
+if(params.mode == DENSE_DENSE_MODE){
     for(index_tmp=0;index_tmp<(A_row_size_pad*(A_col_size_pad));index_tmp++){
         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
     }

@@ -171,7 +171,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
     // tmp = (int) rand()%3;
     // tmp = (int) ((tmp == 0)||(tmp == 1));
     // rnad()%x 0~x-1の間の数字をとる
-    if(emax6_param->mode == DENSE_DENSE){A_row_size = A_row_size_pad;}
+    if(emax6_param->mode == DENSE_DENSE_MODE){A_row_size = A_row_size_pad;}
     *(float*)&A_tmp[row+col*A_row_size] = (float)(tmp1) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
@@ -217,7 +217,7 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
     if((col<(int)(A_col_size*(sparsity+biased_percent)))&&((int)(row<(A_row_size*biased_percent)))){
       tmp = 0;
     }
-    if(emax6_param->mode == DENSE_DENSE){A_row_size = A_row_size_pad;}
+    if(emax6_param->mode == DENSE_DENSE_MODE){A_row_size = A_row_size_pad;}
     *(float*)&A_tmp[row+col*A_row_size] = (float)(tmp) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size]) && (*(float*)&A_tmp[row+col*A_row_size] <= LIMIT))){
@@ -242,15 +242,15 @@ coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percen
 
   switch (emax6_param->data_type)
   {
-  case NORMAL:
+  case DENSE_TYPE:
     // coo = make_mat_0(emax6_param,sparsity);
     // break;
     // coo = make_sparse_mat_1(emax6_param,sparsity,biased_percent);
     // break;
-  case SPARSE:
+  case SPARSE_TYPE:
     coo = make_sparse_mat_1(emax6_param,sparsity);
     break;
-  case BIASED_SPARSE:
+  case BIASED_SPARSE_TYPE:
     coo = make_sparse_mat_2(emax6_param,sparsity,biased_percent);
     break;
   default:

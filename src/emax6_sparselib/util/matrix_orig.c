@@ -74,12 +74,12 @@ static void orig_normal(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax
 void orig(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param){
   switch (emax6_param->mode)
   {
-  case 0:
+  case DENSE_DENSE_MODE:
     orig_normal(A_orig, B_orig, C_orig, emax6_param);
     break;
-  case 1:
-  case 2:
-  case 3:
+  case SPARSE_DENSE_46_MODE:
+  case SPARSE_DENSE_58_VER2_MODE:
+  case SPARSE_DENSE_58_VER3_MODE:
     orig_chip_divB(A_orig, B_orig, C_orig, emax6_param);
     break;
   default:

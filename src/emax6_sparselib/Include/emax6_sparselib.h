@@ -138,7 +138,7 @@ void orig(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
 void mem_release(Uint memsize,Uchar** membase);
 void IMAX_param_tunig(emax6_param* params);
 emax6_sparse2* sparse_format(int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
-emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
+// emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
 // void sparse_multiply(const emax6_sparse* const  A_sparse, const Uint* const B, Uint* C_sparse, int B_col_size);
 // int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 // int sparse_multiply_imax1(const emax6_sparse1* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
@@ -146,21 +146,27 @@ emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* c
 int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
-Sll get_H_param(emax6_param* params);
-//mode    
-#define DENSE_DENSE 0
-#define SPARSE_DENSE_46 1
-#define SPARSE_DENSE_58_VER2 2
-#define SPARSE_DENSE_58_VER3 3
+Sll get_H_param(emax6_param* params); 
+//mode  
+#define DENSE_DENSE_MODE 0
+#define DENSE_SPMV_MODE 1 
+#define SPARSE_DENSE_46_MODE 2
+#define SPARSE_DENSE_58_VER2_MODE 3
+#define SPARSE_DENSE_58_VER3_MODE 4
+#define SPARSE_DENSE_58_SPMV_MODE 5
 // data_format
-#define DENSE_NORMAL 0
-#define CSR_INDEX_VAL_SET 1
-#define JDS_INDEX_SEPARATE 2
-#define JDS_INDEX_VAL_SET 3
+#define DENSE_DENSE_FORMAT 0
+#define DENSE_DENSE_SPMV_FORMAT 1
+#define CSR_INDEX_VAL_SET_FORMAT 2
+#define JDS_INDEX_SEPARATE_FORMAT 3
+#define JDS_INDEX_VAL_SET_FORMAT 4 
 // data_type
-#define NORMAL 0 
-#define SPARSE 1
-#define BIASED_SPARSE 2
+#define DENSE_TYPE 0 
+#define DENSE_SPMV_TYPE 1 
+#define SPARSE_TYPE 2
+#define BIASED_SPARSE_TYPE 3
+#define SPARSE_SPMV_TYPE 4
+
 
 #define LMM_MAX_LENGTH 1024
 
@@ -195,6 +201,15 @@ Sll get_H_param(emax6_param* params);
             (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
             (int)params.C_col_blk_param,(int)NCHIP,(int)W);}\
     while (0)
+
+
+
+#define GET_PAD_SIZE(pad_size,size,align) do {\
+     pad_size = ((size%align) != 0) ? size - size%align + align : size;\
+}\
+while (0)
+
+
 
 
 

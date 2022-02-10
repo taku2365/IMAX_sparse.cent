@@ -101,12 +101,12 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
-// params.data_format = JDS_INDEX_VAL_SET;
-// params.mode = SPARSE_DENSE_58_VER2;
-// params.data_type = SPARSE;
-params.data_format = DENSE_NORMAL;
-params.mode = DENSE_DENSE;
-params.data_type = NORMAL;
+// params.data_format = JDS_INDEX_VAL_SET_FORMAT;
+// params.mode = SPARSE_DENSE_58_VER2_MODE;
+// params.data_type = SPARSE_TYPE;
+params.data_format = DENSE_DENSE_FORMAT;
+params.mode = DENSE_DENSE_MODE;
+params.data_type = DENSE_TYPE;
 H = get_H_param(&params);
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
@@ -119,7 +119,7 @@ Uint size_array[6] = {1003,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
-if(params.mode == DENSE_DENSE){
+if(params.mode == DENSE_DENSE_MODE){
     sparse_rate_len = 1;
     sparse_rate[0] = 0.1;
 }
@@ -128,13 +128,10 @@ Uint A_row_H_pad = 0;
 Uint A_col_H_pad = 0;
 Uint B_row_H_pad = 0;
 Uint B_col_pad = 0;
-A_row_H_pad = ((A_row_size%H) != 0) ? -A_row_size%H + H : A_row_H_pad;
-B_row_H_pad = A_col_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_col_H_pad;
-B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;
-A_row_size_pad = 1024+A_row_H_pad;
-A_col_size_pad = 1024+A_col_H_pad;
-B_row_size_pad = 1024+B_row_H_pad;
-B_col_size_pad = 1024+B_col_pad  ;
+GET_PAD_SIZE(A_row_size_pad,1024,H);
+GET_PAD_SIZE(A_col_size_pad,1024,H);
+GET_PAD_SIZE(B_row_size_pad,1024,H);
+GET_PAD_SIZE(B_col_size_pad,1024,(W*2));
 char* name = "result/result.csv";
 if(argc == 2){name = argv[1];}
 #if !defined(CSIMDEBUG)
@@ -166,18 +163,15 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         B_row_size = params.B_row_size_param = size_array[size_array_index];
         B_col_size = params.B_col_size_param = size_array[size_array_index];
         H = params.H_param;
-        A_row_H_pad  = 0;
-        A_col_H_pad  = 0;
-        B_row_H_pad  = 0;
-        B_col_pad    = 0;
-        A_row_H_pad = ((A_row_size%H) != 0) ? -A_row_size%H + H : A_row_H_pad;
-        A_col_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_col_H_pad;
-        B_row_H_pad = A_col_H_pad;
-        B_col_pad   = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
-        A_row_size_pad = params.A_row_size_pad_param = A_row_size + A_row_H_pad;
-        A_col_size_pad = params.A_col_size_pad_param = A_col_size + A_col_H_pad;
-        B_row_size_pad = params.B_row_size_pad_param = B_row_size + B_row_H_pad;
-        B_col_size_pad = params.B_col_size_pad_param = B_col_size + B_col_pad;
+        A_row_size_pad = A_row_size;
+        // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
+        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+        params.A_row_size_pad_param = A_row_size_pad;
+        params.A_col_size_pad_param = A_col_size_pad;
+        params.B_row_size_pad_param = B_row_size_pad;
+        params.B_col_size_pad_param = B_col_size_pad;
         params.A_col_blk_param  = A_col_blk ;
         params.B_col_blk_param  = B_col_blk ;
         params.C_col_blk_param  = C_col_blk ;
@@ -209,7 +203,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
             fprintf(stderr,"coo NULL \n");
         }
     
-        if(params.mode == DENSE_DENSE){
+        if(params.mode == DENSE_DENSE_MODE){
             for(index_tmp=0;index_tmp<(A_row_size*(A_col_size_pad));index_tmp++){
                 *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
             }

@@ -181,12 +181,12 @@ static void make_simd_random_mat_pad(emax6_param* emax6_param,Uint* B,Uint* B_de
 void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug){
   switch (emax6_param->mode)
   {
-    case DENSE_DENSE:
+    case DENSE_DENSE_MODE:
       make_simd_random_mat_pad(emax6_param,B,B_debug);
       break;
-    case SPARSE_DENSE_46:
-    case SPARSE_DENSE_58_VER2:
-    case SPARSE_DENSE_58_VER3:
+    case SPARSE_DENSE_46_MODE:
+    case SPARSE_DENSE_58_VER2_MODE:
+    case SPARSE_DENSE_58_VER3_MODE:
     make_simd_random_mat(emax6_param,B,B_debug);
     break;
   default:

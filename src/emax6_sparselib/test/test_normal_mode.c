@@ -379,19 +379,19 @@ C_col_blk_ini  = C_col_blk  = 0LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->data_format = DENSE_DENSE;
-params->mode = DENSE_NORMAL;
-params->data_type = NORMAL;
+params->data_format = DENSE_DENSE_FORMAT;
+params->mode = DENSE_DENSE_MODE;
+params->data_type = DENSE_TYPE;
 
 switch(params->mode){
-    case DENSE_DENSE:
+    case DENSE_DENSE_MODE:
         H = params->H_param = 60LL;
     break;
-    case SPARSE_DENSE_46:
+    case SPARSE_DENSE_46_MODE:
         H = params->H_param = 46LL;
     break;
-    case SPARSE_DENSE_58_VER2:
-    case SPARSE_DENSE_58_VER3:
+    case SPARSE_DENSE_58_VER2_MODE:
+    case SPARSE_DENSE_58_VER3_MODE:
         H =params->H_param = 58LL;
     break;
     default:
