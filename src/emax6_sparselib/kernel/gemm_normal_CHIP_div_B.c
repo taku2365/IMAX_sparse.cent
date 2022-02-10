@@ -286,6 +286,9 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
                 b[CHIP] = B+(CHIP*(B_col_size_pad)/NCHIP+top)*(B_row_size_pad);
                 for (k=0; k<H; k++){
+                    //疎行列と違いアドレスはシーケンスなのでアドレス処理はいらないが、Unit段ごとにbの先頭アドレス必要
+                    //疎行列と違いAblkの確保分、Unitを飛ぶ
+                    //bは基本的に固定で、Arow方向を動かす Acol移動はBもcofs分移動
                     b0[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+0                 +k*A_col_blk_tmp*2; 
                     b1[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+(B_row_size_pad)*2+k*A_col_blk_tmp*2; 
                     b2[k][CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*(B_row_size_pad)+(B_row_size_pad)*4+k*A_col_blk_tmp*2;  

@@ -84,7 +84,7 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
     for (top=0; top<(B_col_size_pad)/NCHIP; top+=B_col_blk) {
         for (b_col_B_col_blk=0; b_col_B_col_blk<B_col_blk; b_col_B_col_blk+=W*2){
             for (CHIP=0; CHIP<NCHIP; CHIP++) { 
-
+                //先頭アドレスは各段同じで、aから得られるオフセットをもとにBを決める
                 b[CHIP] = B+(CHIP*(B_col_size_pad)/NCHIP+top)*B_row_size;
                 b0[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+0; b1[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*2; b2[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*4;  b3[CHIP] = (Uint*)b[CHIP]+b_col_B_col_blk*B_row_size+B_row_size*6; 
 

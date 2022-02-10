@@ -37,7 +37,7 @@ static void orig_normal(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax
   B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;
   int H = emax6_param->H_param;
   for (row=0; row<A_row_size; row++) {
-    for (col=0; col<(B_col_size+B_col_pad); col++) {
+    for (col=0; col<(B_col_size_pad); col++) {
       for (n=0; n<(A_col_size_pad); n++) {
         if (n==0) *(float*)&C_orig[row+col*A_row_size]  = *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*(B_row_size_pad)];
         else      *(float*)&C_orig[row+col*A_row_size] += *(float*)&A_orig[row+n*A_row_size] * *(float*)&B_orig[n+col*(B_row_size_pad)];
@@ -75,6 +75,7 @@ void orig(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param){
   switch (emax6_param->mode)
   {
   case DENSE_DENSE_MODE:
+  case DENSE_SPMV_MODE:
     orig_normal(A_orig, B_orig, C_orig, emax6_param);
     break;
   case SPARSE_DENSE_46_MODE:

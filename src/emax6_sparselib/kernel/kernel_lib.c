@@ -32,5 +32,16 @@ void sparse_gemm_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_sparse2
 }     
 
 
+void sparse_spmv_CHIP_div_A(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_sparse, emax6_param* params) {
+        switch (params->mode)
+    {
+    case DENSE_SPMV_MODE:
+        spmv_normal_CHIP_div_A(C, A, B, params);
+        break;
+    }
+}
+
+
+
 
 

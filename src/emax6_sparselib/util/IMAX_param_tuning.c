@@ -13,19 +13,22 @@ static void IMAX_param_tunig_spmv_impl0(emax6_param* params){
     Sll B_row_size_pad = params->B_row_size_pad_param;
     Sll B_col_size_pad = params->B_col_size_pad_param;
     Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 0                       ;
+    Sll B_col_blk  = 1                       ;
     Sll NCHIP      = params->NCHIP_param     ;
     Sll W          = params->W_param         ;
     Sll H          = params->H_param         ;
     Uint B_col_pad = 0;
+    if(NCHIP>1){
+        fprintf(stderr,"you need to support MUlti CHIP IMAX_param_tuning %d \n",__LINE__);
 
+    }
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
     do{
         A_col_blk += 1;
-    }while(A_row_size*A_col_blk*4<=(LMM_SIZE>>1)&&((A_row_size*A_col_blk*H)<=A_row_size*(A_col_size_pad)));
+    }while(A_row_size_pad*A_col_blk*4<=(LMM_SIZE>>1)&&((A_row_size_pad*A_col_blk*H)<=A_row_size_pad*(A_col_size_pad)));
     A_col_blk -= 1;
     //32kよりBの確保範囲が小さいかつB_col*B_rowをCHIP数で割った数より小さいかつ64kよりCの確保範囲が小さいかつA_row*B_colをCHIP数で割った数より小さい
     if((A_col_blk == 0)){
