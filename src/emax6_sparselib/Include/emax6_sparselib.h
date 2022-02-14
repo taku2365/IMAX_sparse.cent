@@ -7,8 +7,9 @@
 #include <pthread.h>
 #include <sched.h>
 #include "./emax6.h"
+#include "../3rd/Matrix_Format_Io/mmio.h"
 #define LIMIT 1.0e-30
-#define LMM_SIZE                    65536
+#define LMM_SIZE  65536
 #ifndef UTYPEDEF
 #define UTYPEDEF
 typedef unsigned char      Uchar;

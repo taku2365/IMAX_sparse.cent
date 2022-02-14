@@ -8,6 +8,7 @@ include/
 src/*tgz
 src/emax6_sparselib/*.log
 src/emax6_sparselib/*.txt
+src/emax6_sparselib/data/*
 lib/
 lib64/
 sample/4dimage/472.pnm
