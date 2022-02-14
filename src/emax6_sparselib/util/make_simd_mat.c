@@ -75,8 +75,8 @@ static void make_spmv_random_mat_pad(emax6_param* emax6_param,Uint* B,Uint* B_de
     for (col=0; col<(B_col_size_pad); col++){
       // *(float*)&B[col*(B_col_size_pad)+row] = (float) tmp;
       if((row>B_row_size)){
-      *(float*)&B_debug[col*(B_row_size_pad)+row] = (float)1;
-      *(float*)&B[col*(B_row_size_pad)+row] = (float)1;
+      *(float*)&B_debug[col*(B_row_size_pad)+row] = (float)0;
+      *(float*)&B[col*(B_row_size_pad)+row] = (float)0;
       }
       else{
       *(float*)&B_debug[col*(B_row_size_pad)+row] = (float)1;
@@ -232,7 +232,9 @@ void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug){
   switch (emax6_param->mode)
   {
     case DENSE_SPMV_MODE:
+    case SPARSE_DENSE_58_SPMV_MODE:
       make_spmv_random_mat_pad(emax6_param,B,B_debug);
+      break;
     case DENSE_DENSE_MODE:
       make_simd_random_mat_pad(emax6_param,B,B_debug);
       break;

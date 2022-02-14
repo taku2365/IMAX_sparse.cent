@@ -125,11 +125,15 @@ if(params.mode == DENSE_DENSE_MODE){
     sparse_rate_len = 1;
     sparse_rate[0] = 0.1;
 }
-    
-GET_PAD_SIZE(A_row_size_pad,1024,H);
-GET_PAD_SIZE(A_col_size_pad,1024,H);
-GET_PAD_SIZE(B_row_size_pad,1024,H);
-GET_PAD_SIZE(B_col_size_pad,1024,(W*2));
+A_row_size_pad = A_row_size;
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+if(params.mode == DENSE_DENSE_MODE){
+    GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+}
+else{
+    B_row_size_pad = B_row_size;    
+}
 char* name = "result/result.csv";
 if(argc == 2){name = argv[1];}
 #if !defined(CSIMDEBUG)
@@ -162,10 +166,19 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         B_col_size = params.B_col_size_param = 1003LL;
         H = params.H_param;
         A_row_size_pad = A_row_size;
-        // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
-        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-        GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
         GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        if(params.mode == DENSE_DENSE_MODE){
+            GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        }
+        else{
+            B_row_size_pad = B_row_size;    
+        }
+        // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
+        // GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        // GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        // GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+
         params.A_row_size_pad_param = A_row_size_pad;
         params.A_col_size_pad_param = A_col_size_pad;
         params.B_row_size_pad_param = B_row_size_pad;

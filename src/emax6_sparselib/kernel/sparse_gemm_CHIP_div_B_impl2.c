@@ -7,6 +7,12 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
     // arg B fortran continues simd format
     // arg C fortran continues simd format
     // A_col_blk=2 スケジューリング方法を変更
+    #undef sparse_core1_1
+    #undef sparse_core2
+    #undef sparse_core2_1
+    #undef sparse_core3_1
+    #undef sparse_core4
+    #undef sparse_final1
     Ull  CHIP;
     Ull  LOOP1, LOOP0;
     Ull  INIT1, INIT0;

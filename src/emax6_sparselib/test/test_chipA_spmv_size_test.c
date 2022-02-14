@@ -89,10 +89,10 @@ float zero_bias = 0.0;
 int index_tmp = 0;
 
 
-A_row_size_ini = A_row_size = 1024LL;
-A_col_size_ini = A_col_size = 1024LL;
-B_row_size_ini = B_row_size = 1024LL;
-B_col_size_ini = B_col_size = 1024LL;
+A_row_size_ini = A_row_size = 1024*8LL;
+A_col_size_ini = A_col_size = 1024*8LL;
+B_row_size_ini = B_row_size = 1024*8LL;
+B_col_size_ini = B_col_size = 1LL;
 
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
@@ -101,12 +101,23 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
-params.mode = DENSE_SPMV_MODE;
-params.data_format = DENSE_DENSE_SPMV_FORMAT;
-params.data_type = DENSE_SPMV_TYPE;
+
+params.mode = SPARSE_DENSE_58_SPMV_MODE;
+params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
+params.data_type = SPARSE_SPMV_TYPE;
+
+// params.mode = DENSE_SPMV_MODE;
+// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.data_type = DENSE_SPMV_TYPE;
+
+
+// nanosec: ARM:69596 DRAIN:33966 CONF:95279 REGV:1080349 RANGE:463928 LOAD:40645097 EXEC:1265599  total:43653814
+// nanosec: ARM:97770 DRAIN:42815 CONF:103561 REGV:1634556 RANGE:964739 LOAD:82153853 EXEC:2604325 total:87601619
+
 // params.data_format = DENSE_DENSE_FORMAT;
 // params.mode = DENSE_DENSE_MODE;
 // params.data_type = DENSE_TYPE;
+
 H = get_H_param(&params);
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
@@ -123,11 +134,22 @@ if(params.mode == DENSE_SPMV_MODE){
     sparse_rate_len = 1;
     sparse_rate[0] = 0.0;
 }
+GET_PAD_SIZE(A_row_size_pad,1024*8,H);
+GET_PAD_SIZE(A_col_size_pad,1024*8,H);
+if(params.mode == DENSE_SPMV_MODE){
+    GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+    GET_PAD_SIZE(B_row_size_pad,1024*8,H);
+}
+else if(params.mode == SPARSE_DENSE_58_SPMV_MODE){
+    GET_PAD_SIZE(A_row_size_pad,A_row_size,W);
+    B_row_size_pad = 1024*8;  
+}
+else{
+    fprintf("future work spmv_size_test %d \n",__LINE__);
+    exit(1);
+}
 
-GET_PAD_SIZE(A_row_size_pad,1024*4,H);
-GET_PAD_SIZE(A_col_size_pad,1024*4,H);
-GET_PAD_SIZE(B_row_size_pad,1024*4,H);
-GET_PAD_SIZE(B_col_size_pad,1024*4,(W*2));
+B_col_size_pad = 1;
 char* name = "result/result.csv";
 if(argc == 2){name = argv[1];}
 #if !defined(CSIMDEBUG)
@@ -154,20 +176,27 @@ sysinit((Uint)memsize,32,&membase);
         //A_colがHで割れないときのpadding
 for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
     for(sparse_rate_index=0;sparse_rate_index<sparse_rate_len;sparse_rate_index++){
-        A_row_size = params.A_row_size_param = size_array[size_array_index]*8;
-        A_col_size = params.A_col_size_param = size_array[size_array_index]*8;
-        B_row_size = params.B_row_size_param = size_array[size_array_index]*8;
+        A_row_size = params.A_row_size_param = size_array[size_array_index]*4;
+        A_col_size = params.A_col_size_param = size_array[size_array_index]*4;
+        B_row_size = params.B_row_size_param = size_array[size_array_index]*4;
         B_col_size = params.B_col_size_param = 1;
         H = params.H_param;
+        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        B_col_size_pad = B_col_size;
         if(params.mode == DENSE_SPMV_MODE){
-        GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+            W = 4;
+            GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+            GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        }
+        else if(params.mode == SPARSE_DENSE_58_SPMV_MODE){
+            W = 2;
+            GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+            B_row_size_pad = B_row_size;  
         }
         else{
-        GET_PAD_SIZE(A_row_size_pad,A_row_size,W);
+            fprintf("future work spmv_size_test %d \n",__LINE__);
+            exit(1);
         }
-        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-        GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
-        B_col_size_pad = B_col_size;
         // GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
         params.A_row_size_pad_param = A_row_size_pad;
         params.A_col_size_pad_param = A_col_size_pad;
@@ -205,10 +234,11 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
 
         if(coo == NULL){
             fprintf(stderr,"coo NULL \n");
+            exit(1);
         }
     
-        if(params.mode == (DENSE_DENSE_MODE||DENSE_SPMV_MODE)){
-            for(index_tmp=0;index_tmp<(A_row_size_pad*(A_col_size_pad));index_tmp++){
+        if((params.mode == DENSE_DENSE_MODE)||(params.mode == DENSE_SPMV_MODE)){
+            for(index_tmp=0;index_tmp<(A_row_size_pad*A_col_size_pad);index_tmp++){
                 *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
             }
         }   
@@ -230,25 +260,25 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
 
         sum = 0;
         sum1 = 0;
-        for (row=0,row1=0; row<A_row_size;row+=1) {
+        for (row=0,row1=0; row<A_row_size_pad;row+=1) {
                 count2++;
             #ifdef CSIMDEBUG
                 printf("C in\n");
             #endif
                 *(float*)&C_debug[row] = *(float*)&C1[row];
-                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size+row]);
+                // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size_pad+row]);
             
         }
         
         for (col=0; col<(B_col_size_pad); col+=1){
-            for (row=0; row<A_row_size; row+=1) {
+            for (row=0; row<A_row_size_pad; row+=1) {
                 sum += *(float*)&C0[col+row*(B_col_size_pad)];
-                sum1 += *(float*)&C_debug[col*A_row_size+row];
-                if (abs(*(float*)&C0[col*A_row_size+row] - *(float*)&C_debug[col*A_row_size+row])>1) {
+                sum1 += *(float*)&C_debug[col*A_row_size_pad+row];
+                if (abs(*(float*)&C0[col*A_row_size_pad+row] - *(float*)&C_debug[col*A_row_size_pad+row])>1) {
                     count2++;
 
-                    printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size+row],
-                                                        row, col, *(float*)&C_debug[col*A_row_size+row]);
+                    printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size_pad+row],
+                                                        row, col, *(float*)&C_debug[col*A_row_size_pad+row]);
                     exit(1);
                 }
             }

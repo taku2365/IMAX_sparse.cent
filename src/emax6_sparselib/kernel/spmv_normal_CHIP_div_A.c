@@ -84,6 +84,7 @@ void spmv_normal_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_param* p
 
         for (k=0; k<H; k++) {
             //simdのために2の倍数
+            // A_blkの単位がA_row_sizeなので疎行列と異なりblk*A_row_size_pad*2しない
             a[k]  = (Uint*)A+blk*A_row_size_pad+k*A_row_size_mul_mul_A_col_blk;
             a0[k] = (Uint*)A+blk*A_row_size_pad+k*A_row_size_mul_mul_A_col_blk;
             a1[k] = (Uint*)A+blk*A_row_size_pad+k*A_row_size_mul_mul_A_col_blk+2;

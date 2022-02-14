@@ -94,19 +94,24 @@ B_col_blk_ini  = B_col_blk  = 8LL  ;
 NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 emax6_param params;
-// params.data_format = JDS_INDEX_VAL_SET_FORMAT;
-// params.mode = SPARSE_DENSE_58_VER2;
-// params.data_type = SPARSE_TYPE;
-params.data_format = DENSE_DENSE_FORMAT;
-params.mode = DENSE_DENSE_MODE;
-params.data_type = DENSE_TYPE;
+params.data_format = JDS_INDEX_VAL_SET_FORMAT;
+params.mode = SPARSE_DENSE_58_VER2_MODE;
+params.data_type = SPARSE_TYPE;
+// params.data_format = DENSE_DENSE_FORMAT;
+// params.mode = DENSE_DENSE_MODE;
+// params.data_type = DENSE_TYPE;
 H = get_H_param(&params);
 A_row_size_pad = A_row_size;
 // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
-GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
 GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
-
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+if(params.mode == DENSE_DENSE_MODE){
+    GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+}
+else{
+    B_row_size_pad = B_row_size;    
+}
 
 
 float sparse_rate[12] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};

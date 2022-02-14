@@ -38,6 +38,8 @@ void sparse_spmv_CHIP_div_A(Uint* C, const Uint* A, const Uint* B, emax6_sparse2
     case DENSE_SPMV_MODE:
         spmv_normal_CHIP_div_A(C, A, B, params);
         break;
+    case SPARSE_DENSE_58_SPMV_MODE:
+        spmv_sparse_CHIP_div_A(C, A, B, A_sparse, params);
     }
 }
 

@@ -1,6 +1,6 @@
 #include "../Include/emax6_sparselib.h"
 
-Sll get_H_param(emax6_param* params){
+inline Sll get_H_param(emax6_param* params){
     Sll H = 0;
     switch(params->mode){
 
@@ -13,6 +13,7 @@ Sll get_H_param(emax6_param* params){
         break;
         case SPARSE_DENSE_58_VER2_MODE:
         case SPARSE_DENSE_58_VER3_MODE:
+        case SPARSE_DENSE_58_SPMV_MODE:
             H =params->H_param = 58LL;
         break;
         default:

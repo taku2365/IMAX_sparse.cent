@@ -275,6 +275,7 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     // *4 はbyte変換
 
     //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
+    //=A_row_size*(A_col_size_pad)*2の2はindexを含んだ全体だから
     do{
         A_col_blk += 1;
     }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size_pad)*2));
@@ -302,6 +303,43 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
         exit(1);
     }
     // A_col_blk = 1;
+    params->A_col_blk_param = A_col_blk;
+    params->B_col_blk_param = B_col_blk;
+    params->C_col_blk_param = B_col_blk;
+    params->LMM_usage_A_kbyte = (2*(A_row_size*A_col_blk)*4)/1000;
+    params->LMM_usage_B_kbyte = ((B_row_size*B_col_blk)*4)/1000;
+    params->LMM_usage_kbyte   =  ((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/1000;
+    params->LMM_usage_A_rate  = (float)((2*A_row_size*A_col_blk)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_B_rate  = (float)((B_row_size*B_col_blk)*4)/(float)(LMM_SIZE/2);
+    params->LMM_usage_rate    = (float)((B_row_size*B_col_blk+2*A_row_size*A_col_blk)*4)/(float)LMM_SIZE;
+
+}
+
+
+static void IMAX_param_tunig_spmv_impl2(emax6_param* params){
+
+    Sll A_row_size = params->A_row_size_param;
+    Sll A_col_size = params->A_col_size_param;
+    Sll B_row_size = params->B_row_size_param;
+    Sll B_col_size = params->B_col_size_param;
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
+    Sll A_col_blk  = 0                       ;
+    Sll B_col_blk  = 1                       ;
+    Sll NCHIP      = params->NCHIP_param     ;
+    Sll W          = params->W_param         ;
+    Sll H          = params->H_param         ;
+    // LMM_SIZE 64k LMM>>32 32k
+    // *4 はbyte変換
+
+    //A_row_size*A_col_blk(Aをどれだけcolに確保するか)*2(index+valのUllが最小単位なので)*4(byte変換) 
+    do{
+        A_col_blk += 1;
+    }while(A_row_size*A_col_blk*2*4<=(LMM_SIZE>>1)&&((A_row_size*2*A_col_blk*H)<=A_row_size*(A_col_size_pad)*2));
+    A_col_blk -= 1;
+
     params->A_col_blk_param = A_col_blk;
     params->B_col_blk_param = B_col_blk;
     params->C_col_blk_param = B_col_blk;
@@ -396,19 +434,30 @@ void IMAX_param_tunig(emax6_param* params){
         IMAX_param_tunig_spmv_impl0(params);
         break;
     case DENSE_DENSE_MODE:
-        if((params->A_row_size_param<=LMM_MAX_LENGTH)&&(params->A_col_size_param<=LMM_MAX_LENGTH)
-         &&(params->B_row_size_param<=LMM_MAX_LENGTH))
-        {IMAX_param_tunig_impl0(params);}
-        else{IMAX_param_tunig_impl0_large(params);}
+        if((params->A_row_size_param<=LMM_MAX_LENGTH)&&(params->A_col_size_param<=LMM_MAX_LENGTH)&&(params->B_row_size_param<=LMM_MAX_LENGTH)){
+            IMAX_param_tunig_impl0(params);
+        }
+        else{
+            IMAX_param_tunig_impl0_large(params);
+        }
         break;
     case SPARSE_DENSE_46_MODE:
         break;
     case SPARSE_DENSE_58_VER2_MODE:
-        if((params->A_row_size_param<=LMM_MAX_LENGTH)&&(params->A_col_size_param<=LMM_MAX_LENGTH)
-        &&(params->B_row_size_param<=LMM_MAX_LENGTH))
-        {IMAX_param_tunig_impl2(params);}
-        else{IMAX_param_tunig_impl2(params);}
+        if((params->A_row_size_param<=LMM_MAX_LENGTH)&&(params->A_col_size_param<=LMM_MAX_LENGTH)&&(params->B_row_size_param<=LMM_MAX_LENGTH)){
+            IMAX_param_tunig_impl2(params);
+        }
+        else{
+            //未対応
+            fprintf(stderr,"Future work param_tuning.c %d \n",__LINE__);
+            exit(1);
+            // IMAX_param_tunig_impl2(params);
+        }
         break;
+    case SPARSE_DENSE_58_SPMV_MODE:
+            IMAX_param_tunig_spmv_impl2(params);
+        break;
+
     case SPARSE_DENSE_58_VER3_MODE:
         IMAX_param_tunig_impl3(params);
         break;

@@ -160,6 +160,8 @@ Sll get_H_param(emax6_param* params);
 #define CSR_INDEX_VAL_SET_FORMAT 2
 #define JDS_INDEX_SEPARATE_FORMAT 3
 #define JDS_INDEX_VAL_SET_FORMAT 4 
+#define CSR_INDEX_VAL_SET_SPMV_FORMAT 5 
+#define JDS_INDEX_VAL_SET_SPMV_FORMAT 6 
 // data_type
 #define DENSE_TYPE 0 
 #define DENSE_SPMV_TYPE 1 

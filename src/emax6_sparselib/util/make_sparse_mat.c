@@ -43,10 +43,12 @@
 
 
 static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
+  // 値を入れるのはA_row_sizeまでだが,A_row_size_pad分飛ばす
   // sparsity 何パーセント疎か
   int col,row,tmp,tmp1,nnz=0;
   // int A_row_size = emax6_param->A_row_size_param;
   int A_col_size = emax6_param->A_col_size_param;
+  int A_row_size = emax6_param->A_row_size_param;
   int A_row_size_pad = emax6_param->A_row_size_pad_param;
   int A_col_size_pad = emax6_param->A_col_size_pad_param;
   int B_row_size_pad = emax6_param->B_row_size_pad_param;
@@ -61,7 +63,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
       exit(1);
   }
   for (col=0; col<A_col_size; col++){
-    for (row=0; row<A_row_size_pad; row++) {
+    for (row=0; row<A_row_size; row++) {
     tmp = (rand()%(int)100);
     tmp1 = (int)(tmp==0)&&(((1-sparsity)*10.0)>    0.0)
               ||(tmp==1)&&(((1-sparsity)*10.0)>    0.1)  
@@ -166,13 +168,14 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
               ||(tmp==100)&&(((1-sparsity)*10.0)>  10.0)   
               ||(tmp==101)&&(((1-sparsity)*10.0)>  10.1)
               ;   
-
+// 11624885
+// 43627788
     sum += tmp1;
     // tmp = (int) rand()%3;
     // tmp = (int) ((tmp == 0)||(tmp == 1));
     // rnad()%x 0~x-1の間の数字をとる
     // if(emax6_param->mode == DENSE_DENSE_MODE){A_row_size = A_row_size_pad;}
-    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(tmp1) ;
+    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(tmp1*row) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size_pad]) && (*(float*)&A_tmp[row+col*A_row_size_pad] <= LIMIT))){
         col_index[nnz] = col;
@@ -249,6 +252,7 @@ coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percen
     // coo = make_sparse_mat_1(emax6_param,sparsity,biased_percent);
     // break;
   case SPARSE_TYPE:
+  case SPARSE_SPMV_TYPE:
     coo = make_sparse_mat_1(emax6_param,sparsity);
     break;
   case BIASED_SPARSE_TYPE:

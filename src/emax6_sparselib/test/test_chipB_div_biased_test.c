@@ -108,6 +108,17 @@ params.data_type = BIASED_SPARSE_TYPE;
 //sparsity 0.5で固定
 sparse_rate_index = 5;
 H = get_H_param(&params);
+A_row_size_pad = A_row_size;
+// GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+if(params.mode == DENSE_DENSE_MODE){
+    GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+}
+else{
+    B_row_size_pad = B_row_size;    
+}
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
 // sparse_rate_len = 7;
@@ -119,17 +130,7 @@ sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 biased_percent_len = 9;
 float biased_percent[9] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
-Uint A_row_H_pad = 0;
-Uint A_col_H_pad = 0;
-Uint B_row_H_pad = 0;
-Uint B_col_pad = 0;
-A_row_H_pad = ((A_row_size%H) != 0) ? -A_row_size%H + H : A_row_H_pad;
-B_row_H_pad = A_col_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_col_H_pad;
-B_col_pad = ((B_col_size%8) != 0) ? -B_col_size%8 + 8 : B_col_pad;
-A_row_size_pad = A_row_size+A_row_H_pad;
-A_col_size_pad = A_col_size+A_col_H_pad;
-B_row_size_pad = B_row_size+B_row_H_pad;
-B_col_size_pad = B_col_size+B_col_pad  ;
+
 char* name = "result.csv";
 if(argc == 2){name = argv[1];}
 #if !defined(CSIMDEBUG)
@@ -162,9 +163,14 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         H = params.H_param;
         A_row_size_pad = A_row_size;
         // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
-        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-        GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
         GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        if(params.mode == DENSE_DENSE_MODE){
+            GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        }
+        else{
+            B_row_size_pad = B_row_size;    
+        }
         params.A_row_size_pad_param = A_row_size_pad;
         params.A_col_size_pad_param = A_col_size_pad;
         params.B_row_size_pad_param = B_row_size_pad;

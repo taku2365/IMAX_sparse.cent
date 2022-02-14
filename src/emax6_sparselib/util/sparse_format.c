@@ -22,9 +22,10 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     sparse_info->margin_sum = NULL;
     sparse_info->col_num = NULL;
     Uint* val_index_set = (Uint*) val;
-    if(emax6_param->mode == (DENSE_DENSE_MODE||DENSE_SPMV_MODE)){
+    if((emax6_param->mode == DENSE_DENSE_MODE)||(emax6_param->mode == DENSE_SPMV_MODE)){
         return sparse_info;
     }
+
     int H = emax6_param->H_param;
     int A_col_blk = emax6_param->A_col_blk_param;
     int H_pad = 0;
@@ -108,7 +109,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
         }
         // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
     for(col=0; col<col_size; col++) count_tmp[col+1] += count_tmp[col];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
-    if(emax6_param->data_format != CSR_INDEX_VAL_SET_FORMAT){
+    if((emax6_param->data_format != CSR_INDEX_VAL_SET_FORMAT)&&(emax6_param->data_format != CSR_INDEX_VAL_SET_SPMV_FORMAT)){
         for(row=0; row<row_size; row++){
             count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
             
@@ -119,7 +120,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
             // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
             //Cが元の場所に戻すためにつかう
             tmp = (row_size-1) - count_tmp1;
-            count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
+            count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2  spmvはAがsimdで2をかける
 
             //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
             // row_size-1は0から始めるために引く1している。            
@@ -176,6 +177,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
         }
     }
     else{
+        //mmとspmvのCSR処理
 
         pad_max = 0;
         // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
@@ -253,6 +255,18 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
 
         row_count[row_index_k]++;
         }
+    }
+    else if(emax6_param->data_format == CSR_INDEX_VAL_SET_SPMV_FORMAT){
+        for(k=0; k<nnz; k++){
+        row_index_k = row_index[k];
+        col_index_k = col_index[k];
+        
+        val_index_index = (row_index_k+row_count[row_index_k]*row_size)*2;
+        *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
+
+        row_count[row_index_k]++;
+        }
+
     }
     else{
         fprintf("data_format %d mode %d ,This pattern dosenot exsit !\n",emax6_param->data_format,emax6_param->mode);

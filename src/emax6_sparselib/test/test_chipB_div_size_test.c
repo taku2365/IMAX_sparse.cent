@@ -101,12 +101,12 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
-// params.data_format = JDS_INDEX_VAL_SET_FORMAT;
-// params.mode = SPARSE_DENSE_58_VER2_MODE;
-// params.data_type = SPARSE_TYPE;
-params.data_format = DENSE_DENSE_FORMAT;
-params.mode = DENSE_DENSE_MODE;
-params.data_type = DENSE_TYPE;
+params.data_format = JDS_INDEX_VAL_SET_FORMAT;
+params.mode = SPARSE_DENSE_58_VER2_MODE;
+params.data_type = SPARSE_TYPE;
+// params.data_format = DENSE_DENSE_FORMAT;
+// params.mode = DENSE_DENSE_MODE;
+// params.data_type = DENSE_TYPE;
 H = get_H_param(&params);
 // size_array_len = 2;
 // Uint size_array[1] = {32,64};
@@ -128,10 +128,20 @@ Uint A_row_H_pad = 0;
 Uint A_col_H_pad = 0;
 Uint B_row_H_pad = 0;
 Uint B_col_pad = 0;
-GET_PAD_SIZE(A_row_size_pad,1024,H);
-GET_PAD_SIZE(A_col_size_pad,1024,H);
-GET_PAD_SIZE(B_row_size_pad,1024,H);
-GET_PAD_SIZE(B_col_size_pad,1024,(W*2));
+A_row_size_pad = A_row_size;
+// GET_PAD_SIZE(A_row_size_pad,1024,H);
+// GET_PAD_SIZE(A_col_size_pad,1024,H);
+// GET_PAD_SIZE(B_row_size_pad,1024,H);
+// GET_PAD_SIZE(B_col_size_pad,1024,(W*2));
+GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+if(params.mode == DENSE_DENSE_MODE){
+    GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+}
+else{
+    B_row_size_pad = B_row_size;    
+}
+
 char* name = "result/result.csv";
 if(argc == 2){name = argv[1];}
 #if !defined(CSIMDEBUG)
@@ -165,9 +175,18 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         H = params.H_param;
         A_row_size_pad = A_row_size;
         // GET_PAD_SIZE(A_row_size_pad,A_row_size,H);
-        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-        GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
         GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
+        GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        if(params.mode == DENSE_DENSE_MODE){
+            GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        }
+        else{
+            B_row_size_pad = B_row_size;    
+        }
+
+        // GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+        // GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+        // GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
         params.A_row_size_pad_param = A_row_size_pad;
         params.A_col_size_pad_param = A_col_size_pad;
         params.B_row_size_pad_param = B_row_size_pad;
