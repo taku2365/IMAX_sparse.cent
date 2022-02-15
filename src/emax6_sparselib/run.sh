@@ -1,0 +1,1 @@
+./build_cent/test_chipA_spmv_real_data_test result/result.csv ./data/poli/poli.mtx

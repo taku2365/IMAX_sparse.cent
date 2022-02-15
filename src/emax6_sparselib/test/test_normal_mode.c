@@ -369,29 +369,29 @@ float zero_bias = 0.0;
 Sll A_H_pad = 0;
 
 
-A_row_size_ini = A_row_size = 1080LL;
-A_col_size_ini = A_col_size = 1080LL;
-B_row_size_ini = B_row_size = 1080LL;
-B_col_size_ini = B_col_size = 1080LL;
+A_row_size_ini = A_row_size = 4200LL;
+A_col_size_ini = A_col_size = 4200LL;
+B_row_size_ini = B_row_size = 4200LL;
+B_col_size_ini = B_col_size = 4200LL;
 A_col_blk_ini  = A_col_blk  = 5LL  ;
 B_col_blk_ini  = B_col_blk  = 8LL  ;
 C_col_blk_ini  = C_col_blk  = 0LL  ;
-NCHIP_ini      = NCHIP      = 4LL  ;
+NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 params = (emax6_param*) malloc(sizeof(emax6_param)*1);
-params->data_format = DENSE_DENSE;
-params->mode = DENSE_NORMAL;
-params->data_type = NORMAL;
+params->data_format = DENSE_DENSE_FORMAT;
+params->mode = DENSE_DENSE_MODE;
+params->data_type = DENSE_TYPE;
 
 switch(params->mode){
-    case DENSE_DENSE:
+    case DENSE_DENSE_MODE:
         H = params->H_param = 60LL;
     break;
-    case SPARSE_DENSE_46:
+    case SPARSE_DENSE_46_MODE:
         H = params->H_param = 46LL;
     break;
-    case SPARSE_DENSE_58_VER2:
-    case SPARSE_DENSE_58_VER3:
+    case SPARSE_DENSE_58_VER2_MODE:
+    case SPARSE_DENSE_58_VER3_MODE:
         H =params->H_param = 58LL;
     break;
     default:
@@ -403,9 +403,9 @@ switch(params->mode){
 // Uint size_array[1] = {32,64};
 // sparse_rate_len = 7;
 // float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-size_array_len = 5;
-// Uint size_array[1] = {736};
-Uint size_array[5] = {1024,512,256,128,64,32};
+size_array_len = 6;
+Uint size_array[6] = {1020,512,256,128,64,32};
+// Uint size_array[8] = {4096,2048,1024,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 10;
 float sparse_rate[10] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
@@ -508,23 +508,23 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       #endif
 
 
-    //   orig(A,B,C0,params);
-    //   sum = 0;
-    //   sum1 = 0;
-    //   for (col=0; col<B_col_size; col+=1){
-    //       for (row=0; row<A_row_size; row+=1) {
-    //           sum += *(float*)&C0[col+row*B_col_size];
-    //           sum1 += *(float*)&C1[row*B_col_size+col];
-    //           if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
-    //               count2++;
+      orig(A,B,C0,params);
+      sum = 0;
+      sum1 = 0;
+      for (col=0; col<B_col_size; col+=1){
+          for (row=0; row<A_row_size; row+=1) {
+              sum += *(float*)&C0[col+row*B_col_size];
+              sum1 += *(float*)&C1[row*B_col_size+col];
+              if (abs(*(float*)&C0[row*B_col_size+col] - *(float*)&C1[row*B_col_size+col])>1) {
+                  count2++;
 
-    //               printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
-    //                                                   row, col, *(float*)&C1[row*B_col_size+col]);
-    //               printf("sparse_rate_index %d \n",sparse_rate_index);                                        
-    //               exit(1);
-    //           }
-    //       }
-    //   }
+                  printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, *(float*)&C0[row*B_col_size+col],
+                                                      row, col, *(float*)&C1[row*B_col_size+col]);
+                  printf("sparse_rate_index %d \n",sparse_rate_index);                                        
+                  exit(1);
+              }
+          }
+      }
       #if !defined(ARMZYNQ) && defined(EMAX6)
       if(abs(sum-sum1)>1){
           printf("sum %f \n",sum);
@@ -548,20 +548,20 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
       mem_release(memsize,&membase);
     
 
-}
-#if !defined(ARMZYNQ) && defined(EMAX6)
-if(membase != NULL){
-        free(membase);
-        membase = NULL;
-}
-#endif
-if(params != NULL){
-    free(params);
-    params = NULL;
-}
-#if !defined(CSIMDEBUG)
-fclose(fp);
-#endif
+  }
+  #if !defined(ARMZYNQ) && defined(EMAX6)
+  if(membase != NULL){
+          free(membase);
+          membase = NULL;
+  }
+  #endif
+  if(params != NULL){
+      free(params);
+      params = NULL;
+  }
+  #if !defined(CSIMDEBUG)
+  fclose(fp);
+  #endif
 } // main
 
 

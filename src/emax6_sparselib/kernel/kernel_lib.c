@@ -12,16 +12,16 @@ void sparse_gemm_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_sparse2
     // pattern 2 sparse dense H=58 ver
     switch (params->mode)
     {
-    case 0:
+    case DENSE_DENSE_MODE:
         gemm_normal_CHIP_div_B(C, A, B, params);
         break;
-    case 1:
+    case SPARSE_DENSE_46_MODE:
         sparse_gemm_CHIP_div_B_impl1(C, A, B, A_sparse, params);
         break;
-    case 2:
+    case SPARSE_DENSE_58_VER2_MODE:
         sparse_gemm_CHIP_div_B_impl2(C, A, B, A_sparse, params);
         break;
-    case 3:
+    case SPARSE_DENSE_58_VER3_MODE:
         sparse_gemm_CHIP_div_B_impl3(C, A, B, A_sparse, params);
         break;
     default:
@@ -30,6 +30,19 @@ void sparse_gemm_CHIP_div_B(Uint* C, const Uint* A, const Uint* B, emax6_sparse2
         break;
     }
 }     
+
+
+void sparse_spmv_CHIP_div_A(Uint* C, const Uint* A, const Uint* B, emax6_sparse2* A_sparse, emax6_param* params) {
+        switch (params->mode)
+    {
+    case DENSE_SPMV_MODE:
+        spmv_normal_CHIP_div_A(C, A, B, params);
+        break;
+    case SPARSE_DENSE_58_SPMV_MODE:
+        spmv_sparse_CHIP_div_A(C, A, B, A_sparse, params);
+    }
+}
+
 
 
 

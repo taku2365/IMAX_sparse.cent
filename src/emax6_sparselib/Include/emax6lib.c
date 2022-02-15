@@ -488,52 +488,26 @@ get_nanosec(int class)
 show_nanosec()
 {
 #if defined(ARMSIML)
-  printf("SIML_cycle: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
+  printf("SIML_cycle/1000: ARM:%d DRAIN:%d CONF:%d REGV:%d RANGE:%d LOAD:%d EXEC:%d total:%d\n",
+	 (Uint)(nanosec[NANOS_ARM]/1000),
+	 (Uint)(nanosec[NANOS_DRAIN]/1000),
+	 (Uint)(nanosec[NANOS_CONF]/1000),
+	 (Uint)(nanosec[NANOS_REGV]/1000),
+	 (Uint)(nanosec[NANOS_RANGE]/1000),
+	 (Uint)(nanosec[NANOS_LOAD]/1000),
+	 (Uint)(nanosec[NANOS_EXEC]/1000),
+	 (Uint)(nanosec[NANOS_TOTAL]/1000));
 #else
   printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
+	 (nanosec[NANOS_ARM]),
+	 (nanosec[NANOS_DRAIN]),
+	 (nanosec[NANOS_CONF]),
+	 (nanosec[NANOS_REGV]),
+	 (nanosec[NANOS_RANGE]),
+	 (nanosec[NANOS_LOAD]),
+	 (nanosec[NANOS_EXEC]),
+	 (nanosec[NANOS_TOTAL]));
 #endif
-}
-
-Ull* show_nanosec1()
-{
-#if defined(ARMSIML)
-  printf("SIML_cycle: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
-#else
-  printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
-#endif
-  return nanosec;
 }
 
 /*******************************************************************************/
@@ -565,74 +539,111 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
   int lmm_readz;
   int mark;
 
+  struct lmmi *lmmiop  = &emax6.lmmi[c][m][j][emax6.lmmio];
+  struct lmmi *lmmicp  = &emax6.lmmi[c][i][j][emax6.lmmic];
+  struct lmmi *lmmiop1 = &emax6.lmmi[c][(m+1)%EMAX_DEPTH][j][emax6.lmmio];
+  struct lmmi *lmmicp1 = &emax6.lmmi[c][(i+1)%EMAX_DEPTH][j][emax6.lmmic];
+
+  Ull dmadr;
+  int dmlen;
+  Ull dmnxt;
+  int dmrw; /* 0:mem->lmm 1:lmm->mem */
+  static Ull concat_adr[EMAX_NCHIP]; /* NULL:invalid, !NULL:top_addr */
+  static int concat_len[EMAX_NCHIP]; /* byte-len */
+
   /* check_lmmi */
-  if ((mode==0 && phase == 1) || phase == 2 || phase == 3) { /* (array && drain) || load || exec */
-    lmmc_topz =  (emax6.lmmi[c][i][j][emax6.lmmic].top == 0);
-    lmmc_ofsz =  (emax6.lmmi[c][i][j][emax6.lmmic].ofs == 0);
-    lmmo_stat = ((emax6.lmmi[c][m][j][emax6.lmmio].v)<<3)
-	        |(emax6.lmmi[c][m][j][emax6.lmmio].rw<<2)|(emax6.lmmi[c][m][j][emax6.lmmio].f<<1)|(emax6.lmmi[c][m][j][emax6.lmmio].p); /* v|rw|f|p */
-    lmmc_stat = ((emax6.lmmi[c][i][j][emax6.lmmic].v & ~emax6.lmmi[c][i][j][emax6.lmmic].hcopy & ~emax6.lmmi[c][i][j][emax6.lmmic].vcopy & ((emax6.lmmi[c][i][j][emax6.lmmic].f&emax6.lmmi[c][i][j][emax6.lmmic].p) | !lmmc_topz))<<3)
-                                                                                          /* v= ~copy & (OP_LDDMQ/OP_TR ¤Þ¤¿¤Ï ptop!=NULL) */
-	        |(emax6.lmmi[c][i][j][emax6.lmmic].rw<<2)|(emax6.lmmi[c][i][j][emax6.lmmic].f<<1)|(emax6.lmmi[c][i][j][emax6.lmmic].p); /* v|rw|f|p */
-    lmm_ready =  (emax6.lmmi[c][m][j][emax6.lmmio].v && emax6.lmmi[c][m][j][emax6.lmmio].blk == emax6.lmmi[c][i][j][emax6.lmmic].blk
-		                                     && emax6.lmmi[c][m][j][emax6.lmmio].len == emax6.lmmi[c][i][j][emax6.lmmic].len
-                                                     && emax6.lmmi[c][m][j][emax6.lmmio].top == emax6.lmmi[c][i][j][emax6.lmmic].top);
-    lmm_readz =  (emax6.lmmi[c][m][j][emax6.lmmio].v && emax6.lmmi[c][m][j][emax6.lmmio].blk == emax6.lmmi[c][i][j][emax6.lmmic].blk
-		                                     && emax6.lmmi[c][m][j][emax6.lmmio].len == emax6.lmmi[c][i][j][emax6.lmmic].len
-		                                     &&(emax6.lmmi[c][m][j][emax6.lmmio].top+(Sll)(int)emax6.lmmi[c][m][j][emax6.lmmio].ofs) == emax6.lmmi[c][i][j][emax6.lmmic].top);
+  if ((phase == 1 && mode == 0) || phase == 2 || phase == 3) { /* (drain && array) || load || exec */
+    lmmc_topz = (lmmicp->top == 0);
+    lmmc_ofsz = (lmmicp->ofs == 0);
+    lmmo_stat = (lmmiop->v<<3)|(lmmiop->rw<<2)|(lmmiop->f<<1)|(lmmiop->p); /* v|rw|f|p */
+    lmmc_stat =((lmmicp->v & ~lmmicp->hcopy & ~lmmicp->vcopy & ((lmmicp->f&lmmicp->p) | !lmmc_topz))<<3)|(lmmicp->rw<<2)|(lmmicp->f<<1)|(lmmicp->p); /* v= ~copy & (OP_LDDMQ/OP_TR ¤Þ¤¿¤Ï ptop!=NULL) */
+    lmm_ready = (lmmiop->v && lmmiop->blk == lmmicp->blk && lmmiop->len == lmmicp->len && lmmiop->top == lmmicp->top);
+    lmm_readz = (lmmiop->v && lmmiop->blk == lmmicp->blk && lmmiop->len == lmmicp->len &&(lmmiop->top+(Sll)(int)lmmiop->ofs) == lmmicp->top);
   }
 
-  if      (mode==0 && phase == 1) { /* drain */
-    if      (lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);} /* ¡ü2 lmw&!lmd drain */
-    else if (lmmo_stat==14 && !lmm_ready    && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);} /* ¡ü4 lmx      drain */
-    else                                                                { mark = 0;                             }
-  }
-  else if (mode==1 && phase == 1) { /* drain */
-    if (                                       (emax6.lmmd[i][j]&1<<c)) { mark = 1; emax6.lmmd[i][j] &= ~(1<<c);} /* ¡ù  drain_dirty_lmm */
-    else                                                                { mark = 0;                             }
+  /* lmx: bitmap¤ò¸¡ºº¤·,¸½addr+len¤È¼¡addr¤òÈæ¤Ù,Ï¢Â³¤Ê¤éÏ¢·ë¤·¤¿¼¡addr/len¤òÊÝÂ¸.ºÇ½ª¤Þ¤¿¤ÏÉÔÏ¢Â³¤Ê¤éÊÝÂ¸addr/len¤Þ¤¿¤Ï¸½addr/len¤ò»È¤Ã¤ÆDMA */
+
+  if      (phase == 1) { /* drain */
+    if      (mode==0 && lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark=1;emax6.lmmd[m][j]&=~(1<<c);dmadr=lmmiop->top;dmlen=lmmiop->len;dmnxt=lmmiop1->top;dmrw=1;}/* ¡ü2 lmw&!lmd drain */
+    else if (mode==0 && lmmo_stat==14 && !lmm_ready    && (emax6.lmmd[m][j]&1<<c)) { mark=1;emax6.lmmd[m][j]&=~(1<<c);dmadr=lmmiop->top;dmlen=lmmiop->len;dmnxt=lmmiop1->top;dmrw=1;}/* ¡ü4 lmx      drain */
+    else if (mode==1 &&                                   (emax6.lmmd[i][j]&1<<c)) { mark=1;emax6.lmmd[i][j]&=~(1<<c);dmadr=lmmicp->top;dmlen=lmmicp->len;dmnxt=lmmicp1->top;dmrw=1;}/* ¡ù drain_dirty_lmm */
+    else                                                                           { mark=0;                                                                                        }
   }
   else if (phase == 2) { /* load */
-    if      (lmmc_stat== 8               && !lmm_ready)                 { mark = 1;                             } /* ¡ü1 lmr & !ready */
-    else if (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz)                 { mark = 1;                             } /* ¡ü7 lmp & !readz */
-    else if (lmmc_stat==10)                                             { mark = 1;                             } /* ¡ü3 lmf always load */
-    else if (lmmc_stat==14               && !lmm_ready)                 { mark = 1;                             } /* ¡ü3 lmx always load */
-    else                                                                { mark = 0;                             } /* skip load */
+    if     ((lmmc_stat== 8               && !lmm_ready)                                                                                                                              /* ¡ü1 lmr & !ready */
+         || (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz)                                                                                                                              /* ¡ü7 lmp & !readz */
+         || (lmmc_stat==10                            )                                                                                                                              /* ¡ü3 lmf always load */
+         || (lmmc_stat==14               && !lmm_ready))                           { mark=1;                          dmadr=lmmicp->top;dmlen=lmmicp->len;dmnxt=lmmicp1->top;dmrw=0;}/* ¡ü3 lmx always load */
+    else                                                                           { mark=0;                                                                                        }/* skip load */
   }
   else if (phase == 3) { /* exec */
-    if      (lmmc_stat== 9                                            ) { mark = 1;                             } /* ¡ü5 lmp */
-    else if (lmmc_stat==12 || lmmc_stat==14                           ) { mark = 0; emax6.lmmd[i][j] |=  (1<<c);} /* ¡ü6 lmw/lmx */
-    else if (lmmc_stat==13)                       { mark = (emax6.lmmd[m][j]&1<<c); emax6.lmmd[m][j] |= ((!lastdist)<<c);} /* ¡ü6 lmd & dirty */
+    if      (lmmc_stat== 9                    ) { mark=1;                                                             dmadr=lmmicp->top;dmlen=lmmicp->len;dmrw=0;                   }/* ¡ü5 lmp */
+    else if (lmmc_stat==12 || lmmc_stat==14   ) { mark=0;emax6.lmmd[i][j]|=(1<<c);                                                                                                  }/* ¡ü6 lmw/lmx */
+    else if (lmmc_stat==13                    ) { mark=  emax6.lmmd[m][j]& (1<<c); emax6.lmmd[m][j]|=((!lastdist)<<c);dmadr=lmmicp->top;dmlen=lmmicp->len;dmrw=1;                   }/* ¡ü6 lmd & dirty */
 #ifndef IGNORE_LDDMQ_HANDSHAKE
-//  else if (lmmc_stat==11                                            ) { mark = 1;                             } /*     LDDMQ */
-//  else if (lmmc_stat==15                                            ) { mark = 1;                             } /*     TR */
+//  else if (lmmc_stat==11                    ) { mark=1;                             } /*     LDDMQ */
+//  else if (lmmc_stat==15                    ) { mark=1;                             } /*     TR */
 #endif
-    else                                                                { mark = 0;                             } /* skip pdrain/pload */
+    else                                        { mark=0;                             } /* skip pdrain/pload */
+  }
+
+  if (mark) {
+#if 1
+    if (phase == 1) { /* drain */
+      /* concat_adr=0        adr0,L=0        | adr1,L=0        | adr2,L=0        */
+      /* concat_adr=adr0,L=0 adr0,L=0,mark=0 | adr1,L=0        | adr2,L=0        */
+      /* concat_adr=adr0,L=1          mark=0 | adr1,L=0,mark=0 | adr2,L=0        */
+      /* concat_adr=adr0,L=2          mark=0 |          mark=0 | adr2,L=0,mark=1 */
+//printf("drain: adr=%08.8x len=%08.8x nxt=%08.8x\n", (Uint)dmaadr, (Uint)dmalen, (Uint)dmnxt);
+      if ((emax6.lmmd[(m+1)%EMAX_DEPTH][j]&(1<<c)) && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
+	if (!concat_adr[c]) { concat_adr[c] = dmadr; concat_len[c] = dmlen; }
+	else             { concat_len[c] += dmlen+1; }
+	if (concat_len[c] < 8192) mark = 0;
+      }
+      else {
+	if (concat_adr[c])  { concat_len[c] += dmlen+1; }
+      }
+    }
+    else if (phase == 2) { /* load */
+//printf("load: adr=%08.8x len=%08.8x nxt=%08.8x\n", (Uint)dmadr, (Uint)dmlen, (Uint)dmnxt);
+      if (lmmicp1->v && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
+	if (!concat_adr[c]) { concat_adr[c] = dmadr; concat_len[c] = dmlen; }
+	else             { concat_len[c] += dmlen+1; }
+	if (concat_len[c] < 8192) mark = 0;
+      }
+      else {
+	if (concat_adr[c])  { concat_len[c] += dmlen+1; }
+      }
+    }
+#endif
   }
 
   /* dma */
   if (mark) {
+    emax6.rw = dmrw;
     if (phase == 1) { /* drain */
-      emax6.rw     = 1; /* lmm->mem */
-      emax6.ddraddr = (mode==0)?emax6.lmmi[c][m][j][emax6.lmmio].top:emax6.lmmi[c][i][j][emax6.lmmic].top; /* address should be 4B-aligned */
+      emax6.ddraddr = (concat_adr[c])?concat_adr[c]:dmadr; /* address should be 4B-aligned */
       emax6.lmmaddr = emax6.ddraddr;
-      emax6.dmalen  = (mode==0)?emax6.lmmi[c][m][j][emax6.lmmio].len:emax6.lmmi[c][i][j][emax6.lmmic].len; /* length should be # of words */
+      emax6.dmalen  = (concat_adr[c])?concat_len[c]:dmlen; /* length should be # of words */
     }
-    else if (phase == 3 && emax6.lmmi[c][i][j][emax6.lmmic].rw==1) { /* pdrain */
-      emax6.rw     = 1; /* lmm->mem */
-      emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs; /* ¡ú¡ú¡úPDRAIN address should be 4B-aligned */
+    else if (phase == 3 && dmrw==1) { /* pdrain */
+      emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs; /* ¡ú¡ú¡úPDRAIN address should be 4B-aligned */
       emax6.lmmaddr = emax6.ddraddr;
-      emax6.dmalen  = emax6.lmmi[c][i][j][emax6.lmmic].len; /* length should be # of words */
+      emax6.dmalen  = dmlen; /* length should be # of words */
     }
-    else if (phase == 2                                            /* load */
-	  ||(phase == 3 && emax6.lmmi[c][i][j][emax6.lmmic].rw==0)) { /* pload *//* address should be 4B-aligned *//* length should be # of words */
-      emax6.rw     = 0; /* mem->lmm */
-      if (emax6.lmmi[c][i][j][emax6.lmmic].blk==0) { /* inf */
-	if (phase == 2) /* load */
-	  emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top; /* address should be 4B-aligned */
-	else
-	  emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs; /* ¡ú¡ú¡úPLOAD address should be 4B-aligned */
-	emax6.lmmaddr   = emax6.ddraddr;
-	emax6.dmalen    = emax6.lmmi[c][i][j][emax6.lmmic].len; /* length should be # of words */
+    else if (phase == 2                /* load */
+	  ||(phase == 3 && dmrw==0)) { /* pload *//* address should be 4B-aligned *//* length should be # of words */
+      if (lmmicp->blk==0) { /* inf */
+	if (phase == 2) { /* load */
+	  emax6.ddraddr = (concat_adr[c])?concat_adr[c]:dmadr; /* address should be 4B-aligned */
+	  emax6.lmmaddr = emax6.ddraddr;
+	  emax6.dmalen  = (concat_adr[c])?concat_len[c]:dmlen; /* length should be # of words */
+	}
+	else {
+	  emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs; /* ¡ú¡ú¡úPLOAD address should be 4B-aligned */
+	  emax6.lmmaddr = emax6.ddraddr;
+	  emax6.dmalen  = dmlen; /* length should be # of words */
+	}
 #ifndef IGNORE_LMMI_BLKGATHER
 	emax6.blksize    = 0; /* max:10bit */
 #endif
@@ -640,13 +651,13 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
 #ifndef IGNORE_LMMI_BLKGATHER
       else { /* 16,32,64 */
 	if (phase == 2) /* load */
-	  emax6.plist = emax6.lmmi[c][i][j][emax6.lmmic].top+emax6.blkcount*8; /* address should be 4B-aligned */
+	  emax6.plist = dmadr+emax6.blkcount*8; /* address should be 4B-aligned */
 	else
-	  emax6.plist = emax6.lmmi[c][i][j][emax6.lmmic].top+emax6.blkcount*8+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs; /* ¡ú¡ú¡úPLOAD address should be 4B-aligned */
-	emax6.blksize  = 32<<emax6.lmmi[c][i][j][emax6.lmmic].blk; /* max:10bit */
+	  emax6.plist = dmadr+emax6.blkcount*8+(Sll)(int)lmmicp->ofs; /* ¡ú¡ú¡úPLOAD address should be 4B-aligned */
+	emax6.blksize  = 32<<lmmicp->blk; /* max:10bit */
 	if (emax6.blkcount==0) {
 	  emax6.lmmblktop = 0; /* ¡ú¡ú¡úÌ¤¼ÂÁõ¡ú¡ú¡ú ÀèÆ¬¥¢¥É¥ì¥¹¤¬0¤Ê¤Î¤Ç,addr_range¤Ë¹©É×¤¬É¬Í× */
-	  emax6.lmmblklen = emax6.lmmi[c][i][j][emax6.lmmic].len; /* length should be # of words */
+	  emax6.lmmblklen = dmlen; /* length should be # of words */
 	}
 	emax6.ddraddr    = emax6.plist; /* address should be 4B-aligned */
 	emax6.lmmaddr    = emax6.lmmblktop;
@@ -664,6 +675,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
 printf("====DMA mode=%x phase=%x i=%x m=%x j=%x lmmic/o=%x/%x lmmc_stat=%x(dirty=%x) lmmo_stat=%x(dirty=%x) mark=%x\n", mode, phase, i, m, j, emax6.lmmic, emax6.lmmio, lmmc_stat, emax6.lmmd[i][j], lmmo_stat, emax6.lmmd[m][j], mark);
 printf("        rw=%d ddraddr=%08.8x lmmaddr=%08.8x dmalen=%d", emax6.rw, (Uint)emax6.ddraddr, (Uint)emax6.lmmaddr, (Uint)emax6.dmalen);
 #endif
+    concat_adr[c] = 0;
     emax6_kick_dma(j);
   }
 }
@@ -1694,8 +1706,8 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
 
   if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (!adr || !top)) return; /* NULL skip DMA */
 
-#define CHECK_MMP_MARGIN 0
-  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr >= top+len*sizeof(Uint))) {
+#define CHECK_MMP_MARGIN 12
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
   }

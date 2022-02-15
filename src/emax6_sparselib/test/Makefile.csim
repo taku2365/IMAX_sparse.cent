@@ -29,14 +29,14 @@ PROJTOP	      = ../../
 OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA
 SUFFIX = .c
 EMAX6_SPARSE_TEST = $(wildcard test_*$(SUFFIX)) 
-EMAX6_SPARSE_TEST_BIN = $(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST))
+EMAX6_SPARSE_TEST_BIN = $(addprefix ../build_arm_cross/,$(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST)))
 CPP           = aarch64-elf-cpp -P
 CC            = aarch64-elf-gcc
 CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)
 AS            = aarch64-elf-as
 ASFLAGS       = 
 LD            = aarch64-elf-ld
-LDFLAGS       =	-static -M $(PROJTOP)/lib/asim64-lib/_map -L../
+LDFLAGS       =	-static -M $(PROJTOP)/lib/asim64-lib/_map -L../ -L ../build_arm_cross/
 LIBS          =	-lgcc -lm -lc -lsparse
 LIBFLAGS      = -L$(PROJTOP)/lib/gcc/aarch64-elf/4.8.2/ -L$(PROJTOP)/aarch64-elf/lib/
 OBJS	      =	test_chipB_div-emax6.o test_chipA_div-emax6.o test_normal_mode.o 
@@ -46,18 +46,18 @@ all:		$(EMAX6_SPARSE_TEST_BIN)
 
 clean:;		rm -f *.o core *~ *-mark.c *-cppo.c *-emax6.c
 
-test_%+dma:	test_%.o test_depend
+../build_arm_cross/test_%+dma:	../build_arm_cross/test_%.o test_depend
 		$(LD) $(LDFLAGS) -o $@ $(PROJTOP)/lib/asim64-lib/_start.o $< $(LIBFLAGS) --start-group $(LIBS) --end-group
 
-test_%.o: test_%.c
-		$(CC) $(CFLAGS) -c $<
+../build_arm_cross/test_%.o: test_%.c
+		$(CC) $(CFLAGS) -c $< -o $@
 
 
 ifeq ($(LINK_FORMAT),static)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm_cross/libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm_cross/libsparse.so
 
 endif

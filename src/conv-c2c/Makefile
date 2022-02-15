@@ -1,4 +1,3 @@
-
 ## EMAX6 Compiler                      ##
 ##         Copyright (C) 2012 by NAIST ##
 ##         Primary writer: Y.Nakashima ##

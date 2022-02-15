@@ -2084,6 +2084,2151 @@ extern int pthread_getcpuclockid (pthread_t __thread_id,
 extern int pthread_atfork (void (*__prepare) (void),
       void (*__parent) (void),
       void (*__child) (void)) __attribute__ ((__nothrow__ , __leaf__));
+int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
+void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
+void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
+Ull __attribute__((always_inline)) exm(Ull, Uchar);
+int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
+void mex(Uint, Uchar**, Uchar*, Ull, Ull, Ull);
+void mo4(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
+void mop(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
+Ull __attribute__((always_inline)) eam(Ull, Uchar);
+void eag(Ull*, Ull, Ull);
+void mmp(Uint, Ull, Ull*, Ull, Ull, Uint, Uint);
+int current_prefix;
+int current_mapdist;
+int current_nchip;
+int current_lmmwb;
+int last_insn;
+char forinit[2][4][1024];
+char forinit_cidx[2];
+struct insn {
+  struct header {
+    char type ;
+    char row ;
+    char col ;
+    char rdep ;
+    char fixed ;
+  } iheader;
+  struct cex {
+    char op ;
+    char bit0v ;
+    int bit0h ;
+    char bit1v ;
+    int bit1h ;
+    char bit2v ;
+    int bit2h ;
+    char bit3v ;
+    int bit3h ;
+    Ull table :16;
+    char cexdv ;
+    int cexdh ;
+  } icex;
+  struct exe {
+    char op1 ;
+    char op2 ;
+    char op3 ;
+    Ull updt : 1;
+    Ull init : 2;
+    char src1v ;
+    int src1h ;
+    char src1s ;
+    char src1e ;
+    char src2v ;
+    int src2h ;
+    char src2s ;
+    char src2e ;
+    char src3v ;
+    int src3h ;
+    char src3s ;
+    char src3e ;
+    char src4v ;
+    int src4h ;
+    char src4s ;
+    char src5v ;
+    int src5h ;
+    char src5s ;
+    char exedv ;
+    int exedh ;
+    char exeds ;
+  } iexe;
+  struct mex {
+    char op ;
+    Ull init : 1;
+    char src1v ;
+    int src1h ;
+    char src1s ;
+    char src2v ;
+    int src2h ;
+    char src2s ;
+    char distv ;
+    int disth ;
+    char src3v ;
+    int src3h ;
+    char src3s ;
+    char src4v ;
+    int src4h ;
+    char src4s ;
+    char mexdv ;
+    int mexdh ;
+    char mexds ;
+  } imex;
+  struct mop {
+    char op ;
+    char mtype ;
+    Ull updt : 1;
+    char exv ;
+    int exh ;
+    char mopdv ;
+    int mopdh ;
+    char mopds ;
+    char basev ;
+    int baseh ;
+    char bases ;
+    char offsv ;
+    int offsh ;
+    char offss ;
+    char offsm ;
+    char topv ;
+    int toph ;
+    int lenv ;
+    int lenh ;
+    char blk ;
+    int forcev ;
+    int forceh ;
+    char ptopv ;
+    int ptoph ;
+    int plenv ;
+    int plenh ;
+  } imop;
+} insn[(4*64*4)];
+struct dec {
+  struct cex dcex;
+  struct exu {
+    char op1 ;
+    char op2 ;
+    char op3 ;
+    Ull updt : 1;
+    Ull init : 2;
+    Ull fold : 1;
+    char ex1v ;
+    int ex1h ;
+    char ex1s ;
+    char ex1e ;
+    char ex2v ;
+    int ex2h ;
+    char ex2s ;
+    char ex2e ;
+    char ex3v ;
+    int ex3h ;
+    char ex3s ;
+    char ex3e ;
+    char e2iv ;
+    int e2ih ;
+    char e2is ;
+    char e3iv ;
+    int e3ih ;
+    char e3is ;
+    char exdv ;
+    int exdh ;
+    char exds ;
+  } dexu;
+  struct mex dmex0;
+  struct mex dmex1;
+  struct mop dmop0;
+  struct mop dmop1;
+} dec[64][4];
+struct bus {
+  char cexdv ;
+  int cexdh ;
+  char exdrv ;
+  int exdrh ;
+  char exdrs ;
+  char ea0brv ;
+  int ea0brh ;
+  char ea0orv ;
+  int ea0orh ;
+  char ea0drv ;
+  int ea0drh ;
+  char ea1brv ;
+  int ea1brh ;
+  char ea1orv ;
+  int ea1orh ;
+  char ea1drv ;
+  int ea1drh ;
+  struct {
+    char v ;
+    int h ;
+    char s ;
+  } lmwd[4], lmrd[4];
+  struct {
+    char v ;
+    int h ;
+    char s ;
+  } tr[4];
+  struct {
+    char v ;
+    int h ;
+    char s ;
+  } mw[4];
+  struct {
+    char v ;
+    int h ;
+    char s ;
+  } br[4];
+} bus[64][4];
+struct conf {
+  struct cdw0 {
+    Ull v : 1;
+    Ull op1 : 6;
+    Ull op2 : 3;
+    Ull op3 : 3;
+    Ull ex1brs : 4;
+    Ull ex1s : 1;
+    Ull ex1exp : 3;
+    Ull ex2brs : 4;
+    Ull ex2exp : 3;
+    Ull ex3brs : 4;
+    Ull ex3exp : 3;
+    Ull e2is : 2;
+    Ull e3imm : 6;
+    Ull e3is : 1;
+    Ull init : 2;
+    Ull fold : 1;
+    Ull mex0op : 2;
+    Ull mex0init: 1;
+    Ull mex0dist: 3;
+    Ull mex1op : 2;
+    Ull mex1init: 1;
+    Ull mex1dist: 3;
+    Ull dmy00 : 5;
+  } cdw0;
+  struct cdw1 {
+    Ull cs0 : 4;
+    Ull cs1 : 4;
+    Ull cs2 : 4;
+    Ull cs3 : 4;
+    Ull cex_tab: 16;
+    Ull ea0op : 5;
+    Ull ea0bs : 2;
+    Ull ea0os : 1;
+    Ull ea0msk : 4;
+    Ull ea1op : 5;
+    Ull ea1bs : 2;
+    Ull ea1os : 1;
+    Ull ea1msk : 4;
+    Ull eabbrs : 4;
+    Ull eaobrs : 4;
+  } cdw1;
+  struct cdw2 {
+    Ull ts0 : 4;
+    Ull ts1 : 4;
+    Ull ts2 : 4;
+    Ull ts3 : 4;
+    Ull trs0 : 2;
+    Ull trs1 : 2;
+    Ull trs2 : 2;
+    Ull trs3 : 2;
+    Ull mwsa : 1;
+    Ull mws0 : 2;
+    Ull mws1 : 2;
+    Ull mws2 : 2;
+    Ull mws3 : 2;
+    Ull brs0 : 2;
+    Ull brs1 : 2;
+    Ull brs2 : 2;
+    Ull brs3 : 2;
+    Ull mapdist: 6;
+    Ull lmm_mode: 2;
+    Ull lmm_axiw: 1;
+    Ull lmm_axir: 1;
+    Ull dmy20 : 13;
+  } cdw2;
+  struct cdw3 {
+    Ull e2imm : 64;
+  } cdw3;
+} conf[64][4];
+struct lmmi {
+  Ull v : 1;
+  Ull rw : 1;
+  Ull f : 1;
+  Ull p : 1;
+  Ull bcas : 4;
+  Ull hcopy: 1;
+  Ull vcopy: 1;
+  Ull blk : 2;
+  Ull cidx : 1;
+  Ull dmy : 3;
+  Ull len :16;
+  Ull ofs :32;
+  Ull top :64;
+} lmmi[64][4];
+int lmmi_first_loc;
+Ull lmmi_bitmap[4];
+Ull range_bitmap[4];
+Uchar range_link[64][4];
+struct lmmx {
+  int forcev ;
+  int forceh ;
+  int lenv ;
+  int lenh ;
+} lmmx[64][4];
+struct {
+  struct {
+    int v;
+    int h;
+    int s;
+  } br[4];
+  int ea0b_v;
+  int ea0b_h;
+  int ea0b_s;
+  int ea0o_v;
+  int ea0o_h;
+  int ea0o_s;
+  int ea1b_v;
+  int ea1b_h;
+  int ea1b_s;
+  int ea1o_v;
+  int ea1o_h;
+  int ea1o_s;
+} regv[64][4];
+int trans_pc;
+struct trans {
+  Ull rw : 1;
+  Ull base_type : 2;
+  Ull base_num : 3;
+  char *base_symbol;
+  Ull offset_type : 1;
+  Ull offset : 4;
+  Ull offset_suffix : 3;
+  Ull offset_sll : 3;
+  Ull op_type : 3;
+  Ull op_val_type : 2;
+  Ull op_val_num;
+  char *op_val_symbol;
+  Ull t_action_type : 2;
+  Ull t_action : 4;
+  Ull f_action_type : 2;
+  Ull f_action : 4;
+  Ull reg_type : 1;
+  Ull reg_num : 3;
+  char *reg_symbol;
+} trans[16];
+struct tconf {
+  Ull rw : 1;
+  Ull base_type : 2;
+  Ull offset_type : 1;
+  Ull offset : 4;
+  Ull offset_suffix : 3;
+  Ull offset_sll : 3;
+  Ull op_type : 3;
+  Ull op_val_type : 1;
+  Ull t_action_type : 2;
+  Ull t_action : 4;
+  Ull f_action_type : 2;
+  Ull f_action : 4;
+  Ull reg_type : 1;
+  Ull dmy : 1;
+  Ull base;
+  Ull op_val;
+  Ull reg;
+} tconf[16];
+enum { NANOS_ARM, NANOS_DRAIN, NANOS_CONF, NANOS_REGV, NANOS_RANGE, NANOS_LOAD, NANOS_EXEC, NANOS_TOTAL, NANOS_CLASS };
+typedef struct {
+  Uint f : 23;
+  Uint e : 8;
+  Uint s : 1;
+} f32bit;
+typedef struct {
+  Uint e : 6;
+  Uint b : 1;
+  Uint s : 1;
+} u7bit;
+typedef struct {
+  Uint e : 7;
+  Uint s : 1;
+} u8bit;
+typedef struct {
+  Uchar u[8];
+} u64bit;
+struct dma_ctrl {
+  Uint ZDMA_ERR_CTRL;
+  Uint dmy0[63];
+  Uint ZDMA_CH_ISR;
+  Uint ZDMA_CH_IMR;
+  Uint ZDMA_CH_IEN;
+  Uint ZDMA_CH_IDS;
+  Uint ZDMA_CH_CTRL0;
+  Uint ZDMA_CH_CTRL1;
+  Uint ZDMA_CH_FCI;
+  Uint ZDMA_CH_STATUS;
+  Uint ZDMA_CH_DATA_ATTR;
+  Uint ZDMA_CH_DSCR_ATTR;
+  Uint ZDMA_CH_SRC_DSCR_WORD0;
+  Uint ZDMA_CH_SRC_DSCR_WORD1;
+  Uint ZDMA_CH_SRC_DSCR_WORD2;
+  Uint ZDMA_CH_SRC_DSCR_WORD3;
+  Uint ZDMA_CH_DST_DSCR_WORD0;
+  Uint ZDMA_CH_DST_DSCR_WORD1;
+  Uint ZDMA_CH_DST_DSCR_WORD2;
+  Uint ZDMA_CH_DST_DSCR_WORD3;
+  Uint ZDMA_CH_WR_ONLY_WORD0;
+  Uint ZDMA_CH_WR_ONLY_WORD1;
+  Uint ZDMA_CH_WR_ONLY_WORD2;
+  Uint ZDMA_CH_WR_ONLY_WORD3;
+  Uint ZDMA_CH_SRC_START_LSB;
+  Uint ZDMA_CH_SRC_START_MSB;
+  Uint ZDMA_CH_DST_START_LSB;
+  Uint ZDMA_CH_DST_START_MSB;
+  Uint dmy1[9];
+  Uint ZDMA_CH_RATE_CTRL;
+  Uint ZDMA_CH_IRQ_SRC_ACCT;
+  Uint ZDMA_CH_IRQ_DST_ACCT;
+  Uint dmy2[26];
+  Uint ZDMA_CH_CTRL2;
+};
+enum { EXRING_IDLE, EXRING_BUSY};
+enum { LMRING_IDLE, LMRING_BUSY};
+enum { CMD_NOP, CMD_RESET, CMD_SCON, CMD_EXEC};
+struct reg_ctrl {
+  struct i0 {
+    Ull stat;
+    Uint mcid;
+    Uint dmy0;
+    Uint cmd;
+    Uint dmy1;
+    Ull dmy2;
+    Ull adtr;
+    Ull dmy3;
+    Ull csel;
+    Ull dmrp;
+    Ull dmy4[1016];
+    struct conf conf[64][4];
+    struct {Ull br[4];} breg[64][4];
+    struct {Uint ea0b ;
+        Uint ea0o ;
+        Uint ea1b ;
+        Uint ea1o ;
+        Uint top ;
+        Uint bot ;
+        Ull dmy6 ;} addr[64][4];
+    struct {Ull reg[4];} lddmrw[64][4];
+    Ull dmy5[3072];
+  } i[4];
+};
+enum { STATUS_IDLE, STATUS_CONF, STATUS_SCON, STATUS_REGV, STATUS_RANGE, STATUS_DRAIN, STATUS_LOAD, STATUS_START, STATUS_EXEC, STATUS_TERM };
+struct emax6 {
+  volatile Ull dma_ctrl;
+  volatile Ull reg_ctrl;
+  Ull status : 4;
+  Ull csel_save : 2;
+  Ull last_conf ;
+  Ull lmmic : 1;
+  Ull lmmio : 1;
+  Ull mapdist : 6;
+  Ull lastdist : 6;
+  struct lmmi lmmi[4][64][4][2];
+  Ull lmmi_bitmap[4];
+  Uchar lmmd[64][4];
+  Ull plist ;
+  Ull blkcount : 7;
+  Ull blksize : 9;
+  Ull lmmblktop ;
+  Ull lmmblklen ;
+  Ull rw ;
+  Ull ddraddr ;
+  Ull lmmaddr ;
+  Ull dmalen ;
+  Ull fsm_busy : 1;
+  Ull lmwd_valid : 1;
+  Ull tcureg_valid : 1;
+  Ull tcureg_ready : 1;
+  Ull tcureg_last : 1;
+  Ull tcureg_term : 1;
+  Ull tcureg[4] ;
+} emax6;
+volatile struct emax_info {
+  Ull dma_phys;
+  Ull dma_vadr;
+  Ull dma_mmap;
+  Ull reg_phys;
+  Ull reg_vadr;
+  Ull reg_mmap;
+  Ull lmm_phys;
+  Ull lmm_vadr;
+  Ull lmm_mmap;
+  Ull ddr_phys;
+  Ull ddr_vadr;
+  Ull ddr_mmap;
+  int driver_use_1;
+  int driver_use_2;
+} emax_info;
+extern int stat (const char *__restrict __file,
+   struct stat *__restrict __buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int fstat (int __fd, struct stat *__buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int fstatat (int __fd, const char *__restrict __file,
+      struct stat *__restrict __buf, int __flag)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern int lstat (const char *__restrict __file,
+    struct stat *__restrict __buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int chmod (const char *__file, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int lchmod (const char *__file, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int fchmod (int __fd, __mode_t __mode) __attribute__ ((__nothrow__ , __leaf__));
+extern int fchmodat (int __fd, const char *__file, __mode_t __mode,
+       int __flag)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2))) ;
+extern __mode_t umask (__mode_t __mask) __attribute__ ((__nothrow__ , __leaf__));
+extern int mkdir (const char *__path, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int mkdirat (int __fd, const char *__path, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int mknod (const char *__path, __mode_t __mode, __dev_t __dev)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int mknodat (int __fd, const char *__path, __mode_t __mode,
+      __dev_t __dev) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int mkfifo (const char *__path, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int mkfifoat (int __fd, const char *__path, __mode_t __mode)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int utimensat (int __fd, const char *__path,
+        const struct timespec __times[2],
+        int __flags)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int futimens (int __fd, const struct timespec __times[2]) __attribute__ ((__nothrow__ , __leaf__));
+extern int __fxstat (int __ver, int __fildes, struct stat *__stat_buf)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3)));
+extern int __xstat (int __ver, const char *__filename,
+      struct stat *__stat_buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern int __lxstat (int __ver, const char *__filename,
+       struct stat *__stat_buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern int __fxstatat (int __ver, int __fildes, const char *__filename,
+         struct stat *__stat_buf, int __flag)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3, 4)));
+extern int __xmknod (int __ver, const char *__path, __mode_t __mode,
+       __dev_t *__dev) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
+extern int __xmknodat (int __ver, int __fd, const char *__path,
+         __mode_t __mode, __dev_t *__dev)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3, 5)));
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long int uint64_t;
+typedef signed char int_least8_t;
+typedef short int int_least16_t;
+typedef int int_least32_t;
+typedef long int int_least64_t;
+typedef unsigned char uint_least8_t;
+typedef unsigned short int uint_least16_t;
+typedef unsigned int uint_least32_t;
+typedef unsigned long int uint_least64_t;
+typedef signed char int_fast8_t;
+typedef long int int_fast16_t;
+typedef long int int_fast32_t;
+typedef long int int_fast64_t;
+typedef unsigned char uint_fast8_t;
+typedef unsigned long int uint_fast16_t;
+typedef unsigned long int uint_fast32_t;
+typedef unsigned long int uint_fast64_t;
+typedef unsigned long int uintptr_t;
+typedef long int intmax_t;
+typedef unsigned long int uintmax_t;
+extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+       size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memmove (void *__dest, const void *__src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memccpy (void *__restrict __dest, const void *__restrict __src,
+        int __c, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int memcmp (const void *__s1, const void *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void *memchr (const void *__s, int __c, size_t __n)
+      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strncpy (char *__restrict __dest,
+        const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strcat (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strncat (char *__restrict __dest, const char *__restrict __src,
+        size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strcmp (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strncmp (const char *__s1, const char *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strcoll (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern size_t strxfrm (char *__restrict __dest,
+         const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern int strcoll_l (const char *__s1, const char *__s2, __locale_t __l)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2, 3)));
+extern size_t strxfrm_l (char *__dest, const char *__src, size_t __n,
+    __locale_t __l) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
+extern char *strdup (const char *__s)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
+extern char *strndup (const char *__string, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
+extern char *strchr (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strrchr (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern size_t strcspn (const char *__s, const char *__reject)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern size_t strspn (const char *__s, const char *__accept)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strpbrk (const char *__s, const char *__accept)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strstr (const char *__haystack, const char *__needle)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strtok (char *__restrict __s, const char *__restrict __delim)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern char *__strtok_r (char *__restrict __s,
+    const char *__restrict __delim,
+    char **__restrict __save_ptr)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern char *strtok_r (char *__restrict __s, const char *__restrict __delim,
+         char **__restrict __save_ptr)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
+extern size_t strlen (const char *__s)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern size_t strnlen (const char *__string, size_t __maxlen)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *strerror (int __errnum) __attribute__ ((__nothrow__ , __leaf__));
+extern int strerror_r (int __errnum, char *__buf, size_t __buflen) __asm__ ("" "__xpg_strerror_r") __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+extern char *strerror_l (int __errnum, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern void __bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern void bcopy (const void *__src, void *__dest, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern void bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int bcmp (const void *__s1, const void *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *index (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern char *rindex (const char *__s, int __c)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
+extern int ffs (int __i) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern int strcasecmp (const char *__s1, const char *__s2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern int strncasecmp (const char *__s1, const char *__s2, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strsep (char **__restrict __stringp,
+       const char *__restrict __delim)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *strsignal (int __sig) __attribute__ ((__nothrow__ , __leaf__));
+extern char *__stpcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *stpcpy (char *__restrict __dest, const char *__restrict __src)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *__stpncpy (char *__restrict __dest,
+   const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+extern char *stpncpy (char *__restrict __dest,
+        const char *__restrict __src, size_t __n)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
+struct dirent
+  {
+    __ino_t d_ino;
+    __off_t d_off;
+    unsigned short int d_reclen;
+    unsigned char d_type;
+    char d_name[256];
+  };
+enum
+  {
+    DT_UNKNOWN = 0,
+    DT_FIFO = 1,
+    DT_CHR = 2,
+    DT_DIR = 4,
+    DT_BLK = 6,
+    DT_REG = 8,
+    DT_LNK = 10,
+    DT_SOCK = 12,
+    DT_WHT = 14
+  };
+typedef struct __dirstream DIR;
+extern DIR *opendir (const char *__name) __attribute__ ((__nonnull__ (1)));
+extern DIR *fdopendir (int __fd);
+extern int closedir (DIR *__dirp) __attribute__ ((__nonnull__ (1)));
+extern struct dirent *readdir (DIR *__dirp) __attribute__ ((__nonnull__ (1)));
+extern int readdir_r (DIR *__restrict __dirp,
+        struct dirent *__restrict __entry,
+        struct dirent **__restrict __result)
+     __attribute__ ((__nonnull__ (1, 2, 3))) __attribute__ ((__deprecated__));
+extern void rewinddir (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern void seekdir (DIR *__dirp, long int __pos) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern long int telldir (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int dirfd (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
+extern int scandir (const char *__restrict __dir,
+      struct dirent ***__restrict __namelist,
+      int (*__selector) (const struct dirent *),
+      int (*__cmp) (const struct dirent **,
+      const struct dirent **))
+     __attribute__ ((__nonnull__ (1, 2)));
+extern int alphasort (const struct dirent **__e1,
+        const struct dirent **__e2)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
+extern __ssize_t getdirentries (int __fd, char *__restrict __buf,
+    size_t __nbytes,
+    __off_t *__restrict __basep)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
+static int filter(struct dirent *dir)
+{
+  return dir->d_name[0] == '.' ? 0 : 1;
+}
+static void trim(char *d_name)
+{
+  char *p = strchr(d_name, '\n');
+  if (p != ((void *)0)) *p = '\0';
+}
+static int is_dma_dev(char *d_name)
+{
+  char path[32];
+  char name[32];
+  FILE *fp;
+  sprintf(path, "/sys/class/uio/%s/name", d_name);
+  if ((fp = fopen(path, "r")) == ((void *)0)) return 0;
+  if (fgets(name, sizeof(name), fp) == ((void *)0)) {
+    fclose(fp);
+    return 0;
+  }
+  fclose(fp);
+  if (strcmp(name, "dma\n") != 0) return 0;
+  return 1;
+}
+static int get_reg_size(char *d_name)
+{
+  char path[32];
+  char size[32];
+  FILE *fp;
+  sprintf(path, "/sys/class/uio/%s/maps/map0/size", d_name);
+  if ((fp = fopen(path, "r")) == ((void *)0)) return 0;
+  if (fgets(size, sizeof(size), fp) == ((void *)0)) {
+    fclose(fp);
+    return 0;
+  }
+  fclose(fp);
+  return strtoull(size, ((void *)0), 16);
+}
+emax6_open()
+{
+  struct dirent **namelist;
+  int num_dirs, dir;
+  int reg_size;
+  int fd_dma_found = 0;
+  char path[1024];
+  int fd_dma;
+  int fd_reg;
+  int fd_ddr;
+  if ((fd_reg = open("/dev/uio8", 02 | 04010000)) == -1) {
+    printf("open(\"/dev/uio8\", ...) failed.\n");
+    return (((void *)0));
+  }
+  if ((fd_ddr = open("/dev/uio9", 02 | 04010000)) == -1) {
+    printf("open(\"/dev/uio9\", ...) failed.\n");
+    return (((void *)0));
+  }
+  emax_info.reg_phys = 0x0000000400000000LL;
+  emax_info.reg_mmap = (Ull)mmap(((void *)0), 0x0000000100000000LL, 0x1|0x2, 0x01, fd_reg, 0);
+  if (emax_info.reg_mmap == ((void *) -1)) {
+    printf("fd_reg mmap() failed.\n");
+    return (((void *)0));
+  }
+  emax_info.lmm_phys = 0x0000000480000000LL;
+  emax_info.lmm_mmap = emax_info.reg_mmap + (0x0000000480000000LL - 0x0000000400000000LL);
+  emax_info.ddr_phys = 0x0000000800000000LL;
+  emax_info.ddr_mmap = (Ull)mmap(((void *)0), 0x0000000080000000LL, 0x1|0x2, 0x01, fd_ddr, 0);
+  if (emax_info.ddr_mmap == ((void *) -1)) {
+    printf("fd_ddr mmap() failed.\n");
+    return (((void *)0));
+  }
+  if ((num_dirs = scandir("/sys/class/uio", &namelist, filter, alphasort)) == -1)
+    return (((void *)0));
+  for (dir = 0; dir < num_dirs; ++dir) {
+    trim(namelist[dir]->d_name);
+    if (!is_dma_dev(namelist[dir]->d_name)) {
+      free(namelist[dir]);
+      continue;
+    }
+    if ((reg_size = get_reg_size(namelist[dir]->d_name)) == 0) {
+      free(namelist[dir]);
+      continue;
+    }
+    sprintf(path, "/dev/%s", namelist[dir]->d_name);
+    free(namelist[dir]);
+    if ((fd_dma = open(path, 02 | 04010000)) == -1)
+      continue;
+    emax_info.dma_phys = 0x00000000fd500000LL;
+    emax_info.dma_mmap = (Ull)mmap(((void *)0), reg_size, 0x1|0x2, 0x01, fd_dma, 0);
+    close(fd_dma);
+    if (emax_info.dma_mmap == ((void *) -1))
+      continue;
+    fd_dma_found++;
+    break;
+  }
+  free(namelist);
+  if (fd_dma_found) {
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_ERR_CTRL = 0x00000001;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_ISR = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IMR = 0x00000FFF;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IEN = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IDS = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL0 = 0x00000080;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL1 = 0x000003FF;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_FCI = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_STATUS = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DATA_ATTR = 0x04C3D30F;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DSCR_ATTR = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD0 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD1 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD2 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD3 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD0 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD1 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD2 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD3 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD0 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD1 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD2 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD3 = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_START_LSB = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_START_MSB = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_START_LSB = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_START_MSB = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_RATE_CTRL = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IRQ_SRC_ACCT = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IRQ_DST_ACCT = 0x00000000;
+    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL2 = 0x00000000;
+  }
+  return (1);
+}
+Ull nanosec_sav;
+Ull nanosec[NANOS_CLASS];
+reset_nanosec()
+{
+  int i;
+  for (i=0; i<NANOS_CLASS; i++)
+    nanosec[i] = 0;
+  struct timespec ts;
+  clock_gettime(0, &ts);
+  nanosec_sav = 1000000000*ts.tv_sec + ts.tv_nsec;
+}
+get_nanosec(int class)
+{
+  Ull nanosec_now;
+  struct timespec ts;
+  clock_gettime(0, &ts);
+  nanosec_now = 1000000000*ts.tv_sec + ts.tv_nsec;
+  nanosec[class] += nanosec_now - nanosec_sav;
+  nanosec[NANOS_TOTAL] += nanosec_now - nanosec_sav;
+  nanosec_sav = nanosec_now;
+}
+show_nanosec()
+{
+  printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
+  nanosec[NANOS_ARM],
+  nanosec[NANOS_DRAIN],
+  nanosec[NANOS_CONF],
+  nanosec[NANOS_REGV],
+  nanosec[NANOS_RANGE],
+  nanosec[NANOS_LOAD],
+  nanosec[NANOS_EXEC],
+  nanosec[NANOS_TOTAL]);
+}
+emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
+{
+  int k, m = (i+lastdist)%64;
+  int lmmc_topz;
+  int lmmc_ofsz;
+  int lmmo_stat;
+  int lmmc_stat;
+  int lmm_ready;
+  int lmm_readz;
+  int mark;
+  struct lmmi *lmmiop = &emax6.lmmi[c][m][j][emax6.lmmio];
+  struct lmmi *lmmicp = &emax6.lmmi[c][i][j][emax6.lmmic];
+  struct lmmi *lmmiop1 = &emax6.lmmi[c][(m+1)%64][j][emax6.lmmio];
+  struct lmmi *lmmicp1 = &emax6.lmmi[c][(i+1)%64][j][emax6.lmmic];
+  Ull dmadr;
+  int dmlen;
+  Ull dmnxt;
+  int dmrw;
+  static Ull concat_adr;
+  static int concat_len;
+  if ((phase == 1 && mode == 0) || phase == 2 || phase == 3) {
+    lmmc_topz = (lmmicp->top == 0);
+    lmmc_ofsz = (lmmicp->ofs == 0);
+    lmmo_stat = (lmmiop->v<<3)|(lmmiop->rw<<2)|(lmmiop->f<<1)|(lmmiop->p);
+    lmmc_stat =((lmmicp->v & ~lmmicp->hcopy & ~lmmicp->vcopy & ((lmmicp->f&lmmicp->p) | !lmmc_topz))<<3)|(lmmicp->rw<<2)|(lmmicp->f<<1)|(lmmicp->p);
+    lmm_ready = (lmmiop->v && lmmiop->blk == lmmicp->blk && lmmiop->len == lmmicp->len && lmmiop->top == lmmicp->top);
+    lmm_readz = (lmmiop->v && lmmiop->blk == lmmicp->blk && lmmiop->len == lmmicp->len &&(lmmiop->top+(Sll)(int)lmmiop->ofs) == lmmicp->top);
+  }
+  if (phase == 1) {
+    if (mode==0 && lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark=1;emax6.lmmd[m][j]&=~(1<<c);dmadr=lmmiop->top;dmlen=lmmiop->len;dmnxt=lmmiop1->top;dmrw=1;}
+    else if (mode==0 && lmmo_stat==14 && !lmm_ready && (emax6.lmmd[m][j]&1<<c)) { mark=1;emax6.lmmd[m][j]&=~(1<<c);dmadr=lmmiop->top;dmlen=lmmiop->len;dmnxt=lmmiop1->top;dmrw=1;}
+    else if (mode==1 && (emax6.lmmd[i][j]&1<<c)) { mark=1;emax6.lmmd[i][j]&=~(1<<c);dmadr=lmmicp->top;dmlen=lmmicp->len;dmnxt=lmmicp1->top;dmrw=1;}
+    else { mark=0; }
+  }
+  else if (phase == 2) {
+    if ((lmmc_stat== 8 && !lmm_ready)
+         || (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz)
+         || (lmmc_stat==10 )
+         || (lmmc_stat==14 && !lmm_ready)) { mark=1; dmadr=lmmicp->top;dmlen=lmmicp->len;dmnxt=lmmicp1->top;dmrw=0;}
+    else { mark=0; }
+  }
+  else if (phase == 3) {
+    if (lmmc_stat== 9 ) { mark=1; dmadr=lmmicp->top;dmlen=lmmicp->len;dmrw=0; }
+    else if (lmmc_stat==12 || lmmc_stat==14 ) { mark=0;emax6.lmmd[i][j]|=(1<<c); }
+    else if (lmmc_stat==13 ) { mark= emax6.lmmd[m][j]& (1<<c); emax6.lmmd[m][j]|=((!lastdist)<<c);dmadr=lmmicp->top;dmlen=lmmicp->len;dmrw=1; }
+    else { mark=0; }
+  }
+  if (mark) {
+    if (phase == 1) {
+      if ((emax6.lmmd[(m+1)%64][j]&(1<<c)) && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
+ if (!concat_adr) { concat_adr = dmadr; concat_len = dmlen; }
+ else { concat_len += dmlen+1; }
+ if (concat_len < 8192) mark = 0;
+      }
+      else {
+ if (concat_adr) { concat_len += dmlen+1; }
+      }
+    }
+    else if (phase == 2) {
+      if (lmmicp1->v && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
+ if (!concat_adr) { concat_adr = dmadr; concat_len = dmlen; }
+ else { concat_len += dmlen+1; }
+ if (concat_len < 8192) mark = 0;
+      }
+      else {
+ if (concat_adr) { concat_len += dmlen+1; }
+      }
+    }
+  }
+  if (mark) {
+    emax6.rw = dmrw;
+    if (phase == 1) {
+      emax6.ddraddr = (concat_adr)?concat_adr:dmadr;
+      emax6.lmmaddr = emax6.ddraddr;
+      emax6.dmalen = (concat_adr)?concat_len:dmlen;
+    }
+    else if (phase == 3 && dmrw==1) {
+      emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs;
+      emax6.lmmaddr = emax6.ddraddr;
+      emax6.dmalen = dmlen;
+    }
+    else if (phase == 2
+   ||(phase == 3 && dmrw==0)) {
+      if (lmmicp->blk==0) {
+ if (phase == 2) {
+   emax6.ddraddr = (concat_adr)?concat_adr:dmadr;
+   emax6.lmmaddr = emax6.ddraddr;
+   emax6.dmalen = (concat_adr)?concat_len:dmlen;
+ }
+ else {
+   emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs;
+   emax6.lmmaddr = emax6.ddraddr;
+   emax6.dmalen = dmlen;
+ }
+ emax6.blksize = 0;
+      }
+      else {
+ if (phase == 2)
+   emax6.plist = dmadr+emax6.blkcount*8;
+ else
+   emax6.plist = dmadr+emax6.blkcount*8+(Sll)(int)lmmicp->ofs;
+ emax6.blksize = 32<<lmmicp->blk;
+ if (emax6.blkcount==0) {
+   emax6.lmmblktop = 0;
+   emax6.lmmblklen = dmlen;
+ }
+ emax6.ddraddr = emax6.plist;
+ emax6.lmmaddr = emax6.lmmblktop;
+ emax6.dmalen = (emax6.lmmblklen<emax6.blksize)?emax6.lmmblklen:emax6.blksize-1;
+ emax6.lmmblktop += emax6.blksize*sizeof(Ull);
+ emax6.lmmblklen = (emax6.lmmblklen<emax6.blksize)?0:(emax6.lmmblklen-emax6.blksize);
+ if (emax6.lmmblklen==0)
+   emax6.blkcount = 0;
+ else
+   emax6.blkcount++;
+      }
+    }
+    concat_adr = 0;
+    emax6_kick_dma(j);
+  }
+}
+emax6_kick_dma(int j)
+{
+  int status;
+  Ull dst, src;
+  Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
+  if (!emax6.ddraddr)
+    return (0);
+  if (j != emax6.csel_save) {
+    ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].csel = j;
+    emax6.csel_save = j;
+  }
+  if (emax6.dmalen > 0) {
+    if (emax6.rw == 0) {
+      do {
+ status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
+      } while (status != 0 && status != 3);
+      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD0) = emax6.ddraddr-emax_info.ddr_mmap+emax_info.ddr_phys;
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
+      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD0) = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys;
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_CTRL2 = 1;
+      do {
+ status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
+      } while (status != 0 && status != 3);
+    }
+    else {
+      do {
+ status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
+      } while (status != 0 && status != 3);
+      ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = (1LL<<63)|((emax6.dmalen+1)*sizeof(Uint)<<40)|(emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys);
+      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD0) = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys;
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
+      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD0) = emax6.ddraddr-emax_info.ddr_mmap+emax_info.ddr_phys;
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
+      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_CTRL2 = 1;
+      do {
+ status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
+      } while (status != 0 && status != 3);
+      ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = (0LL<<63);
+    }
+    switch (status) {
+    case 0:
+      break;
+    default:
+      printf("emax6_check_lmmi_and_dma(): ZDMA_CH_STATUS=%d (malfunction)\n", status);
+      return (0);
+    }
+  }
+  else {
+    if (emax6.rw == 0) {
+      dst = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_mmap;
+      src = emax6.ddraddr;
+    }
+    else {
+      dst = emax6.ddraddr;
+      src = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_mmap;
+    }
+    *(Uint*)dst = *(Uint*)src;
+  }
+  return (0);
+}
+emax6_pre_with_keep_cache()
+{
+}
+emax6_pre_with_drain_cache()
+{
+}
+void
+cex(Uint op_cx, Ull *ex, Ull c3, Ull c2, Ull c1, Ull c0, Ushort pattern)
+{
+  Uint index1, index0;
+  switch (op_cx) {
+  case 0x00:
+    if (ex)
+      *ex = 3;
+    break;
+  case 0x01:
+    index1 = ((c3>>32&1)<<3)|((c2>>32&1)<<2)|((c1>>32&1)<<1)|(c0>>32&1);
+    index0 = ((c3 &1)<<3)|((c2 &1)<<2)|((c1 &1)<<1)|(c0 &1);
+    *ex = 0;
+    if (pattern>>index1&1) *ex |= 2;
+    if (pattern>>index0&1) *ex |= 1;
+    break;
+  default:
+    printf("emax6lib: cex: undefined op_cx=%d\n", op_cx);
+    break;
+  }
+}
+void
+ex4(Uint op_ex1, Ull *d, Ull *r1, Uint exp1, Ull *r2, Uint exp2, Ull *r3, Uint exp3, Uint op_ex2, Ull *r4, Uint op_ex3, Ull *r5)
+{
+  switch (op_ex1) {
+  case 0x08:
+    exe(op_ex1, (d+0), (Ull)r1, exp1, *(r2+0), exp2, *(r3+0), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
+    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+1), exp2, *(r3+1), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
+    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+2), exp2, *(r3+2), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
+    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+3), exp2, *(r3+3), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
+    break;
+  case 0x00:
+  case 0x0a:
+  case 0x10:
+  case 0x11:
+  case 0x12:
+  case 0x13:
+  case 0x14:
+  case 0x15:
+  case 0x16:
+  case 0x17:
+    exe(op_ex1, (d+0), *(r1+0), exp1, *(r2+0), exp2, *(r3+0), exp3, 0x00, 0LL, 0x00, 0LL);
+    exe(op_ex1, (d+1), *(r1+1), exp1, *(r2+1), exp2, *(r3+1), exp3, 0x00, 0LL, 0x00, 0LL);
+    exe(op_ex1, (d+2), *(r1+2), exp1, *(r2+2), exp2, *(r3+2), exp3, 0x00, 0LL, 0x00, 0LL);
+    exe(op_ex1, (d+3), *(r1+3), exp1, *(r2+3), exp2, *(r3+3), exp3, 0x00, 0LL, 0x00, 0LL);
+    break;
+  default:
+    printf("emax6lib: ex4: undefined op_ex1=%d\n", op_ex1);
+    break;
+  }
+  switch (op_ex2) {
+  case 0x00:
+    break;
+  default:
+    printf("emax6lib: ex4: illegal op_ex2=%d\n", op_ex2);
+    break;
+  }
+  switch (op_ex3) {
+  case 0x00:
+    break;
+  default:
+    printf("emax6lib: ex4: illegal op_ex3=%d\n", op_ex3);
+    break;
+  }
+}
+int convf32tou7(u7bit *out, float in)
+{
+  f32bit in_f32;
+  *(float*)&in_f32 = in;
+  out->s = in_f32.s;
+  out->b = 0;
+  in = ((in)> 0 ? (in) :-(in) );
+  if (in >= 1.0) out->e = 63;
+  else out->e = in*64;
+}
+int convf32tou8(u8bit *out, float in)
+{
+  f32bit in_f32;
+  *(float*)&in_f32 = in;
+  out->s = in_f32.s;
+  in = ((in)> 0 ? (in) :-(in) );
+  if (in >= 2.0) out->e = 127;
+  else out->e = in*64;
+}
+int convu8tof32(float *out, u8bit in)
+{
+  f32bit out_f32;
+  *(float*)&out_f32 = (float)in.e/64;
+  out_f32.s = in.s;
+  *out = *(float*)&out_f32;
+}
+Ull urand(int no)
+{
+  static Ull urand_seed[8]
+    = {0xc3c3c3c3a5a5a5a5LL, 0x123456789abcdef0LL, 0xe1e1e1e1d4d4d4d4LL, 0x8888777766665555LL,
+       0x8787878796969696LL, 0xfedcba9876543210LL, 0x5a5a5a5a3c3c3c3cLL, 0xbbbbccccddddeeeeLL};
+  Ull retval = urand_seed[no];
+  urand_seed[no] ^= (urand_seed[no]<<29);
+  urand_seed[no] ^= (urand_seed[no]>>27);
+  urand_seed[no] ^= (urand_seed[no]<<37);
+  return (retval);
+}
+Ull shfl(Ull in, Ull r)
+{
+  int i;
+  for (i=0; i<32; i++) {
+    if (r&(1LL<<(i+16)))
+      in = (in&~(1LL<<(i+32)|1LL<<i)) | (in>>i&1)<<(i+32) | (in>>(i+32)&1)<<i;
+  }
+  for (i=0; i<48; i++) {
+    if (r&(1LL<<(i+8)))
+      in = (in&~(1LL<<(i+16)|1LL<<i)) | (in>>i&1)<<(i+16) | (in>>(i+16)&1)<<i;
+  }
+  for (i=0; i<56; i++) {
+    if (r&(1LL<<(i+4)))
+      in = (in&~(1LL<<(i+ 8)|1LL<<i)) | (in>>i&1)<<(i+ 8) | (in>>(i+ 8)&1)<<i;
+  }
+  for (i=0; i<60; i++) {
+    if (r&(1LL<<(i+2)))
+      in = (in&~(1LL<<(i+ 4)|1LL<<i)) | (in>>i&1)<<(i+ 4) | (in>>(i+ 4)&1)<<i;
+  }
+  for (i=0; i<62; i++) {
+    if (r&(1LL<<(i+1)))
+      in = (in&~(1LL<<(i+ 2)|1LL<<i)) | (in>>i&1)<<(i+ 2) | (in>>(i+ 2)&1)<<i;
+  }
+  for (i=0; i<63; i++) {
+    if (r&(1LL<<(i+0)))
+      in = (in&~(1LL<<(i+ 1)|1LL<<i)) | (in>>i&1)<<(i+ 1) | (in>>(i+ 1)&1)<<i;
+  }
+  return(in);
+}
+int enable_x11;
+void x11_softu64_dist(float, float);
+int softu64(int stage, Ull *o1, Ull *o2, Ull *o3, Ull r1, Ull r2, Ull r3, Ull r4)
+{
+  int i, j;
+  Ull u[8];
+  Ull ss[8];
+  Ull s2[8], s3[8];
+  int pc, nc;
+  int os, oc;
+  switch (stage) {
+  case 1:
+    for (i=0; i<8; i++)
+      u[i] = urand(i);
+    for (i=0; i<8; i++) {
+      ss[i] = (r2>>(i*8+7))&1 ^ (r3>>(i*8+7))&1;
+  int s2e = (r2>>(i*8))&0x7f; s2e = s2e<15?s2e:15;
+  int s3e = (r3>>(i*8))&0x7f; s3e = s3e<15?s3e:15;
+      s2[i] = 0LL;
+      s3[i] = 0LL;
+      for (j=0; j<12; j++) {
+ int k = j * 4;
+ s2[i] |= ((u[(i+0)%8]>>k&15)<=s2e)<<j;
+ s3[i] |= ((u[(i+1)%8]>>k&15)<=s3e)<<j;
+      }
+      o1[i] = s2[i] & s3[i];
+      o1[i] = ss[i]<<63|(o1[i]&0x7fffffffffffffffLL);
+    }
+    break;
+  case 2:
+    pc = 0;
+    nc = 0;
+    for (j=0; j<12; j++) {
+      for (i=0; i<8; i++) {
+ if (!(o1[i]>>63)) pc += (o1[i] & (1LL<<j))!=0;
+ else nc += (o1[i] & (1LL<<j))!=0;
+      }
+    }
+    pc = pc>>r4;
+    nc = nc>>r4;
+    *o2 = (Ull)(pc&0xffff)<<32 | (Ull)(nc&0xffff);
+    break;
+  case 3:
+    pc = *o2>>32&0xffff;
+    nc = *o2 &0xffff;
+    if (!(r1&0x80)) pc += (r1&0x7f);
+    else nc += (r1&0x7f);
+    if (pc >= nc) {
+      os = 0x00;
+      oc = pc-nc;
+    }
+    else {
+      os = 0x80;
+      oc = nc-pc;
+    }
+    if (oc >= 128) oc = 127;
+    *o3 = os|oc;
+    break;
+  }
+  return (0);
+}
+Ull __attribute__((always_inline))
+exm(Ull s, Uchar exp)
+{
+  switch (exp) {
+  case 0: return ( s );
+  case 1: return ((s<<32&0xffffffff00000000LL) | (s &0x00000000ffffffffLL));
+  case 2: return ((s &0xffffffff00000000LL) | (s>>32&0x00000000ffffffffLL));
+  case 4: return ((s>> 8&0x00ff000000ff0000LL) | (s>>16&0x000000ff000000ffLL));
+  case 3: return ((s<< 8&0x00ff000000ff0000LL) | (s &0x000000ff000000ffLL));
+  default: return ( s );
+  }
+}
+int
+exe(Uint op_ex1, Ull *d, Ull s1, Uint exp1, Ull s2, Uint exp2, Ull s3, Uint exp3, Uint op_ex2, Ull r4, Uint op_ex3, Ull r5)
+{
+  union { Uint i; float f; } f3, f2, f1, f0;
+  Ull r1, r2, r3;
+  Ull t3, t2, t1, t0;
+  Ull c1, c0;
+  Ull ex1_outd;
+  Ull ex1_outd_sfma[8];
+  Ull ex2_outd;
+  int retval = 0;
+  r1 = exm(s1, exp1);
+  r2 = exm(s2, exp2);
+  r3 = exm(s3, exp3);
+  switch (op_ex1) {
+  case 0x00:
+    ex1_outd = r1;
+    break;
+  case 0x01:
+    t0 = (r1&0x00000000ffffffffLL)+(r2&0x00000000ffffffffLL);
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = t0;
+    if (t0==0) retval = 1;
+    break;
+  case 0x02:
+    t0 = (r1&0x00000000ffffffffLL)+(r2&0x00000000ffffffffLL);
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = t0;
+    if (t0==0) retval = 1;
+    break;
+  case 0x08:
+    softu64(1, ex1_outd_sfma, ((void *)0), ((void *)0), r1, r2, r3, r4);
+    break;
+  case 0x0a:
+    f1.i = (Uint)(r1);
+    f2.i = (Uint)(r2>>32);
+    f3.i = (Uint)(r3>>32);
+    if (f2.i != -1 && f2.i == f3.i) {
+      f2.i = (Uint)(r2);
+      f3.i = (Uint)(r3);
+      f0.f = f1.f + (f2.f * f3.f);
+    }
+    else {
+      f0.f = f1.f;
+    }
+    t0 = f0.i;
+    ex1_outd = t0;
+    break;
+  case 0x10:
+  case 0x11:
+    f1.i = (Uint)(r1>>32);
+    f2.i = (Uint)(r2>>32)^(op_ex1==0x10?0:0x80000000);
+    f3.i = (Uint)(r3>>32);
+    f0.f = f1.f + (f2.f * f3.f);
+    t2 = f0.i;
+    f1.i = (Uint)(r1);
+    f2.i = (Uint)(r2)^(op_ex1==0x10?0:0x80000000);
+    f3.i = (Uint)(r3);
+    f0.f = f1.f + (f2.f * f3.f);
+    t0 = f0.i;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x12:
+    f1.i = (Uint)(r1>>32);
+    f2.i = (Uint)(r2>>32);
+    f0.f = f1.f + f2.f;
+    t2 = f0.i;
+    f1.i = (Uint)(r1);
+    f2.i = (Uint)(r2);
+    f0.f = f1.f + f2.f;
+    t0 = f0.i;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x13:
+    f1.i = (Uint)(r1>>32);
+    f2.i = (Uint)(r2>>32);
+    f0.f = f1.f * f2.f;
+    t2 = f0.i;
+    f1.i = (Uint)(r1);
+    f2.i = (Uint)(r2);
+    f0.f = f1.f * f2.f;
+    t0 = f0.i;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x14:
+    t2 = (r1>>32&0x00000000ffffffffLL)+((r2>>32&0x00000000ffffffffLL)+(r3>>32&0x00000000ffffffffLL));
+    t2 &= 0x00000000ffffffffLL;
+    t0 = (r1 &0x00000000ffffffffLL)+((r2 &0x00000000ffffffffLL)+(r3 &0x00000000ffffffffLL));
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x15:
+    t2 = (r1>>32&0x00000000ffffffffLL)-((r2>>32&0x00000000ffffffffLL)+(r3>>32&0x00000000ffffffffLL));
+    t2 &= 0x00000000ffffffffLL;
+    t0 = (r1 &0x00000000ffffffffLL)-((r2 &0x00000000ffffffffLL)+(r3 &0x00000000ffffffffLL));
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x16:
+    t2 = (r1>>32&0x00000000ffffffffLL)+(r2>>32&0x00000000ffffffffLL);
+    t2 &= 0x00000000ffffffffLL;
+    t0 = (r1 &0x00000000ffffffffLL)+(r2 &0x00000000ffffffffLL);
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x17:
+    t2 = (r1>>32&0x00000000ffffffffLL)-(r2>>32&0x00000000ffffffffLL);
+    t2 &= 0x00000000ffffffffLL;
+    t0 = (r1 &0x00000000ffffffffLL)-(r2 &0x00000000ffffffffLL);
+    t0 &= 0x00000000ffffffffLL;
+    ex1_outd = (t2<<32)|(t0);
+    break;
+  case 0x18:
+    c1 = (r1>>32&0x00000000ffffffffLL) == (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) == (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x19:
+    c1 = (r1>>32&0x00000000ffffffffLL) != (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) != (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x1a:
+    c1 = (r1>>32&0x00000000ffffffffLL) < (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) < (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x1b:
+    c1 = (r1>>32&0x00000000ffffffffLL) <= (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) <= (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x1c:
+    c1 = (r1>>32&0x00000000ffffffffLL) > (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) > (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x1d:
+    c1 = (r1>>32&0x00000000ffffffffLL) >= (r2>>32&0x00000000ffffffffLL);
+    c0 = (r1 &0x00000000ffffffffLL) >= (r2 &0x00000000ffffffffLL);
+    ex1_outd = (c1<<32)|c0;
+    break;
+  case 0x1e:
+    c1 = r1>>32&1;
+    c0 = r1 &1;
+    t2 = c1 ? (r2&0xffffffff00000000LL) : (r3&0xffffffff00000000LL);
+    t0 = c0 ? (r2&0x00000000ffffffffLL) : (r3&0x00000000ffffffffLL);
+    ex1_outd = t2 | t0;
+    break;
+  case 0x20:
+    t3 = (r1>>48&0x000000000000ffffLL)+((r2>>48&0x000000000000ffffLL)+(r3>>48&0x000000000000ffffLL));
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t2 = (r1>>32&0x000000000000ffffLL)+((r2>>32&0x000000000000ffffLL)+(r3>>32&0x000000000000ffffLL));
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t1 = (r1>>16&0x000000000000ffffLL)+((r2>>16&0x000000000000ffffLL)+(r3>>16&0x000000000000ffffLL));
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    t0 = (r1 &0x000000000000ffffLL)+((r2 &0x000000000000ffffLL)+(r3 &0x000000000000ffffLL));
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x21:
+    t3 = (r1>>48&0x000000000000ffffLL)+(r2>>48&0x000000000000ffffLL);
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t2 = (r1>>32&0x000000000000ffffLL)+(r2>>32&0x000000000000ffffLL);
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t1 = (r1>>16&0x000000000000ffffLL)+(r2>>16&0x000000000000ffffLL);
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    t0 = (r1 &0x000000000000ffffLL)+(r2 &0x000000000000ffffLL);
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x22:
+    t3 = (r1>>48&0x000000000000ffffLL)-((r2>>48&0x000000000000ffffLL)+(r3>>48&0x000000000000ffffLL));
+    if (t3 > 0x000000000000ffffLL) t3 = 0x0000000000000000LL;
+    t2 = (r1>>32&0x000000000000ffffLL)-((r2>>32&0x000000000000ffffLL)+(r3>>32&0x000000000000ffffLL));
+    if (t2 > 0x000000000000ffffLL) t2 = 0x0000000000000000LL;
+    t1 = (r1>>16&0x000000000000ffffLL)-((r2>>16&0x000000000000ffffLL)+(r3>>16&0x000000000000ffffLL));
+    if (t1 > 0x000000000000ffffLL) t1 = 0x0000000000000000LL;
+    t0 = (r1 &0x000000000000ffffLL)-((r2 &0x000000000000ffffLL)+(r3 &0x000000000000ffffLL));
+    if (t0 > 0x000000000000ffffLL) t0 = 0x0000000000000000LL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x23:
+    t3 = (r1>>48&0x000000000000ffffLL)-(r2>>48&0x000000000000ffffLL);
+    if (t3 > 0x000000000000ffffLL) t3 = 0x0000000000000000LL;
+    t2 = (r1>>32&0x000000000000ffffLL)-(r2>>32&0x000000000000ffffLL);
+    if (t2 > 0x000000000000ffffLL) t2 = 0x0000000000000000LL;
+    t1 = (r1>>16&0x000000000000ffffLL)-(r2>>16&0x000000000000ffffLL);
+    if (t1 > 0x000000000000ffffLL) t1 = 0x0000000000000000LL;
+    t0 = (r1 &0x000000000000ffffLL)-(r2 &0x000000000000ffffLL);
+    if (t0 > 0x000000000000ffffLL) t0 = 0x0000000000000000LL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x24:
+    t3 = (r1>>48&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t2 = (r1>>32&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t1 = (r1>>16&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    t0 = (r1 &0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x25:
+    ex1_outd = ((r1&0x000000ff00000000LL)<<24) | ((r2&0x000000ff00000000LL)<<16) | ((r3&0x000000ff00000000LL)<<8)
+             | ((r1&0x00000000000000ffLL)<<24) | ((r2&0x00000000000000ffLL)<<16) | ((r3&0x00000000000000ffLL)<<8);
+    break;
+  case 0x26:
+    t3 = (r1>>48&0x000000000000ffffLL) + ((r2>>56&0x00000000000000ffLL)<(r3>>56&0x00000000000000ffLL)?(r3>>56&0x00000000000000ffLL)-(r2>>56&0x00000000000000ffLL):(r2>>56&0x00000000000000ffLL)-(r3>>56&0x00000000000000ffLL)) + ((r2>>48&0x00000000000000ffLL)<(r3>>48&0x00000000000000ffLL)?(r3>>48&0x00000000000000ffLL)-(r2>>48&0x00000000000000ffLL):(r2>>48&0x00000000000000ffLL)-(r3>>48&0x00000000000000ffLL));
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t2 = (r1>>32&0x000000000000ffffLL) + ((r2>>40&0x00000000000000ffLL)<(r3>>40&0x00000000000000ffLL)?(r3>>40&0x00000000000000ffLL)-(r2>>40&0x00000000000000ffLL):(r2>>40&0x00000000000000ffLL)-(r3>>40&0x00000000000000ffLL)) + ((r2>>32&0x00000000000000ffLL)<(r3>>32&0x00000000000000ffLL)?(r3>>32&0x00000000000000ffLL)-(r2>>32&0x00000000000000ffLL):(r2>>32&0x00000000000000ffLL)-(r3>>32&0x00000000000000ffLL));
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t1 = (r1>>16&0x000000000000ffffLL) + ((r2>>24&0x00000000000000ffLL)<(r3>>24&0x00000000000000ffLL)?(r3>>24&0x00000000000000ffLL)-(r2>>24&0x00000000000000ffLL):(r2>>24&0x00000000000000ffLL)-(r3>>24&0x00000000000000ffLL)) + ((r2>>16&0x00000000000000ffLL)<(r3>>16&0x00000000000000ffLL)?(r3>>16&0x00000000000000ffLL)-(r2>>16&0x00000000000000ffLL):(r2>>16&0x00000000000000ffLL)-(r3>>16&0x00000000000000ffLL));
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    t0 = (r1 &0x000000000000ffffLL) + ((r2>> 8&0x00000000000000ffLL)<(r3>> 8&0x00000000000000ffLL)?(r3>> 8&0x00000000000000ffLL)-(r2>> 8&0x00000000000000ffLL):(r2>> 8&0x00000000000000ffLL)-(r3>> 8&0x00000000000000ffLL)) + ((r2 &0x00000000000000ffLL)<(r3 &0x00000000000000ffLL)?(r3 &0x00000000000000ffLL)-(r2 &0x00000000000000ffLL):(r2 &0x00000000000000ffLL)-(r3 &0x00000000000000ffLL));
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x27:
+    t3 = ((r1>>56&0x00000000000000ffLL)<(r2>>56&0x00000000000000ffLL)?(r2>>56&0x00000000000000ffLL)-(r1>>56&0x00000000000000ffLL):(r1>>56&0x00000000000000ffLL)-(r2>>56&0x00000000000000ffLL)) + ((r1>>48&0x00000000000000ffLL)<(r2>>48&0x00000000000000ffLL)?(r2>>48&0x00000000000000ffLL)-(r1>>48&0x00000000000000ffLL):(r1>>48&0x00000000000000ffLL)-(r2>>48&0x00000000000000ffLL));
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t2 = ((r1>>40&0x00000000000000ffLL)<(r2>>40&0x00000000000000ffLL)?(r2>>40&0x00000000000000ffLL)-(r1>>40&0x00000000000000ffLL):(r1>>40&0x00000000000000ffLL)-(r2>>40&0x00000000000000ffLL)) + ((r1>>32&0x00000000000000ffLL)<(r2>>32&0x00000000000000ffLL)?(r2>>32&0x00000000000000ffLL)-(r1>>32&0x00000000000000ffLL):(r1>>32&0x00000000000000ffLL)-(r2>>32&0x00000000000000ffLL));
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t1 = ((r1>>24&0x00000000000000ffLL)<(r2>>24&0x00000000000000ffLL)?(r2>>24&0x00000000000000ffLL)-(r1>>24&0x00000000000000ffLL):(r1>>24&0x00000000000000ffLL)-(r2>>24&0x00000000000000ffLL)) + ((r1>>16&0x00000000000000ffLL)<(r2>>16&0x00000000000000ffLL)?(r2>>16&0x00000000000000ffLL)-(r1>>16&0x00000000000000ffLL):(r1>>16&0x00000000000000ffLL)-(r2>>16&0x00000000000000ffLL));
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    t0 = ((r1>> 8&0x00000000000000ffLL)<(r2>> 8&0x00000000000000ffLL)?(r2>> 8&0x00000000000000ffLL)-(r1>> 8&0x00000000000000ffLL):(r1>> 8&0x00000000000000ffLL)-(r2>> 8&0x00000000000000ffLL)) + ((r1 &0x00000000000000ffLL)<(r2 &0x00000000000000ffLL)?(r2 &0x00000000000000ffLL)-(r1 &0x00000000000000ffLL):(r1 &0x00000000000000ffLL)-(r2 &0x00000000000000ffLL));
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
+    break;
+  case 0x28:
+    t3 = r3>>48&0x000000000000ffffLL;
+    t2 = r3>>32&0x000000000000ffffLL;
+    t1 = r3>>16&0x000000000000ffffLL;
+    t0 = r3 &0x000000000000ffffLL;
+    if (t3<t2) t2 = (r1&0xffff000000000000LL)|(r3>>16&0x0000ffff00000000LL);
+    else t2 = (r2&0xffff000000000000LL)|(r3 &0x0000ffff00000000LL);
+    if (t1<t0) t0 = (r1&0x00000000ffff0000LL)|(r3>>16&0x000000000000ffffLL);
+    else t0 = (r2&0x00000000ffff0000LL)|(r3 &0x000000000000ffffLL);
+    ex1_outd = t2 | t0;
+    break;
+  case 0x29:
+    if ((r1&0x0000ffff00000000LL)<(r2&0x0000ffff00000000LL)) t2 = r1&0xffffffff00000000LL;
+    else t2 = r2&0xffffffff00000000LL;
+    if ((r1&0x000000000000ffffLL)<(r2&0x000000000000ffffLL)) t0 = r1&0x00000000ffffffffLL;
+    else t0 = r2&0x00000000ffffffffLL;
+    ex1_outd = t2 | t0;
+   break;
+  case 0x2a:
+    ex1_outd = (((r1>>48&0x000000000000ff00LL) ? 255 : (r1>>48&0x00000000000000ffLL))<<56)
+             | (((r1>>32&0x000000000000ff00LL) ? 255 : (r1>>32&0x00000000000000ffLL))<<48)
+             | (((r2>>48&0x000000000000ff00LL) ? 255 : (r2>>48&0x00000000000000ffLL))<<40)
+             | (((r2>>32&0x000000000000ff00LL) ? 255 : (r2>>32&0x00000000000000ffLL))<<32)
+             | (((r1>>16&0x000000000000ff00LL) ? 255 : (r1>>16&0x00000000000000ffLL))<<24)
+             | (((r1 &0x000000000000ff00LL) ? 255 : (r1 &0x00000000000000ffLL))<<16)
+             | (((r2>>16&0x000000000000ff00LL) ? 255 : (r2>>16&0x00000000000000ffLL))<< 8)
+             | (((r2 &0x000000000000ff00LL) ? 255 : (r2 &0x00000000000000ffLL)) );
+    break;
+  case 0x2b:
+    t2 = ((r1&0x0000ffff00000000LL)<(r2&0x0000ffff00000000LL))?0:0x000000ff00000000LL;
+    t0 = ((r1&0x000000000000ffffLL)<(r2&0x000000000000ffffLL))?0:0x00000000000000ffLL;
+    ex1_outd = t2 | t0;
+    break;
+  case 0x2c:
+    t1 = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+       | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+       | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+       | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+       | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+       | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+       | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+       | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    t2 = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+       | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+       | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+       | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+       | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+       | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+       | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+       | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    ex1_outd = ((r3&0xff00000000000000LL)<(t1&0xff00000000000000LL)?(t1&0xff00000000000000LL):((r3&0xff00000000000000LL)<(t2&0xff00000000000000LL)?(r3&0xff00000000000000LL):(t2&0xff00000000000000LL)))
+             | ((r3&0x00ff000000000000LL)<(t1&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):((r3&0x00ff000000000000LL)<(t2&0x00ff000000000000LL)?(r3&0x00ff000000000000LL):(t2&0x00ff000000000000LL)))
+             | ((r3&0x0000ff0000000000LL)<(t1&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):((r3&0x0000ff0000000000LL)<(t2&0x0000ff0000000000LL)?(r3&0x0000ff0000000000LL):(t2&0x0000ff0000000000LL)))
+             | ((r3&0x000000ff00000000LL)<(t1&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):((r3&0x000000ff00000000LL)<(t2&0x000000ff00000000LL)?(r3&0x000000ff00000000LL):(t2&0x000000ff00000000LL)))
+             | ((r3&0x00000000ff000000LL)<(t1&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):((r3&0x00000000ff000000LL)<(t2&0x00000000ff000000LL)?(r3&0x00000000ff000000LL):(t2&0x00000000ff000000LL)))
+             | ((r3&0x0000000000ff0000LL)<(t1&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):((r3&0x0000000000ff0000LL)<(t2&0x0000000000ff0000LL)?(r3&0x0000000000ff0000LL):(t2&0x0000000000ff0000LL)))
+             | ((r3&0x000000000000ff00LL)<(t1&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):((r3&0x000000000000ff00LL)<(t2&0x000000000000ff00LL)?(r3&0x000000000000ff00LL):(t2&0x000000000000ff00LL)))
+             | ((r3&0x00000000000000ffLL)<(t1&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):((r3&0x00000000000000ffLL)<(t2&0x00000000000000ffLL)?(r3&0x00000000000000ffLL):(t2&0x00000000000000ffLL)));
+    break;
+  case 0x2d:
+    t1 = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+       | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+       | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+       | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+       | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+       | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+       | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+       | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    ex1_outd = ((t1&0xff00000000000000LL)>(r3&0xff00000000000000LL)?(t1&0xff00000000000000LL):(r3&0xff00000000000000LL))
+             | ((t1&0x00ff000000000000LL)>(r3&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):(r3&0x00ff000000000000LL))
+             | ((t1&0x0000ff0000000000LL)>(r3&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):(r3&0x0000ff0000000000LL))
+             | ((t1&0x000000ff00000000LL)>(r3&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):(r3&0x000000ff00000000LL))
+             | ((t1&0x00000000ff000000LL)>(r3&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):(r3&0x00000000ff000000LL))
+             | ((t1&0x0000000000ff0000LL)>(r3&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):(r3&0x0000000000ff0000LL))
+             | ((t1&0x000000000000ff00LL)>(r3&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):(r3&0x000000000000ff00LL))
+             | ((t1&0x00000000000000ffLL)>(r3&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):(r3&0x00000000000000ffLL));
+    break;
+  case 0x2e:
+    t1 = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+       | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+       | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+       | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+       | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+       | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+       | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+       | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    ex1_outd = ((t1&0xff00000000000000LL)<(r3&0xff00000000000000LL)?(t1&0xff00000000000000LL):(r3&0xff00000000000000LL))
+             | ((t1&0x00ff000000000000LL)<(r3&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):(r3&0x00ff000000000000LL))
+             | ((t1&0x0000ff0000000000LL)<(r3&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):(r3&0x0000ff0000000000LL))
+             | ((t1&0x000000ff00000000LL)<(r3&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):(r3&0x000000ff00000000LL))
+             | ((t1&0x00000000ff000000LL)<(r3&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):(r3&0x00000000ff000000LL))
+             | ((t1&0x0000000000ff0000LL)<(r3&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):(r3&0x0000000000ff0000LL))
+             | ((t1&0x000000000000ff00LL)<(r3&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):(r3&0x000000000000ff00LL))
+             | ((t1&0x00000000000000ffLL)<(r3&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):(r3&0x00000000000000ffLL));
+    break;
+  case 0x2f:
+    ex1_outd = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+             | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+             | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+             | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+             | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+             | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+             | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+             | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    break;
+  case 0x30:
+    ex1_outd = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
+             | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
+             | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
+             | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
+             | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
+             | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
+             | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
+             | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
+    break;
+  default:
+    printf("emax6lib: exe: undefined op_ex1=%d\n", op_ex1);
+    break;
+  }
+  switch (op_ex2) {
+  case 0x00:
+    if (op_ex1 == 0x08)
+      softu64(2, ex1_outd_sfma, &ex2_outd, ((void *)0), r1, r2, r3, r4);
+    else
+      ex2_outd = ex1_outd;
+    break;
+  case 0x01:
+    ex2_outd = ex1_outd & r4;
+    break;
+  case 0x02:
+    ex2_outd = ex1_outd | r4;
+    break;
+  case 0x03:
+    ex2_outd = ex1_outd ^ r4;
+    break;
+  case 0x04:
+    t3 = ex1_outd>>48&0x000000000000ffffLL;
+    t2 = ex1_outd>>32&0x000000000000ffffLL;
+    t1 = ex1_outd>>16&0x000000000000ffffLL;
+    t0 = ex1_outd &0x000000000000ffffLL;
+    t3 += t2;
+    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
+    t1 += t0;
+    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
+    ex2_outd = (t3<<48)|(t1<<16);
+    break;
+  case 0x05:
+    t3 = ex1_outd>>48&0x000000000000ffffLL;
+    t2 = ex1_outd>>32&0x000000000000ffffLL;
+    t1 = ex1_outd>>16&0x000000000000ffffLL;
+    t0 = ex1_outd &0x000000000000ffffLL;
+    t2 += t3;
+    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
+    t0 += t1;
+    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
+    ex2_outd = (t2<<32)|(t0);
+    break;
+  default:
+    printf("emax6lib: exe: undefined op_ex2=%d\n", op_ex2);
+    break;
+  }
+  switch (op_ex3) {
+  case 0x00:
+    if (op_ex1 == 0x08)
+      softu64(3, ((void *)0), &ex2_outd, d, r1, r2, r3, r4);
+    else
+      if (d) *d = ex2_outd;
+    break;
+  case 0x01:
+    t1 = (Ull)(ex2_outd &0xffffffff00000000LL)<<r5;
+    t0 = (Ull)(ex2_outd<<r5&0x00000000ffffffffLL);
+    if (d) *d = t1 | t0;
+    break;
+  case 0x02:
+    t1 = (Ull)(ex2_outd>>r5&0xffffffff00000000LL);
+    t0 = (Ull)(ex2_outd &0x00000000ffffffffLL)>>r5;
+    if (d) *d = t1 | t0;
+    break;
+  case 0x03:
+    t1 = (Sll)(ex2_outd )>>r5&0xffffffff00000000LL;
+    t0 = (Sll)(ex2_outd<<32)>>r5&0xffffffff00000000LL;
+    if (d) *d = t1 | (t0>>32);
+    break;
+  case 0x04:
+    t1 = (Sll)(ex2_outd<< 8)>>(r5+8)&0xffffffff00000000LL;
+    t0 = (Sll)(ex2_outd<<40)>>(r5+8)&0xffffffff00000000LL;
+    if (d) *d = t1 | (t0>>32);
+    break;
+  case 0x07:
+    t3 = (Ull)(ex2_outd )>>r5&0xffff000000000000LL;
+    t2 = (Ull)(ex2_outd<<16)>>r5&0xffff000000000000LL;
+    t1 = (Ull)(ex2_outd<<32)>>r5&0xffff000000000000LL;
+    t0 = (Ull)(ex2_outd<<48)>>r5&0xffff000000000000LL;
+    if (d) *d = t3 | (t2>>16) | (t1>>32) | (t0>>48);
+    break;
+  default:
+    printf("emax6lib: exe: undefined op_ex3=%d\n", op_ex3);
+    break;
+  }
+  return (retval);
+}
+void
+mex(Uint op_mx, Uchar **d, Uchar *base, Ull ofs, Ull s2, Ull s1)
+{
+  Uint ss2 = s2>>32;
+  Uint ss1 = s1>>32;
+  switch (op_mx) {
+  case 0x00:
+    *d = base;
+    break;
+  case 1:
+    *d = base + ((ss1!=0xffffffff && ss2<=ss1) ? ofs:0);
+    break;
+  case 2:
+    *d = base + ((ss2!=0xffffffff && ss2>=ss1) ? ofs:0);
+    break;
+  case 3:
+    *d = base + ofs;
+    break;
+  default:
+    printf("emax6lib: mex: undefined op_mx=%d\n", op_mx);
+    break;
+  }
+}
+Ull __attribute__((always_inline))
+eam(Ull ofs, Uchar msk)
+{
+  switch (msk) {
+  case 14: return (ofs);
+  case 13: return (ofs>>32);
+  case 12: return (ofs&0x00000000ffffffffLL);
+  case 11: return (ofs>>48&0x000000000000ffffLL);
+  case 10: return (ofs>>32&0x000000000000ffffLL);
+  case 9: return (ofs>>16&0x000000000000ffffLL);
+  case 8: return (ofs&0x000000000000ffffLL);
+  case 7: return (ofs>>56&0x00000000000000ffLL);
+  case 6: return (ofs>>48&0x00000000000000ffLL);
+  case 5: return (ofs>>40&0x00000000000000ffLL);
+  case 4: return (ofs>>32&0x00000000000000ffLL);
+  case 3: return (ofs>>24&0x00000000000000ffLL);
+  case 2: return (ofs>>16&0x00000000000000ffLL);
+  case 1: return (ofs>>8&0x00000000000000ffLL);
+  case 0: return (ofs&0x00000000000000ffLL);
+  default: printf("emax6lib: eag: undefined msk=%d\n", msk); return (0LL);;
+  }
+}
+void
+eag(Ull *adr, Ull base, Ull ofs)
+{
+  *adr = base + ofs;
+}
+void
+mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr, ofs;
+  eag(&adr, base, eam(offset, msk));
+  mmp(op_mm, ex, d, adr, top, len, blk);
+}
+void
+mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
+{
+  Ull adr, ofs;
+  eag(&adr, base, eam(offset, msk));
+  mmp(op_mm, ex, d, adr, top, len, blk);
+}
+int emax6_unaligned_load_valid;
+Ull emax6_unaligned_load_high;
+void
+mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
+{
+  Ull c1, c0, load64;
+  if (!((op_mm==0x08 && blk) || op_mm==0x19 || op_mm==0x1a) && (!adr || !top)) return;
+  if (!((op_mm==0x08 && blk) || op_mm==0x19 || op_mm==0x1a) && (adr < top || adr >= top+len*sizeof(Uint)+12)) {
+    printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
+    fflush(stdout);
+  }
+  c1 = ex>>1&1;
+  c0 = ex &1;
+  switch (op_mm) {
+  case 0x00:
+    break;
+  case 0x01:
+    load64 = *(Ull*)(adr&~7LL);
+    if ((adr&7) == 0)
+      *d = load64;
+    else if (!emax6_unaligned_load_valid) {
+      emax6_unaligned_load_valid = 1;
+      emax6_unaligned_load_high = load64;
+      *d = load64 >> (adr&7)*8;
+    }
+    else {
+      emax6_unaligned_load_valid = 0;
+      *d = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;
+    }
+    break;
+  case 0x02:
+    *d = (Ull)*(Uint*)(adr&~3LL);
+    break;
+  case 0x04:
+    *d = (Ull)(Uint)*(Uchar*)adr;
+    break;
+  case 0x11:
+    if (c1) *((Uint*)(adr&~7LL)+1) = *d>>32;
+    if (c0) *((Uint*)(adr&~7LL) ) = *d;
+    break;
+  case 0x12:
+    if (c0) *(Uint*)(adr&~3LL) = *d;
+    break;
+  case 0x14:
+    if (c0) *(Uchar*)adr = *d;
+    break;
+  case 0x08:
+    switch (blk) {
+    case 0:
+      *(d+0) = *((Ull*)(adr&~31LL)+0);
+      *(d+1) = *((Ull*)(adr&~31LL)+1);
+      *(d+2) = *((Ull*)(adr&~31LL)+2);
+      *(d+3) = *((Ull*)(adr&~31LL)+3);
+      break;
+    case 1:
+      *(d+0) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 0);
+      *(d+1) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 1);
+      *(d+2) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 2);
+      *(d+3) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 3);
+      break;
+    case 2:
+      *(d+0) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 0);
+      *(d+1) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 1);
+      *(d+2) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 2);
+      *(d+3) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 3);
+      break;
+    default:
+      *(d+0) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 0);
+      *(d+1) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 1);
+      *(d+2) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 2);
+      *(d+3) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 3);
+      break;
+    }
+    break;
+  case 0x19:
+    if (c0) {
+      *(d+0) = *((Ull*)(adr&~31LL)+0);
+      *(d+1) = *((Ull*)(adr&~31LL)+1);
+      *(d+2) = *((Ull*)(adr&~31LL)+2);
+      *(d+3) = *((Ull*)(adr&~31LL)+3);
+    }
+    break;
+  case 0x18:
+    *((Ull*)(adr&~31LL)+0) = *(d+0);
+    *((Ull*)(adr&~31LL)+1) = *(d+1);
+    *((Ull*)(adr&~31LL)+2) = *(d+2);
+    *((Ull*)(adr&~31LL)+3) = *(d+3);
+    break;
+  case 0x1a:
+    if (c0) {
+      Ull (*trans)() = top;
+      (trans)(*(d+0), *(d+1), *(d+2), *(d+3));
+    }
+    break;
+  default:
+    printf("emax6lib: mmp: undefined op_mm=%d\n", op_mm);
+    break;
+  }
+}
+extern int *__errno_location (void) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+struct iovec
+  {
+    void *iov_base;
+    size_t iov_len;
+  };
+extern ssize_t readv (int __fd, const struct iovec *__iovec, int __count)
+  ;
+extern ssize_t writev (int __fd, const struct iovec *__iovec, int __count)
+  ;
+extern ssize_t preadv (int __fd, const struct iovec *__iovec, int __count,
+         __off_t __offset) ;
+extern ssize_t pwritev (int __fd, const struct iovec *__iovec, int __count,
+   __off_t __offset) ;
+enum __socket_type
+{
+  SOCK_STREAM = 1,
+  SOCK_DGRAM = 2,
+  SOCK_RAW = 3,
+  SOCK_RDM = 4,
+  SOCK_SEQPACKET = 5,
+  SOCK_DCCP = 6,
+  SOCK_PACKET = 10,
+  SOCK_CLOEXEC = 02000000,
+  SOCK_NONBLOCK = 00004000
+};
+typedef unsigned short int sa_family_t;
+struct sockaddr
+  {
+    sa_family_t sa_family;
+    char sa_data[14];
+  };
+struct sockaddr_storage
+  {
+    sa_family_t ss_family;
+    char __ss_padding[(128 - (sizeof (unsigned short int)) - sizeof (unsigned long int))];
+    unsigned long int __ss_align;
+  };
+enum
+  {
+    MSG_OOB = 0x01,
+    MSG_PEEK = 0x02,
+    MSG_DONTROUTE = 0x04,
+    MSG_CTRUNC = 0x08,
+    MSG_PROXY = 0x10,
+    MSG_TRUNC = 0x20,
+    MSG_DONTWAIT = 0x40,
+    MSG_EOR = 0x80,
+    MSG_WAITALL = 0x100,
+    MSG_FIN = 0x200,
+    MSG_SYN = 0x400,
+    MSG_CONFIRM = 0x800,
+    MSG_RST = 0x1000,
+    MSG_ERRQUEUE = 0x2000,
+    MSG_NOSIGNAL = 0x4000,
+    MSG_MORE = 0x8000,
+    MSG_WAITFORONE = 0x10000,
+    MSG_BATCH = 0x40000,
+    MSG_FASTOPEN = 0x20000000,
+    MSG_CMSG_CLOEXEC = 0x40000000
+  };
+struct msghdr
+  {
+    void *msg_name;
+    socklen_t msg_namelen;
+    struct iovec *msg_iov;
+    size_t msg_iovlen;
+    void *msg_control;
+    size_t msg_controllen;
+    int msg_flags;
+  };
+struct cmsghdr
+  {
+    size_t cmsg_len;
+    int cmsg_level;
+    int cmsg_type;
+    __extension__ unsigned char __cmsg_data [];
+  };
+extern struct cmsghdr *__cmsg_nxthdr (struct msghdr *__mhdr,
+          struct cmsghdr *__cmsg) __attribute__ ((__nothrow__ , __leaf__));
+enum
+  {
+    SCM_RIGHTS = 0x01
+  };
+struct linger
+  {
+    int l_onoff;
+    int l_linger;
+  };
+struct osockaddr
+  {
+    unsigned short int sa_family;
+    unsigned char sa_data[14];
+  };
+enum
+{
+  SHUT_RD = 0,
+  SHUT_WR,
+  SHUT_RDWR
+};
+extern int socket (int __domain, int __type, int __protocol) __attribute__ ((__nothrow__ , __leaf__));
+extern int socketpair (int __domain, int __type, int __protocol,
+         int __fds[2]) __attribute__ ((__nothrow__ , __leaf__));
+extern int bind (int __fd, const struct sockaddr * __addr, socklen_t __len)
+     __attribute__ ((__nothrow__ , __leaf__));
+extern int getsockname (int __fd, struct sockaddr *__restrict __addr,
+   socklen_t *__restrict __len) __attribute__ ((__nothrow__ , __leaf__));
+extern int connect (int __fd, const struct sockaddr * __addr, socklen_t __len);
+extern int getpeername (int __fd, struct sockaddr *__restrict __addr,
+   socklen_t *__restrict __len) __attribute__ ((__nothrow__ , __leaf__));
+extern ssize_t send (int __fd, const void *__buf, size_t __n, int __flags);
+extern ssize_t recv (int __fd, void *__buf, size_t __n, int __flags);
+extern ssize_t sendto (int __fd, const void *__buf, size_t __n,
+         int __flags, const struct sockaddr * __addr,
+         socklen_t __addr_len);
+extern ssize_t recvfrom (int __fd, void *__restrict __buf, size_t __n,
+    int __flags, struct sockaddr *__restrict __addr,
+    socklen_t *__restrict __addr_len);
+extern ssize_t sendmsg (int __fd, const struct msghdr *__message,
+   int __flags);
+extern ssize_t recvmsg (int __fd, struct msghdr *__message, int __flags);
+extern int getsockopt (int __fd, int __level, int __optname,
+         void *__restrict __optval,
+         socklen_t *__restrict __optlen) __attribute__ ((__nothrow__ , __leaf__));
+extern int setsockopt (int __fd, int __level, int __optname,
+         const void *__optval, socklen_t __optlen) __attribute__ ((__nothrow__ , __leaf__));
+extern int listen (int __fd, int __n) __attribute__ ((__nothrow__ , __leaf__));
+extern int accept (int __fd, struct sockaddr *__restrict __addr,
+     socklen_t *__restrict __addr_len);
+extern int shutdown (int __fd, int __how) __attribute__ ((__nothrow__ , __leaf__));
+extern int sockatmark (int __fd) __attribute__ ((__nothrow__ , __leaf__));
+extern int isfdtype (int __fd, int __fdtype) __attribute__ ((__nothrow__ , __leaf__));
+typedef uint32_t in_addr_t;
+struct in_addr
+  {
+    in_addr_t s_addr;
+  };
+struct ip_opts
+  {
+    struct in_addr ip_dst;
+    char ip_opts[40];
+  };
+struct ip_mreqn
+  {
+    struct in_addr imr_multiaddr;
+    struct in_addr imr_address;
+    int imr_ifindex;
+  };
+struct in_pktinfo
+  {
+    int ipi_ifindex;
+    struct in_addr ipi_spec_dst;
+    struct in_addr ipi_addr;
+  };
+enum
+  {
+    IPPROTO_IP = 0,
+    IPPROTO_ICMP = 1,
+    IPPROTO_IGMP = 2,
+    IPPROTO_IPIP = 4,
+    IPPROTO_TCP = 6,
+    IPPROTO_EGP = 8,
+    IPPROTO_PUP = 12,
+    IPPROTO_UDP = 17,
+    IPPROTO_IDP = 22,
+    IPPROTO_TP = 29,
+    IPPROTO_DCCP = 33,
+    IPPROTO_IPV6 = 41,
+    IPPROTO_RSVP = 46,
+    IPPROTO_GRE = 47,
+    IPPROTO_ESP = 50,
+    IPPROTO_AH = 51,
+    IPPROTO_MTP = 92,
+    IPPROTO_BEETPH = 94,
+    IPPROTO_ENCAP = 98,
+    IPPROTO_PIM = 103,
+    IPPROTO_COMP = 108,
+    IPPROTO_SCTP = 132,
+    IPPROTO_UDPLITE = 136,
+    IPPROTO_MPLS = 137,
+    IPPROTO_RAW = 255,
+    IPPROTO_MAX
+  };
+enum
+  {
+    IPPROTO_HOPOPTS = 0,
+    IPPROTO_ROUTING = 43,
+    IPPROTO_FRAGMENT = 44,
+    IPPROTO_ICMPV6 = 58,
+    IPPROTO_NONE = 59,
+    IPPROTO_DSTOPTS = 60,
+    IPPROTO_MH = 135
+  };
+typedef uint16_t in_port_t;
+enum
+  {
+    IPPORT_ECHO = 7,
+    IPPORT_DISCARD = 9,
+    IPPORT_SYSTAT = 11,
+    IPPORT_DAYTIME = 13,
+    IPPORT_NETSTAT = 15,
+    IPPORT_FTP = 21,
+    IPPORT_TELNET = 23,
+    IPPORT_SMTP = 25,
+    IPPORT_TIMESERVER = 37,
+    IPPORT_NAMESERVER = 42,
+    IPPORT_WHOIS = 43,
+    IPPORT_MTP = 57,
+    IPPORT_TFTP = 69,
+    IPPORT_RJE = 77,
+    IPPORT_FINGER = 79,
+    IPPORT_TTYLINK = 87,
+    IPPORT_SUPDUP = 95,
+    IPPORT_EXECSERVER = 512,
+    IPPORT_LOGINSERVER = 513,
+    IPPORT_CMDSERVER = 514,
+    IPPORT_EFSSERVER = 520,
+    IPPORT_BIFFUDP = 512,
+    IPPORT_WHOSERVER = 513,
+    IPPORT_ROUTESERVER = 520,
+    IPPORT_RESERVED = 1024,
+    IPPORT_USERRESERVED = 5000
+  };
+struct in6_addr
+  {
+    union
+      {
+ uint8_t __u6_addr8[16];
+ uint16_t __u6_addr16[8];
+ uint32_t __u6_addr32[4];
+      } __in6_u;
+  };
+extern const struct in6_addr in6addr_any;
+extern const struct in6_addr in6addr_loopback;
+struct sockaddr_in
+  {
+    sa_family_t sin_family;
+    in_port_t sin_port;
+    struct in_addr sin_addr;
+    unsigned char sin_zero[sizeof (struct sockaddr) -
+      (sizeof (unsigned short int)) -
+      sizeof (in_port_t) -
+      sizeof (struct in_addr)];
+  };
+struct sockaddr_in6
+  {
+    sa_family_t sin6_family;
+    in_port_t sin6_port;
+    uint32_t sin6_flowinfo;
+    struct in6_addr sin6_addr;
+    uint32_t sin6_scope_id;
+  };
+struct ip_mreq
+  {
+    struct in_addr imr_multiaddr;
+    struct in_addr imr_interface;
+  };
+struct ip_mreq_source
+  {
+    struct in_addr imr_multiaddr;
+    struct in_addr imr_interface;
+    struct in_addr imr_sourceaddr;
+  };
+struct ipv6_mreq
+  {
+    struct in6_addr ipv6mr_multiaddr;
+    unsigned int ipv6mr_interface;
+  };
+struct group_req
+  {
+    uint32_t gr_interface;
+    struct sockaddr_storage gr_group;
+  };
+struct group_source_req
+  {
+    uint32_t gsr_interface;
+    struct sockaddr_storage gsr_group;
+    struct sockaddr_storage gsr_source;
+  };
+struct ip_msfilter
+  {
+    struct in_addr imsf_multiaddr;
+    struct in_addr imsf_interface;
+    uint32_t imsf_fmode;
+    uint32_t imsf_numsrc;
+    struct in_addr imsf_slist[1];
+  };
+struct group_filter
+  {
+    uint32_t gf_interface;
+    struct sockaddr_storage gf_group;
+    uint32_t gf_fmode;
+    uint32_t gf_numsrc;
+    struct sockaddr_storage gf_slist[1];
+};
+extern uint32_t ntohl (uint32_t __netlong) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern uint16_t ntohs (uint16_t __netshort)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern uint32_t htonl (uint32_t __hostlong)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern uint16_t htons (uint16_t __hostshort)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern int bindresvport (int __sockfd, struct sockaddr_in *__sock_in) __attribute__ ((__nothrow__ , __leaf__));
+extern int bindresvport6 (int __sockfd, struct sockaddr_in6 *__sock_in)
+     __attribute__ ((__nothrow__ , __leaf__));
 typedef unsigned long XID;
 typedef unsigned long Mask;
 typedef unsigned long Atom;
@@ -5775,2077 +7920,6 @@ extern XdbeBackBufferAttributes *XdbeGetBackBufferAttributes(
     Display* ,
     XdbeBackBuffer
 );
-int WD=320, HT=240, BITMAP=320*240, SCRWD=5, SCRHT=5, VECWD=240, VECHT=240, VECSTEP=4;
-void cex(Uint, Ull*, Ull, Ull, Ull, Ull, Ushort);
-void ex4(Uint, Ull*, Ull*, Uint, Ull*, Uint, Ull*, Uint, Uint, Ull*, Uint, Ull*);
-int exe(Uint, Ull*, Ull, Uint, Ull, Uint, Ull, Uint, Uint, Ull, Uint, Ull);
-void mo4(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
-void mop(Uint, Ull, Ull*, Ull, Ull, Uchar, Ull, Uint, Uint, Uchar, Ull, Uint);
-void eag(Ull*, Ull, Ull, Uchar);
-void mmp(Uint, Ull, Ull*, Ull, Ull, Uint, Uint);
-int current_prefix;
-int current_mapdist;
-int current_nchip;
-int current_lmmwb;
-int last_insn;
-struct insn {
-  struct header {
-    char type ;
-    char row ;
-    char col ;
-    char rdep ;
-    char fixed ;
-  } iheader;
-  struct cex {
-    char op ;
-    char bit0v ;
-    int bit0h ;
-    char bit1v ;
-    int bit1h ;
-    char bit2v ;
-    int bit2h ;
-    char bit3v ;
-    int bit3h ;
-    Ull table :16;
-    char cexdv ;
-    int cexdh ;
-  } icex;
-  struct exe {
-    char op1 ;
-    char op2 ;
-    char op3 ;
-    Ull updt : 1;
-    Ull init : 2;
-    char src1v ;
-    int src1h ;
-    char src1s ;
-    char src1e ;
-    char src2v ;
-    int src2h ;
-    char src2s ;
-    char src2e ;
-    char src3v ;
-    int src3h ;
-    char src3s ;
-    char src3e ;
-    char src4v ;
-    int src4h ;
-    char src4s ;
-    char src5v ;
-    int src5h ;
-    char src5s ;
-    char exedv ;
-    int exedh ;
-    char exeds ;
-  } iexe;
-  struct mop {
-    char op ;
-    char mtype ;
-    Ull updt : 1;
-    char exv ;
-    int exh ;
-    char mopdv ;
-    int mopdh ;
-    char mopds ;
-    char basev ;
-    int baseh ;
-    char bases ;
-    char offsv ;
-    int offsh ;
-    char offss ;
-    char offsm ;
-    char topv ;
-    int toph ;
-    int lenv ;
-    int lenh ;
-    char blk ;
-    int forcev ;
-    int forceh ;
-    char ptopv ;
-    int ptoph ;
-    int plenv ;
-    int plenh ;
-  } imop;
-} insn[(4*8*4)];
-struct dec {
-  struct cex dcex;
-  struct exu {
-    char op1 ;
-    char op2 ;
-    char op3 ;
-    Ull updt : 1;
-    Ull init : 2;
-    Ull fold : 1;
-    char ex1v ;
-    int ex1h ;
-    char ex1s ;
-    char ex1e ;
-    char ex2v ;
-    int ex2h ;
-    char ex2s ;
-    char ex2e ;
-    char ex3v ;
-    int ex3h ;
-    char ex3s ;
-    char ex3e ;
-    char e2iv ;
-    int e2ih ;
-    char e2is ;
-    char e3iv ;
-    int e3ih ;
-    char e3is ;
-    char exdv ;
-    int exdh ;
-    char exds ;
-  } dexu;
-  struct mop dmop0;
-  struct mop dmop1;
-} dec[8][4];
-struct bus {
-  char cexdv ;
-  int cexdh ;
-  char exdrv ;
-  int exdrh ;
-  char exdrs ;
-  char ea0brv ;
-  int ea0brh ;
-  char ea0orv ;
-  int ea0orh ;
-  char ea0drv ;
-  int ea0drh ;
-  char ea1brv ;
-  int ea1brh ;
-  char ea1orv ;
-  int ea1orh ;
-  char ea1drv ;
-  int ea1drh ;
-  struct {
-    char v ;
-    int h ;
-    char s ;
-  } lmwd[4], lmrd[4];
-  struct {
-    char v ;
-    int h ;
-    char s ;
-  } tr[4];
-  struct {
-    char v ;
-    int h ;
-    char s ;
-  } mw[4];
-  struct {
-    char v ;
-    int h ;
-    char s ;
-  } br[4];
-} bus[8][4];
-struct conf {
-  struct cdw0 {
-    Ull v : 1;
-    Ull op1 : 6;
-    Ull op2 : 3;
-    Ull op3 : 3;
-    Ull ex1brs : 4;
-    Ull ex1s : 1;
-    Ull ex1exp : 2;
-    Ull ex2brs : 4;
-    Ull ex2exp : 2;
-    Ull ex3brs : 4;
-    Ull ex3exp : 2;
-    Ull e2is : 2;
-    Ull e3imm : 6;
-    Ull e3is : 1;
-    Ull init : 2;
-    Ull fold : 1;
-    Ull dmy00 : 20;
-  } cdw0;
-  struct cdw1 {
-    Ull cs0 : 4;
-    Ull cs1 : 4;
-    Ull cs2 : 4;
-    Ull cs3 : 4;
-    Ull cex_tab: 16;
-    Ull ea0op : 5;
-    Ull ea0bs : 2;
-    Ull ea0os : 1;
-    Ull ea0msk : 4;
-    Ull ea1op : 5;
-    Ull ea1bs : 2;
-    Ull ea1os : 1;
-    Ull ea1msk : 4;
-    Ull eabbrs : 4;
-    Ull eaobrs : 4;
-  } cdw1;
-  struct cdw2 {
-    Ull ts0 : 4;
-    Ull ts1 : 4;
-    Ull ts2 : 4;
-    Ull ts3 : 4;
-    Ull trs0 : 2;
-    Ull trs1 : 2;
-    Ull trs2 : 2;
-    Ull trs3 : 2;
-    Ull mwsa : 1;
-    Ull mws0 : 2;
-    Ull mws1 : 2;
-    Ull mws2 : 2;
-    Ull mws3 : 2;
-    Ull brs0 : 2;
-    Ull brs1 : 2;
-    Ull brs2 : 2;
-    Ull brs3 : 2;
-    Ull mapdist: 6;
-    Ull lmm_mode: 2;
-    Ull lmm_axiw: 1;
-    Ull lmm_axir: 1;
-    Ull dmy20 : 13;
-  } cdw2;
-  struct cdw3 {
-    Ull e2imm : 64;
-  } cdw3;
-} conf[8][4];
-struct lmmi {
-  Ull v : 1;
-  Ull rw : 1;
-  Ull f : 1;
-  Ull p : 1;
-  Ull bcas : 4;
-  Ull hcopy: 1;
-  Ull vcopy: 1;
-  Ull blk : 2;
-  Ull cidx : 1;
-  Ull dmy : 3;
-  Ull len :16;
-  Ull ofs :32;
-  Ull top :64;
-} lmmi[8][4];
-int lmmi_first_loc;
-Ull lmmi_bitmap[4];
-Ull range_bitmap[4];
-Uchar range_link[8][4];
-struct lmmx {
-  int forcev ;
-  int forceh ;
-  int lenv ;
-  int lenh ;
-} lmmx[8][4];
-struct {
-  struct {
-    int v;
-    int h;
-    int s;
-  } br[4];
-  int ea0b_v;
-  int ea0b_h;
-  int ea0b_s;
-  int ea0o_v;
-  int ea0o_h;
-  int ea0o_s;
-  int ea1b_v;
-  int ea1b_h;
-  int ea1b_s;
-  int ea1o_v;
-  int ea1o_h;
-  int ea1o_s;
-} regv[8][4];
-int trans_pc;
-struct trans {
-  Ull rw : 1;
-  Ull base_type : 2;
-  Ull base_num : 3;
-  char *base_symbol;
-  Ull offset_type : 1;
-  Ull offset : 4;
-  Ull offset_suffix : 3;
-  Ull offset_sll : 3;
-  Ull op_type : 3;
-  Ull op_val_type : 2;
-  Ull op_val_num;
-  char *op_val_symbol;
-  Ull t_action_type : 2;
-  Ull t_action : 4;
-  Ull f_action_type : 2;
-  Ull f_action : 4;
-  Ull reg_type : 1;
-  Ull reg_num : 3;
-  char *reg_symbol;
-} trans[16];
-struct tconf {
-  Ull rw : 1;
-  Ull base_type : 2;
-  Ull offset_type : 1;
-  Ull offset : 4;
-  Ull offset_suffix : 3;
-  Ull offset_sll : 3;
-  Ull op_type : 3;
-  Ull op_val_type : 1;
-  Ull t_action_type : 2;
-  Ull t_action : 4;
-  Ull f_action_type : 2;
-  Ull f_action : 4;
-  Ull reg_type : 1;
-  Ull dmy : 1;
-  Ull base;
-  Ull op_val;
-  Ull reg;
-} tconf[16];
-enum { NANOS_ARM, NANOS_DRAIN, NANOS_CONF, NANOS_REGV, NANOS_RANGE, NANOS_LOAD, NANOS_EXEC, NANOS_TOTAL, NANOS_CLASS };
-Ull nanosec_sav;
-Ull nanosec[NANOS_CLASS];
-reset_nanosec()
-{
-  int i;
-  for (i=0; i<NANOS_CLASS; i++)
-    nanosec[i] = 0;
-  struct timespec ts;
-  clock_gettime(0, &ts);
-  nanosec_sav = 1000000000*ts.tv_sec + ts.tv_nsec;
-}
-get_nanosec(int class)
-{
-  Ull nanosec_now;
-  struct timespec ts;
-  clock_gettime(0, &ts);
-  nanosec_now = 1000000000*ts.tv_sec + ts.tv_nsec;
-  nanosec[class] += nanosec_now - nanosec_sav;
-  nanosec[NANOS_TOTAL] += nanosec_now - nanosec_sav;
-  nanosec_sav = nanosec_now;
-}
-show_nanosec()
-{
-  printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-  nanosec[NANOS_ARM],
-  nanosec[NANOS_DRAIN],
-  nanosec[NANOS_CONF],
-  nanosec[NANOS_REGV],
-  nanosec[NANOS_RANGE],
-  nanosec[NANOS_LOAD],
-  nanosec[NANOS_EXEC],
-  nanosec[NANOS_TOTAL]);
-}
-struct dma_ctrl {
-  Uint ZDMA_ERR_CTRL;
-  Uint dmy0[63];
-  Uint ZDMA_CH_ISR;
-  Uint ZDMA_CH_IMR;
-  Uint ZDMA_CH_IEN;
-  Uint ZDMA_CH_IDS;
-  Uint ZDMA_CH_CTRL0;
-  Uint ZDMA_CH_CTRL1;
-  Uint ZDMA_CH_FCI;
-  Uint ZDMA_CH_STATUS;
-  Uint ZDMA_CH_DATA_ATTR;
-  Uint ZDMA_CH_DSCR_ATTR;
-  Uint ZDMA_CH_SRC_DSCR_WORD0;
-  Uint ZDMA_CH_SRC_DSCR_WORD1;
-  Uint ZDMA_CH_SRC_DSCR_WORD2;
-  Uint ZDMA_CH_SRC_DSCR_WORD3;
-  Uint ZDMA_CH_DST_DSCR_WORD0;
-  Uint ZDMA_CH_DST_DSCR_WORD1;
-  Uint ZDMA_CH_DST_DSCR_WORD2;
-  Uint ZDMA_CH_DST_DSCR_WORD3;
-  Uint ZDMA_CH_WR_ONLY_WORD0;
-  Uint ZDMA_CH_WR_ONLY_WORD1;
-  Uint ZDMA_CH_WR_ONLY_WORD2;
-  Uint ZDMA_CH_WR_ONLY_WORD3;
-  Uint ZDMA_CH_SRC_START_LSB;
-  Uint ZDMA_CH_SRC_START_MSB;
-  Uint ZDMA_CH_DST_START_LSB;
-  Uint ZDMA_CH_DST_START_MSB;
-  Uint dmy1[9];
-  Uint ZDMA_CH_RATE_CTRL;
-  Uint ZDMA_CH_IRQ_SRC_ACCT;
-  Uint ZDMA_CH_IRQ_DST_ACCT;
-  Uint dmy2[26];
-  Uint ZDMA_CH_CTRL2;
-};
-enum { EXRING_IDLE, EXRING_BUSY};
-enum { LMRING_IDLE, LMRING_BUSY};
-enum { CMD_NOP, CMD_RESET, CMD_SCON, CMD_EXEC};
-struct reg_ctrl {
-  struct i0 {
-    Ull stat;
-    Uint mcid;
-    Uint dmy0;
-    Uint cmd;
-    Uint dmy1;
-    Ull dmy2;
-    Ull adtr;
-    Ull dmy3;
-    Ull csel;
-    Ull dmrp;
-    Ull dmy4[1016];
-    struct conf conf[64][4];
-    struct {Ull br[4];} breg[64][4];
-    struct {Uint ea0b ;
-        Uint ea0o ;
-        Uint ea1b ;
-        Uint ea1o ;
-        Uint top ;
-        Uint bot ;
-        Ull dmy6 ;} addr[64][4];
-    struct {Ull reg[4];} lddmrw[64][4];
-    Ull dmy5[3072];
-  } i[4];
-};
-enum { STATUS_IDLE, STATUS_CONF, STATUS_SCON, STATUS_REGV, STATUS_RANGE, STATUS_DRAIN, STATUS_LOAD, STATUS_START, STATUS_EXEC, STATUS_TERM };
-struct emax6 {
-  volatile Ull dma_ctrl;
-  volatile Ull reg_ctrl;
-  Ull status : 4;
-  Ull csel_save : 2;
-  Ull last_conf ;
-  Ull lmmic : 1;
-  Ull lmmio : 1;
-  Ull mapdist : 6;
-  Ull lastdist : 6;
-  struct lmmi lmmi[4][8][4][2];
-  Ull lmmi_bitmap[4];
-  Uchar lmmd[8][4];
-  Ull plist ;
-  Ull blkcount : 7;
-  Ull blksize : 9;
-  Ull lmmblktop ;
-  Ull lmmblklen ;
-  Ull rw ;
-  Ull ddraddr ;
-  Ull lmmaddr ;
-  Ull dmalen ;
-  Ull fsm_busy : 1;
-  Ull lmwd_valid : 1;
-  Ull tcureg_valid : 1;
-  Ull tcureg_ready : 1;
-  Ull tcureg_last : 1;
-  Ull tcureg_term : 1;
-  Ull tcureg[4] ;
-} emax6;
-volatile struct emax_info {
-  Ull dma_phys;
-  Ull dma_vadr;
-  Ull dma_mmap;
-  Ull reg_phys;
-  Ull reg_vadr;
-  Ull reg_mmap;
-  Ull lmm_phys;
-  Ull lmm_vadr;
-  Ull lmm_mmap;
-  Ull ddr_phys;
-  Ull ddr_vadr;
-  Ull ddr_mmap;
-  int driver_use_1;
-  int driver_use_2;
-} emax_info;
-extern int stat (const char *__restrict __file,
-   struct stat *__restrict __buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int fstat (int __fd, struct stat *__buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int fstatat (int __fd, const char *__restrict __file,
-      struct stat *__restrict __buf, int __flag)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern int lstat (const char *__restrict __file,
-    struct stat *__restrict __buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int chmod (const char *__file, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int lchmod (const char *__file, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int fchmod (int __fd, __mode_t __mode) __attribute__ ((__nothrow__ , __leaf__));
-extern int fchmodat (int __fd, const char *__file, __mode_t __mode,
-       int __flag)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2))) ;
-extern __mode_t umask (__mode_t __mask) __attribute__ ((__nothrow__ , __leaf__));
-extern int mkdir (const char *__path, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int mkdirat (int __fd, const char *__path, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int mknod (const char *__path, __mode_t __mode, __dev_t __dev)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int mknodat (int __fd, const char *__path, __mode_t __mode,
-      __dev_t __dev) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int mkfifo (const char *__path, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int mkfifoat (int __fd, const char *__path, __mode_t __mode)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int utimensat (int __fd, const char *__path,
-        const struct timespec __times[2],
-        int __flags)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int futimens (int __fd, const struct timespec __times[2]) __attribute__ ((__nothrow__ , __leaf__));
-extern int __fxstat (int __ver, int __fildes, struct stat *__stat_buf)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3)));
-extern int __xstat (int __ver, const char *__filename,
-      struct stat *__stat_buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern int __lxstat (int __ver, const char *__filename,
-       struct stat *__stat_buf) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern int __fxstatat (int __ver, int __fildes, const char *__filename,
-         struct stat *__stat_buf, int __flag)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3, 4)));
-extern int __xmknod (int __ver, const char *__path, __mode_t __mode,
-       __dev_t *__dev) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
-extern int __xmknodat (int __ver, int __fd, const char *__path,
-         __mode_t __mode, __dev_t *__dev)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (3, 5)));
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long int uint64_t;
-typedef signed char int_least8_t;
-typedef short int int_least16_t;
-typedef int int_least32_t;
-typedef long int int_least64_t;
-typedef unsigned char uint_least8_t;
-typedef unsigned short int uint_least16_t;
-typedef unsigned int uint_least32_t;
-typedef unsigned long int uint_least64_t;
-typedef signed char int_fast8_t;
-typedef long int int_fast16_t;
-typedef long int int_fast32_t;
-typedef long int int_fast64_t;
-typedef unsigned char uint_fast8_t;
-typedef unsigned long int uint_fast16_t;
-typedef unsigned long int uint_fast32_t;
-typedef unsigned long int uint_fast64_t;
-typedef unsigned long int uintptr_t;
-typedef long int intmax_t;
-typedef unsigned long int uintmax_t;
-extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
-       size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memmove (void *__dest, const void *__src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memccpy (void *__restrict __dest, const void *__restrict __src,
-        int __c, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int memcmp (const void *__s1, const void *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void *memchr (const void *__s, int __c, size_t __n)
-      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strncpy (char *__restrict __dest,
-        const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strcat (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strncat (char *__restrict __dest, const char *__restrict __src,
-        size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strcmp (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strncmp (const char *__s1, const char *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strcoll (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern size_t strxfrm (char *__restrict __dest,
-         const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern int strcoll_l (const char *__s1, const char *__s2, __locale_t __l)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2, 3)));
-extern size_t strxfrm_l (char *__dest, const char *__src, size_t __n,
-    __locale_t __l) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
-extern char *strdup (const char *__s)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
-extern char *strndup (const char *__string, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__nonnull__ (1)));
-extern char *strchr (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strrchr (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern size_t strcspn (const char *__s, const char *__reject)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern size_t strspn (const char *__s, const char *__accept)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strpbrk (const char *__s, const char *__accept)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strstr (const char *__haystack, const char *__needle)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strtok (char *__restrict __s, const char *__restrict __delim)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern char *__strtok_r (char *__restrict __s,
-    const char *__restrict __delim,
-    char **__restrict __save_ptr)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern char *strtok_r (char *__restrict __s, const char *__restrict __delim,
-         char **__restrict __save_ptr)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 3)));
-extern size_t strlen (const char *__s)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern size_t strnlen (const char *__string, size_t __maxlen)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *strerror (int __errnum) __attribute__ ((__nothrow__ , __leaf__));
-extern int strerror_r (int __errnum, char *__buf, size_t __buflen) __asm__ ("" "__xpg_strerror_r") __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
-extern char *strerror_l (int __errnum, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
-extern void __bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern void bcopy (const void *__src, void *__dest, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern void bzero (void *__s, size_t __n) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int bcmp (const void *__s1, const void *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *index (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern char *rindex (const char *__s, int __c)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1)));
-extern int ffs (int __i) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern int strcasecmp (const char *__s1, const char *__s2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern int strncasecmp (const char *__s1, const char *__s2, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strsep (char **__restrict __stringp,
-       const char *__restrict __delim)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *strsignal (int __sig) __attribute__ ((__nothrow__ , __leaf__));
-extern char *__stpcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *stpcpy (char *__restrict __dest, const char *__restrict __src)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *__stpncpy (char *__restrict __dest,
-   const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-extern char *stpncpy (char *__restrict __dest,
-        const char *__restrict __src, size_t __n)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1, 2)));
-struct dirent
-  {
-    __ino_t d_ino;
-    __off_t d_off;
-    unsigned short int d_reclen;
-    unsigned char d_type;
-    char d_name[256];
-  };
-enum
-  {
-    DT_UNKNOWN = 0,
-    DT_FIFO = 1,
-    DT_CHR = 2,
-    DT_DIR = 4,
-    DT_BLK = 6,
-    DT_REG = 8,
-    DT_LNK = 10,
-    DT_SOCK = 12,
-    DT_WHT = 14
-  };
-typedef struct __dirstream DIR;
-extern DIR *opendir (const char *__name) __attribute__ ((__nonnull__ (1)));
-extern DIR *fdopendir (int __fd);
-extern int closedir (DIR *__dirp) __attribute__ ((__nonnull__ (1)));
-extern struct dirent *readdir (DIR *__dirp) __attribute__ ((__nonnull__ (1)));
-extern int readdir_r (DIR *__restrict __dirp,
-        struct dirent *__restrict __entry,
-        struct dirent **__restrict __result)
-     __attribute__ ((__nonnull__ (1, 2, 3))) __attribute__ ((__deprecated__));
-extern void rewinddir (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern void seekdir (DIR *__dirp, long int __pos) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern long int telldir (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int dirfd (DIR *__dirp) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (1)));
-extern int scandir (const char *__restrict __dir,
-      struct dirent ***__restrict __namelist,
-      int (*__selector) (const struct dirent *),
-      int (*__cmp) (const struct dirent **,
-      const struct dirent **))
-     __attribute__ ((__nonnull__ (1, 2)));
-extern int alphasort (const struct dirent **__e1,
-        const struct dirent **__e2)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
-extern __ssize_t getdirentries (int __fd, char *__restrict __buf,
-    size_t __nbytes,
-    __off_t *__restrict __basep)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2, 4)));
-static int filter(struct dirent *dir)
-{
-  return dir->d_name[0] == '.' ? 0 : 1;
-}
-static void trim(char *d_name)
-{
-  char *p = strchr(d_name, '\n');
-  if (p != ((void *)0)) *p = '\0';
-}
-static int is_dma_dev(char *d_name)
-{
-  char path[32];
-  char name[32];
-  FILE *fp;
-  sprintf(path, "/sys/class/uio/%s/name", d_name);
-  if ((fp = fopen(path, "r")) == ((void *)0)) return 0;
-  if (fgets(name, sizeof(name), fp) == ((void *)0)) {
-    fclose(fp);
-    return 0;
-  }
-  fclose(fp);
-  if (strcmp(name, "dma\n") != 0) return 0;
-  return 1;
-}
-static int get_reg_size(char *d_name)
-{
-  char path[32];
-  char size[32];
-  FILE *fp;
-  sprintf(path, "/sys/class/uio/%s/maps/map0/size", d_name);
-  if ((fp = fopen(path, "r")) == ((void *)0)) return 0;
-  if (fgets(size, sizeof(size), fp) == ((void *)0)) {
-    fclose(fp);
-    return 0;
-  }
-  fclose(fp);
-  return strtoull(size, ((void *)0), 16);
-}
-emax6_open()
-{
-  struct dirent **namelist;
-  int num_dirs, dir;
-  int reg_size;
-  int fd_dma_found = 0;
-  char path[1024];
-  int fd_dma;
-  int fd_reg;
-  int fd_ddr;
-  if ((fd_reg = open("/dev/uio8", 02 | 04010000)) == -1) {
-    printf("open(\"/dev/uio8\", ...) failed.\n");
-    return (((void *)0));
-  }
-  if ((fd_ddr = open("/dev/uio9", 02 | 04010000)) == -1) {
-    printf("open(\"/dev/uio9\", ...) failed.\n");
-    return (((void *)0));
-  }
-  emax_info.reg_phys = 0x0000000400000000LL;
-  emax_info.reg_mmap = (Ull)mmap(((void *)0), 0x0000000100000000LL, 0x1|0x2, 0x01, fd_reg, 0);
-  if (emax_info.reg_mmap == ((void *) -1)) {
-    printf("fd_reg mmap() failed.\n");
-    return (((void *)0));
-  }
-  emax_info.lmm_phys = 0x0000000480000000LL;
-  emax_info.lmm_mmap = emax_info.reg_mmap + (0x0000000480000000LL - 0x0000000400000000LL);
-  emax_info.ddr_phys = 0x0000000800000000LL;
-  emax_info.ddr_mmap = (Ull)mmap(((void *)0), 0x0000000080000000LL, 0x1|0x2, 0x01, fd_ddr, 0);
-  if (emax_info.ddr_mmap == ((void *) -1)) {
-    printf("fd_ddr mmap() failed.\n");
-    return (((void *)0));
-  }
-  if ((num_dirs = scandir("/sys/class/uio", &namelist, filter, alphasort)) == -1)
-    return (((void *)0));
-  for (dir = 0; dir < num_dirs; ++dir) {
-    trim(namelist[dir]->d_name);
-    if (!is_dma_dev(namelist[dir]->d_name)) {
-      free(namelist[dir]);
-      continue;
-    }
-    if ((reg_size = get_reg_size(namelist[dir]->d_name)) == 0) {
-      free(namelist[dir]);
-      continue;
-    }
-    sprintf(path, "/dev/%s", namelist[dir]->d_name);
-    free(namelist[dir]);
-    if ((fd_dma = open(path, 02 | 04010000)) == -1)
-      continue;
-    emax_info.dma_phys = 0x00000000fd500000LL;
-    emax_info.dma_mmap = (Ull)mmap(((void *)0), reg_size, 0x1|0x2, 0x01, fd_dma, 0);
-    close(fd_dma);
-    if (emax_info.dma_mmap == ((void *) -1))
-      continue;
-    fd_dma_found++;
-    break;
-  }
-  free(namelist);
-  if (fd_dma_found) {
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_ERR_CTRL = 0x00000001;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_ISR = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IMR = 0x00000FFF;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IEN = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IDS = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL0 = 0x00000080;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL1 = 0x000003FF;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_FCI = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_STATUS = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DATA_ATTR = 0x04C3D30F;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DSCR_ATTR = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD0 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD1 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD2 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_DSCR_WORD3 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD0 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD1 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD2 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_DSCR_WORD3 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD0 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD1 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD2 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_WR_ONLY_WORD3 = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_START_LSB = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_SRC_START_MSB = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_START_LSB = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_DST_START_MSB = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_RATE_CTRL = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IRQ_SRC_ACCT = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_IRQ_DST_ACCT = 0x00000000;
-    ((struct dma_ctrl*)emax_info.dma_mmap)->ZDMA_CH_CTRL2 = 0x00000000;
-  }
-  return (1);
-}
-emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
-{
-  int k, m = (i+lastdist)%8;
-  int lmmc_topz;
-  int lmmc_ofsz;
-  int lmmo_stat;
-  int lmmc_stat;
-  int lmm_ready;
-  int lmm_readz;
-  int mark;
-  if ((mode==0 && phase == 1) || phase == 2 || phase == 3) {
-    lmmc_topz = (emax6.lmmi[c][i][j][emax6.lmmic].top == 0);
-    lmmc_ofsz = (emax6.lmmi[c][i][j][emax6.lmmic].ofs == 0);
-    lmmo_stat = ((emax6.lmmi[c][m][j][emax6.lmmio].v)<<3)
-         |(emax6.lmmi[c][m][j][emax6.lmmio].rw<<2)|(emax6.lmmi[c][m][j][emax6.lmmio].f<<1)|(emax6.lmmi[c][m][j][emax6.lmmio].p);
-    lmmc_stat = ((emax6.lmmi[c][i][j][emax6.lmmic].v & ~emax6.lmmi[c][i][j][emax6.lmmic].hcopy & ~emax6.lmmi[c][i][j][emax6.lmmic].vcopy & ((emax6.lmmi[c][i][j][emax6.lmmic].f&emax6.lmmi[c][i][j][emax6.lmmic].p) | !lmmc_topz))<<3)
-         |(emax6.lmmi[c][i][j][emax6.lmmic].rw<<2)|(emax6.lmmi[c][i][j][emax6.lmmic].f<<1)|(emax6.lmmi[c][i][j][emax6.lmmic].p);
-    lmm_ready = (emax6.lmmi[c][m][j][emax6.lmmio].v && emax6.lmmi[c][m][j][emax6.lmmio].blk == emax6.lmmi[c][i][j][emax6.lmmic].blk
-                                       && emax6.lmmi[c][m][j][emax6.lmmio].len == emax6.lmmi[c][i][j][emax6.lmmic].len
-                                                     && emax6.lmmi[c][m][j][emax6.lmmio].top == emax6.lmmi[c][i][j][emax6.lmmic].top);
-    lmm_readz = (emax6.lmmi[c][m][j][emax6.lmmio].v && emax6.lmmi[c][m][j][emax6.lmmio].blk == emax6.lmmi[c][i][j][emax6.lmmic].blk
-                                       && emax6.lmmi[c][m][j][emax6.lmmio].len == emax6.lmmi[c][i][j][emax6.lmmic].len
-                                       &&(emax6.lmmi[c][m][j][emax6.lmmio].top+(Sll)(int)emax6.lmmi[c][m][j][emax6.lmmio].ofs) == emax6.lmmi[c][i][j][emax6.lmmic].top);
-  }
-  if (mode==0 && phase == 1) {
-    if (lmmo_stat==12 && lmmc_stat!=13 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
-    else if (lmmo_stat==14 && (emax6.lmmd[m][j]&1<<c)) { mark = 1; emax6.lmmd[m][j] &= ~(1<<c);}
-    else { mark = 0; }
-  }
-  else if (mode==1 && phase == 1) {
-    if ( (emax6.lmmd[i][j]&1<<c)) { mark = 1; emax6.lmmd[i][j] &= ~(1<<c);}
-    else { mark = 0; }
-  }
-  else if (phase == 2) {
-    if (lmmc_stat== 8 && !lmm_ready) { mark = 1; }
-    else if (lmmc_stat== 9 && !lmmc_ofsz && !lmm_readz) { mark = 1; }
-    else if (lmmc_stat==10) { mark = 1; }
-    else if (lmmc_stat==14) { mark = 1; }
-    else { mark = 0; }
-  }
-  else if (phase == 3) {
-    if (lmmc_stat== 9 ) { mark = 1; }
-    else if (lmmc_stat==12 || lmmc_stat==14 ) { mark = 0; emax6.lmmd[i][j] |= (1<<c);}
-    else if (lmmc_stat==13) { mark = (emax6.lmmd[m][j]&1<<c); emax6.lmmd[m][j] |= ((!lastdist)<<c);}
-    else { mark = 0; }
-  }
-  if (mark) {
-    if (phase == 1) {
-      emax6.rw = 1;
-      emax6.ddraddr = (mode==0)?emax6.lmmi[c][m][j][emax6.lmmio].top:emax6.lmmi[c][i][j][emax6.lmmic].top;
-      emax6.lmmaddr = emax6.ddraddr;
-      emax6.dmalen = (mode==0)?emax6.lmmi[c][m][j][emax6.lmmio].len:emax6.lmmi[c][i][j][emax6.lmmic].len;
-    }
-    else if (phase == 3 && emax6.lmmi[c][i][j][emax6.lmmic].rw==1) {
-      emax6.rw = 1;
-      emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs;
-      emax6.lmmaddr = emax6.ddraddr;
-      emax6.dmalen = emax6.lmmi[c][i][j][emax6.lmmic].len;
-    }
-    else if (phase == 2
-   ||(phase == 3 && emax6.lmmi[c][i][j][emax6.lmmic].rw==0)) {
-      emax6.rw = 0;
-      if (emax6.lmmi[c][i][j][emax6.lmmic].blk==0) {
- if (phase == 2)
-   emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top;
- else
-   emax6.ddraddr = emax6.lmmi[c][i][j][emax6.lmmic].top+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs;
- emax6.lmmaddr = emax6.ddraddr;
- emax6.dmalen = emax6.lmmi[c][i][j][emax6.lmmic].len;
- emax6.blksize = 0;
-      }
-      else {
- if (phase == 2)
-   emax6.plist = emax6.lmmi[c][i][j][emax6.lmmic].top+emax6.blkcount*8;
- else
-   emax6.plist = emax6.lmmi[c][i][j][emax6.lmmic].top+emax6.blkcount*8+(Sll)(int)emax6.lmmi[c][i][j][emax6.lmmic].ofs;
- emax6.blksize = 32<<emax6.lmmi[c][i][j][emax6.lmmic].blk;
- if (emax6.blkcount==0) {
-   emax6.lmmblktop = 0;
-   emax6.lmmblklen = emax6.lmmi[c][i][j][emax6.lmmic].len;
- }
- emax6.ddraddr = emax6.plist;
- emax6.lmmaddr = emax6.lmmblktop;
- emax6.dmalen = (emax6.lmmblklen<emax6.blksize)?emax6.lmmblklen:emax6.blksize-1;
- emax6.lmmblktop += emax6.blksize*sizeof(Ull);
- emax6.lmmblklen = (emax6.lmmblklen<emax6.blksize)?0:(emax6.lmmblklen-emax6.blksize);
- if (emax6.lmmblklen==0)
-   emax6.blkcount = 0;
- else
-   emax6.blkcount++;
-      }
-    }
-    emax6_kick_dma(j);
-  }
-}
-emax6_kick_dma(int j)
-{
-  int status;
-  Ull dst, src;
-  Uint pio_words, pio_loop, pio_i, pio_b4, pio_b8, pio_b16, pio_e4, pio_e8, pio_e16;
-  if (!emax6.ddraddr)
-    return (0);
-  if (j != emax6.csel_save) {
-    ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].csel = j;
-    emax6.csel_save = j;
-  }
-  if (emax6.dmalen > 0) {
-    if (emax6.rw == 0) {
-      do {
- status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
-      } while (status != 0 && status != 3);
-      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD0) = emax6.ddraddr-emax_info.ddr_mmap+emax_info.ddr_phys;
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
-      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD0) = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys;
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_CTRL2 = 1;
-      do {
- status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
-      } while (status != 0 && status != 3);
-    }
-    else {
-      do {
- status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
-      } while (status != 0 && status != 3);
-      ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = (1LL<<63)|((emax6.dmalen+1)*sizeof(Uint)<<40)|(emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys);
-      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD0) = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_phys;
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_SRC_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
-      *(Ull*)&(((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD0) = emax6.ddraddr-emax_info.ddr_mmap+emax_info.ddr_phys;
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_DST_DSCR_WORD2 = (emax6.dmalen+1)*sizeof(Uint);
-      ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_CTRL2 = 1;
-      do {
- status = ((struct dma_ctrl*)emax6.dma_ctrl)->ZDMA_CH_STATUS & 3;
-      } while (status != 0 && status != 3);
-      ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = (0LL<<63);
-    }
-    switch (status) {
-    case 0:
-      break;
-    default:
-      printf("emax6_check_lmmi_and_dma(): ZDMA_CH_STATUS=%d (malfunction)\n", status);
-      return (0);
-    }
-  }
-  else {
-    if (emax6.rw == 0) {
-      dst = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_mmap;
-      src = emax6.ddraddr;
-    }
-    else {
-      dst = emax6.ddraddr;
-      src = emax6.lmmaddr-emax_info.ddr_mmap+emax_info.lmm_mmap;
-    }
-    *(Uint*)dst = *(Uint*)src;
-  }
-  return (0);
-}
-emax6_pre_with_keep_cache()
-{
-}
-emax6_pre_with_drain_cache()
-{
-}
-void
-cex(Uint op_cx, Ull *ex, Ull c3, Ull c2, Ull c1, Ull c0, Ushort pattern)
-{
-  Uint index1, index0;
-  switch (op_cx) {
-  case 0x00:
-    if (ex)
-      *ex = 3;
-    break;
-  case 0x01:
-    index1 = ((c3>>32&1)<<3)|((c2>>32&1)<<2)|((c1>>32&1)<<1)|(c0>>32&1);
-    index0 = ((c3 &1)<<3)|((c2 &1)<<2)|((c1 &1)<<1)|(c0 &1);
-    *ex = 0;
-    if (pattern>>index1&1) *ex |= 2;
-    if (pattern>>index0&1) *ex |= 1;
-    break;
-  default:
-    printf("emax6lib: cex: undefined op_cx=%d\n", op_cx);
-    break;
-  }
-}
-void
-ex4(Uint op_ex1, Ull *d, Ull *r1, Uint exp1, Ull *r2, Uint exp2, Ull *r3, Uint exp3, Uint op_ex2, Ull *r4, Uint op_ex3, Ull *r5)
-{
-  switch (op_ex1) {
-  case 0x08:
-    exe(op_ex1, (d+0), (Ull)r1, exp1, *(r2+0), exp2, *(r3+0), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
-    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+1), exp2, *(r3+1), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
-    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+2), exp2, *(r3+2), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
-    exe(op_ex1, (d+0), *(d+0), exp1, *(r2+3), exp2, *(r3+3), exp3, 0x00, (Ull)r4, 0x00, (Ull)r5);
-    break;
-  case 0x00:
-  case 0x10:
-  case 0x11:
-  case 0x12:
-  case 0x13:
-  case 0x14:
-  case 0x15:
-  case 0x16:
-  case 0x17:
-    exe(op_ex1, (d+0), *(r1+0), exp1, *(r2+0), exp2, *(r3+0), exp3, 0x00, 0LL, 0x00, 0LL);
-    exe(op_ex1, (d+1), *(r1+1), exp1, *(r2+1), exp2, *(r3+1), exp3, 0x00, 0LL, 0x00, 0LL);
-    exe(op_ex1, (d+2), *(r1+2), exp1, *(r2+2), exp2, *(r3+2), exp3, 0x00, 0LL, 0x00, 0LL);
-    exe(op_ex1, (d+3), *(r1+3), exp1, *(r2+3), exp2, *(r3+3), exp3, 0x00, 0LL, 0x00, 0LL);
-    break;
-  default:
-    printf("emax6lib: ex4: undefined op_ex1=%d\n", op_ex1);
-    break;
-  }
-  switch (op_ex2) {
-  case 0x00:
-    break;
-  default:
-    printf("emax6lib: ex4: illegal op_ex2=%d\n", op_ex2);
-    break;
-  }
-  switch (op_ex3) {
-  case 0x00:
-    break;
-  default:
-    printf("emax6lib: ex4: illegal op_ex3=%d\n", op_ex3);
-    break;
-  }
-}
-typedef struct {
-  Uint f : 23;
-  Uint e : 8;
-  Uint s : 1;
-} f32bit;
-typedef struct {
-  Uint e : 6;
-  Uint b : 1;
-  Uint s : 1;
-} u7bit;
-typedef struct {
-  Uint e : 7;
-  Uint s : 1;
-} u8bit;
-typedef struct {
-  Uchar u[8];
-} u64bit;
-int convf32tou7(u7bit *out, float in)
-{
-  f32bit in_f32;
-  *(float*)&in_f32 = in;
-  out->s = in_f32.s;
-  out->b = 0;
-  in = ((in)> 0 ? (in) :-(in) );
-  if (in >= 1.0) out->e = 63;
-  else out->e = in*64;
-}
-int convf32tou8(u8bit *out, float in)
-{
-  f32bit in_f32;
-  *(float*)&in_f32 = in;
-  out->s = in_f32.s;
-  in = ((in)> 0 ? (in) :-(in) );
-  if (in >= 2.0) out->e = 127;
-  else out->e = in*64;
-}
-int convu8tof32(float *out, u8bit in)
-{
-  f32bit out_f32;
-  *(float*)&out_f32 = (float)in.e/64;
-  out_f32.s = in.s;
-  *out = *(float*)&out_f32;
-}
-Ull urand()
-{
-  static Ull urand_seed = 0xc3c3c3c3a5a5a5a5LL;
-  urand_seed ^= (urand_seed<<29);
-  urand_seed ^= (urand_seed>>27);
-  urand_seed ^= (urand_seed<<37);
-  return (urand_seed);
-}
-Ull shfl(Ull in)
-{
-  int i;
-  Ull r;
-  r = urand();
-  for (i=0; i<32; i++) {
-    if (r&(1LL<<(i+16)))
-      in = (in&~(1LL<<(i+32)|1LL<<i)) | (in>>i&1)<<(i+32) | (in>>(i+32)&1)<<i;
-  }
-  for (i=0; i<48; i++) {
-    if (r&(1LL<<(i+8)))
-      in = (in&~(1LL<<(i+16)|1LL<<i)) | (in>>i&1)<<(i+16) | (in>>(i+16)&1)<<i;
-  }
-  for (i=0; i<56; i++) {
-    if (r&(1LL<<(i+4)))
-      in = (in&~(1LL<<(i+ 8)|1LL<<i)) | (in>>i&1)<<(i+ 8) | (in>>(i+ 8)&1)<<i;
-  }
-  for (i=0; i<60; i++) {
-    if (r&(1LL<<(i+2)))
-      in = (in&~(1LL<<(i+ 4)|1LL<<i)) | (in>>i&1)<<(i+ 4) | (in>>(i+ 4)&1)<<i;
-  }
-  for (i=0; i<62; i++) {
-    if (r&(1LL<<(i+1)))
-      in = (in&~(1LL<<(i+ 2)|1LL<<i)) | (in>>i&1)<<(i+ 2) | (in>>(i+ 2)&1)<<i;
-  }
-  for (i=0; i<63; i++) {
-    if (r&(1LL<<(i+0)))
-      in = (in&~(1LL<<(i+ 1)|1LL<<i)) | (in>>i&1)<<(i+ 1) | (in>>(i+ 1)&1)<<i;
-  }
-  return(in);
-}
-int enable_x11;
-void x11_softu64_dist(float, float);
-int softu64(int stage, Ull *o1, Ull *o2, Ull *o3, Ull r1, Ull r2, Ull r3, Ull r4)
-{
-  int i, j;
-  Ull ss[8];
-  Ull s2[8], s3[8];
-  int pc, nc;
-  int os, oc;
-  switch (stage) {
-  case 1:
-    for (i=0; i<8; i++) {
-      ss[i] = (r2>>(i*8+7))&1 ^ (r3>>(i*8+7))&1;
-  int s2e = (r2>>(i*8))&0x7f; s2e = s2e<64?s2e:63;
-  int s3e = (r3>>(i*8))&0x7f; s3e = s3e<64?s3e:63;
-      s2[i] = (Ull)0x7fffffffffffffffLL>>(63-s2e);
-      s3[i] = (Ull)0x7fffffffffffffffLL>>(63-s3e);
-      s2[i] = shfl(s2[i]);
-      s3[i] = shfl(s3[i]);
-      o1[i] = s2[i] & s3[i];
-      o1[i] = ss[i]<<63|(o1[i]&0x7fffffffffffffffLL);
-    }
-    break;
-  case 2:
-    pc = 0;
-    nc = 0;
-    for (j=0; j<32; j++) {
-      for (i=0; i<8; i++) {
- if (!(o1[i]>>63)) pc += (o1[i] & (1LL<<j))!=0;
- else nc += (o1[i] & (1LL<<j))!=0;
-      }
-    }
-    pc = pc*(float)r4/32;
-    nc = nc*(float)r4/32;
-    *o2 = (Ull)(pc&0xffff)<<32 | (Ull)(nc&0xffff);
-    break;
-  case 3:
-    pc = *o2>>32&0xffff;
-    nc = *o2 &0xffff;
-    if (!(r1&0x80)) pc += (r1&0x7f);
-    else nc += (r1&0x7f);
-    if (pc >= nc) {
-      os = 0x00;
-      oc = pc-nc;
-    }
-    else {
-      os = 0x80;
-      oc = nc-pc;
-    }
-    if (oc >= 128) oc = 127;
-    *o3 = os|oc;
-    break;
-  }
-  return (0);
-}
-int
-exe(Uint op_ex1, Ull *d, Ull r1, Uint exp1, Ull r2, Uint exp2, Ull r3, Uint exp3, Uint op_ex2, Ull r4, Uint op_ex3, Ull r5)
-{
-  union { Uint i; float f; } f3, f2, f1, f0;
-  Ull t3, t2, t1, t0;
-  Ull c1, c0;
-  Ull ex1_outd;
-  Ull ex1_outd_sfma[8];
-  Ull ex2_outd;
-  int retval = 0;
-  switch (exp1) {
-  case 3: break;
-  case 2: r1 = (r1>>8&0x00ff000000ff0000LL) | (r1>>16&0x000000ff000000ffLL); break;
-  case 1: r1 = (r1<<8&0x00ff000000ff0000LL) | (r1 &0x000000ff000000ffLL); break;
-  }
-  switch (exp2) {
-  case 3: break;
-  case 2: r2 = (r2>>8&0x00ff000000ff0000LL) | (r2>>16&0x000000ff000000ffLL); break;
-  case 1: r2 = (r2<<8&0x00ff000000ff0000LL) | (r2 &0x000000ff000000ffLL); break;
-  }
-  switch (exp3) {
-  case 3: break;
-  case 2: r3 = (r3>>8&0x00ff000000ff0000LL) | (r3>>16&0x000000ff000000ffLL); break;
-  case 1: r3 = (r3<<8&0x00ff000000ff0000LL) | (r3 &0x000000ff000000ffLL); break;
-  }
-  switch (op_ex1) {
-  case 0x00:
-    ex1_outd = r1;
-    break;
-  case 0x01:
-    t0 = (r1&0x00000000ffffffffLL)+(r2&0x00000000ffffffffLL);
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = t0;
-    if (t0==0) retval = 1;
-    break;
-  case 0x02:
-    t0 = (r1&0x00000000ffffffffLL)+(r2&0x00000000ffffffffLL);
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = t0;
-    if (t0==0) retval = 1;
-    break;
-  case 0x08:
-    softu64(1, ex1_outd_sfma, ((void *)0), ((void *)0), r1, r2, r3, r4);
-    break;
-  case 0x10:
-  case 0x11:
-    f1.i = (Uint)(r1>>32);
-    f2.i = (Uint)(r2>>32)^(op_ex1==0x10?0:0x80000000);
-    f3.i = (Uint)(r3>>32);
-    f0.f = f1.f + (f2.f * f3.f);
-    t2 = f0.i;
-    f1.i = (Uint)(r1);
-    f2.i = (Uint)(r2)^(op_ex1==0x10?0:0x80000000);
-    f3.i = (Uint)(r3);
-    f0.f = f1.f + (f2.f * f3.f);
-    t0 = f0.i;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x12:
-    f1.i = (Uint)(r1>>32);
-    f2.i = (Uint)(r2>>32);
-    f0.f = f1.f + f2.f;
-    t2 = f0.i;
-    f1.i = (Uint)(r1);
-    f2.i = (Uint)(r2);
-    f0.f = f1.f + f2.f;
-    t0 = f0.i;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x13:
-    f1.i = (Uint)(r1>>32);
-    f2.i = (Uint)(r2>>32);
-    f0.f = f1.f * f2.f;
-    t2 = f0.i;
-    f1.i = (Uint)(r1);
-    f2.i = (Uint)(r2);
-    f0.f = f1.f * f2.f;
-    t0 = f0.i;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x14:
-    t2 = (r1>>32&0x00000000ffffffffLL)+((r2>>32&0x00000000ffffffffLL)+(r3>>32&0x00000000ffffffffLL));
-    t2 &= 0x00000000ffffffffLL;
-    t0 = (r1 &0x00000000ffffffffLL)+((r2 &0x00000000ffffffffLL)+(r3 &0x00000000ffffffffLL));
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x15:
-    t2 = (r1>>32&0x00000000ffffffffLL)-((r2>>32&0x00000000ffffffffLL)+(r3>>32&0x00000000ffffffffLL));
-    t2 &= 0x00000000ffffffffLL;
-    t0 = (r1 &0x00000000ffffffffLL)-((r2 &0x00000000ffffffffLL)+(r3 &0x00000000ffffffffLL));
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x16:
-    t2 = (r1>>32&0x00000000ffffffffLL)+(r2>>32&0x00000000ffffffffLL);
-    t2 &= 0x00000000ffffffffLL;
-    t0 = (r1 &0x00000000ffffffffLL)+(r2 &0x00000000ffffffffLL);
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x17:
-    t2 = (r1>>32&0x00000000ffffffffLL)-(r2>>32&0x00000000ffffffffLL);
-    t2 &= 0x00000000ffffffffLL;
-    t0 = (r1 &0x00000000ffffffffLL)-(r2 &0x00000000ffffffffLL);
-    t0 &= 0x00000000ffffffffLL;
-    ex1_outd = (t2<<32)|(t0);
-    break;
-  case 0x18:
-    c1 = (r1>>32&0x00000000ffffffffLL) == (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) == (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x19:
-    c1 = (r1>>32&0x00000000ffffffffLL) != (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) != (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x1a:
-    c1 = (r1>>32&0x00000000ffffffffLL) < (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) < (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x1b:
-    c1 = (r1>>32&0x00000000ffffffffLL) <= (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) <= (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x1c:
-    c1 = (r1>>32&0x00000000ffffffffLL) > (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) > (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x1d:
-    c1 = (r1>>32&0x00000000ffffffffLL) >= (r2>>32&0x00000000ffffffffLL);
-    c0 = (r1 &0x00000000ffffffffLL) >= (r2 &0x00000000ffffffffLL);
-    ex1_outd = (c1<<32)|c0;
-    break;
-  case 0x1e:
-    c1 = r1>>32&1;
-    c0 = r1 &1;
-    t2 = c1 ? (r2&0xffffffff00000000LL) : (r3&0xffffffff00000000LL);
-    t0 = c0 ? (r2&0x00000000ffffffffLL) : (r3&0x00000000ffffffffLL);
-    ex1_outd = t2 | t0;
-    break;
-  case 0x20:
-    t3 = (r1>>48&0x000000000000ffffLL)+((r2>>48&0x000000000000ffffLL)+(r3>>48&0x000000000000ffffLL));
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t2 = (r1>>32&0x000000000000ffffLL)+((r2>>32&0x000000000000ffffLL)+(r3>>32&0x000000000000ffffLL));
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t1 = (r1>>16&0x000000000000ffffLL)+((r2>>16&0x000000000000ffffLL)+(r3>>16&0x000000000000ffffLL));
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    t0 = (r1 &0x000000000000ffffLL)+((r2 &0x000000000000ffffLL)+(r3 &0x000000000000ffffLL));
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x21:
-    t3 = (r1>>48&0x000000000000ffffLL)+(r2>>48&0x000000000000ffffLL);
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t2 = (r1>>32&0x000000000000ffffLL)+(r2>>32&0x000000000000ffffLL);
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t1 = (r1>>16&0x000000000000ffffLL)+(r2>>16&0x000000000000ffffLL);
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    t0 = (r1 &0x000000000000ffffLL)+(r2 &0x000000000000ffffLL);
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x22:
-    t3 = (r1>>48&0x000000000000ffffLL)-((r2>>48&0x000000000000ffffLL)+(r3>>48&0x000000000000ffffLL));
-    if (t3 > 0x000000000000ffffLL) t3 = 0x0000000000000000LL;
-    t2 = (r1>>32&0x000000000000ffffLL)-((r2>>32&0x000000000000ffffLL)+(r3>>32&0x000000000000ffffLL));
-    if (t2 > 0x000000000000ffffLL) t2 = 0x0000000000000000LL;
-    t1 = (r1>>16&0x000000000000ffffLL)-((r2>>16&0x000000000000ffffLL)+(r3>>16&0x000000000000ffffLL));
-    if (t1 > 0x000000000000ffffLL) t1 = 0x0000000000000000LL;
-    t0 = (r1 &0x000000000000ffffLL)-((r2 &0x000000000000ffffLL)+(r3 &0x000000000000ffffLL));
-    if (t0 > 0x000000000000ffffLL) t0 = 0x0000000000000000LL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x23:
-    t3 = (r1>>48&0x000000000000ffffLL)-(r2>>48&0x000000000000ffffLL);
-    if (t3 > 0x000000000000ffffLL) t3 = 0x0000000000000000LL;
-    t2 = (r1>>32&0x000000000000ffffLL)-(r2>>32&0x000000000000ffffLL);
-    if (t2 > 0x000000000000ffffLL) t2 = 0x0000000000000000LL;
-    t1 = (r1>>16&0x000000000000ffffLL)-(r2>>16&0x000000000000ffffLL);
-    if (t1 > 0x000000000000ffffLL) t1 = 0x0000000000000000LL;
-    t0 = (r1 &0x000000000000ffffLL)-(r2 &0x000000000000ffffLL);
-    if (t0 > 0x000000000000ffffLL) t0 = 0x0000000000000000LL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x24:
-    t3 = (r1>>48&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t2 = (r1>>32&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t1 = (r1>>16&0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    t0 = (r1 &0x00000000000007ffLL)*(r2&0x00000000000001ffLL);
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x25:
-    ex1_outd = ((r1&0x000000ff00000000LL)<<24) | ((r2&0x000000ff00000000LL)<<16) | ((r3&0x000000ff00000000LL)<<8)
-             | ((r1&0x00000000000000ffLL)<<24) | ((r2&0x00000000000000ffLL)<<16) | ((r3&0x00000000000000ffLL)<<8);
-    break;
-  case 0x26:
-    t3 = (r1>>48&0x000000000000ffffLL) + ((r2>>56&0x00000000000000ffLL)<(r3>>56&0x00000000000000ffLL)?(r3>>56&0x00000000000000ffLL)-(r2>>56&0x00000000000000ffLL):(r2>>56&0x00000000000000ffLL)-(r3>>56&0x00000000000000ffLL)) + ((r2>>48&0x00000000000000ffLL)<(r3>>48&0x00000000000000ffLL)?(r3>>48&0x00000000000000ffLL)-(r2>>48&0x00000000000000ffLL):(r2>>48&0x00000000000000ffLL)-(r3>>48&0x00000000000000ffLL));
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t2 = (r1>>32&0x000000000000ffffLL) + ((r2>>40&0x00000000000000ffLL)<(r3>>40&0x00000000000000ffLL)?(r3>>40&0x00000000000000ffLL)-(r2>>40&0x00000000000000ffLL):(r2>>40&0x00000000000000ffLL)-(r3>>40&0x00000000000000ffLL)) + ((r2>>32&0x00000000000000ffLL)<(r3>>32&0x00000000000000ffLL)?(r3>>32&0x00000000000000ffLL)-(r2>>32&0x00000000000000ffLL):(r2>>32&0x00000000000000ffLL)-(r3>>32&0x00000000000000ffLL));
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t1 = (r1>>16&0x000000000000ffffLL) + ((r2>>24&0x00000000000000ffLL)<(r3>>24&0x00000000000000ffLL)?(r3>>24&0x00000000000000ffLL)-(r2>>24&0x00000000000000ffLL):(r2>>24&0x00000000000000ffLL)-(r3>>24&0x00000000000000ffLL)) + ((r2>>16&0x00000000000000ffLL)<(r3>>16&0x00000000000000ffLL)?(r3>>16&0x00000000000000ffLL)-(r2>>16&0x00000000000000ffLL):(r2>>16&0x00000000000000ffLL)-(r3>>16&0x00000000000000ffLL));
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    t0 = (r1 &0x000000000000ffffLL) + ((r2>> 8&0x00000000000000ffLL)<(r3>> 8&0x00000000000000ffLL)?(r3>> 8&0x00000000000000ffLL)-(r2>> 8&0x00000000000000ffLL):(r2>> 8&0x00000000000000ffLL)-(r3>> 8&0x00000000000000ffLL)) + ((r2 &0x00000000000000ffLL)<(r3 &0x00000000000000ffLL)?(r3 &0x00000000000000ffLL)-(r2 &0x00000000000000ffLL):(r2 &0x00000000000000ffLL)-(r3 &0x00000000000000ffLL));
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x27:
-    t3 = ((r1>>56&0x00000000000000ffLL)<(r2>>56&0x00000000000000ffLL)?(r2>>56&0x00000000000000ffLL)-(r1>>56&0x00000000000000ffLL):(r1>>56&0x00000000000000ffLL)-(r2>>56&0x00000000000000ffLL)) + ((r1>>48&0x00000000000000ffLL)<(r2>>48&0x00000000000000ffLL)?(r2>>48&0x00000000000000ffLL)-(r1>>48&0x00000000000000ffLL):(r1>>48&0x00000000000000ffLL)-(r2>>48&0x00000000000000ffLL));
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t2 = ((r1>>40&0x00000000000000ffLL)<(r2>>40&0x00000000000000ffLL)?(r2>>40&0x00000000000000ffLL)-(r1>>40&0x00000000000000ffLL):(r1>>40&0x00000000000000ffLL)-(r2>>40&0x00000000000000ffLL)) + ((r1>>32&0x00000000000000ffLL)<(r2>>32&0x00000000000000ffLL)?(r2>>32&0x00000000000000ffLL)-(r1>>32&0x00000000000000ffLL):(r1>>32&0x00000000000000ffLL)-(r2>>32&0x00000000000000ffLL));
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t1 = ((r1>>24&0x00000000000000ffLL)<(r2>>24&0x00000000000000ffLL)?(r2>>24&0x00000000000000ffLL)-(r1>>24&0x00000000000000ffLL):(r1>>24&0x00000000000000ffLL)-(r2>>24&0x00000000000000ffLL)) + ((r1>>16&0x00000000000000ffLL)<(r2>>16&0x00000000000000ffLL)?(r2>>16&0x00000000000000ffLL)-(r1>>16&0x00000000000000ffLL):(r1>>16&0x00000000000000ffLL)-(r2>>16&0x00000000000000ffLL));
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    t0 = ((r1>> 8&0x00000000000000ffLL)<(r2>> 8&0x00000000000000ffLL)?(r2>> 8&0x00000000000000ffLL)-(r1>> 8&0x00000000000000ffLL):(r1>> 8&0x00000000000000ffLL)-(r2>> 8&0x00000000000000ffLL)) + ((r1 &0x00000000000000ffLL)<(r2 &0x00000000000000ffLL)?(r2 &0x00000000000000ffLL)-(r1 &0x00000000000000ffLL):(r1 &0x00000000000000ffLL)-(r2 &0x00000000000000ffLL));
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex1_outd = (t3<<48)|(t2<<32)|(t1<<16)|(t0);
-    break;
-  case 0x28:
-    t3 = r3>>48&0x000000000000ffffLL;
-    t2 = r3>>32&0x000000000000ffffLL;
-    t1 = r3>>16&0x000000000000ffffLL;
-    t0 = r3 &0x000000000000ffffLL;
-    if (t3<t2) t2 = (r1&0xffff000000000000LL)|(r3>>16&0x0000ffff00000000LL);
-    else t2 = (r2&0xffff000000000000LL)|(r3 &0x0000ffff00000000LL);
-    if (t1<t0) t0 = (r1&0x00000000ffff0000LL)|(r3>>16&0x000000000000ffffLL);
-    else t0 = (r2&0x00000000ffff0000LL)|(r3 &0x000000000000ffffLL);
-    ex1_outd = t2 | t0;
-    break;
-  case 0x29:
-    if ((r1&0x0000ffff00000000LL)<(r2&0x0000ffff00000000LL)) t2 = r1&0xffffffff00000000LL;
-    else t2 = r2&0xffffffff00000000LL;
-    if ((r1&0x000000000000ffffLL)<(r2&0x000000000000ffffLL)) t0 = r1&0x00000000ffffffffLL;
-    else t0 = r2&0x00000000ffffffffLL;
-    ex1_outd = t2 | t0;
-   break;
-  case 0x2a:
-    ex1_outd = (((r1>>48&0x000000000000ff00LL) ? 255 : (r1>>48&0x00000000000000ffLL))<<56)
-             | (((r1>>32&0x000000000000ff00LL) ? 255 : (r1>>32&0x00000000000000ffLL))<<48)
-             | (((r2>>48&0x000000000000ff00LL) ? 255 : (r2>>48&0x00000000000000ffLL))<<40)
-             | (((r2>>32&0x000000000000ff00LL) ? 255 : (r2>>32&0x00000000000000ffLL))<<32)
-             | (((r1>>16&0x000000000000ff00LL) ? 255 : (r1>>16&0x00000000000000ffLL))<<24)
-             | (((r1 &0x000000000000ff00LL) ? 255 : (r1 &0x00000000000000ffLL))<<16)
-             | (((r2>>16&0x000000000000ff00LL) ? 255 : (r2>>16&0x00000000000000ffLL))<< 8)
-             | (((r2 &0x000000000000ff00LL) ? 255 : (r2 &0x00000000000000ffLL)) );
-    break;
-  case 0x2b:
-    t2 = ((r1&0x0000ffff00000000LL)<(r2&0x0000ffff00000000LL))?0:0x000000ff00000000LL;
-    t0 = ((r1&0x000000000000ffffLL)<(r2&0x000000000000ffffLL))?0:0x00000000000000ffLL;
-    ex1_outd = t2 | t0;
-    break;
-  case 0x2c:
-    t1 = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-       | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-       | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-       | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-       | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-       | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-       | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-       | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    t2 = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-       | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-       | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-       | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-       | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-       | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-       | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-       | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    ex1_outd = ((r3&0xff00000000000000LL)<(t1&0xff00000000000000LL)?(t1&0xff00000000000000LL):((r3&0xff00000000000000LL)<(t2&0xff00000000000000LL)?(r3&0xff00000000000000LL):(t2&0xff00000000000000LL)))
-             | ((r3&0x00ff000000000000LL)<(t1&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):((r3&0x00ff000000000000LL)<(t2&0x00ff000000000000LL)?(r3&0x00ff000000000000LL):(t2&0x00ff000000000000LL)))
-             | ((r3&0x0000ff0000000000LL)<(t1&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):((r3&0x0000ff0000000000LL)<(t2&0x0000ff0000000000LL)?(r3&0x0000ff0000000000LL):(t2&0x0000ff0000000000LL)))
-             | ((r3&0x000000ff00000000LL)<(t1&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):((r3&0x000000ff00000000LL)<(t2&0x000000ff00000000LL)?(r3&0x000000ff00000000LL):(t2&0x000000ff00000000LL)))
-             | ((r3&0x00000000ff000000LL)<(t1&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):((r3&0x00000000ff000000LL)<(t2&0x00000000ff000000LL)?(r3&0x00000000ff000000LL):(t2&0x00000000ff000000LL)))
-             | ((r3&0x0000000000ff0000LL)<(t1&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):((r3&0x0000000000ff0000LL)<(t2&0x0000000000ff0000LL)?(r3&0x0000000000ff0000LL):(t2&0x0000000000ff0000LL)))
-             | ((r3&0x000000000000ff00LL)<(t1&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):((r3&0x000000000000ff00LL)<(t2&0x000000000000ff00LL)?(r3&0x000000000000ff00LL):(t2&0x000000000000ff00LL)))
-             | ((r3&0x00000000000000ffLL)<(t1&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):((r3&0x00000000000000ffLL)<(t2&0x00000000000000ffLL)?(r3&0x00000000000000ffLL):(t2&0x00000000000000ffLL)));
-    break;
-  case 0x2d:
-    t1 = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-       | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-       | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-       | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-       | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-       | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-       | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-       | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    ex1_outd = ((t1&0xff00000000000000LL)>(r3&0xff00000000000000LL)?(t1&0xff00000000000000LL):(r3&0xff00000000000000LL))
-             | ((t1&0x00ff000000000000LL)>(r3&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):(r3&0x00ff000000000000LL))
-             | ((t1&0x0000ff0000000000LL)>(r3&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):(r3&0x0000ff0000000000LL))
-             | ((t1&0x000000ff00000000LL)>(r3&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):(r3&0x000000ff00000000LL))
-             | ((t1&0x00000000ff000000LL)>(r3&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):(r3&0x00000000ff000000LL))
-             | ((t1&0x0000000000ff0000LL)>(r3&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):(r3&0x0000000000ff0000LL))
-             | ((t1&0x000000000000ff00LL)>(r3&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):(r3&0x000000000000ff00LL))
-             | ((t1&0x00000000000000ffLL)>(r3&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):(r3&0x00000000000000ffLL));
-    break;
-  case 0x2e:
-    t1 = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-       | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-       | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-       | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-       | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-       | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-       | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-       | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    ex1_outd = ((t1&0xff00000000000000LL)<(r3&0xff00000000000000LL)?(t1&0xff00000000000000LL):(r3&0xff00000000000000LL))
-             | ((t1&0x00ff000000000000LL)<(r3&0x00ff000000000000LL)?(t1&0x00ff000000000000LL):(r3&0x00ff000000000000LL))
-             | ((t1&0x0000ff0000000000LL)<(r3&0x0000ff0000000000LL)?(t1&0x0000ff0000000000LL):(r3&0x0000ff0000000000LL))
-             | ((t1&0x000000ff00000000LL)<(r3&0x000000ff00000000LL)?(t1&0x000000ff00000000LL):(r3&0x000000ff00000000LL))
-             | ((t1&0x00000000ff000000LL)<(r3&0x00000000ff000000LL)?(t1&0x00000000ff000000LL):(r3&0x00000000ff000000LL))
-             | ((t1&0x0000000000ff0000LL)<(r3&0x0000000000ff0000LL)?(t1&0x0000000000ff0000LL):(r3&0x0000000000ff0000LL))
-             | ((t1&0x000000000000ff00LL)<(r3&0x000000000000ff00LL)?(t1&0x000000000000ff00LL):(r3&0x000000000000ff00LL))
-             | ((t1&0x00000000000000ffLL)<(r3&0x00000000000000ffLL)?(t1&0x00000000000000ffLL):(r3&0x00000000000000ffLL));
-    break;
-  case 0x2f:
-    ex1_outd = ((r1&0xff00000000000000LL)>(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-             | ((r1&0x00ff000000000000LL)>(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-             | ((r1&0x0000ff0000000000LL)>(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-             | ((r1&0x000000ff00000000LL)>(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-             | ((r1&0x00000000ff000000LL)>(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-             | ((r1&0x0000000000ff0000LL)>(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-             | ((r1&0x000000000000ff00LL)>(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-             | ((r1&0x00000000000000ffLL)>(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    break;
-  case 0x30:
-    ex1_outd = ((r1&0xff00000000000000LL)<(r2&0xff00000000000000LL)?(r1&0xff00000000000000LL):(r2&0xff00000000000000LL))
-             | ((r1&0x00ff000000000000LL)<(r2&0x00ff000000000000LL)?(r1&0x00ff000000000000LL):(r2&0x00ff000000000000LL))
-             | ((r1&0x0000ff0000000000LL)<(r2&0x0000ff0000000000LL)?(r1&0x0000ff0000000000LL):(r2&0x0000ff0000000000LL))
-             | ((r1&0x000000ff00000000LL)<(r2&0x000000ff00000000LL)?(r1&0x000000ff00000000LL):(r2&0x000000ff00000000LL))
-             | ((r1&0x00000000ff000000LL)<(r2&0x00000000ff000000LL)?(r1&0x00000000ff000000LL):(r2&0x00000000ff000000LL))
-             | ((r1&0x0000000000ff0000LL)<(r2&0x0000000000ff0000LL)?(r1&0x0000000000ff0000LL):(r2&0x0000000000ff0000LL))
-             | ((r1&0x000000000000ff00LL)<(r2&0x000000000000ff00LL)?(r1&0x000000000000ff00LL):(r2&0x000000000000ff00LL))
-             | ((r1&0x00000000000000ffLL)<(r2&0x00000000000000ffLL)?(r1&0x00000000000000ffLL):(r2&0x00000000000000ffLL));
-    break;
-  default:
-    printf("emax6lib: exe: undefined op_ex1=%d\n", op_ex1);
-    break;
-  }
-  switch (op_ex2) {
-  case 0x00:
-    if (op_ex1 == 0x08)
-      softu64(2, ex1_outd_sfma, &ex2_outd, ((void *)0), r1, r2, r3, r4);
-    else
-      ex2_outd = ex1_outd;
-    break;
-  case 0x01:
-    ex2_outd = ex1_outd & r4;
-    break;
-  case 0x02:
-    ex2_outd = ex1_outd | r4;
-    break;
-  case 0x03:
-    ex2_outd = ex1_outd ^ r4;
-    break;
-  case 0x04:
-    t3 = ex1_outd>>48&0x000000000000ffffLL;
-    t2 = ex1_outd>>32&0x000000000000ffffLL;
-    t1 = ex1_outd>>16&0x000000000000ffffLL;
-    t0 = ex1_outd &0x000000000000ffffLL;
-    t3 += t2;
-    if (t3 > 0x000000000000ffffLL) t3 = 0x000000000000ffffLL;
-    t1 += t0;
-    if (t1 > 0x000000000000ffffLL) t1 = 0x000000000000ffffLL;
-    ex2_outd = (t3<<48)|(t1<<16);
-    break;
-  case 0x05:
-    t3 = ex1_outd>>48&0x000000000000ffffLL;
-    t2 = ex1_outd>>32&0x000000000000ffffLL;
-    t1 = ex1_outd>>16&0x000000000000ffffLL;
-    t0 = ex1_outd &0x000000000000ffffLL;
-    t2 += t3;
-    if (t2 > 0x000000000000ffffLL) t2 = 0x000000000000ffffLL;
-    t0 += t1;
-    if (t0 > 0x000000000000ffffLL) t0 = 0x000000000000ffffLL;
-    ex2_outd = (t2<<32)|(t0);
-    break;
-  default:
-    printf("emax6lib: exe: undefined op_ex2=%d\n", op_ex2);
-    break;
-  }
-  switch (op_ex3) {
-  case 0x00:
-    if (op_ex1 == 0x08)
-      softu64(3, ((void *)0), &ex2_outd, d, r1, r2, r3, r4);
-    else
-      if (d) *d = ex2_outd;
-    break;
-  case 0x01:
-    t1 = (Ull)(ex2_outd &0xffffffff00000000LL)<<r5;
-    t0 = (Ull)(ex2_outd<<r5&0x00000000ffffffffLL);
-    if (d) *d = t1 | t0;
-    break;
-  case 0x02:
-    t1 = (Ull)(ex2_outd>>r5&0xffffffff00000000LL);
-    t0 = (Ull)(ex2_outd &0x00000000ffffffffLL)>>r5;
-    if (d) *d = t1 | t0;
-    break;
-  case 0x03:
-    t1 = (Sll)(ex2_outd )>>r5&0xffffffff00000000LL;
-    t0 = (Sll)(ex2_outd<<32)>>r5&0xffffffff00000000LL;
-    if (d) *d = t1 | (t0>>32);
-    break;
-  case 0x04:
-    t1 = (Sll)(ex2_outd<< 8)>>(r5+8)&0xffffffff00000000LL;
-    t0 = (Sll)(ex2_outd<<40)>>(r5+8)&0xffffffff00000000LL;
-    if (d) *d = t1 | (t0>>32);
-    break;
-  case 0x07:
-    t3 = (Ull)(ex2_outd )>>r5&0xffff000000000000LL;
-    t2 = (Ull)(ex2_outd<<16)>>r5&0xffff000000000000LL;
-    t1 = (Ull)(ex2_outd<<32)>>r5&0xffff000000000000LL;
-    t0 = (Ull)(ex2_outd<<48)>>r5&0xffff000000000000LL;
-    if (d) *d = t3 | (t2>>16) | (t1>>32) | (t0>>48);
-    break;
-  default:
-    printf("emax6lib: exe: undefined op_ex3=%d\n", op_ex3);
-    break;
-  }
-  return (retval);
-}
-void
-eag(Ull *adr, Ull base, Ull offset, Uchar msk)
-{
-  switch (msk) {
-  case 14:
-    break;
-  case 13:
-    offset = offset>>32;
-    break;
-  case 12:
-    offset = offset&0x00000000ffffffffLL;
-    break;
-  case 11:
-    offset = offset>>48&0x000000000000ffffLL;
-    break;
-  case 10:
-    offset = offset>>32&0x000000000000ffffLL;
-    break;
-  case 9:
-    offset = offset>>16&0x000000000000ffffLL;
-    break;
-  case 8:
-    offset = offset&0x000000000000ffffLL;
-    break;
-  case 7:
-    offset = offset>>56&0x00000000000000ffLL;
-    break;
-  case 6:
-    offset = offset>>48&0x00000000000000ffLL;
-    break;
-  case 5:
-    offset = offset>>40&0x00000000000000ffLL;
-    break;
-  case 4:
-    offset = offset>>32&0x00000000000000ffLL;
-    break;
-  case 3:
-    offset = offset>>24&0x00000000000000ffLL;
-    break;
-  case 2:
-    offset = offset>>16&0x00000000000000ffLL;
-    break;
-  case 1:
-    offset = offset>>8&0x00000000000000ffLL;
-    break;
-  case 0:
-    offset = offset&0x00000000000000ffLL;
-    break;
-  default:
-    printf("emax6lib: eag: undefined msk=%d\n", msk);
-    break;
-  }
-  *adr = base + offset;
-}
-void
-mop(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
-{
-  Ull adr;
-  eag(&adr, base, offset, msk);
-  mmp(op_mm, ex, d, adr, top, len, blk);
-}
-void
-mo4(Uint op_mm, Ull ex, Ull *d, Ull base, Ull offset, Uchar msk, Ull top, Uint len, Uint blk, Uchar force, Ull ptop, Uint plen)
-{
-  Ull adr;
-  eag(&adr, base, offset, msk);
-  mmp(op_mm, ex, d, adr, top, len, blk);
-}
-int emax6_unaligned_load_valid;
-Ull emax6_unaligned_load_high;
-void
-mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
-{
-  Ull c1, c0, load64;
-  if (!adr || !top) return;
-  if (adr < top || adr >= top+len*sizeof(Uint)+12) {
-    printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
-    fflush(stdout);
-  }
-  c1 = ex>>1&1;
-  c0 = ex &1;
-  switch (op_mm) {
-  case 0x00:
-    break;
-  case 0x01:
-    load64 = *(Ull*)(adr&~7LL);
-    if ((adr&7) == 0)
-      *d = load64;
-    else if (!emax6_unaligned_load_valid) {
-      emax6_unaligned_load_valid = 1;
-      emax6_unaligned_load_high = load64;
-      *d = load64 >> (adr&7)*8;
-    }
-    else {
-      emax6_unaligned_load_valid = 0;
-      *d = emax6_unaligned_load_high << (8-(adr&7))*8 | load64 >> (adr&7)*8;
-    }
-    break;
-  case 0x02:
-    *d = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);
-    break;
-  case 0x03:
-    *d = (Ull)*(Uint*)(adr&~3LL)<<32 | (Ull)*(Uint*)(adr&~3LL);
-    break;
-  case 0x06:
-    *d = (Ull)(Uint)(int)*(char*)adr<<32 | (Ull)(Uint)(int)*(char*)adr;
-    break;
-  case 0x07:
-    *d = (Ull)(Uint)*(Uchar*)adr<<32 | (Ull)(Uint)*(Uchar*)adr;
-    break;
-  case 0x11:
-    if (c1) *((Uint*)(adr&~7LL)+1) = *d>>32;
-    if (c0) *((Uint*)(adr&~7LL) ) = *d;
-    break;
-  case 0x12:
-    if (c0) *(Uint*)(adr&~3LL) = *d;
-    break;
-  case 0x14:
-    if (c0) *(Uchar*)adr = *d;
-    break;
-  case 0x08:
-    switch (blk) {
-    case 0:
-      *(d+0) = *((Ull*)(adr&~31LL)+0);
-      *(d+1) = *((Ull*)(adr&~31LL)+1);
-      *(d+2) = *((Ull*)(adr&~31LL)+2);
-      *(d+3) = *((Ull*)(adr&~31LL)+3);
-      break;
-    case 1:
-      *(d+0) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 0);
-      *(d+1) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 1);
-      *(d+2) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 2);
-      *(d+3) = *(*(Ull**)(top + (adr/32/16*sizeof(Ull*))) + (adr/32&15)*4 + 3);
-      break;
-    case 2:
-      *(d+0) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 0);
-      *(d+1) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 1);
-      *(d+2) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 2);
-      *(d+3) = *(*(Ull**)(top + (adr/32/32*sizeof(Ull*))) + (adr/32&31)*4 + 3);
-      break;
-    default:
-      *(d+0) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 0);
-      *(d+1) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 1);
-      *(d+2) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 2);
-      *(d+3) = *(*(Ull**)(top + (adr/32/64*sizeof(Ull*))) + (adr/32&63)*4 + 3);
-      break;
-    }
-    break;
-  case 0x18:
-    if (c0) {
-      *(d+0) = *((Ull*)(adr&~31LL)+0);
-      *(d+1) = *((Ull*)(adr&~31LL)+1);
-      *(d+2) = *((Ull*)(adr&~31LL)+2);
-      *(d+3) = *((Ull*)(adr&~31LL)+3);
-    }
-    break;
-  case 0x15:
-    *((Ull*)(adr&~31LL)+0) = *(d+0);
-    *((Ull*)(adr&~31LL)+1) = *(d+1);
-    *((Ull*)(adr&~31LL)+2) = *(d+2);
-    *((Ull*)(adr&~31LL)+3) = *(d+3);
-    break;
-  case 0x19:
-    if (c0) {
-      Ull (*trans)() = top;
-      (trans)(*(d+0), *(d+1), *(d+2), *(d+3));
-    }
-    break;
-  default:
-    printf("emax6lib: mmp: undefined op_mm=%d\n", op_mm);
-    break;
-  }
-}
-extern int *__errno_location (void) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-struct iovec
-  {
-    void *iov_base;
-    size_t iov_len;
-  };
-extern ssize_t readv (int __fd, const struct iovec *__iovec, int __count)
-  ;
-extern ssize_t writev (int __fd, const struct iovec *__iovec, int __count)
-  ;
-extern ssize_t preadv (int __fd, const struct iovec *__iovec, int __count,
-         __off_t __offset) ;
-extern ssize_t pwritev (int __fd, const struct iovec *__iovec, int __count,
-   __off_t __offset) ;
-enum __socket_type
-{
-  SOCK_STREAM = 1,
-  SOCK_DGRAM = 2,
-  SOCK_RAW = 3,
-  SOCK_RDM = 4,
-  SOCK_SEQPACKET = 5,
-  SOCK_DCCP = 6,
-  SOCK_PACKET = 10,
-  SOCK_CLOEXEC = 02000000,
-  SOCK_NONBLOCK = 00004000
-};
-typedef unsigned short int sa_family_t;
-struct sockaddr
-  {
-    sa_family_t sa_family;
-    char sa_data[14];
-  };
-struct sockaddr_storage
-  {
-    sa_family_t ss_family;
-    char __ss_padding[(128 - (sizeof (unsigned short int)) - sizeof (unsigned long int))];
-    unsigned long int __ss_align;
-  };
-enum
-  {
-    MSG_OOB = 0x01,
-    MSG_PEEK = 0x02,
-    MSG_DONTROUTE = 0x04,
-    MSG_CTRUNC = 0x08,
-    MSG_PROXY = 0x10,
-    MSG_TRUNC = 0x20,
-    MSG_DONTWAIT = 0x40,
-    MSG_EOR = 0x80,
-    MSG_WAITALL = 0x100,
-    MSG_FIN = 0x200,
-    MSG_SYN = 0x400,
-    MSG_CONFIRM = 0x800,
-    MSG_RST = 0x1000,
-    MSG_ERRQUEUE = 0x2000,
-    MSG_NOSIGNAL = 0x4000,
-    MSG_MORE = 0x8000,
-    MSG_WAITFORONE = 0x10000,
-    MSG_BATCH = 0x40000,
-    MSG_FASTOPEN = 0x20000000,
-    MSG_CMSG_CLOEXEC = 0x40000000
-  };
-struct msghdr
-  {
-    void *msg_name;
-    socklen_t msg_namelen;
-    struct iovec *msg_iov;
-    size_t msg_iovlen;
-    void *msg_control;
-    size_t msg_controllen;
-    int msg_flags;
-  };
-struct cmsghdr
-  {
-    size_t cmsg_len;
-    int cmsg_level;
-    int cmsg_type;
-    __extension__ unsigned char __cmsg_data [];
-  };
-extern struct cmsghdr *__cmsg_nxthdr (struct msghdr *__mhdr,
-          struct cmsghdr *__cmsg) __attribute__ ((__nothrow__ , __leaf__));
-enum
-  {
-    SCM_RIGHTS = 0x01
-  };
-struct linger
-  {
-    int l_onoff;
-    int l_linger;
-  };
-struct osockaddr
-  {
-    unsigned short int sa_family;
-    unsigned char sa_data[14];
-  };
-enum
-{
-  SHUT_RD = 0,
-  SHUT_WR,
-  SHUT_RDWR
-};
-extern int socket (int __domain, int __type, int __protocol) __attribute__ ((__nothrow__ , __leaf__));
-extern int socketpair (int __domain, int __type, int __protocol,
-         int __fds[2]) __attribute__ ((__nothrow__ , __leaf__));
-extern int bind (int __fd, const struct sockaddr * __addr, socklen_t __len)
-     __attribute__ ((__nothrow__ , __leaf__));
-extern int getsockname (int __fd, struct sockaddr *__restrict __addr,
-   socklen_t *__restrict __len) __attribute__ ((__nothrow__ , __leaf__));
-extern int connect (int __fd, const struct sockaddr * __addr, socklen_t __len);
-extern int getpeername (int __fd, struct sockaddr *__restrict __addr,
-   socklen_t *__restrict __len) __attribute__ ((__nothrow__ , __leaf__));
-extern ssize_t send (int __fd, const void *__buf, size_t __n, int __flags);
-extern ssize_t recv (int __fd, void *__buf, size_t __n, int __flags);
-extern ssize_t sendto (int __fd, const void *__buf, size_t __n,
-         int __flags, const struct sockaddr * __addr,
-         socklen_t __addr_len);
-extern ssize_t recvfrom (int __fd, void *__restrict __buf, size_t __n,
-    int __flags, struct sockaddr *__restrict __addr,
-    socklen_t *__restrict __addr_len);
-extern ssize_t sendmsg (int __fd, const struct msghdr *__message,
-   int __flags);
-extern ssize_t recvmsg (int __fd, struct msghdr *__message, int __flags);
-extern int getsockopt (int __fd, int __level, int __optname,
-         void *__restrict __optval,
-         socklen_t *__restrict __optlen) __attribute__ ((__nothrow__ , __leaf__));
-extern int setsockopt (int __fd, int __level, int __optname,
-         const void *__optval, socklen_t __optlen) __attribute__ ((__nothrow__ , __leaf__));
-extern int listen (int __fd, int __n) __attribute__ ((__nothrow__ , __leaf__));
-extern int accept (int __fd, struct sockaddr *__restrict __addr,
-     socklen_t *__restrict __addr_len);
-extern int shutdown (int __fd, int __how) __attribute__ ((__nothrow__ , __leaf__));
-extern int sockatmark (int __fd) __attribute__ ((__nothrow__ , __leaf__));
-extern int isfdtype (int __fd, int __fdtype) __attribute__ ((__nothrow__ , __leaf__));
-typedef uint32_t in_addr_t;
-struct in_addr
-  {
-    in_addr_t s_addr;
-  };
-struct ip_opts
-  {
-    struct in_addr ip_dst;
-    char ip_opts[40];
-  };
-struct ip_mreqn
-  {
-    struct in_addr imr_multiaddr;
-    struct in_addr imr_address;
-    int imr_ifindex;
-  };
-struct in_pktinfo
-  {
-    int ipi_ifindex;
-    struct in_addr ipi_spec_dst;
-    struct in_addr ipi_addr;
-  };
-enum
-  {
-    IPPROTO_IP = 0,
-    IPPROTO_ICMP = 1,
-    IPPROTO_IGMP = 2,
-    IPPROTO_IPIP = 4,
-    IPPROTO_TCP = 6,
-    IPPROTO_EGP = 8,
-    IPPROTO_PUP = 12,
-    IPPROTO_UDP = 17,
-    IPPROTO_IDP = 22,
-    IPPROTO_TP = 29,
-    IPPROTO_DCCP = 33,
-    IPPROTO_IPV6 = 41,
-    IPPROTO_RSVP = 46,
-    IPPROTO_GRE = 47,
-    IPPROTO_ESP = 50,
-    IPPROTO_AH = 51,
-    IPPROTO_MTP = 92,
-    IPPROTO_BEETPH = 94,
-    IPPROTO_ENCAP = 98,
-    IPPROTO_PIM = 103,
-    IPPROTO_COMP = 108,
-    IPPROTO_SCTP = 132,
-    IPPROTO_UDPLITE = 136,
-    IPPROTO_MPLS = 137,
-    IPPROTO_RAW = 255,
-    IPPROTO_MAX
-  };
-enum
-  {
-    IPPROTO_HOPOPTS = 0,
-    IPPROTO_ROUTING = 43,
-    IPPROTO_FRAGMENT = 44,
-    IPPROTO_ICMPV6 = 58,
-    IPPROTO_NONE = 59,
-    IPPROTO_DSTOPTS = 60,
-    IPPROTO_MH = 135
-  };
-typedef uint16_t in_port_t;
-enum
-  {
-    IPPORT_ECHO = 7,
-    IPPORT_DISCARD = 9,
-    IPPORT_SYSTAT = 11,
-    IPPORT_DAYTIME = 13,
-    IPPORT_NETSTAT = 15,
-    IPPORT_FTP = 21,
-    IPPORT_TELNET = 23,
-    IPPORT_SMTP = 25,
-    IPPORT_TIMESERVER = 37,
-    IPPORT_NAMESERVER = 42,
-    IPPORT_WHOIS = 43,
-    IPPORT_MTP = 57,
-    IPPORT_TFTP = 69,
-    IPPORT_RJE = 77,
-    IPPORT_FINGER = 79,
-    IPPORT_TTYLINK = 87,
-    IPPORT_SUPDUP = 95,
-    IPPORT_EXECSERVER = 512,
-    IPPORT_LOGINSERVER = 513,
-    IPPORT_CMDSERVER = 514,
-    IPPORT_EFSSERVER = 520,
-    IPPORT_BIFFUDP = 512,
-    IPPORT_WHOSERVER = 513,
-    IPPORT_ROUTESERVER = 520,
-    IPPORT_RESERVED = 1024,
-    IPPORT_USERRESERVED = 5000
-  };
-struct in6_addr
-  {
-    union
-      {
- uint8_t __u6_addr8[16];
- uint16_t __u6_addr16[8];
- uint32_t __u6_addr32[4];
-      } __in6_u;
-  };
-extern const struct in6_addr in6addr_any;
-extern const struct in6_addr in6addr_loopback;
-struct sockaddr_in
-  {
-    sa_family_t sin_family;
-    in_port_t sin_port;
-    struct in_addr sin_addr;
-    unsigned char sin_zero[sizeof (struct sockaddr) -
-      (sizeof (unsigned short int)) -
-      sizeof (in_port_t) -
-      sizeof (struct in_addr)];
-  };
-struct sockaddr_in6
-  {
-    sa_family_t sin6_family;
-    in_port_t sin6_port;
-    uint32_t sin6_flowinfo;
-    struct in6_addr sin6_addr;
-    uint32_t sin6_scope_id;
-  };
-struct ip_mreq
-  {
-    struct in_addr imr_multiaddr;
-    struct in_addr imr_interface;
-  };
-struct ip_mreq_source
-  {
-    struct in_addr imr_multiaddr;
-    struct in_addr imr_interface;
-    struct in_addr imr_sourceaddr;
-  };
-struct ipv6_mreq
-  {
-    struct in6_addr ipv6mr_multiaddr;
-    unsigned int ipv6mr_interface;
-  };
-struct group_req
-  {
-    uint32_t gr_interface;
-    struct sockaddr_storage gr_group;
-  };
-struct group_source_req
-  {
-    uint32_t gsr_interface;
-    struct sockaddr_storage gsr_group;
-    struct sockaddr_storage gsr_source;
-  };
-struct ip_msfilter
-  {
-    struct in_addr imsf_multiaddr;
-    struct in_addr imsf_interface;
-    uint32_t imsf_fmode;
-    uint32_t imsf_numsrc;
-    struct in_addr imsf_slist[1];
-  };
-struct group_filter
-  {
-    uint32_t gf_interface;
-    struct sockaddr_storage gf_group;
-    uint32_t gf_fmode;
-    uint32_t gf_numsrc;
-    struct sockaddr_storage gf_slist[1];
-};
-extern uint32_t ntohl (uint32_t __netlong) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern uint16_t ntohs (uint16_t __netshort)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern uint32_t htonl (uint32_t __hostlong)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern uint16_t htons (uint16_t __hostshort)
-     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
-extern int bindresvport (int __sockfd, struct sockaddr_in *__sock_in) __attribute__ ((__nothrow__ , __leaf__));
-extern int bindresvport6 (int __sockfd, struct sockaddr_in6 *__sock_in)
-     __attribute__ ((__nothrow__ , __leaf__));
 extern int WD, HT, BITMAP, SCRWD, SCRHT, VECWD, VECHT, VECSTEP;
 typedef struct {
   unsigned int width;
@@ -8507,77 +8581,10 @@ main()
     for (col=0; col<480LL; col++)
       *(float*)&B[row*480LL +col] = col%120+1;
   }
-  x11_open(0);
-  reset_nanosec();
-  orig();
-  get_nanosec(0);
-  show_nanosec();
   reset_nanosec();
   imax();
   get_nanosec(0);
   show_nanosec();
-  copy_Z(0, C1); BGR_to_X(0, Z);
-  copy_Z(1, C1); BGR_to_X(1, Z);
-  copy_Z(4, C1); BGR_to_X(5, Z);
-  copy_Z(5, C1); BGR_to_X(6, Z);
-  copy_Z(8, C1); BGR_to_X(10,Z);
-  copy_Z(9, C1); BGR_to_X(11,Z);
-  x11_update();
-  printf("Num of MULT: orig=%d imax=%d\n", count0, count1);
-  for (row=0; row<480LL; row++) {
-    for (col=0; col<480LL; col++) {
-      if (C0[row*480LL +col] != C1[row*480LL +col]) {
-        count2++;
-        printf("C0[%d][%d]=%f C1[%d][%d]=%f\n", row, col, (double)*(float*)&C0[row*480LL +col],
-                                                row, col, (double)*(float*)&C1[row*480LL +col]);
-      }
-    }
-  }
-  if (count2)
-    printf("Num of diffs: %d\n", count2);
-  else
-    printf("Results are equal\n");
-  show_nanosec();
-  printf("==== Normal end. Type any in ImageWin ====\n");
-  while (!x11_checkevent());
-}
-copy_Z(id, from)
-     int id;
-     unsigned int *from;
-{
-  int i, j;
-  volatile unsigned int *to = Z;
-  unsigned int *offs;
-  switch (id) {
-  case 0: offs = from; break;
-  case 1: offs = from + WD; break;
-  case 2: offs = from + WD*2; break;
-  case 3: offs = from + WD*3; break;
-  case 4: offs = from + 480LL*HT; break;
-  case 5: offs = from + 480LL*HT+WD; break;
-  case 6: offs = from + 480LL*HT+WD*2; break;
-  case 7: offs = from + 480LL*HT+WD*3; break;
-  case 8: offs = from + 480LL*HT*2; break;
-  case 9: offs = from + 480LL*HT*2+WD; break;
-  case 10: offs = from + 480LL*HT*2+WD*2; break;
-  case 11: offs = from + 480LL*HT*2+WD*3; break;
-  case 12: offs = from + 480LL*HT*3; break;
-  case 13: offs = from + 480LL*HT*3+WD; break;
-  case 14: offs = from + 480LL*HT*3+WD*2; break;
-  case 15: offs = from + 480LL*HT*3+WD*3; break;
-  }
-  for (i=0; i<HT; i++, offs+=480LL) {
-    if (offs<from+480LL*480LL) {
-      for (j=0; j<WD; j++) {
- if (j+(id%4)*WD<480LL) *to++ = (*(offs+j))>>0;
- else *to++ = 0;
-      }
-    }
-    else {
-      for (j=0; j<WD; j++)
- *to++ = 0;
-    }
-  }
 }
 orig() {
   printf("<<<ORIG>>>\n");
@@ -8602,27 +8609,2273 @@ imax() {
   Ull cc0, cc1, cc2, cc3, ex0, ex1;
   Ull cofs, rofs, oofs, k;
   printf("<<<IMAX>>>\n");
-  for (top=0; top<480LL/4; top+=15) {
+  for (top=0; top<480LL/1; top+=15) {
     for (blk=0; blk<480LL; blk+=60) {
       typedef struct {Uint i[8]} Ui8;
-      Uint *a0[4];
-      Uint *a[60][4];
+      Uint *a0[1];
+      Uint *a[60][1];
       Ui8 *b[60], *b0[60], *b1[60], *b2[60], *b3[60];
-      Ui8 *c0[4];
-      Ui8 *c00[4], *c01[4], *c02[4], *c03[4];
+      Ui8 *c0[1];
+      Ui8 *c00[1], *c01[1], *c02[1], *c03[1];
       for (k=0; k<60; k++) {
  b[k] = B+(blk+k)*480LL; b0[k] = b[k]; b1[k] = (Uint*)b[k]+2; b2[k] = (Uint*)b[k]+4; b3[k] = (Uint*)b[k]+6;
       }
-      for (CHIP=0; CHIP<4; CHIP++) {
- a0[CHIP] = A+(CHIP*480LL/4 +top)*480LL;
+      for (CHIP=0; CHIP<1; CHIP++) {
+ a0[CHIP] = A+(CHIP*480LL/1 +top)*480LL;
  for (k=0; k<60; k++)
    a[k][CHIP] = a0[CHIP]+blk+k;
- c0[CHIP] = C1+(CHIP*480LL/4 +top)*480LL;
+ c0[CHIP] = C1+(CHIP*480LL/1 +top)*480LL;
  c00[CHIP]= (Uint*)c0[CHIP]+0; c01[CHIP]= (Uint*)c0[CHIP]+2; c02[CHIP]= (Uint*)c0[CHIP]+4; c03[CHIP]= (Uint*)c0[CHIP]+6;
       }
+#ifndef EMAXSC
 volatile emax6_conf_mm();
-	  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = 3; // NCHIP-1
+#endif
+#ifndef EMAXSC
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].mcid = 0; // NCHIP-1
+#endif
 	LOOP1 = ((15));
 	rofs = (((0-480LL*4)<<32|((0-480LL*4)&0xffffffff)));
 	LOOP0 = ((480LL/4LL/2));
 	cofs = (((0-4LL*8)<<32|((0-4LL*8)&0xffffffff)));
+#ifdef EMAXSC
+/* EMAXSC start */
+SCBR[63].r[0][0][0] = LOOP1;
+SCBR[63].r[0][1][0] = LOOP1;
+SCBR[63].r[0][0][1] = -1LL;
+SCBR[63].r[0][1][1] = -1LL;
+SCBR[63].r[0][0][2] = LOOP0;
+SCBR[63].r[0][1][2] = LOOP0;
+SCBR[63].r[0][0][3] = cofs;
+SCBR[63].r[0][1][3] = cofs;
+SCBR[63].r[0][0][4] = (((4LL)*(8))<<(32))|((4LL)*(8));
+SCBR[63].r[0][1][4] = (((4LL)*(8))<<(32))|((4LL)*(8));
+SCBR[63].r[0][0][5] = rofs;
+SCBR[63].r[0][1][5] = rofs;
+SCBR[63].r[0][0][6] = (((480LL)*(4))<<(32))|((480LL)*(4));
+SCBR[63].r[0][1][6] = (((480LL)*(4))<<(32))|((480LL)*(4));
+SCM0[1].b[0][0] = (Ull)b1[0];
+SCM1[1].b[0][0] = (Ull)b0[0];
+SCM0[1].b[0][1] = (Ull)b3[0];
+SCM1[1].b[0][1] = (Ull)b2[0];
+SCM1[1].b[0][2] = (Ull)a[0][0];
+SCM0[2].b[0][0] = (Ull)b1[1];
+SCM1[2].b[0][0] = (Ull)b0[1];
+SCM0[2].b[0][1] = (Ull)b3[1];
+SCM1[2].b[0][1] = (Ull)b2[1];
+SCM1[2].b[0][2] = (Ull)a[1][0];
+SCM0[3].b[0][0] = (Ull)b1[2];
+SCM1[3].b[0][0] = (Ull)b0[2];
+SCM0[3].b[0][1] = (Ull)b3[2];
+SCM1[3].b[0][1] = (Ull)b2[2];
+SCM1[3].b[0][2] = (Ull)a[2][0];
+SCM0[4].b[0][0] = (Ull)b1[3];
+SCM1[4].b[0][0] = (Ull)b0[3];
+SCM0[4].b[0][1] = (Ull)b3[3];
+SCM1[4].b[0][1] = (Ull)b2[3];
+SCM1[4].b[0][2] = (Ull)a[3][0];
+SCM0[5].b[0][0] = (Ull)b1[4];
+SCM1[5].b[0][0] = (Ull)b0[4];
+SCM0[5].b[0][1] = (Ull)b3[4];
+SCM1[5].b[0][1] = (Ull)b2[4];
+SCM1[5].b[0][2] = (Ull)a[4][0];
+SCM0[6].b[0][0] = (Ull)b1[5];
+SCM1[6].b[0][0] = (Ull)b0[5];
+SCM0[6].b[0][1] = (Ull)b3[5];
+SCM1[6].b[0][1] = (Ull)b2[5];
+SCM1[6].b[0][2] = (Ull)a[5][0];
+SCM0[7].b[0][0] = (Ull)b1[6];
+SCM1[7].b[0][0] = (Ull)b0[6];
+SCM0[7].b[0][1] = (Ull)b3[6];
+SCM1[7].b[0][1] = (Ull)b2[6];
+SCM1[7].b[0][2] = (Ull)a[6][0];
+SCM0[8].b[0][0] = (Ull)b1[7];
+SCM1[8].b[0][0] = (Ull)b0[7];
+SCM0[8].b[0][1] = (Ull)b3[7];
+SCM1[8].b[0][1] = (Ull)b2[7];
+SCM1[8].b[0][2] = (Ull)a[7][0];
+SCM0[9].b[0][0] = (Ull)b1[8];
+SCM1[9].b[0][0] = (Ull)b0[8];
+SCM0[9].b[0][1] = (Ull)b3[8];
+SCM1[9].b[0][1] = (Ull)b2[8];
+SCM1[9].b[0][2] = (Ull)a[8][0];
+SCM0[10].b[0][0] = (Ull)b1[9];
+SCM1[10].b[0][0] = (Ull)b0[9];
+SCM0[10].b[0][1] = (Ull)b3[9];
+SCM1[10].b[0][1] = (Ull)b2[9];
+SCM1[10].b[0][2] = (Ull)a[9][0];
+SCM0[11].b[0][0] = (Ull)b1[10];
+SCM1[11].b[0][0] = (Ull)b0[10];
+SCM0[11].b[0][1] = (Ull)b3[10];
+SCM1[11].b[0][1] = (Ull)b2[10];
+SCM1[11].b[0][2] = (Ull)a[10][0];
+SCM0[12].b[0][0] = (Ull)b1[11];
+SCM1[12].b[0][0] = (Ull)b0[11];
+SCM0[12].b[0][1] = (Ull)b3[11];
+SCM1[12].b[0][1] = (Ull)b2[11];
+SCM1[12].b[0][2] = (Ull)a[11][0];
+SCM0[13].b[0][0] = (Ull)b1[12];
+SCM1[13].b[0][0] = (Ull)b0[12];
+SCM0[13].b[0][1] = (Ull)b3[12];
+SCM1[13].b[0][1] = (Ull)b2[12];
+SCM1[13].b[0][2] = (Ull)a[12][0];
+SCM0[14].b[0][0] = (Ull)b1[13];
+SCM1[14].b[0][0] = (Ull)b0[13];
+SCM0[14].b[0][1] = (Ull)b3[13];
+SCM1[14].b[0][1] = (Ull)b2[13];
+SCM1[14].b[0][2] = (Ull)a[13][0];
+SCM0[15].b[0][0] = (Ull)b1[14];
+SCM1[15].b[0][0] = (Ull)b0[14];
+SCM0[15].b[0][1] = (Ull)b3[14];
+SCM1[15].b[0][1] = (Ull)b2[14];
+SCM1[15].b[0][2] = (Ull)a[14][0];
+SCM0[16].b[0][0] = (Ull)b1[15];
+SCM1[16].b[0][0] = (Ull)b0[15];
+SCM0[16].b[0][1] = (Ull)b3[15];
+SCM1[16].b[0][1] = (Ull)b2[15];
+SCM1[16].b[0][2] = (Ull)a[15][0];
+SCM0[17].b[0][0] = (Ull)b1[16];
+SCM1[17].b[0][0] = (Ull)b0[16];
+SCM0[17].b[0][1] = (Ull)b3[16];
+SCM1[17].b[0][1] = (Ull)b2[16];
+SCM1[17].b[0][2] = (Ull)a[16][0];
+SCM0[18].b[0][0] = (Ull)b1[17];
+SCM1[18].b[0][0] = (Ull)b0[17];
+SCM0[18].b[0][1] = (Ull)b3[17];
+SCM1[18].b[0][1] = (Ull)b2[17];
+SCM1[18].b[0][2] = (Ull)a[17][0];
+SCM0[19].b[0][0] = (Ull)b1[18];
+SCM1[19].b[0][0] = (Ull)b0[18];
+SCM0[19].b[0][1] = (Ull)b3[18];
+SCM1[19].b[0][1] = (Ull)b2[18];
+SCM1[19].b[0][2] = (Ull)a[18][0];
+SCM0[20].b[0][0] = (Ull)b1[19];
+SCM1[20].b[0][0] = (Ull)b0[19];
+SCM0[20].b[0][1] = (Ull)b3[19];
+SCM1[20].b[0][1] = (Ull)b2[19];
+SCM1[20].b[0][2] = (Ull)a[19][0];
+SCM0[21].b[0][0] = (Ull)b1[20];
+SCM1[21].b[0][0] = (Ull)b0[20];
+SCM0[21].b[0][1] = (Ull)b3[20];
+SCM1[21].b[0][1] = (Ull)b2[20];
+SCM1[21].b[0][2] = (Ull)a[20][0];
+SCM0[22].b[0][0] = (Ull)b1[21];
+SCM1[22].b[0][0] = (Ull)b0[21];
+SCM0[22].b[0][1] = (Ull)b3[21];
+SCM1[22].b[0][1] = (Ull)b2[21];
+SCM1[22].b[0][2] = (Ull)a[21][0];
+SCM0[23].b[0][0] = (Ull)b1[22];
+SCM1[23].b[0][0] = (Ull)b0[22];
+SCM0[23].b[0][1] = (Ull)b3[22];
+SCM1[23].b[0][1] = (Ull)b2[22];
+SCM1[23].b[0][2] = (Ull)a[22][0];
+SCM0[24].b[0][0] = (Ull)b1[23];
+SCM1[24].b[0][0] = (Ull)b0[23];
+SCM0[24].b[0][1] = (Ull)b3[23];
+SCM1[24].b[0][1] = (Ull)b2[23];
+SCM1[24].b[0][2] = (Ull)a[23][0];
+SCM0[25].b[0][0] = (Ull)b1[24];
+SCM1[25].b[0][0] = (Ull)b0[24];
+SCM0[25].b[0][1] = (Ull)b3[24];
+SCM1[25].b[0][1] = (Ull)b2[24];
+SCM1[25].b[0][2] = (Ull)a[24][0];
+SCM0[26].b[0][0] = (Ull)b1[25];
+SCM1[26].b[0][0] = (Ull)b0[25];
+SCM0[26].b[0][1] = (Ull)b3[25];
+SCM1[26].b[0][1] = (Ull)b2[25];
+SCM1[26].b[0][2] = (Ull)a[25][0];
+SCM0[27].b[0][0] = (Ull)b1[26];
+SCM1[27].b[0][0] = (Ull)b0[26];
+SCM0[27].b[0][1] = (Ull)b3[26];
+SCM1[27].b[0][1] = (Ull)b2[26];
+SCM1[27].b[0][2] = (Ull)a[26][0];
+SCM0[28].b[0][0] = (Ull)b1[27];
+SCM1[28].b[0][0] = (Ull)b0[27];
+SCM0[28].b[0][1] = (Ull)b3[27];
+SCM1[28].b[0][1] = (Ull)b2[27];
+SCM1[28].b[0][2] = (Ull)a[27][0];
+SCM0[29].b[0][0] = (Ull)b1[28];
+SCM1[29].b[0][0] = (Ull)b0[28];
+SCM0[29].b[0][1] = (Ull)b3[28];
+SCM1[29].b[0][1] = (Ull)b2[28];
+SCM1[29].b[0][2] = (Ull)a[28][0];
+SCM0[30].b[0][0] = (Ull)b1[29];
+SCM1[30].b[0][0] = (Ull)b0[29];
+SCM0[30].b[0][1] = (Ull)b3[29];
+SCM1[30].b[0][1] = (Ull)b2[29];
+SCM1[30].b[0][2] = (Ull)a[29][0];
+SCM0[31].b[0][0] = (Ull)b1[30];
+SCM1[31].b[0][0] = (Ull)b0[30];
+SCM0[31].b[0][1] = (Ull)b3[30];
+SCM1[31].b[0][1] = (Ull)b2[30];
+SCM1[31].b[0][2] = (Ull)a[30][0];
+SCM0[32].b[0][0] = (Ull)b1[31];
+SCM1[32].b[0][0] = (Ull)b0[31];
+SCM0[32].b[0][1] = (Ull)b3[31];
+SCM1[32].b[0][1] = (Ull)b2[31];
+SCM1[32].b[0][2] = (Ull)a[31][0];
+SCM0[33].b[0][0] = (Ull)b1[32];
+SCM1[33].b[0][0] = (Ull)b0[32];
+SCM0[33].b[0][1] = (Ull)b3[32];
+SCM1[33].b[0][1] = (Ull)b2[32];
+SCM1[33].b[0][2] = (Ull)a[32][0];
+SCM0[34].b[0][0] = (Ull)b1[33];
+SCM1[34].b[0][0] = (Ull)b0[33];
+SCM0[34].b[0][1] = (Ull)b3[33];
+SCM1[34].b[0][1] = (Ull)b2[33];
+SCM1[34].b[0][2] = (Ull)a[33][0];
+SCM0[35].b[0][0] = (Ull)b1[34];
+SCM1[35].b[0][0] = (Ull)b0[34];
+SCM0[35].b[0][1] = (Ull)b3[34];
+SCM1[35].b[0][1] = (Ull)b2[34];
+SCM1[35].b[0][2] = (Ull)a[34][0];
+SCM0[36].b[0][0] = (Ull)b1[35];
+SCM1[36].b[0][0] = (Ull)b0[35];
+SCM0[36].b[0][1] = (Ull)b3[35];
+SCM1[36].b[0][1] = (Ull)b2[35];
+SCM1[36].b[0][2] = (Ull)a[35][0];
+SCM0[37].b[0][0] = (Ull)b1[36];
+SCM1[37].b[0][0] = (Ull)b0[36];
+SCM0[37].b[0][1] = (Ull)b3[36];
+SCM1[37].b[0][1] = (Ull)b2[36];
+SCM1[37].b[0][2] = (Ull)a[36][0];
+SCM0[38].b[0][0] = (Ull)b1[37];
+SCM1[38].b[0][0] = (Ull)b0[37];
+SCM0[38].b[0][1] = (Ull)b3[37];
+SCM1[38].b[0][1] = (Ull)b2[37];
+SCM1[38].b[0][2] = (Ull)a[37][0];
+SCM0[39].b[0][0] = (Ull)b1[38];
+SCM1[39].b[0][0] = (Ull)b0[38];
+SCM0[39].b[0][1] = (Ull)b3[38];
+SCM1[39].b[0][1] = (Ull)b2[38];
+SCM1[39].b[0][2] = (Ull)a[38][0];
+SCM0[40].b[0][0] = (Ull)b1[39];
+SCM1[40].b[0][0] = (Ull)b0[39];
+SCM0[40].b[0][1] = (Ull)b3[39];
+SCM1[40].b[0][1] = (Ull)b2[39];
+SCM1[40].b[0][2] = (Ull)a[39][0];
+SCM0[41].b[0][0] = (Ull)b1[40];
+SCM1[41].b[0][0] = (Ull)b0[40];
+SCM0[41].b[0][1] = (Ull)b3[40];
+SCM1[41].b[0][1] = (Ull)b2[40];
+SCM1[41].b[0][2] = (Ull)a[40][0];
+SCM0[42].b[0][0] = (Ull)b1[41];
+SCM1[42].b[0][0] = (Ull)b0[41];
+SCM0[42].b[0][1] = (Ull)b3[41];
+SCM1[42].b[0][1] = (Ull)b2[41];
+SCM1[42].b[0][2] = (Ull)a[41][0];
+SCM0[43].b[0][0] = (Ull)b1[42];
+SCM1[43].b[0][0] = (Ull)b0[42];
+SCM0[43].b[0][1] = (Ull)b3[42];
+SCM1[43].b[0][1] = (Ull)b2[42];
+SCM1[43].b[0][2] = (Ull)a[42][0];
+SCM0[44].b[0][0] = (Ull)b1[43];
+SCM1[44].b[0][0] = (Ull)b0[43];
+SCM0[44].b[0][1] = (Ull)b3[43];
+SCM1[44].b[0][1] = (Ull)b2[43];
+SCM1[44].b[0][2] = (Ull)a[43][0];
+SCM0[45].b[0][0] = (Ull)b1[44];
+SCM1[45].b[0][0] = (Ull)b0[44];
+SCM0[45].b[0][1] = (Ull)b3[44];
+SCM1[45].b[0][1] = (Ull)b2[44];
+SCM1[45].b[0][2] = (Ull)a[44][0];
+SCM0[46].b[0][0] = (Ull)b1[45];
+SCM1[46].b[0][0] = (Ull)b0[45];
+SCM0[46].b[0][1] = (Ull)b3[45];
+SCM1[46].b[0][1] = (Ull)b2[45];
+SCM1[46].b[0][2] = (Ull)a[45][0];
+SCM0[47].b[0][0] = (Ull)b1[46];
+SCM1[47].b[0][0] = (Ull)b0[46];
+SCM0[47].b[0][1] = (Ull)b3[46];
+SCM1[47].b[0][1] = (Ull)b2[46];
+SCM1[47].b[0][2] = (Ull)a[46][0];
+SCM0[48].b[0][0] = (Ull)b1[47];
+SCM1[48].b[0][0] = (Ull)b0[47];
+SCM0[48].b[0][1] = (Ull)b3[47];
+SCM1[48].b[0][1] = (Ull)b2[47];
+SCM1[48].b[0][2] = (Ull)a[47][0];
+SCM0[49].b[0][0] = (Ull)b1[48];
+SCM1[49].b[0][0] = (Ull)b0[48];
+SCM0[49].b[0][1] = (Ull)b3[48];
+SCM1[49].b[0][1] = (Ull)b2[48];
+SCM1[49].b[0][2] = (Ull)a[48][0];
+SCM0[50].b[0][0] = (Ull)b1[49];
+SCM1[50].b[0][0] = (Ull)b0[49];
+SCM0[50].b[0][1] = (Ull)b3[49];
+SCM1[50].b[0][1] = (Ull)b2[49];
+SCM1[50].b[0][2] = (Ull)a[49][0];
+SCM0[51].b[0][0] = (Ull)b1[50];
+SCM1[51].b[0][0] = (Ull)b0[50];
+SCM0[51].b[0][1] = (Ull)b3[50];
+SCM1[51].b[0][1] = (Ull)b2[50];
+SCM1[51].b[0][2] = (Ull)a[50][0];
+SCM0[52].b[0][0] = (Ull)b1[51];
+SCM1[52].b[0][0] = (Ull)b0[51];
+SCM0[52].b[0][1] = (Ull)b3[51];
+SCM1[52].b[0][1] = (Ull)b2[51];
+SCM1[52].b[0][2] = (Ull)a[51][0];
+SCM0[53].b[0][0] = (Ull)b1[52];
+SCM1[53].b[0][0] = (Ull)b0[52];
+SCM0[53].b[0][1] = (Ull)b3[52];
+SCM1[53].b[0][1] = (Ull)b2[52];
+SCM1[53].b[0][2] = (Ull)a[52][0];
+SCM0[54].b[0][0] = (Ull)b1[53];
+SCM1[54].b[0][0] = (Ull)b0[53];
+SCM0[54].b[0][1] = (Ull)b3[53];
+SCM1[54].b[0][1] = (Ull)b2[53];
+SCM1[54].b[0][2] = (Ull)a[53][0];
+SCM0[55].b[0][0] = (Ull)b1[54];
+SCM1[55].b[0][0] = (Ull)b0[54];
+SCM0[55].b[0][1] = (Ull)b3[54];
+SCM1[55].b[0][1] = (Ull)b2[54];
+SCM1[55].b[0][2] = (Ull)a[54][0];
+SCM0[56].b[0][0] = (Ull)b1[55];
+SCM1[56].b[0][0] = (Ull)b0[55];
+SCM0[56].b[0][1] = (Ull)b3[55];
+SCM1[56].b[0][1] = (Ull)b2[55];
+SCM1[56].b[0][2] = (Ull)a[55][0];
+SCM0[57].b[0][0] = (Ull)b1[56];
+SCM1[57].b[0][0] = (Ull)b0[56];
+SCM0[57].b[0][1] = (Ull)b3[56];
+SCM1[57].b[0][1] = (Ull)b2[56];
+SCM1[57].b[0][2] = (Ull)a[56][0];
+SCM0[58].b[0][0] = (Ull)b1[57];
+SCM1[58].b[0][0] = (Ull)b0[57];
+SCM0[58].b[0][1] = (Ull)b3[57];
+SCM1[58].b[0][1] = (Ull)b2[57];
+SCM1[58].b[0][2] = (Ull)a[57][0];
+SCM0[59].b[0][0] = (Ull)b1[58];
+SCM1[59].b[0][0] = (Ull)b0[58];
+SCM0[59].b[0][1] = (Ull)b3[58];
+SCM1[59].b[0][1] = (Ull)b2[58];
+SCM1[59].b[0][2] = (Ull)a[58][0];
+SCM0[60].b[0][0] = (Ull)b1[59];
+SCM1[60].b[0][0] = (Ull)b0[59];
+SCM0[60].b[0][1] = (Ull)b3[59];
+SCM1[60].b[0][1] = (Ull)b2[59];
+SCM1[60].b[0][2] = (Ull)a[59][0];
+SCM0[62].o[0][0] = (Ull)c00[0];
+SCM1[62].b[0][0] = (Ull)c00[0];
+SCM0[62].o[0][1] = (Ull)c01[0];
+SCM1[62].b[0][1] = (Ull)c01[0];
+SCM0[62].o[0][2] = (Ull)c02[0];
+SCM1[62].b[0][2] = (Ull)c02[0];
+SCM0[62].o[0][3] = (Ull)c03[0];
+SCM1[62].b[0][3] = (Ull)c03[0];
+sc_param[0].LOOP0=LOOP0; sc_param[0].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[0], 0, emax6sc_pth_mm_00, &sc_param[0]);
+sc_param[1].LOOP0=LOOP0; sc_param[1].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[1], 0, emax6sc_pth_mm_01, &sc_param[1]);
+sc_param[2].LOOP0=LOOP0; sc_param[2].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[2], 0, emax6sc_pth_mm_02, &sc_param[2]);
+sc_param[3].LOOP0=LOOP0; sc_param[3].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[3], 0, emax6sc_pth_mm_03, &sc_param[3]);
+sc_param[4].LOOP0=LOOP0; sc_param[4].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[4], 0, emax6sc_pth_mm_04, &sc_param[4]);
+sc_param[5].LOOP0=LOOP0; sc_param[5].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[5], 0, emax6sc_pth_mm_05, &sc_param[5]);
+sc_param[6].LOOP0=LOOP0; sc_param[6].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[6], 0, emax6sc_pth_mm_06, &sc_param[6]);
+sc_param[7].LOOP0=LOOP0; sc_param[7].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[7], 0, emax6sc_pth_mm_07, &sc_param[7]);
+sc_param[8].LOOP0=LOOP0; sc_param[8].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[8], 0, emax6sc_pth_mm_08, &sc_param[8]);
+sc_param[9].LOOP0=LOOP0; sc_param[9].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[9], 0, emax6sc_pth_mm_09, &sc_param[9]);
+sc_param[10].LOOP0=LOOP0; sc_param[10].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[10], 0, emax6sc_pth_mm_10, &sc_param[10]);
+sc_param[11].LOOP0=LOOP0; sc_param[11].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[11], 0, emax6sc_pth_mm_11, &sc_param[11]);
+sc_param[12].LOOP0=LOOP0; sc_param[12].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[12], 0, emax6sc_pth_mm_12, &sc_param[12]);
+sc_param[13].LOOP0=LOOP0; sc_param[13].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[13], 0, emax6sc_pth_mm_13, &sc_param[13]);
+sc_param[14].LOOP0=LOOP0; sc_param[14].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[14], 0, emax6sc_pth_mm_14, &sc_param[14]);
+sc_param[15].LOOP0=LOOP0; sc_param[15].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[15], 0, emax6sc_pth_mm_15, &sc_param[15]);
+sc_param[16].LOOP0=LOOP0; sc_param[16].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[16], 0, emax6sc_pth_mm_16, &sc_param[16]);
+sc_param[17].LOOP0=LOOP0; sc_param[17].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[17], 0, emax6sc_pth_mm_17, &sc_param[17]);
+sc_param[18].LOOP0=LOOP0; sc_param[18].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[18], 0, emax6sc_pth_mm_18, &sc_param[18]);
+sc_param[19].LOOP0=LOOP0; sc_param[19].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[19], 0, emax6sc_pth_mm_19, &sc_param[19]);
+sc_param[20].LOOP0=LOOP0; sc_param[20].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[20], 0, emax6sc_pth_mm_20, &sc_param[20]);
+sc_param[21].LOOP0=LOOP0; sc_param[21].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[21], 0, emax6sc_pth_mm_21, &sc_param[21]);
+sc_param[22].LOOP0=LOOP0; sc_param[22].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[22], 0, emax6sc_pth_mm_22, &sc_param[22]);
+sc_param[23].LOOP0=LOOP0; sc_param[23].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[23], 0, emax6sc_pth_mm_23, &sc_param[23]);
+sc_param[24].LOOP0=LOOP0; sc_param[24].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[24], 0, emax6sc_pth_mm_24, &sc_param[24]);
+sc_param[25].LOOP0=LOOP0; sc_param[25].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[25], 0, emax6sc_pth_mm_25, &sc_param[25]);
+sc_param[26].LOOP0=LOOP0; sc_param[26].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[26], 0, emax6sc_pth_mm_26, &sc_param[26]);
+sc_param[27].LOOP0=LOOP0; sc_param[27].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[27], 0, emax6sc_pth_mm_27, &sc_param[27]);
+sc_param[28].LOOP0=LOOP0; sc_param[28].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[28], 0, emax6sc_pth_mm_28, &sc_param[28]);
+sc_param[29].LOOP0=LOOP0; sc_param[29].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[29], 0, emax6sc_pth_mm_29, &sc_param[29]);
+sc_param[30].LOOP0=LOOP0; sc_param[30].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[30], 0, emax6sc_pth_mm_30, &sc_param[30]);
+sc_param[31].LOOP0=LOOP0; sc_param[31].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[31], 0, emax6sc_pth_mm_31, &sc_param[31]);
+sc_param[32].LOOP0=LOOP0; sc_param[32].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[32], 0, emax6sc_pth_mm_32, &sc_param[32]);
+sc_param[33].LOOP0=LOOP0; sc_param[33].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[33], 0, emax6sc_pth_mm_33, &sc_param[33]);
+sc_param[34].LOOP0=LOOP0; sc_param[34].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[34], 0, emax6sc_pth_mm_34, &sc_param[34]);
+sc_param[35].LOOP0=LOOP0; sc_param[35].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[35], 0, emax6sc_pth_mm_35, &sc_param[35]);
+sc_param[36].LOOP0=LOOP0; sc_param[36].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[36], 0, emax6sc_pth_mm_36, &sc_param[36]);
+sc_param[37].LOOP0=LOOP0; sc_param[37].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[37], 0, emax6sc_pth_mm_37, &sc_param[37]);
+sc_param[38].LOOP0=LOOP0; sc_param[38].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[38], 0, emax6sc_pth_mm_38, &sc_param[38]);
+sc_param[39].LOOP0=LOOP0; sc_param[39].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[39], 0, emax6sc_pth_mm_39, &sc_param[39]);
+sc_param[40].LOOP0=LOOP0; sc_param[40].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[40], 0, emax6sc_pth_mm_40, &sc_param[40]);
+sc_param[41].LOOP0=LOOP0; sc_param[41].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[41], 0, emax6sc_pth_mm_41, &sc_param[41]);
+sc_param[42].LOOP0=LOOP0; sc_param[42].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[42], 0, emax6sc_pth_mm_42, &sc_param[42]);
+sc_param[43].LOOP0=LOOP0; sc_param[43].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[43], 0, emax6sc_pth_mm_43, &sc_param[43]);
+sc_param[44].LOOP0=LOOP0; sc_param[44].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[44], 0, emax6sc_pth_mm_44, &sc_param[44]);
+sc_param[45].LOOP0=LOOP0; sc_param[45].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[45], 0, emax6sc_pth_mm_45, &sc_param[45]);
+sc_param[46].LOOP0=LOOP0; sc_param[46].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[46], 0, emax6sc_pth_mm_46, &sc_param[46]);
+sc_param[47].LOOP0=LOOP0; sc_param[47].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[47], 0, emax6sc_pth_mm_47, &sc_param[47]);
+sc_param[48].LOOP0=LOOP0; sc_param[48].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[48], 0, emax6sc_pth_mm_48, &sc_param[48]);
+sc_param[49].LOOP0=LOOP0; sc_param[49].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[49], 0, emax6sc_pth_mm_49, &sc_param[49]);
+sc_param[50].LOOP0=LOOP0; sc_param[50].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[50], 0, emax6sc_pth_mm_50, &sc_param[50]);
+sc_param[51].LOOP0=LOOP0; sc_param[51].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[51], 0, emax6sc_pth_mm_51, &sc_param[51]);
+sc_param[52].LOOP0=LOOP0; sc_param[52].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[52], 0, emax6sc_pth_mm_52, &sc_param[52]);
+sc_param[53].LOOP0=LOOP0; sc_param[53].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[53], 0, emax6sc_pth_mm_53, &sc_param[53]);
+sc_param[54].LOOP0=LOOP0; sc_param[54].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[54], 0, emax6sc_pth_mm_54, &sc_param[54]);
+sc_param[55].LOOP0=LOOP0; sc_param[55].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[55], 0, emax6sc_pth_mm_55, &sc_param[55]);
+sc_param[56].LOOP0=LOOP0; sc_param[56].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[56], 0, emax6sc_pth_mm_56, &sc_param[56]);
+sc_param[57].LOOP0=LOOP0; sc_param[57].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[57], 0, emax6sc_pth_mm_57, &sc_param[57]);
+sc_param[58].LOOP0=LOOP0; sc_param[58].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[58], 0, emax6sc_pth_mm_58, &sc_param[58]);
+sc_param[59].LOOP0=LOOP0; sc_param[59].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[59], 0, emax6sc_pth_mm_59, &sc_param[59]);
+sc_param[60].LOOP0=LOOP0; sc_param[60].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[60], 0, emax6sc_pth_mm_60, &sc_param[60]);
+sc_param[61].LOOP0=LOOP0; sc_param[61].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[61], 0, emax6sc_pth_mm_61, &sc_param[61]);
+sc_param[62].LOOP0=LOOP0; sc_param[62].LOOP1=LOOP1; pthread_create((pthread_t*)&sc_pth[62], 0, emax6sc_pth_mm_62, &sc_param[62]);
+pthread_join(*(pthread_t*)&sc_pth[0], 0);
+pthread_join(*(pthread_t*)&sc_pth[1], 0);
+pthread_join(*(pthread_t*)&sc_pth[2], 0);
+pthread_join(*(pthread_t*)&sc_pth[3], 0);
+pthread_join(*(pthread_t*)&sc_pth[4], 0);
+pthread_join(*(pthread_t*)&sc_pth[5], 0);
+pthread_join(*(pthread_t*)&sc_pth[6], 0);
+pthread_join(*(pthread_t*)&sc_pth[7], 0);
+pthread_join(*(pthread_t*)&sc_pth[8], 0);
+pthread_join(*(pthread_t*)&sc_pth[9], 0);
+pthread_join(*(pthread_t*)&sc_pth[10], 0);
+pthread_join(*(pthread_t*)&sc_pth[11], 0);
+pthread_join(*(pthread_t*)&sc_pth[12], 0);
+pthread_join(*(pthread_t*)&sc_pth[13], 0);
+pthread_join(*(pthread_t*)&sc_pth[14], 0);
+pthread_join(*(pthread_t*)&sc_pth[15], 0);
+pthread_join(*(pthread_t*)&sc_pth[16], 0);
+pthread_join(*(pthread_t*)&sc_pth[17], 0);
+pthread_join(*(pthread_t*)&sc_pth[18], 0);
+pthread_join(*(pthread_t*)&sc_pth[19], 0);
+pthread_join(*(pthread_t*)&sc_pth[20], 0);
+pthread_join(*(pthread_t*)&sc_pth[21], 0);
+pthread_join(*(pthread_t*)&sc_pth[22], 0);
+pthread_join(*(pthread_t*)&sc_pth[23], 0);
+pthread_join(*(pthread_t*)&sc_pth[24], 0);
+pthread_join(*(pthread_t*)&sc_pth[25], 0);
+pthread_join(*(pthread_t*)&sc_pth[26], 0);
+pthread_join(*(pthread_t*)&sc_pth[27], 0);
+pthread_join(*(pthread_t*)&sc_pth[28], 0);
+pthread_join(*(pthread_t*)&sc_pth[29], 0);
+pthread_join(*(pthread_t*)&sc_pth[30], 0);
+pthread_join(*(pthread_t*)&sc_pth[31], 0);
+pthread_join(*(pthread_t*)&sc_pth[32], 0);
+pthread_join(*(pthread_t*)&sc_pth[33], 0);
+pthread_join(*(pthread_t*)&sc_pth[34], 0);
+pthread_join(*(pthread_t*)&sc_pth[35], 0);
+pthread_join(*(pthread_t*)&sc_pth[36], 0);
+pthread_join(*(pthread_t*)&sc_pth[37], 0);
+pthread_join(*(pthread_t*)&sc_pth[38], 0);
+pthread_join(*(pthread_t*)&sc_pth[39], 0);
+pthread_join(*(pthread_t*)&sc_pth[40], 0);
+pthread_join(*(pthread_t*)&sc_pth[41], 0);
+pthread_join(*(pthread_t*)&sc_pth[42], 0);
+pthread_join(*(pthread_t*)&sc_pth[43], 0);
+pthread_join(*(pthread_t*)&sc_pth[44], 0);
+pthread_join(*(pthread_t*)&sc_pth[45], 0);
+pthread_join(*(pthread_t*)&sc_pth[46], 0);
+pthread_join(*(pthread_t*)&sc_pth[47], 0);
+pthread_join(*(pthread_t*)&sc_pth[48], 0);
+pthread_join(*(pthread_t*)&sc_pth[49], 0);
+pthread_join(*(pthread_t*)&sc_pth[50], 0);
+pthread_join(*(pthread_t*)&sc_pth[51], 0);
+pthread_join(*(pthread_t*)&sc_pth[52], 0);
+pthread_join(*(pthread_t*)&sc_pth[53], 0);
+pthread_join(*(pthread_t*)&sc_pth[54], 0);
+pthread_join(*(pthread_t*)&sc_pth[55], 0);
+pthread_join(*(pthread_t*)&sc_pth[56], 0);
+pthread_join(*(pthread_t*)&sc_pth[57], 0);
+pthread_join(*(pthread_t*)&sc_pth[58], 0);
+pthread_join(*(pthread_t*)&sc_pth[59], 0);
+pthread_join(*(pthread_t*)&sc_pth[60], 0);
+pthread_join(*(pthread_t*)&sc_pth[61], 0);
+pthread_join(*(pthread_t*)&sc_pth[62], 0);
+/* EMAXSC end */
+#endif
+#ifndef EMAXSC
+	emax6.lmmio = emax6.lmmic;
+	emax6.lmmic = 1-emax6.lmmic;
+	emax6.mapdist = 0;
+	*(Uint*)&emax6.lmmi[0][1][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][1][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][1][0][emax6.lmmic].top = b[0];
+	*(Uint*)&emax6.lmmi[0][2][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][2][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][2][0][emax6.lmmic].top = b[1];
+	*(Uint*)&emax6.lmmi[0][3][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][3][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][3][0][emax6.lmmic].top = b[2];
+	*(Uint*)&emax6.lmmi[0][4][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][4][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][4][0][emax6.lmmic].top = b[3];
+	*(Uint*)&emax6.lmmi[0][5][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][5][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][5][0][emax6.lmmic].top = b[4];
+	*(Uint*)&emax6.lmmi[0][6][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][6][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][6][0][emax6.lmmic].top = b[5];
+	*(Uint*)&emax6.lmmi[0][7][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][7][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][7][0][emax6.lmmic].top = b[6];
+	*(Uint*)&emax6.lmmi[0][8][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][8][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][8][0][emax6.lmmic].top = b[7];
+	*(Uint*)&emax6.lmmi[0][9][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][9][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][9][0][emax6.lmmic].top = b[8];
+	*(Uint*)&emax6.lmmi[0][10][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][10][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][10][0][emax6.lmmic].top = b[9];
+	*(Uint*)&emax6.lmmi[0][11][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][11][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][11][0][emax6.lmmic].top = b[10];
+	*(Uint*)&emax6.lmmi[0][12][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][12][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][12][0][emax6.lmmic].top = b[11];
+	*(Uint*)&emax6.lmmi[0][13][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][13][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][13][0][emax6.lmmic].top = b[12];
+	*(Uint*)&emax6.lmmi[0][14][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][14][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][14][0][emax6.lmmic].top = b[13];
+	*(Uint*)&emax6.lmmi[0][15][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][15][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][15][0][emax6.lmmic].top = b[14];
+	*(Uint*)&emax6.lmmi[0][16][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][16][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][16][0][emax6.lmmic].top = b[15];
+	*(Uint*)&emax6.lmmi[0][17][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][17][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][17][0][emax6.lmmic].top = b[16];
+	*(Uint*)&emax6.lmmi[0][18][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][18][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][18][0][emax6.lmmic].top = b[17];
+	*(Uint*)&emax6.lmmi[0][19][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][19][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][19][0][emax6.lmmic].top = b[18];
+	*(Uint*)&emax6.lmmi[0][20][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][20][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][20][0][emax6.lmmic].top = b[19];
+	*(Uint*)&emax6.lmmi[0][21][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][21][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][21][0][emax6.lmmic].top = b[20];
+	*(Uint*)&emax6.lmmi[0][22][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][22][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][22][0][emax6.lmmic].top = b[21];
+	*(Uint*)&emax6.lmmi[0][23][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][23][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][23][0][emax6.lmmic].top = b[22];
+	*(Uint*)&emax6.lmmi[0][24][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][24][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][24][0][emax6.lmmic].top = b[23];
+	*(Uint*)&emax6.lmmi[0][25][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][25][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][25][0][emax6.lmmic].top = b[24];
+	*(Uint*)&emax6.lmmi[0][26][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][26][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][26][0][emax6.lmmic].top = b[25];
+	*(Uint*)&emax6.lmmi[0][27][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][27][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][27][0][emax6.lmmic].top = b[26];
+	*(Uint*)&emax6.lmmi[0][28][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][28][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][28][0][emax6.lmmic].top = b[27];
+	*(Uint*)&emax6.lmmi[0][29][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][29][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][29][0][emax6.lmmic].top = b[28];
+	*(Uint*)&emax6.lmmi[0][30][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][30][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][30][0][emax6.lmmic].top = b[29];
+	*(Uint*)&emax6.lmmi[0][31][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][31][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][31][0][emax6.lmmic].top = b[30];
+	*(Uint*)&emax6.lmmi[0][32][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][32][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][32][0][emax6.lmmic].top = b[31];
+	*(Uint*)&emax6.lmmi[0][33][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][33][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][33][0][emax6.lmmic].top = b[32];
+	*(Uint*)&emax6.lmmi[0][34][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][34][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][34][0][emax6.lmmic].top = b[33];
+	*(Uint*)&emax6.lmmi[0][35][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][35][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][35][0][emax6.lmmic].top = b[34];
+	*(Uint*)&emax6.lmmi[0][36][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][36][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][36][0][emax6.lmmic].top = b[35];
+	*(Uint*)&emax6.lmmi[0][37][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][37][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][37][0][emax6.lmmic].top = b[36];
+	*(Uint*)&emax6.lmmi[0][38][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][38][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][38][0][emax6.lmmic].top = b[37];
+	*(Uint*)&emax6.lmmi[0][39][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][39][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][39][0][emax6.lmmic].top = b[38];
+	*(Uint*)&emax6.lmmi[0][40][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][40][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][40][0][emax6.lmmic].top = b[39];
+	*(Uint*)&emax6.lmmi[0][41][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][41][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][41][0][emax6.lmmic].top = b[40];
+	*(Uint*)&emax6.lmmi[0][42][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][42][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][42][0][emax6.lmmic].top = b[41];
+	*(Uint*)&emax6.lmmi[0][43][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][43][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][43][0][emax6.lmmic].top = b[42];
+	*(Uint*)&emax6.lmmi[0][44][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][44][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][44][0][emax6.lmmic].top = b[43];
+	*(Uint*)&emax6.lmmi[0][45][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][45][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][45][0][emax6.lmmic].top = b[44];
+	*(Uint*)&emax6.lmmi[0][46][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][46][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][46][0][emax6.lmmic].top = b[45];
+	*(Uint*)&emax6.lmmi[0][47][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][47][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][47][0][emax6.lmmic].top = b[46];
+	*(Uint*)&emax6.lmmi[0][48][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][48][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][48][0][emax6.lmmic].top = b[47];
+	*(Uint*)&emax6.lmmi[0][49][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][49][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][49][0][emax6.lmmic].top = b[48];
+	*(Uint*)&emax6.lmmi[0][50][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][50][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][50][0][emax6.lmmic].top = b[49];
+	*(Uint*)&emax6.lmmi[0][51][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][51][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][51][0][emax6.lmmic].top = b[50];
+	*(Uint*)&emax6.lmmi[0][52][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][52][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][52][0][emax6.lmmic].top = b[51];
+	*(Uint*)&emax6.lmmi[0][53][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][53][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][53][0][emax6.lmmic].top = b[52];
+	*(Uint*)&emax6.lmmi[0][54][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][54][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][54][0][emax6.lmmic].top = b[53];
+	*(Uint*)&emax6.lmmi[0][55][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][55][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][55][0][emax6.lmmic].top = b[54];
+	*(Uint*)&emax6.lmmi[0][56][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][56][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][56][0][emax6.lmmic].top = b[55];
+	*(Uint*)&emax6.lmmi[0][57][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][57][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][57][0][emax6.lmmic].top = b[56];
+	*(Uint*)&emax6.lmmi[0][58][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][58][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][58][0][emax6.lmmic].top = b[57];
+	*(Uint*)&emax6.lmmi[0][59][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][59][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][59][0][emax6.lmmic].top = b[58];
+	*(Uint*)&emax6.lmmi[0][60][0][emax6.lmmic] = 0x01df0021|(0<<2);
+	emax6.lmmi[0][60][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][60][0][emax6.lmmic].top = b[59];
+	*(Uint*)&emax6.lmmi[0][60][2][emax6.lmmic] = 0x1c1f1001|(0<<2);
+	emax6.lmmi[0][60][2][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][60][2][emax6.lmmic].top = a0[0];
+	*(Uint*)&emax6.lmmi[0][62][0][emax6.lmmic] = 0x1c1f10e7|(1<<2);
+	emax6.lmmi[0][62][0][emax6.lmmic].ofs = 0;
+	emax6.lmmi[0][62][0][emax6.lmmic].top = c0[0];
+	emax6.lmmi_bitmap[0] = 0x5ffffffffffffffeLL;
+	emax6.lmmi_bitmap[1] = 0x0000000000000000LL;
+	emax6.lmmi_bitmap[2] = 0x1000000000000000LL;
+	emax6.lmmi_bitmap[3] = 0x0000000000000000LL;
+	emax6_pre_with_drain_cache();
+	get_nanosec(NANOS_ARM);
+	if (emax6.last_conf == emax6_conf_mm) {
+	  emax6.status = STATUS_DRAIN;
+	  emax6_check_lmmi_and_dma(0, 1, 0, 0, 62, 0);/*drain*/
+	}
+	get_nanosec(NANOS_DRAIN);
+	if (emax6.last_conf != emax6_conf_mm) {
+	  Dll *dst, *src;
+	  int i,j;
+	  emax6.status = STATUS_CONF;
+	  emax6.last_conf = emax6_conf_mm;
+	  emax6.lastdist = 0;
+	  dst = (Dll*)(((struct reg_ctrl*)emax6.reg_ctrl)->i[0].conf);
+	  src = (Dll*)emax6_conf_mm;
+	  for (i=0; i<sizeof(conf)/sizeof(Dll); i++)
+	    *dst++ = *src++;
+	  for (i=0; i<64; i++) {
+	    for (j=0; j<4; j++)
+	      emax6.lmmi[0][i][j][emax6.lmmio].v = 0;
+	  }
+	  while (((struct reg_ctrl*)emax6.reg_ctrl)->i[0].stat & 0xf0); //LMRING_BUSY 
+	}
+	get_nanosec(NANOS_CONF);
+	emax6.status = STATUS_REGV;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[0] = LOOP1;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[1] = -1LL;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[2] = LOOP0;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][0].br[3] = cofs;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[0] = (((4LL)*(8))<<(32))|((4LL)*(8));
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[1] = rofs;
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].breg[63][1].br[2] = (((480LL)*(4))<<(32))|((480LL)*(4));
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea0b = (Ull)b1[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][0].ea1b = (Ull)b0[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea0b = (Ull)b3[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][1].ea1b = (Ull)b2[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[1][2].ea1b = (Ull)a[0][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea0b = (Ull)b1[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][0].ea1b = (Ull)b0[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea0b = (Ull)b3[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][1].ea1b = (Ull)b2[1];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[2][2].ea1b = (Ull)a[1][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea0b = (Ull)b1[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][0].ea1b = (Ull)b0[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea0b = (Ull)b3[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][1].ea1b = (Ull)b2[2];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[3][2].ea1b = (Ull)a[2][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea0b = (Ull)b1[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][0].ea1b = (Ull)b0[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea0b = (Ull)b3[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][1].ea1b = (Ull)b2[3];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[4][2].ea1b = (Ull)a[3][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea0b = (Ull)b1[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][0].ea1b = (Ull)b0[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea0b = (Ull)b3[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][1].ea1b = (Ull)b2[4];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[5][2].ea1b = (Ull)a[4][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea0b = (Ull)b1[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][0].ea1b = (Ull)b0[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea0b = (Ull)b3[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][1].ea1b = (Ull)b2[5];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[6][2].ea1b = (Ull)a[5][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea0b = (Ull)b1[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][0].ea1b = (Ull)b0[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea0b = (Ull)b3[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][1].ea1b = (Ull)b2[6];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[7][2].ea1b = (Ull)a[6][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea0b = (Ull)b1[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][0].ea1b = (Ull)b0[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea0b = (Ull)b3[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][1].ea1b = (Ull)b2[7];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[8][2].ea1b = (Ull)a[7][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea0b = (Ull)b1[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][0].ea1b = (Ull)b0[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea0b = (Ull)b3[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][1].ea1b = (Ull)b2[8];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[9][2].ea1b = (Ull)a[8][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea0b = (Ull)b1[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][0].ea1b = (Ull)b0[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea0b = (Ull)b3[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][1].ea1b = (Ull)b2[9];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[10][2].ea1b = (Ull)a[9][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea0b = (Ull)b1[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][0].ea1b = (Ull)b0[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea0b = (Ull)b3[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][1].ea1b = (Ull)b2[10];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[11][2].ea1b = (Ull)a[10][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea0b = (Ull)b1[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][0].ea1b = (Ull)b0[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea0b = (Ull)b3[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][1].ea1b = (Ull)b2[11];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[12][2].ea1b = (Ull)a[11][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea0b = (Ull)b1[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][0].ea1b = (Ull)b0[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea0b = (Ull)b3[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][1].ea1b = (Ull)b2[12];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[13][2].ea1b = (Ull)a[12][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea0b = (Ull)b1[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][0].ea1b = (Ull)b0[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea0b = (Ull)b3[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][1].ea1b = (Ull)b2[13];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[14][2].ea1b = (Ull)a[13][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea0b = (Ull)b1[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][0].ea1b = (Ull)b0[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea0b = (Ull)b3[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][1].ea1b = (Ull)b2[14];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[15][2].ea1b = (Ull)a[14][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea0b = (Ull)b1[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][0].ea1b = (Ull)b0[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea0b = (Ull)b3[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][1].ea1b = (Ull)b2[15];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[16][2].ea1b = (Ull)a[15][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea0b = (Ull)b1[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][0].ea1b = (Ull)b0[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea0b = (Ull)b3[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][1].ea1b = (Ull)b2[16];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[17][2].ea1b = (Ull)a[16][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea0b = (Ull)b1[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][0].ea1b = (Ull)b0[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea0b = (Ull)b3[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][1].ea1b = (Ull)b2[17];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[18][2].ea1b = (Ull)a[17][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea0b = (Ull)b1[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][0].ea1b = (Ull)b0[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea0b = (Ull)b3[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][1].ea1b = (Ull)b2[18];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[19][2].ea1b = (Ull)a[18][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea0b = (Ull)b1[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][0].ea1b = (Ull)b0[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea0b = (Ull)b3[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][1].ea1b = (Ull)b2[19];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[20][2].ea1b = (Ull)a[19][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea0b = (Ull)b1[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][0].ea1b = (Ull)b0[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea0b = (Ull)b3[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][1].ea1b = (Ull)b2[20];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[21][2].ea1b = (Ull)a[20][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea0b = (Ull)b1[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][0].ea1b = (Ull)b0[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea0b = (Ull)b3[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][1].ea1b = (Ull)b2[21];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[22][2].ea1b = (Ull)a[21][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea0b = (Ull)b1[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][0].ea1b = (Ull)b0[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea0b = (Ull)b3[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][1].ea1b = (Ull)b2[22];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[23][2].ea1b = (Ull)a[22][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea0b = (Ull)b1[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][0].ea1b = (Ull)b0[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea0b = (Ull)b3[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][1].ea1b = (Ull)b2[23];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[24][2].ea1b = (Ull)a[23][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea0b = (Ull)b1[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][0].ea1b = (Ull)b0[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea0b = (Ull)b3[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][1].ea1b = (Ull)b2[24];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[25][2].ea1b = (Ull)a[24][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea0b = (Ull)b1[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][0].ea1b = (Ull)b0[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea0b = (Ull)b3[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][1].ea1b = (Ull)b2[25];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[26][2].ea1b = (Ull)a[25][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea0b = (Ull)b1[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][0].ea1b = (Ull)b0[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea0b = (Ull)b3[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][1].ea1b = (Ull)b2[26];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[27][2].ea1b = (Ull)a[26][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea0b = (Ull)b1[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][0].ea1b = (Ull)b0[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea0b = (Ull)b3[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][1].ea1b = (Ull)b2[27];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[28][2].ea1b = (Ull)a[27][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea0b = (Ull)b1[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][0].ea1b = (Ull)b0[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea0b = (Ull)b3[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][1].ea1b = (Ull)b2[28];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[29][2].ea1b = (Ull)a[28][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea0b = (Ull)b1[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][0].ea1b = (Ull)b0[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea0b = (Ull)b3[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][1].ea1b = (Ull)b2[29];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[30][2].ea1b = (Ull)a[29][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea0b = (Ull)b1[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][0].ea1b = (Ull)b0[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea0b = (Ull)b3[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][1].ea1b = (Ull)b2[30];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[31][2].ea1b = (Ull)a[30][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea0b = (Ull)b1[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][0].ea1b = (Ull)b0[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea0b = (Ull)b3[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][1].ea1b = (Ull)b2[31];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[32][2].ea1b = (Ull)a[31][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea0b = (Ull)b1[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][0].ea1b = (Ull)b0[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea0b = (Ull)b3[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][1].ea1b = (Ull)b2[32];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[33][2].ea1b = (Ull)a[32][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea0b = (Ull)b1[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][0].ea1b = (Ull)b0[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea0b = (Ull)b3[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][1].ea1b = (Ull)b2[33];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[34][2].ea1b = (Ull)a[33][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea0b = (Ull)b1[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][0].ea1b = (Ull)b0[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea0b = (Ull)b3[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][1].ea1b = (Ull)b2[34];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[35][2].ea1b = (Ull)a[34][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea0b = (Ull)b1[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][0].ea1b = (Ull)b0[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea0b = (Ull)b3[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][1].ea1b = (Ull)b2[35];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[36][2].ea1b = (Ull)a[35][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea0b = (Ull)b1[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][0].ea1b = (Ull)b0[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea0b = (Ull)b3[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][1].ea1b = (Ull)b2[36];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[37][2].ea1b = (Ull)a[36][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea0b = (Ull)b1[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][0].ea1b = (Ull)b0[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea0b = (Ull)b3[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][1].ea1b = (Ull)b2[37];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[38][2].ea1b = (Ull)a[37][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea0b = (Ull)b1[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][0].ea1b = (Ull)b0[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea0b = (Ull)b3[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][1].ea1b = (Ull)b2[38];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[39][2].ea1b = (Ull)a[38][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea0b = (Ull)b1[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][0].ea1b = (Ull)b0[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea0b = (Ull)b3[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][1].ea1b = (Ull)b2[39];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[40][2].ea1b = (Ull)a[39][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea0b = (Ull)b1[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][0].ea1b = (Ull)b0[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea0b = (Ull)b3[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][1].ea1b = (Ull)b2[40];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[41][2].ea1b = (Ull)a[40][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea0b = (Ull)b1[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][0].ea1b = (Ull)b0[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea0b = (Ull)b3[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][1].ea1b = (Ull)b2[41];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[42][2].ea1b = (Ull)a[41][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea0b = (Ull)b1[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][0].ea1b = (Ull)b0[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea0b = (Ull)b3[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][1].ea1b = (Ull)b2[42];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[43][2].ea1b = (Ull)a[42][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea0b = (Ull)b1[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][0].ea1b = (Ull)b0[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea0b = (Ull)b3[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][1].ea1b = (Ull)b2[43];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[44][2].ea1b = (Ull)a[43][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea0b = (Ull)b1[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][0].ea1b = (Ull)b0[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea0b = (Ull)b3[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][1].ea1b = (Ull)b2[44];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[45][2].ea1b = (Ull)a[44][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea0b = (Ull)b1[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][0].ea1b = (Ull)b0[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea0b = (Ull)b3[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][1].ea1b = (Ull)b2[45];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[46][2].ea1b = (Ull)a[45][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][0].ea0b = (Ull)b1[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][0].ea1b = (Ull)b0[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][1].ea0b = (Ull)b3[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][1].ea1b = (Ull)b2[46];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[47][2].ea1b = (Ull)a[46][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea0b = (Ull)b1[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][0].ea1b = (Ull)b0[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea0b = (Ull)b3[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][1].ea1b = (Ull)b2[47];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[48][2].ea1b = (Ull)a[47][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][0].ea0b = (Ull)b1[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][0].ea1b = (Ull)b0[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][1].ea0b = (Ull)b3[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][1].ea1b = (Ull)b2[48];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[49][2].ea1b = (Ull)a[48][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][0].ea0b = (Ull)b1[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][0].ea1b = (Ull)b0[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][1].ea0b = (Ull)b3[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][1].ea1b = (Ull)b2[49];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[50][2].ea1b = (Ull)a[49][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][0].ea0b = (Ull)b1[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][0].ea1b = (Ull)b0[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][1].ea0b = (Ull)b3[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][1].ea1b = (Ull)b2[50];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[51][2].ea1b = (Ull)a[50][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][0].ea0b = (Ull)b1[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][0].ea1b = (Ull)b0[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][1].ea0b = (Ull)b3[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][1].ea1b = (Ull)b2[51];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[52][2].ea1b = (Ull)a[51][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][0].ea0b = (Ull)b1[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][0].ea1b = (Ull)b0[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][1].ea0b = (Ull)b3[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][1].ea1b = (Ull)b2[52];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[53][2].ea1b = (Ull)a[52][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][0].ea0b = (Ull)b1[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][0].ea1b = (Ull)b0[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][1].ea0b = (Ull)b3[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][1].ea1b = (Ull)b2[53];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[54][2].ea1b = (Ull)a[53][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][0].ea0b = (Ull)b1[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][0].ea1b = (Ull)b0[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][1].ea0b = (Ull)b3[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][1].ea1b = (Ull)b2[54];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[55][2].ea1b = (Ull)a[54][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][0].ea0b = (Ull)b1[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][0].ea1b = (Ull)b0[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][1].ea0b = (Ull)b3[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][1].ea1b = (Ull)b2[55];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[56][2].ea1b = (Ull)a[55][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][0].ea0b = (Ull)b1[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][0].ea1b = (Ull)b0[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][1].ea0b = (Ull)b3[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][1].ea1b = (Ull)b2[56];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[57][2].ea1b = (Ull)a[56][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][0].ea0b = (Ull)b1[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][0].ea1b = (Ull)b0[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][1].ea0b = (Ull)b3[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][1].ea1b = (Ull)b2[57];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[58][2].ea1b = (Ull)a[57][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][0].ea0b = (Ull)b1[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][0].ea1b = (Ull)b0[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][1].ea0b = (Ull)b3[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][1].ea1b = (Ull)b2[58];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[59][2].ea1b = (Ull)a[58][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][0].ea0b = (Ull)b1[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][0].ea1b = (Ull)b0[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][1].ea0b = (Ull)b3[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][1].ea1b = (Ull)b2[59];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[60][2].ea1b = (Ull)a[59][0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][0].ea0o = (Ull)c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][0].ea1b = (Ull)c00[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][1].ea0o = (Ull)c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][1].ea1b = (Ull)c01[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][2].ea0o = (Ull)c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][2].ea1b = (Ull)c02[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][3].ea0o = (Ull)c03[0];
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].addr[62][3].ea1b = (Ull)c03[0];
+	get_nanosec(NANOS_REGV);
+	emax6.status = STATUS_RANGE;
+	{struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+	 Uint            lmmic     = emax6.lmmic;
+	*(Ull*)&(reg_ctrl->i[0].addr[1][0].top) = ((Ull)(emax6.lmmi[0][1][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][1][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][1][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[1][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[2][0].top) = ((Ull)(emax6.lmmi[0][2][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][2][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][2][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[2][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[3][0].top) = ((Ull)(emax6.lmmi[0][3][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][3][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][3][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[3][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[4][0].top) = ((Ull)(emax6.lmmi[0][4][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][4][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][4][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[4][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[5][0].top) = ((Ull)(emax6.lmmi[0][5][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][5][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][5][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[5][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[6][0].top) = ((Ull)(emax6.lmmi[0][6][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][6][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][6][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[6][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[7][0].top) = ((Ull)(emax6.lmmi[0][7][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][7][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][7][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[7][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[8][0].top) = ((Ull)(emax6.lmmi[0][8][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][8][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][8][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[8][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[9][0].top) = ((Ull)(emax6.lmmi[0][9][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][9][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][9][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[9][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[10][0].top) = ((Ull)(emax6.lmmi[0][10][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][10][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][10][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[10][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[11][0].top) = ((Ull)(emax6.lmmi[0][11][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][11][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][11][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[11][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[12][0].top) = ((Ull)(emax6.lmmi[0][12][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][12][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][12][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[12][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[13][0].top) = ((Ull)(emax6.lmmi[0][13][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][13][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][13][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[13][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[14][0].top) = ((Ull)(emax6.lmmi[0][14][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][14][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][14][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[14][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[15][0].top) = ((Ull)(emax6.lmmi[0][15][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][15][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][15][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[15][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[16][0].top) = ((Ull)(emax6.lmmi[0][16][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][16][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][16][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[16][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[17][0].top) = ((Ull)(emax6.lmmi[0][17][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][17][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][17][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[17][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[18][0].top) = ((Ull)(emax6.lmmi[0][18][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][18][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][18][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[18][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[19][0].top) = ((Ull)(emax6.lmmi[0][19][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][19][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][19][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[19][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[20][0].top) = ((Ull)(emax6.lmmi[0][20][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][20][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][20][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[20][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[21][0].top) = ((Ull)(emax6.lmmi[0][21][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][21][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][21][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[21][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[22][0].top) = ((Ull)(emax6.lmmi[0][22][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][22][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][22][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[22][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[23][0].top) = ((Ull)(emax6.lmmi[0][23][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][23][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][23][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[23][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[24][0].top) = ((Ull)(emax6.lmmi[0][24][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][24][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][24][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[24][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[25][0].top) = ((Ull)(emax6.lmmi[0][25][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][25][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][25][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[25][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[26][0].top) = ((Ull)(emax6.lmmi[0][26][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][26][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][26][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[26][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[27][0].top) = ((Ull)(emax6.lmmi[0][27][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][27][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][27][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[27][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[28][0].top) = ((Ull)(emax6.lmmi[0][28][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][28][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][28][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[28][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[29][0].top) = ((Ull)(emax6.lmmi[0][29][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][29][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][29][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[29][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[30][0].top) = ((Ull)(emax6.lmmi[0][30][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][30][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][30][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[30][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[31][0].top) = ((Ull)(emax6.lmmi[0][31][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][31][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][31][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[31][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[32][0].top) = ((Ull)(emax6.lmmi[0][32][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][32][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][32][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[32][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[33][0].top) = ((Ull)(emax6.lmmi[0][33][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][33][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][33][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[33][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[34][0].top) = ((Ull)(emax6.lmmi[0][34][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][34][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][34][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[34][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[35][0].top) = ((Ull)(emax6.lmmi[0][35][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][35][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][35][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[35][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[36][0].top) = ((Ull)(emax6.lmmi[0][36][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][36][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][36][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[36][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[37][0].top) = ((Ull)(emax6.lmmi[0][37][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][37][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][37][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[37][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[38][0].top) = ((Ull)(emax6.lmmi[0][38][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][38][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][38][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[38][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[39][0].top) = ((Ull)(emax6.lmmi[0][39][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][39][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][39][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[39][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[40][0].top) = ((Ull)(emax6.lmmi[0][40][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][40][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][40][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[40][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[41][0].top) = ((Ull)(emax6.lmmi[0][41][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][41][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][41][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[41][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[42][0].top) = ((Ull)(emax6.lmmi[0][42][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][42][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][42][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[42][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[43][0].top) = ((Ull)(emax6.lmmi[0][43][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][43][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][43][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[43][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[44][0].top) = ((Ull)(emax6.lmmi[0][44][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][44][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][44][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[44][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[45][0].top) = ((Ull)(emax6.lmmi[0][45][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][45][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][45][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[45][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[46][0].top) = ((Ull)(emax6.lmmi[0][46][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][46][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][46][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[46][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[47][0].top) = ((Ull)(emax6.lmmi[0][47][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][47][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][47][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[47][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[48][0].top) = ((Ull)(emax6.lmmi[0][48][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][48][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][48][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[48][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[49][0].top) = ((Ull)(emax6.lmmi[0][49][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][49][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][49][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[49][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[50][0].top) = ((Ull)(emax6.lmmi[0][50][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][50][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][50][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[50][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[51][0].top) = ((Ull)(emax6.lmmi[0][51][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][51][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][51][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[51][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[52][0].top) = ((Ull)(emax6.lmmi[0][52][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][52][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][52][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[52][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[53][0].top) = ((Ull)(emax6.lmmi[0][53][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][53][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][53][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[53][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[54][0].top) = ((Ull)(emax6.lmmi[0][54][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][54][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][54][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[54][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[55][0].top) = ((Ull)(emax6.lmmi[0][55][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][55][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][55][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[55][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[56][0].top) = ((Ull)(emax6.lmmi[0][56][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][56][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][56][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[56][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[57][0].top) = ((Ull)(emax6.lmmi[0][57][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][57][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][57][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[57][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[58][0].top) = ((Ull)(emax6.lmmi[0][58][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][58][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][58][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[58][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[59][0].top) = ((Ull)(emax6.lmmi[0][59][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][59][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][59][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[59][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[60][0].top) = ((Ull)(emax6.lmmi[0][60][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][0][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[60][2].top) = ((Ull)(emax6.lmmi[0][60][2][lmmic].top+*((Ushort*)&emax6.lmmi[0][60][2][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][60][2][lmmic].top;
+	*(Ull*)&(reg_ctrl->i[0].addr[62][0].top) = ((Ull)(emax6.lmmi[0][62][0][lmmic].top+*((Ushort*)&emax6.lmmi[0][62][0][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[0][62][0][lmmic].top;
+	}
+	get_nanosec(NANOS_RANGE);
+	emax6.status = STATUS_LOAD;
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 1, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 2, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 3, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 4, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 5, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 6, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 7, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 8, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 9, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 10, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 11, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 12, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 13, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 14, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 15, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 16, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 17, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 18, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 19, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 20, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 21, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 22, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 23, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 24, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 25, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 26, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 27, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 28, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 29, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 30, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 31, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 32, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 33, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 34, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 35, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 36, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 37, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 38, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 39, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 40, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 41, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 42, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 43, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 44, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 45, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 46, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 47, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 48, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 49, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 50, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 51, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 52, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 53, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 54, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 55, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 56, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 57, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 58, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 59, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 60, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 62, 0);/*load*/
+	emax6_check_lmmi_and_dma(0, 2, emax6.lastdist, 0, 60, 2);/*load*/
+	get_nanosec(NANOS_LOAD);
+	((struct reg_ctrl*)emax6.reg_ctrl)->i[0].cmd = 3LL; // EXEC
+	{struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+	 Uint            lmmic     = emax6.lmmic;
+	}
+	emax6.lmmd[62][0] = 0xff>>7;
+	while (((struct reg_ctrl*)emax6.reg_ctrl)->i[0].stat); //LMRING_BUSY|EXRING_BUSY
+	get_nanosec(NANOS_EXEC);
+asm volatile("b emax6_conf_end_mm\n"
+".align 5\n"
+".global emax6_conf_mm\n"
+"emax6_conf_mm:\n"
+"	.word	0x00224005, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00220005, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x008260ad, 0x00001000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0xffffffff, 0xffffffff\n"
+"	.word	0x00c2a02d, 0x00002000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0141c0ad, 0x00000000\n"
+"	.word	0xffff0000, 0xa0d81d81\n"
+"	.word	0x0080a000, 0x0003017e\n"
+"	.word	0xffffffff, 0x00000000\n"
+"	.word	0x00000001, 0x00000000\n"
+"	.word	0xffff0000, 0xa0d81d81\n"
+"	.word	0x00200e00, 0x0003005e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000001, 0x00000000\n"
+"	.word	0xffff0000, 0xe0d82000\n"
+"	.word	0x00000000, 0x00030018\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000001, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x03202027, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x03200027, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00806000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320a027, 0x00000000\n"
+"	.word	0xffff0000, 0x60d82000\n"
+"	.word	0x00020002, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x03208027, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00803000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00807000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00020008, 0x0003007c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00808000, 0x0003017e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x30d81d81\n"
+"	.word	0x00000000, 0x0003007e\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x70d82000\n"
+"	.word	0x00000000, 0x00030078\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x13204021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00020003, 0x00000064\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x0320c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x53214021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x4321c021, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000060\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00200025, 0x00004000\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab826002, 0x0006811c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00a06025, 0x00004000\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab82e00a, 0x0006811c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x01208025, 0x00004000\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab020000, 0x0006801c\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x01a0e025, 0x00004000\n"
+"	.word	0xffff0000, 0x08c81e51\n"
+"	.word	0xab000000, 0x00068018\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0xffff0000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+"	.word	0x00000000, 0x00000000\n"
+".global emax6_conf_end_mm\n"
+"emax6_conf_end_mm:\n"
+);
+#endif
+    }
+  }
+#ifndef EMAXSC
+	emax6_pre_with_drain_cache();
+	get_nanosec(NANOS_ARM);
+	{
+	  struct reg_ctrl *reg_ctrl = emax6.reg_ctrl;
+	  Uint   lmmic              = emax6.lmmic;
+	  Uint   mapdist            = emax6.mapdist;
+	  int    c,i,j;
+	  emax6.status = STATUS_DRAIN;
+	  for (j=0; j<4; j++) {
+	    for (i=0; i<64; i++) {
+	      if (emax6.lmmi_bitmap[j] & (1LL<<i) && emax6.lmmi[0][i][j][lmmic].rw) {
+	        for (c=0; c<1; c++) {
+	          if (emax6.lmmi[0][i][j][lmmic].ofs)
+	            *(Ull*)&(reg_ctrl->i[c].addr[i][j].top) = ((Ull)(emax6.lmmi[c][i][j][lmmic].top+*((Ushort*)&emax6.lmmi[c][i][j][lmmic]+1)*sizeof(Uint)+(sizeof(Uint)-1))<<32) | (Ull)(Uint)emax6.lmmi[c][i][j][lmmic].top;
+	          emax6_check_lmmi_and_dma(1, 1, mapdist, c, i, j);/*drain*/
+	        }
+	      }
+	    }
+	  }
+	}
+	get_nanosec(NANOS_DRAIN);
+#endif
+}

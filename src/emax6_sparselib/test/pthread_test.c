@@ -17,10 +17,12 @@ void *myfun(void *arg)
     for (i = 0; i < num; i++) {
         CPU_ZERO(&mask);
         CPU_SET(i, &mask);
+        //特定のCPUをセットする
         if (pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask) < 0) {
             fprintf(stderr, "set thread affinity failed\n");
         }
         CPU_ZERO(&get);
+        //printfで確かめるためにgetに動いているCPU一覧を入れる
         if (pthread_getaffinity_np(pthread_self(), sizeof(get), &get) < 0) {
             fprintf(stderr, "get thread affinity failed\n");
         }

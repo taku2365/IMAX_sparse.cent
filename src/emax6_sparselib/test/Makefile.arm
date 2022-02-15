@@ -2,7 +2,7 @@ PROJTOP	      = ../../
 OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
 SUFFIX = .c
 EMAX6_SPARSE_TEST = $(wildcard test_*$(SUFFIX)) 
-EMAX6_SPARSE_TEST_BIN = $(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST))
+EMAX6_SPARSE_TEST_BIN = $(addprefix ../build_arm/,$(patsubst %.c,%+dma,$(EMAX6_SPARSE_TEST)))
 CPP           = cpp -P
 CC            = gcc
 #CFLAGS        = -I. -O3 -g3 $(OPTION)
@@ -10,7 +10,7 @@ CFLAGS        =
 AS            = as
 ASFLAGS       = 
 LD            = gcc
-LDFLAGS       =  -L../
+LDFLAGS       =  -L ../ -L ../build_arm/
 LIBS          = -lm -lc -lX11 -lXext -lsparse -lpthread
 LIBFLAGS      = 
 OBJS	      =	test_chipB_div-emax6.o test_chipA_div-emax6.o test_normal_mode.o 
@@ -20,28 +20,27 @@ SHARED_LINK = 0
 SHARED_PATH =
 LINK_FORMAT = static
 
-test_%+dma:     test_%.o test_depend
+../build_arm/test_%+dma:     ../build_arm/test_%.o test_depend
+		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS) 
+
+../build_arm/test_%.o:		test_%.c
+		$(CC) $(INCLUDE)  $(CFLAGS) -c $< -o $@
+
+pthread_test:     pthread_test.o test_depend
 		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-test_%.o:		test_%.c
+pthread_test.o:	pthread_test.c 
 		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
-
-#pthread_test:     pthread_test.o test_depend
-#		$(CC) $(INCLUDE)  $(LDFLAGS) -o $@ $< $(LIBFLAGS) $(LIBS)
-
-#pthread_test.o:	pthread_test.c 
-#		$(CC) $(INCLUDE)  $(CFLAGS) -c $<
 
 
 
 
 
 ifeq ($(LINK_FORMAT),static)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.a
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../libsparse.so
+test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.so
 
 endif
 

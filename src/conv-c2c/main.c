@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.6 2021/12/21 04:00:00 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.8 2021/12/23 09:46:04 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*        Copyright (C) 2012 by NAIST. */
@@ -52,15 +52,26 @@ main(argc, argv) int argc; char **argv;
     fprintf(stderr, "can't open output:\"%s\"\n", objprog);
     exit(1);
   }
-  strncpy(pthprog = (char*)malloc(strlen(srcprog)+strlen(PTHSUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  strncpy(sc1prog = (char*)malloc(strlen(srcprog)+strlen(SC1SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
   for (i=0; i<strlen(srcprog); i++) {
-    if (pthprog[i] == '.' || pthprog[i] == '\0' ) {
-      strncpy(pthprog+i, PTHSUFX, strlen(PTHSUFX)+1);
+    if (sc1prog[i] == '.' || sc1prog[i] == '\0' ) {
+      strncpy(sc1prog+i, SC1SUFX, strlen(SC1SUFX)+1);
       break;
     }
   }
-  if ((pfile = fopen(pthprog, "w")) == NULL) {
-    fprintf(stderr, "can't open output:\"%s\"\n", pthprog);
+  if ((s1fil = fopen(sc1prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", sc1prog);
+    exit(1);
+  }
+  strncpy(sc2prog = (char*)malloc(strlen(srcprog)+strlen(SC2SUFX)+1), srcprog, strlen(srcprog)+1); /* xxx.x -> xxx-emax6pt.c */
+  for (i=0; i<strlen(srcprog); i++) {
+    if (sc2prog[i] == '.' || sc2prog[i] == '\0' ) {
+      strncpy(sc2prog+i, SC2SUFX, strlen(SC2SUFX)+1);
+      break;
+    }
+  }
+  if ((s2fil = fopen(sc2prog, "w")) == NULL) {
+    fprintf(stderr, "can't open output:\"%s\"\n", sc2prog);
     exit(1);
   }
 
@@ -70,7 +81,8 @@ main(argc, argv) int argc; char **argv;
   while (yyparse());
   fclose(yyin);
   fclose(ofile);
-  fclose(pfile);
+  fclose(s1fil);
+  fclose(s2fil);
 
   if (y_errornum) exit(1);
 

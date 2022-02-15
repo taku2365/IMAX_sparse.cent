@@ -41,6 +41,10 @@ void sparse_gemm_CHIP_div_B_impl3(Uint* C, const Uint* A, const Uint* B, emax6_s
     Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
     Sll B_row_size = params->B_row_size_param;    // 縛りなし
     Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    Sll A_row_size_pad = params->A_row_size_pad_param;
+    Sll A_col_size_pad = params->A_col_size_pad_param;
+    Sll B_row_size_pad = params->B_row_size_pad_param;
+    Sll B_col_size_pad = params->B_col_size_pad_param;
     // #define B_col_blk 16
     Sll A_col_blk = params->A_col_blk_param;
     Sll B_col_blk = params->B_col_blk_param;
@@ -49,7 +53,6 @@ void sparse_gemm_CHIP_div_B_impl3(Uint* C, const Uint* A, const Uint* B, emax6_s
     // Sll NCHIP = params->NCHIP_param;
     Sll W  = params->W_param;
     Sll H  = params->H_param;
-    Sll A_H_pad = 0;
     Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
     Sll C_col_blk_mul_A_row_size = C_col_blk*A_row_size;
     Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
@@ -60,7 +63,6 @@ void sparse_gemm_CHIP_div_B_impl3(Uint* C, const Uint* A, const Uint* B, emax6_s
     Ull Force,Force_reverse;
     Force = 1;
     // Force_reverse = ~Force;
-    A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
     Uint *a[H],*a_index[H],*a_debug[H+1];
     Uint  *b[NCHIP], *b0[NCHIP], *b1[NCHIP], *b2[NCHIP], *b3[NCHIP];
     Uint  *c0[NCHIP],*c0_debug[NCHIP];
@@ -72,7 +74,7 @@ void sparse_gemm_CHIP_div_B_impl3(Uint* C, const Uint* A, const Uint* B, emax6_s
             // A_col_blkずつとるが、最後のA_col_blkは余分な場合があるので減らす
             for (blk_iter_tmp=blk_iter;blk_iter_tmp<(blk_iter+A_col_blk+1);blk_iter_tmp++){
 
-                if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size+A_H_pad))){
+                if (((A_margin[blk_iter_tmp])==0)||(blk_iter_tmp*H>(A_col_size_pad))){
                     A_row_size_mul_2_mul_A_col_blk -= A_row_size*2;
                     A_col_blk_tmp -= 1;
                 }

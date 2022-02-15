@@ -89,7 +89,10 @@
 			"streambuf": "cpp",
 			"thread": "cpp",
 			"cfenv": "cpp",
-			"bit": "cpp"
+			"bit": "cpp",
+			"fcntl.h": "c",
+			"unistd.h": "c",
+			"stdlib.h": "c"
 		}
 	}
 }

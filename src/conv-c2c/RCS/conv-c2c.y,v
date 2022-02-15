@@ -1,10 +1,15 @@
-head	1.93;
+head	1.94;
 access;
 symbols;
 locks
-	nakashim:1.93; strict;
+	nakashim:1.94; strict;
 comment	@ * @;
 
+
+1.94
+date	2021.12.24.13.51.42;	author nakashim;	state Exp;
+branches;
+next	1.93;
 
 1.93
 date	2021.12.21.03.59.45;	author nakashim;	state Exp;
@@ -476,7 +481,7 @@ desc
 @@
 
 
-1.93
+1.94
 log
 @*** empty log message ***
 @
@@ -654,17 +659,12 @@ EMAX6AUNIT : CGRA_WHILE "(" VARIABLE CGRA_DECR ")" "\{" {
 		  i += 4;
 		}
 	      }
-	      fprintf(ofile, "#ifndef EMAXSC\n");
 	      fprintf(ofile, "\t%s[%d] = %s;\n", id[$11].name, c, buf);
-	      fprintf(ofile, "#endif\n");
 	    }
 	    free(buf);
 	  }
-	  else {
-	    fprintf(ofile, "#ifndef EMAXSC\n");
+	  else
 	    fprintf(ofile, "\t%s = %s;\n", id[$11].name, id[$13].name);
-	    fprintf(ofile, "#endif\n");
-	  }
 	  insn[last_insn].iheader.type = 2; /* FOR */
 	  insn[last_insn].iheader.row  = 0; /* top */
 	  insn[last_insn].iheader.col  = loop_no;
@@ -1709,6 +1709,25 @@ yyerror(s) char *s;
   /* lex -l により,yylinenoが使える */
   fprintf(stderr, "err%d: line %d: \"%s\": %s.\n", y_errornum, yylineno, yytext, s);
 }
+@
+
+
+1.93
+log
+@*** empty log message ***
+@
+text
+@a173 1
+	      fprintf(ofile, "#ifndef EMAXSC\n");
+a174 1
+	      fprintf(ofile, "#endif\n");
+d178 1
+a178 2
+	  else {
+	    fprintf(ofile, "#ifndef EMAXSC\n");
+a179 2
+	    fprintf(ofile, "#endif\n");
+	  }
 @
 
 
