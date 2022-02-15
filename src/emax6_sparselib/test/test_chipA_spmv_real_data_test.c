@@ -112,6 +112,7 @@ params.data_type = REAL_DATA_TYPE;
 
 // 43686119
 // 1418588
+// 1508967
 // params.data_format = DENSE_DENSE_FORMAT;
 // params.mode = DENSE_DENSE_MODE;
 // params.data_type = DENSE_TYPE;
@@ -128,6 +129,7 @@ Uint size_array[6] = {1003,512,256,128,64,32};
 // Uint size_array[6] = {32,32,32,32,32,32};
 sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
+sparse_rate_index = 0;
 if(params.mode == DENSE_SPMV_MODE){
     sparse_rate_len = 1;
     sparse_rate[0] = 0.0;

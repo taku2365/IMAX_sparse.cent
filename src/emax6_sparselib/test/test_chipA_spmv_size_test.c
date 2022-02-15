@@ -102,19 +102,15 @@ W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
 
-// params.mode = SPARSE_DENSE_58_SPMV_MODE;
-// params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
-// params.data_type = SPARSE_SPMV_TYPE;
+params.mode = SPARSE_DENSE_58_SPMV_MODE;
+params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
+params.data_type = SPARSE_SPMV_TYPE;
 
-params.mode = DENSE_SPMV_MODE;
-params.data_format = DENSE_DENSE_SPMV_FORMAT;
-params.data_type = DENSE_SPMV_TYPE;
+// params.mode = DENSE_SPMV_MODE;
+// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.data_type = DENSE_SPMV_TYPE;
 
 
-
-// params.data_format = DENSE_DENSE_FORMAT;
-// params.mode = DENSE_DENSE_MODE;
-// params.data_type = DENSE_TYPE;
 
 H = get_H_param(&params);
 // size_array_len = 2;

@@ -66,4 +66,5 @@ end
 
 
 b main 
-run   result/result.csv  ./data/poli/poli.mtx
+#run   result/result.csv  ./data/poli/poli.mtx
+run   result/result.csv  ./data/S80PI_n1/S80PI_n1.mtx

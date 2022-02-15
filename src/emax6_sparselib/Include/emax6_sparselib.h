@@ -110,6 +110,7 @@ typedef struct {
     Sll A_col_size_pad_param;
     Sll B_row_size_pad_param;
     Sll B_col_size_pad_param;  
+    Sll col_max; //1行あたりのnnzの最大数 
     A_blk_set* A_blk_sets    ;
     B_blk_set* B_blk_sets    ;
     float LMM_usage_A_kbyte ;

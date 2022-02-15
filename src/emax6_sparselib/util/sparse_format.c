@@ -94,6 +94,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     int* col_count = (int*) calloc((col_size),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
+    Sll col_max = 0;
     //A_colがHで割れないときのpadding
      //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
@@ -272,9 +273,9 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
         fprintf("data_format %d mode %d ,This pattern dosenot exsit !\n",emax6_param->data_format,emax6_param->mode);
     }
 
-//         get_nanosec(0);
-//   show_nanosec();
-//   exit(1);
+    for(tmp=0; tmp<row_size; tmp++){
+        if(row_count[tmp]>col_max){col_max = row_count[tmp]; }
+    }
 
 
     sparse_info->val_index_set = val_index_set;
@@ -286,6 +287,8 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     sparse_info->col_normal_size = col_size;
     sparse_info->paddings = paddings;
     sparse_info->margin = margin;
+
+    emax6_param->col_max = col_max;
 
        
    

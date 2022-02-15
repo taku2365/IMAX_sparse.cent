@@ -23,6 +23,7 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
       fprintf(stderr,"make_sparse_mat fail \n");
       exit(1);
   }
+  // Arow_size != A_row_size_pad A_row_sizeより大きい領域は埋めない 
   for (col=0; col<A_col_size; col++){
     for (row=0; row<A_row_size; row++) {
     tmp = (rand()%(int)100);
@@ -181,7 +182,7 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
       tmp = 0;
     }
     // if(emax6_param->mode == DENSE_DENSE_MODE){A_row_size = A_row_size_pad;}
-    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(tmp) ;
+    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(1) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size_pad]) && (*(float*)&A_tmp[row+col*A_row_size_pad] <= LIMIT))){
         col_index[nnz] = col;
@@ -221,7 +222,10 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
   Sll W; 
 
  
-  if ((f = fopen(filename, "r")) == NULL) {exit(1);}
+  if ((f = fopen(filename, "r")) == NULL) {
+    fprintf("this file does not exist make_sparse_mat.c:%d\n",__LINE__);
+      exit(1);
+    }
   
 
   if (mm_read_banner(f, &matcode) != 0)
@@ -229,7 +233,6 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
       printf("Could not process Matrix Market banner.\n");
       exit(1);
   }
-
 
   /*  This is how one can screen matrix types if their application */
   /*  only supports a subset of the Matrix Market data types.      */
