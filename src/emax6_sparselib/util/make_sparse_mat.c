@@ -129,14 +129,13 @@ static coo_format* make_sparse_mat_1(emax6_param* emax6_param,float sparsity){
               ||(tmp==100)&&(((1-sparsity)*10.0)>  10.0)   
               ||(tmp==101)&&(((1-sparsity)*10.0)>  10.1)
               ;   
-// 11624885
-// 43627788
+
     sum += tmp1;
     // tmp = (int) rand()%3;
     // tmp = (int) ((tmp == 0)||(tmp == 1));
     // rnad()%x 0~x-1の間の数字をとる
     // if(emax6_param->mode == DENSE_DENSE_MODE){A_row_size = A_row_size_pad;}
-    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(tmp1*row) ;
+    *(float*)&A_tmp[row+col*A_row_size_pad] = (float)(tmp1) ;
     // floatで等価の判断するの危険なので、LIMITで0判定をしている。
     if(!((-LIMIT <= *(float*)&A_tmp[row+col*A_row_size_pad]) && (*(float*)&A_tmp[row+col*A_row_size_pad] <= LIMIT))){
         col_index[nnz] = col;
@@ -201,23 +200,124 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
 }
 
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent){
+static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
+  // sparsity 何パーセント疎か
+  if(filename == NULL){
+    fprintf(stderr,"make_mat filename = NULL  LINE:%d \n",__LINE__);
+  }
+  int col,row,tmp,tmp1,nnz=0;
+  // int A_row_size = emax6_param->A_row_size_param;
+  coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
+  int ret_code;
+  MM_typecode matcode;
+  FILE *f;
+  Uint A_row_size, A_col_size; 
+  Uint A_row_size_pad, A_col_size_pad; 
+  Uint B_row_size, B_col_size; 
+  Uint B_row_size_pad, B_col_size_pad; 
+  Sll H = emax6_param->H_param;
+  int i;  
+  double val;
+  Sll W; 
+
+ 
+  if ((f = fopen(filename, "r")) == NULL) {exit(1);}
+  
+
+  if (mm_read_banner(f, &matcode) != 0)
+  {
+      printf("Could not process Matrix Market banner.\n");
+      exit(1);
+  }
+
+
+  /*  This is how one can screen matrix types if their application */
+  /*  only supports a subset of the Matrix Market data types.      */
+
+  if (mm_is_complex(matcode) && mm_is_matrix(matcode) && 
+          mm_is_sparse(matcode) )
+  {
+      printf("Sorry, this application does not support ");
+      printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+      exit(1);
+  }
+
+  /* find out size of sparse matrix .... */
+
+  if ((ret_code = mm_read_mtx_crd_size(f, &A_row_size, &A_col_size, &nnz)) !=0)
+      exit(1);
+
+
+    /* reseve memory for matrices */
+  B_row_size = A_col_size;
+  GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
+
+  if(emax6_param->mode == DENSE_SPMV_MODE){
+      W = 4;
+      GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+      GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
+  }
+  else if(emax6_param->mode == SPARSE_DENSE_58_SPMV_MODE){
+      W = 2;
+      GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
+      B_row_size_pad = B_row_size;  
+  }
+  else{
+      fprintf("future work spmv_size_test %d \n",__LINE__);
+      exit(1);
+  }
+
+  int* col_index  = (int *) calloc(nnz,sizeof(int));
+  int* row_index  = (int *) calloc(nnz,sizeof(int));
+  float* A_tmp = (float *) calloc(A_col_size_pad*A_row_size_pad,sizeof(float));
+
+
+  /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
+  /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
+  /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
+
+  for (i=0; i<nnz; i++)
+  {
+      fscanf(f, "%d %d %lf\n", &col_index[i], &row_index[i], &val);
+      col_index[i]--;  /* adjust from 1-based to 0-based */
+      row_index[i]--;
+      A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
+  }
+
+  fclose(f);
+  emax6_param->A_row_size_param = A_row_size;
+  emax6_param->A_row_size_pad_param = A_row_size_pad;
+  emax6_param->A_col_size_param = A_col_size;
+  emax6_param->A_col_size_pad_param = A_col_size_pad;
+  emax6_param->B_row_size_param = B_row_size;
+  emax6_param->B_row_size_pad_param = B_row_size_pad;
+  emax6_param->W_param = W;
+
+  coo->col_index = col_index;
+  coo->row_index = row_index;
+  coo->nnz = nnz;
+  coo->val = A_tmp;
+
+  return coo;
+}
+
+
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,char* filename){
   coo_format* coo = NULL;
 
   switch (emax6_param->data_type)
   {
   case DENSE_TYPE:
   case DENSE_SPMV_TYPE:
-    // coo = make_mat_0(emax6_param,sparsity);
-    // break;
-    // coo = make_sparse_mat_1(emax6_param,sparsity,biased_percent);
-    // break;
   case SPARSE_TYPE:
   case SPARSE_SPMV_TYPE:
     coo = make_sparse_mat_1(emax6_param,sparsity);
     break;
   case BIASED_SPARSE_TYPE:
     coo = make_sparse_mat_2(emax6_param,sparsity,biased_percent);
+    break;
+  case REAL_DATA_TYPE:
+    coo = make_sparse_mat_3(emax6_param,filename);
     break;
   default:
     fprintf(stderr,"This pattern doesnt exsit in make_sparse_mat\n");

@@ -131,7 +131,8 @@ typedef struct {
     int col_size;
 } coo_format;
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent_index);
+
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,char* filename);
 void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
 void free_sparse_format(emax6_sparse2* sparse_format);
 void free_sparse_mat(coo_format* coo);
@@ -169,6 +170,7 @@ Sll get_H_param(emax6_param* params);
 #define SPARSE_TYPE 2
 #define BIASED_SPARSE_TYPE 3
 #define SPARSE_SPMV_TYPE 4
+#define REAL_DATA_TYPE 5
 
 
 #define LMM_MAX_LENGTH 1024

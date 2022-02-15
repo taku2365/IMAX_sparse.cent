@@ -65,5 +65,5 @@ define p_32_2_AR
 end
 
 
-b main
-run
+b main 
+run   result/result.csv  ./data/poli/poli.mtx

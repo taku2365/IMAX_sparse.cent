@@ -241,7 +241,7 @@ void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug){
     case SPARSE_DENSE_46_MODE:
     case SPARSE_DENSE_58_VER2_MODE:
     case SPARSE_DENSE_58_VER3_MODE:
-    make_simd_random_mat(emax6_param,B,B_debug);
+      make_simd_random_mat(emax6_param,B,B_debug);
     break;
   default:
     fprintf(stderr,"orig dont has this pattern\n");

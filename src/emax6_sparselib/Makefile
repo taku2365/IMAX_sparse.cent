@@ -258,20 +258,20 @@ make_build_dir:
 
 ifeq ($(CENT),1)
 clean:
-	$(RM) *.o *.a *.so util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_cent/kernel/* ./build_cent/util/*  ./build_cent/3rd/Matrix_Format_Io/*
+	$(RM) *.o *.a *.so util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_cent/test_* ./build_cent/kernel/* ./build_cent/util/*  ./build_cent/3rd/Matrix_Format_Io/* ./build_cent/libsparse.a
 
 endif
 
 
 ifeq ($(ARM),1)
 clean:
-	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_arm/kernel/* ./build_arm/util/* ./build_arm/3rd/Matrix_Format_Io/*
+	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_arm/test_* ./build_arm/kernel/* ./build_arm/util/* ./build_arm/3rd/Matrix_Format_Io/* ./build_arm/libsparse.a
 
 endif
 
 
 ifeq ($(ARM_CROSS),1)
 clean:
-	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_arm_cross/kernel/* ./build_arm_cross/util/* ./build_arm_cross/3rd/Matrix_Format_Io/*
+	$(RM) *.o *.a *.so *-emax6.c util/*.o kernel/*.o kernel/*-* test/$(basename $(EMAX6_SPARSE_TEST)) ./build_arm_cross/test_* ./build_arm_cross/kernel/* ./build_arm_cross/util/* ./build_arm_cross/3rd/Matrix_Format_Io/* ./build_arm_cross/libsparse.a
 
 endif

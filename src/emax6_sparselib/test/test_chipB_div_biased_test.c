@@ -195,7 +195,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         C_debug = (Uint*)calloc(A_row_size*(B_col_size_pad),sizeof(Uint));
         B_debug = (Uint*)calloc((B_col_size_pad)*(B_row_size_pad),sizeof(Uint));
         // make A sparse matrix with sparsity percent
-        coo = make_mat(&params,sparse_rate[sparse_rate_index],biased_percent[biased_percent_index]);
+        coo = make_mat(&params,sparse_rate[sparse_rate_index],biased_percent[biased_percent_index],NULL);
         // coo = make_mat(params,0.1);
         // make B dense matrix for simd calculation
         make_random_mat(&params,B,B_debug);

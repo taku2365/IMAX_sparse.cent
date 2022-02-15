@@ -213,7 +213,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         
 
         // make A sparse matrix with sparsity percent
-        coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias);
+        coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,NULL);
         // coo = make_sparse_mat(params,0.1);
         // make B dense matrix for simd calculation
         make_random_mat(&params,B,B_debug);

@@ -201,7 +201,7 @@ B_debug = (Uint*)calloc((B_col_size_pad)*(B_row_size_pad),sizeof(Uint));
 
 
 // make A sparse matrix with sparsity percent
-coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias);
+coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,NULL);
 // coo = make_sparse_mat(params,0.1);
 // make B dense matrix for simd calculation
 make_random_mat(&params,B,B_debug);
