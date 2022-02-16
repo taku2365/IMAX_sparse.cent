@@ -247,7 +247,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         show_nanosec();
 
         #if !defined(CSIMDEBUG)
-        STORE_CSV(fp);
+        STORE_CSV(fp,sparse_rate_index);
         #endif
 
         orig(coo->val,B_debug,C0,&params);

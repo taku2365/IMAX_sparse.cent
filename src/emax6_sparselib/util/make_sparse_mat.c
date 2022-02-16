@@ -201,74 +201,29 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
 }
 
 
-static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
+static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   // sparsity 何パーセント疎か
-  if(filename == NULL){
-    fprintf(stderr,"make_mat filename = NULL  LINE:%d \n",__LINE__);
-  }
+
   int col,row,tmp,tmp1,nnz=0;
   // int A_row_size = emax6_param->A_row_size_param;
   coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
-  int ret_code;
-  MM_typecode matcode;
-  FILE *f;
   Uint A_row_size, A_col_size; 
   Uint A_row_size_pad, A_col_size_pad; 
   Uint B_row_size, B_col_size; 
   Uint B_row_size_pad, B_col_size_pad; 
-  Sll H = emax6_param->H_param;
+  Sll W; 
   int i;  
   double val;
-  Sll W; 
+  A_row_size     = emax6_param->A_row_size_param    ; 
+  A_row_size_pad = emax6_param->A_row_size_pad_param; 
+  A_col_size     = emax6_param->A_col_size_param    ; 
+  A_col_size_pad = emax6_param->A_col_size_pad_param; 
+  B_row_size     = emax6_param->B_row_size_param    ; 
+  B_row_size_pad = emax6_param->B_row_size_pad_param; 
+  W              = emax6_param->W_param             ; 
+  nnz            = emax6_param->nnz                 ; 
 
  
-  if ((f = fopen(filename, "r")) == NULL) {
-    fprintf("this file does not exist make_sparse_mat.c:%d\n",__LINE__);
-      exit(1);
-    }
-  
-
-  if (mm_read_banner(f, &matcode) != 0)
-  {
-      printf("Could not process Matrix Market banner.\n");
-      exit(1);
-  }
-
-  /*  This is how one can screen matrix types if their application */
-  /*  only supports a subset of the Matrix Market data types.      */
-
-  if (mm_is_complex(matcode) && mm_is_matrix(matcode) && 
-          mm_is_sparse(matcode) )
-  {
-      printf("Sorry, this application does not support ");
-      printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
-      exit(1);
-  }
-
-  /* find out size of sparse matrix .... */
-
-  if ((ret_code = mm_read_mtx_crd_size(f, &A_row_size, &A_col_size, &nnz)) !=0)
-      exit(1);
-
-
-    /* reseve memory for matrices */
-  B_row_size = A_col_size;
-  GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-
-  if(emax6_param->mode == DENSE_SPMV_MODE){
-      W = 4;
-      GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
-      GET_PAD_SIZE(B_row_size_pad,B_row_size,H);
-  }
-  else if(emax6_param->mode == SPARSE_DENSE_58_SPMV_MODE){
-      W = 2;
-      GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
-      B_row_size_pad = B_row_size;  
-  }
-  else{
-      fprintf("future work spmv_size_test %d \n",__LINE__);
-      exit(1);
-  }
 
   int* col_index  = (int *) calloc(nnz,sizeof(int));
   int* row_index  = (int *) calloc(nnz,sizeof(int));
@@ -287,14 +242,6 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
       A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
   }
 
-  fclose(f);
-  emax6_param->A_row_size_param = A_row_size;
-  emax6_param->A_row_size_pad_param = A_row_size_pad;
-  emax6_param->A_col_size_param = A_col_size;
-  emax6_param->A_col_size_pad_param = A_col_size_pad;
-  emax6_param->B_row_size_param = B_row_size;
-  emax6_param->B_row_size_pad_param = B_row_size_pad;
-  emax6_param->W_param = W;
 
   coo->col_index = col_index;
   coo->row_index = row_index;
@@ -305,7 +252,7 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,char* filename){
 }
 
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,char* filename){
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,FILE* fp){
   coo_format* coo = NULL;
 
   switch (emax6_param->data_type)
@@ -320,7 +267,7 @@ coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percen
     coo = make_sparse_mat_2(emax6_param,sparsity,biased_percent);
     break;
   case REAL_DATA_TYPE:
-    coo = make_sparse_mat_3(emax6_param,filename);
+    coo = make_sparse_mat_3(emax6_param,fp);
     break;
   default:
     fprintf(stderr,"This pattern doesnt exsit in make_sparse_mat\n");

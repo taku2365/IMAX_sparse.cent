@@ -70,7 +70,7 @@ int w, h;
 int count0, count1, count2;
 int nnz_A=0,nnz_B=0,nnz_B_debug=0;
 double sum=0,sum1=0;
-FILE* fp;
+FILE* fp,*fp1,*fp1_tmp;
 Uint size_array_index,size_array_len;
 Uint memsize_tmp;
 Sll H;
@@ -87,8 +87,8 @@ extern Ull nanosec[NANOS_CLASS];
 Uint tmp = 0;
 float zero_bias = 0.0;
 int index_tmp = 0;
-char* filename = NULL;
-
+char* data_name = NULL;
+char* store_name = "result/result.csv";
 A_row_size_ini = A_row_size = 1024*8LL;
 A_col_size_ini = A_col_size = 1024*8LL;
 B_row_size_ini = B_row_size = 1024*8LL;
@@ -108,7 +108,7 @@ params.data_type = REAL_DATA_TYPE;
 
 // params.mode = DENSE_SPMV_MODE;
 // params.data_format = DENSE_DENSE_SPMV_FORMAT;
-// params.data_type = DENSE_SPMV_TYPE;
+// params.data_type = REAL_DATA_TYPE;
 
 // 43686119
 // 1418588
@@ -150,20 +150,34 @@ else{
 }
 
 B_col_size_pad = 1;
-char* name = "result/result.csv";
 argc--;
 if(argc == 1){
-    name = argv[1]; 
+    store_name = argv[1]; 
 }
 else if(argc == 2){
-    name = argv[1]; 
-    filename = argv[2]; 
+    store_name = argv[1]; 
+    data_name = argv[2]; 
 }
 #if !defined(CSIMDEBUG)
-if((fp=fopen(name,"w"))==NULL){
+if(argc == 1){
+    store_name = argv[1]; 
+}
+else if(argc == 2){
+    store_name = argv[1]; 
+    data_name = argv[2]; 
+}
+#if !defined(CSIMDEBUG)
+if((fp=fopen(store_name,"w"))==NULL){
     fprintf(stderr,"cant open csv\n");
     exit(1);
 }
+if((fp1=fopen(data_name,"r"))==NULL){
+    fprintf(stderr,"cant open data set\n");
+    exit(1);
+}
+
+#endif
+
 #endif
 
 #if !defined(CSIMDEBUG)
@@ -180,8 +194,8 @@ Uint memsize = 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint)
                 
 memsize += ((memsize%32) != 0) ? (-memsize%32 + 32) : 0;
 sysinit((Uint)memsize,32,&membase);
-//A_colがHで割れないときのpadding
-coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,filename);
+//fpをparam取得まで進める
+fp1_tmp = get_param_from_dataset(&params,fp1);
 A_row_size = params.A_row_size_param;
 A_col_size = params.A_col_size_param;
 B_row_size = params.B_row_size_param;
@@ -217,12 +231,9 @@ C0 = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
 C_debug = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
 B_debug = (Uint*)calloc((B_col_size_pad)*(B_row_size_pad),sizeof(Uint));
 
-
-// make A sparse matrix with sparsity percent
-// coo = make_sparse_mat(params,0.1);
-// make B dense matrix for simd calculation
 make_random_mat(&params,B,B_debug);
 
+coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,fp1_tmp);
 if(coo == NULL){
     fprintf(stderr,"coo NULL \n");
     exit(1);
@@ -234,6 +245,8 @@ if((params.mode == DENSE_DENSE_MODE)||(params.mode == DENSE_SPMV_MODE)){
     }
 }   
 
+//疎行列取得
+
 reset_nanosec();
 A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size_pad,A_col_size,&params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
 get_nanosec(0);
@@ -244,7 +257,7 @@ get_nanosec(0);
 show_nanosec();
 
 #if !defined(CSIMDEBUG)
-STORE_CSV(fp);
+STORE_CSV(fp,sparse_rate_index);
 #endif
 
 orig(coo->val,B_debug,C0,&params);
@@ -306,7 +319,14 @@ if(membase != NULL){
 }
 #endif
 #if !defined(CSIMDEBUG)
+if(fp != NULL){
 fclose(fp);
+fp = NULL;
+}
+if(fp1_tmp != NULL){
+fclose(fp1_tmp);
+fp1_tmp = NULL;
+}
 #endif
 } // main
 

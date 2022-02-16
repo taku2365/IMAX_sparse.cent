@@ -109,10 +109,11 @@ typedef struct {
     Sll A_row_size_pad_param;
     Sll A_col_size_pad_param;
     Sll B_row_size_pad_param;
-    Sll B_col_size_pad_param;  
+    Sll B_col_size_pad_param;
+    int nnz                 ;  
     Sll col_max; //1行あたりのnnzの最大数 
-    A_blk_set* A_blk_sets    ;
-    B_blk_set* B_blk_sets    ;
+    A_blk_set* A_blk_sets   ;
+    B_blk_set* B_blk_sets   ;
     float LMM_usage_A_kbyte ;
     float LMM_usage_A_rate  ;
     float LMM_usage_B_kbyte ;
@@ -133,7 +134,7 @@ typedef struct {
 } coo_format;
 
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,char* filename);
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,FILE* fp);
 void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
 void free_sparse_format(emax6_sparse2* sparse_format);
 void free_sparse_mat(coo_format* coo);
@@ -150,6 +151,7 @@ int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, con
 int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 Sll get_H_param(emax6_param* params); 
+FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 //mode  
 #define DENSE_DENSE_MODE 0
 #define DENSE_SPMV_MODE 1 
@@ -177,12 +179,12 @@ Sll get_H_param(emax6_param* params);
 #define LMM_MAX_LENGTH 1024
 
 #define STORE_CSV_INI(fp) do { \
-    fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,LMM_usage_A_rate,LMM_usage_A_kbyte,LMM_usage_B_rate,LMM_usage_B_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total\n"); \
+    fprintf(fp,"LMM_usage_rate,LMM_usage_kbyte,LMM_usage_A_rate,LMM_usage_A_kbyte,LMM_usage_B_rate,LMM_usage_B_kbyte,sparse_rate,A_row_size,A_col_size,B_row_size,B_col_size,A_col_blk,B_col_blk,C_col_blk,NCHIP,W,ARM,DRAIN,CONF,REGV,RANGE,LOAD,EXEC,total,dataset_name\n"); \
     }\
     while (0)
 
 
-#define STORE_CSV(fp) do { \
+#define STORE_CSV(fp,sparse_rate_index) do { \
         fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",\
         params.LMM_usage_rate,params.LMM_usage_kbyte,\
         params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
@@ -193,6 +195,20 @@ Sll get_H_param(emax6_param* params);
         (int)params.C_col_blk_param,(int)NCHIP,(int)W,\
         nanosec[NANOS_ARM],nanosec[NANOS_DRAIN],nanosec[NANOS_CONF],nanosec[NANOS_REGV],\
         nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL]); \
+    }\
+    while (0)
+
+#define STORE_CSV_REAL_DATA(fp,sparse_rate_index,i) do { \
+        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%s\n",\
+        params.LMM_usage_rate,params.LMM_usage_kbyte,\
+        params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
+        params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
+        sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+        (int)B_row_size,(int)B_col_size,\
+        (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
+        (int)params.C_col_blk_param,(int)NCHIP,(int)W,\
+        nanosec[NANOS_ARM],nanosec[NANOS_DRAIN],nanosec[NANOS_CONF],nanosec[NANOS_REGV],\
+        nanosec[NANOS_RANGE],nanosec[NANOS_LOAD],nanosec[NANOS_EXEC],nanosec[NANOS_TOTAL],dataset_names[i]); \
     }\
     while (0)
 
@@ -208,6 +224,17 @@ Sll get_H_param(emax6_param* params);
             (int)params.C_col_blk_param,(int)NCHIP,(int)W);}\
     while (0)
 
+
+#define PRINT_PARAM_REAL_DATA(params,data_index) do { \
+        printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d data name %s \n",\
+            params.LMM_usage_rate,params.LMM_usage_kbyte,\
+            params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
+            params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
+            sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+            (int)B_row_size,(int)B_col_size,\
+            (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
+            (int)params.C_col_blk_param,(int)NCHIP,(int)W,dataset_names[data_index]);}\
+    while (0)
 
 
 #define GET_PAD_SIZE(pad_size,size,align) do {\

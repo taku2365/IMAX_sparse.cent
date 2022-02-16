@@ -215,7 +215,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         get_nanosec(0);
         show_nanosec();
         #if !defined(CSIMDEBUG)
-        STORE_CSV(fp);
+        STORE_CSV(fp,sparse_rate_index);
         #endif
 
 // nanosec: ARM:154329 DRAIN:9835515 CONF:13903 REGV:14830345 RANGE:4417095 LOAD:159138651 EXEC:12162100 total:200551938
