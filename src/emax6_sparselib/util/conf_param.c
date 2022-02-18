@@ -32,15 +32,17 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     Sll W; 
     int nnz = 0;
     int ret_code;
+    int i;
     MM_typecode matcode;
     Sll H = params->H_param;
+    
 
     if (!f) {
     fprintf(stderr,"this file does not exist make_sparse_mat.c:%d\n",__LINE__);
     exit(1);
     }
     
-
+//  "\377\177\000"
     if (mm_read_banner(f, &matcode) != 0)
     {
         printf("Could not process Matrix Market banner.\n");
@@ -90,7 +92,15 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     params->B_row_size_param = B_row_size;
     params->B_row_size_pad_param = B_row_size_pad;
     params->W_param = W;
-    params->nnz = nnz;
+    if(mm_is_symmetric(matcode)){
+        params->nnz = 2*nnz;
+    }
+    else{
+        params->nnz = nnz;
+    }
+    for(i=0; i<MATCODE_LEN; i++){
+    params->matcode[i] = matcode[i];
+    }
 
     return f;
     

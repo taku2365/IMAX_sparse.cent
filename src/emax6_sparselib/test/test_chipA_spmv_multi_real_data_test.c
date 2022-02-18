@@ -101,9 +101,11 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 Uint data_index = 0;
 emax6_param params; 
-Uint data_index_len = 6;
-char* dataset_names[6] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx","./data/S80PI_n1/S80PI_n1.mtx",\
-                          "./data/ACTIVSg2000/ACTIVSg2000.mtx","./data/ex10/ex10.mtx","./data/ex31/ex31.mtx"};
+Uint data_index_len = 1;
+// char* dataset_names[6] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx","./data/S80PI_n1/S80PI_n1.mtx",\
+//                           "./data/ACTIVSg2000/ACTIVSg2000.mtx","./data/ex10/ex10.mtx","./data/ex31/ex31.mtx"};
+
+char* dataset_names[1] = {"./data/ex10/ex10.mtx"};
 
 params.mode = SPARSE_DENSE_58_SPMV_MODE;
 params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
@@ -271,12 +273,12 @@ for(data_index=0; data_index<data_index_len; data_index++){
         for (row=0; row<A_row_size_pad; row+=1) {
             sum += *(float*)&C0[col+row*(B_col_size_pad)];
             sum1 += *(float*)&C_debug[col*A_row_size_pad+row];
-            if (abs(*(float*)&C0[col*A_row_size_pad+row] - *(float*)&C_debug[col*A_row_size_pad+row])>1) {
+            if (abs(*(float*)&C0[col*A_row_size_pad+row] - *(float*)&C_debug[col*A_row_size_pad+row])>0.1) {
                 count2++;
 
                 printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size_pad+row],
                                                     row, col, *(float*)&C_debug[col*A_row_size_pad+row]);
-                exit(1);
+                // exit(1);
             }
         }
     }

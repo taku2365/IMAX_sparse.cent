@@ -3,92 +3,92 @@
 ##         Primary writer: T.Sugahara##
 ##                sugahara.takuya.ss4@is.naist.jp ##
 
-ARCHIVE = $(AR) $(ARFLAGS)
+ARCHIVE := $(AR) $(ARFLAGS)
 
-SUFFIX   = .c
-SUFFIX1   = .cu
-EMAX6_SPARSE_KERNEL_SRC = $(wildcard ./kernel/*$(SUFFIX)) 
-EMAX6_SPARSE_KERNEL_ARM_SRC = $(patsubst %.c,%-emax6.c,$(EMAX6_SPARSE_KERNEL_SRC))
-EMAX6_SPARSE_KERNEL_OBJ = $(EMAX6_SPARSE_KERNEL_SRC:$(SUFFIX)=.o)
-EMAX6_SPARSE_KERNEL_ARM_OBJ = $(EMAX6_SPARSE_KERNEL_ARM_SRC:$(SUFFIX)=.o)
+SUFFIX   := .c
+SUFFIX1   := .cu
+EMAX6_SPARSE_KERNEL_SRC := $(wildcard ./kernel/*$(SUFFIX)) 
+EMAX6_SPARSE_KERNEL_ARM_SRC := $(patsubst %.c,%-emax6.c,$(EMAX6_SPARSE_KERNEL_SRC))
+EMAX6_SPARSE_KERNEL_OBJ := $(EMAX6_SPARSE_KERNEL_SRC:$(SUFFIX)=.o)
+EMAX6_SPARSE_KERNEL_ARM_OBJ := $(EMAX6_SPARSE_KERNEL_ARM_SRC:$(SUFFIX)=.o)
 
-EMAX6_SPARSE_UTIL_SRC = $(wildcard ./util/*$(SUFFIX)) 
-EMAX6_SPARSE_UTIL_ARM_SRC = $(EMAX6_SPARSE_UTIL_SRC)
-EMAX6_SPARSE_UTIL_OBJ = $(EMAX6_SPARSE_UTIL_SRC:$(SUFFIX)=.o)
+EMAX6_SPARSE_UTIL_SRC := $(wildcard ./util/*$(SUFFIX)) 
+EMAX6_SPARSE_UTIL_ARM_SRC := $(EMAX6_SPARSE_UTIL_SRC)
+EMAX6_SPARSE_UTIL_OBJ := $(EMAX6_SPARSE_UTIL_SRC:$(SUFFIX)=.o)
 
-MAT_FORMAT_SRC = $(wildcard ./3rd/Matrix_Format_Io/*.c) 
-MAT_FORMAT_INCLUDE = $(wildcard ./3rd/Matrix_Format_Io/*.h) 
-MAT_FORMAT_OBJ = $(MAT_FORMAT_SRC:.c=.o)
-
-
-3RD_SRC = $(MAT_FORMAT_SRC)
-3RD_OBJ = $(MAT_FORMAT_OBJ)
+MAT_FORMAT_SRC := $(wildcard ./3rd/Matrix_Format_Io/*.c) 
+MAT_FORMAT_INCLUDE := $(wildcard ./3rd/Matrix_Format_Io/*.h) 
+MAT_FORMAT_OBJ := $(MAT_FORMAT_SRC:.c=.o)
 
 
-EMAX6_SPARSE_LIB = $(addprefix ./build_cent/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_OBJ)))  $(addprefix ./build_cent/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
+3RD_SRC := $(MAT_FORMAT_SRC)
+3RD_OBJ := $(MAT_FORMAT_OBJ)
+
+
+EMAX6_SPARSE_LIB := $(addprefix ./build_cent/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_OBJ)))  $(addprefix ./build_cent/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
 				   $(addprefix ./build_cent/3rd/Matrix_Format_Io/,$(notdir $(3RD_OBJ)))
-EMAX6_SPARSE_ARM_LIB =  $(addprefix ./build_arm/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_ARM_OBJ)))  $(addprefix ./build_arm/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
+EMAX6_SPARSE_ARM_LIB :=  $(addprefix ./build_arm/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_ARM_OBJ)))  $(addprefix ./build_arm/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
 					    $(addprefix ./build_arm/3rd/Matrix_Format_Io/,$(notdir $(3RD_OBJ)))
-EMAX6_SPARSE_ARM_CROSS_LIB =  $(addprefix ./build_arm_cross/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_ARM_OBJ)))  $(addprefix ./build_arm_cross/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
+EMAX6_SPARSE_ARM_CROSS_LIB :=  $(addprefix ./build_arm_cross/kernel/,$(notdir $(EMAX6_SPARSE_KERNEL_ARM_OBJ)))  $(addprefix ./build_arm_cross/util/,$(notdir $(EMAX6_SPARSE_UTIL_OBJ)))\
 					  		  $(addprefix ./build_arm_cross/3rd/Matrix_Format_Io/,$(notdir $(3RD_OBJ)))
 
-EMAX6_SPARSE_TEST = $(wildcard ./test/test_*$(SUFFIX))  
-GPU_TEST = $(wildcard ./test/test_cu*$(SUFFIX1))
-EMAX6_INCLUDE = $(wildcard ./Include/*.h) 
-SHARED_TARGET = libsparse.so
-SHARED_FLAG = -shared -fPIC
+EMAX6_SPARSE_TEST := $(wildcard ./test/test_*$(SUFFIX))  
+GPU_TEST := $(wildcard ./test/test_cu*$(SUFFIX1))
+EMAX6_INCLUDE := $(wildcard ./Include/*.h) 
+SHARED_TARGET := libsparse.so
+SHARED_FLAG := -shared -fPIC
 ifeq ($(MACHTYPE),x86_64)
-ARCH = CENT
-CENT = 1
+CENT ?= 1
+ARCH ?= CENT
 endif
-ARM_CROSS = 0
-ARM = 0
+ARM_CROSS ?= 0
+ARM ?= 0
 ifeq ($(MACHTYPE),aarch64)
-ARM = 1
-CENT = 0
+ARM := 1
+CENT := 0
 endif
-LINK_FORMAT = static
-SHARED_LINK = 0
+LINK_FORMAT := static
+SHARED_LINK := 0
 
-CPP     = cpp -P
-CC      = gcc
-CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DDEBUG
-LDFLAGS = -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
-DEVICE_DEBUG = 0
+CPP     := cpp -P
+CC      := gcc
+CFLAGS  := -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DDEBUG
+LDFLAGS := -L/usr/lib64 -L/usr/local/lib -L/usr/lib64/atlas -lm -lrt -lopenblas -lX11 -lXext
+DEVICE_DEBUG := 0
 
 
 ifeq ($(GPU),1)
-CENT = 0 
+CENT := 0 
 endif
 
-AR_TARGET = ./build_cent/libsparse.a
+AR_TARGET := ./build_cent/libsparse.a
 
 ifeq ($(ARM_CROSS),1)
-AR_TARGET = ./build_arm_cross/libsparse.a
-CFLAGS  = -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DCSIMDEBUG
-CENT          = 0
-OPTION	      = -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA -DCSIMDEBUG
-CPP           = aarch64-elf-cpp -P
-CC            = aarch64-elf-gcc
-CFLAGS        = -I. -O3 -Wno-attributes $(OPTION)
-AS            = aarch64-elf-as
-ASFLAGS       = 
-LD            = aarch64-elf-ld
-ARCHIVE = aarch64-elf-ar $(ARFLAGS)
+AR_TARGET := ./build_arm_cross/libsparse.a
+CFLAGS  := -g3 -O0 -Wall  -msse3 -Wno-unknown-pragmas -funroll-loops -I/usr/local/include -I/usr/include/openblas -DCBLAS_GEMM -DEMAX6 -DCSIMDEBUG
+CENT          := 0
+OPTION	      := -mstrict-align -DDEBUG -DCYCLECNT -DARMSIML -DEMAX6 -DFPDDMA -DCSIMDEBUG
+CPP           := aarch64-elf-cpp -P
+CC            := aarch64-elf-gcc
+CFLAGS        := -I. -O3 -Wno-attributes $(OPTION)
+AS            := aarch64-elf-as
+ASFLAGS       := 
+LD            := aarch64-elf-ld
+ARCHIVE := aarch64-elf-ar $(ARFLAGS)
 
 endif
 
 
 ifeq ($(ARM),1)
-AR_TARGET = ./build_arm/libsparse.a
-CENT          = 0
-OPTION        = -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
-CPP           = cpp -P 
-CC            = gcc
+AR_TARGET := ./build_arm/libsparse.a
+CENT          := 0
+OPTION        := -mstrict-align  -DCYCLECNT -DARMZYNQ -DEMAX6 -DFPDDMA
+CPP           := cpp -P 
+CC            := gcc
 ifeq ($(DEVICE_DEBUG),1)
-CFLAGS        = -I. -O0 -g3 $(OPTION)
+CFLAGS        := -I. -O0 -g3 $(OPTION)
 else
-CFLAGS        = -I. -O2  $(OPTION)
+CFLAGS        := -I. -O2  $(OPTION)
 endif
 
 endif

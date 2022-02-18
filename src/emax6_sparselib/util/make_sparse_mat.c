@@ -164,6 +164,7 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
   int A_col_size_pad = emax6_param->A_col_size_pad_param;
   int B_row_size_pad = emax6_param->B_row_size_pad_param;
   int B_col_size_pad = emax6_param->B_col_size_pad_param;
+  
   coo_format* coo = (coo_format*)malloc(sizeof(coo_format));
   Uint* col_index = (Uint *)calloc(A_row_size_pad*A_col_size,sizeof(Uint));
   Uint* row_index = (Uint *)calloc(A_row_size_pad*A_col_size,sizeof(Uint));
@@ -214,6 +215,8 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   Sll W; 
   int i;  
   double val;
+  Sll nnz_shift1,nnz_tmp;
+  MM_typecode* matcode;
   A_row_size     = emax6_param->A_row_size_param    ; 
   A_row_size_pad = emax6_param->A_row_size_pad_param; 
   A_col_size     = emax6_param->A_col_size_param    ; 
@@ -222,6 +225,7 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   B_row_size_pad = emax6_param->B_row_size_pad_param; 
   W              = emax6_param->W_param             ; 
   nnz            = emax6_param->nnz                 ; 
+  matcode        = emax6_param->matcode             ;
 
  
 
@@ -233,19 +237,39 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
   /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
   /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
+  if(mm_is_symmetric(*matcode)){
+    nnz_shift1 = nnz>>1;
+    nnz_tmp = 0;
+    for (i=0; i<(nnz_shift1); i++)
+    {
+        fscanf(f, "%d %d %lf\n", &col_index[i], &row_index[i], &val);
+        col_index[i]--;  /* adjust from 1-based to 0-based */
+        row_index[i]--;
+        if(col_index[i] != row_index[i]){
 
-  for (i=0; i<nnz; i++)
-  {
+          col_index[nnz_tmp+nnz_shift1] = row_index[i];
+          row_index[nnz_tmp+nnz_shift1] = col_index[i];
+          A_tmp[row_index[nnz_tmp+nnz_shift1]+col_index[nnz_tmp+nnz_shift1]*A_row_size_pad] = (float)1;
+          nnz_tmp +=1;
+        }
+
+        A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
+    }
+  }
+  else{
+    for (i=0; i<nnz; i++)
+    {
       fscanf(f, "%d %d %lf\n", &col_index[i], &row_index[i], &val);
       col_index[i]--;  /* adjust from 1-based to 0-based */
       row_index[i]--;
       A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
+    }
   }
 
 
   coo->col_index = col_index;
   coo->row_index = row_index;
-  coo->nnz = nnz;
+  coo->nnz = (nnz>>1)+nnz_tmp;
   coo->val = A_tmp;
 
   return coo;
