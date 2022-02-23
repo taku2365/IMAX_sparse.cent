@@ -115,6 +115,7 @@ typedef struct {
     A_blk_set* A_blk_sets   ;
     B_blk_set* B_blk_sets   ;
     MM_typecode matcode     ;
+    float sparsity          ;
     float LMM_usage_A_kbyte ;
     float LMM_usage_A_rate  ;
     float LMM_usage_B_kbyte ;
@@ -200,11 +201,11 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f);
     while (0)
 
 #define STORE_CSV_REAL_DATA(fp,sparse_rate_index,i) do { \
-        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%s\n",\
+        fprintf(fp,"%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%1.7f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%s\n",\
         params.LMM_usage_rate,params.LMM_usage_kbyte,\
         params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
         params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
-        sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+        params.sparsity,(int)A_row_size,(int) A_col_size,\ 
         (int)B_row_size,(int)B_col_size,\
         (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
         (int)params.C_col_blk_param,(int)NCHIP,(int)W,\
@@ -227,11 +228,11 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 
 
 #define PRINT_PARAM_REAL_DATA(params,data_index) do { \
-        printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %2.1f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d data name %s \n",\
+        printf("LMM_usage_rate %2.2f LMM_usage_kbyte %2.2f LMM_usage_A_rate %2.2f LMM_usage_A_kbyte %2.2f LMM_usage_B_rate %2.2f LMM_usage_B_kbyte %2.2f sparse_rate %1.7f A_row_size %d A_col_size %d B_row_size %d B_col_size %d A_col_blk %d B_col_blk %d C_col_blk %d NCHIP %d W %d data name %s \n",\
             params.LMM_usage_rate,params.LMM_usage_kbyte,\
             params.LMM_usage_A_rate,params.LMM_usage_A_kbyte,\
             params.LMM_usage_B_rate,params.LMM_usage_B_kbyte,\
-            sparse_rate[sparse_rate_index],(int)A_row_size,(int) A_col_size,\
+            params.sparsity,(int)A_row_size,(int) A_col_size,\
             (int)B_row_size,(int)B_col_size,\
             (int)params.A_col_blk_param,(int)params.B_col_blk_param,\
             (int)params.C_col_blk_param,(int)NCHIP,(int)W,dataset_names[data_index]);}\

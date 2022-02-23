@@ -102,13 +102,13 @@ W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
 
-params.mode = SPARSE_DENSE_58_SPMV_MODE;
-params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
-
-// params.mode = DENSE_SPMV_MODE;
-// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.mode = SPARSE_DENSE_58_SPMV_MODE;
+// params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
+
+params.mode = DENSE_SPMV_MODE;
+params.data_format = DENSE_DENSE_SPMV_FORMAT;
+params.data_type = REAL_DATA_TYPE;
 
 // 43686119
 // 1418588
@@ -151,22 +151,21 @@ else{
 
 B_col_size_pad = 1;
 argc--;
-if(argc == 1){
-    store_name = argv[1]; 
+
+
+#if !defined(CSIMDEBUG)
+if(argc == 0){
+    store_name = "./result/result.csv";
+    data_name = "./data/reorientation_7/reorientation_7.mtx" ;
+}
+else if(argc == 1){
+    store_name = argv[1];
+    data_name = "./data/reorientation_7/reorientation_7.mtx" ;
 }
 else if(argc == 2){
     store_name = argv[1]; 
     data_name = argv[2]; 
 }
-#if !defined(CSIMDEBUG)
-if(argc == 1){
-    store_name = argv[1]; 
-}
-else if(argc == 2){
-    store_name = argv[1]; 
-    data_name = argv[2]; 
-}
-#if !defined(CSIMDEBUG)
 if((fp=fopen(store_name,"w"))==NULL){
     fprintf(stderr,"cant open csv\n");
     exit(1);
@@ -175,9 +174,6 @@ if((fp1=fopen(data_name,"r"))==NULL){
     fprintf(stderr,"cant open data set\n");
     exit(1);
 }
-
-#endif
-
 #endif
 
 #if !defined(CSIMDEBUG)

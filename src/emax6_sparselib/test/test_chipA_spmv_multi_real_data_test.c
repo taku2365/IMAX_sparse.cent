@@ -101,11 +101,13 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 Uint data_index = 0;
 emax6_param params; 
-Uint data_index_len = 1;
-// char* dataset_names[6] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx","./data/S80PI_n1/S80PI_n1.mtx",\
-//                           "./data/ACTIVSg2000/ACTIVSg2000.mtx","./data/ex10/ex10.mtx","./data/ex31/ex31.mtx"};
+Uint data_index_len = 10;
+char* dataset_names[10] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx","./data/S80PI_n1/S80PI_n1.mtx",
+                          "./data/ACTIVSg2000/ACTIVSg2000.mtx","./data/ex10/ex10.mtx","./data/ex31/ex31.mtx",
+                          "./data/cavity10/cavity10.mtx","./data/rdb3200l/rdb3200l.mtx","./data/reorientation_7/reorientation_7.mtx"
+                          ,"./data/tols4000/tols4000.mtx"};
 
-char* dataset_names[1] = {"./data/ex10/ex10.mtx"};
+// char* dataset_names[1] = {"./data/ex10/ex10.mtx"};
 
 params.mode = SPARSE_DENSE_58_SPMV_MODE;
 params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
@@ -115,30 +117,12 @@ params.data_type = REAL_DATA_TYPE;
 // params.data_format = DENSE_DENSE_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-// 43686119
-// 1418588
-// 1508967
 // params.data_format = DENSE_DENSE_FORMAT;
 // params.mode = DENSE_DENSE_MODE;
 // params.data_type = DENSE_TYPE;
 
 H = get_H_param(&params);
-// size_array_len = 2;
-// Uint size_array[1] = {32,64};
-// sparse_rate_len = 7;
-// float sparse_rate[7] = {0.3,0.3,0.3,0.3,0.3,0.3,0.3};
-size_array_len = 6;
-Uint size_array[6] = {1003,512,256,128,64,32};
-// size_array_len = 1;
-// Uint size_array[1] = {32};
-// Uint size_array[6] = {32,32,32,32,32,32};
-sparse_rate_len = 12;
-float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
-sparse_rate_index = 0;
-if(params.mode == DENSE_SPMV_MODE){
-    sparse_rate_len = 1;
-    sparse_rate[0] = 0.0;
-}
+
 GET_PAD_SIZE(A_row_size_pad,1024*8,H);
 GET_PAD_SIZE(A_col_size_pad,1024*8,H);
 if(params.mode == DENSE_SPMV_MODE){
@@ -176,6 +160,7 @@ STORE_CSV_INI(fp);
 #endif
 //はみ出た時の拡張
 Uchar* membase = NULL;
+sparse_rate_len = 4;
 Uint memsize = 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint)
                 +(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint)
                 +A_row_size_pad*(B_col_size_pad)*sizeof(Uint)
@@ -218,7 +203,7 @@ for(data_index=0; data_index<data_index_len; data_index++){
     B  = (Uint*)((Uchar*)A  + 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
     //aligmentを8byteにしないとバグる
     GET_PAD_SIZE(tmp,(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint),8);
-    C1 = (Uint*)((Uchar*)B  + tmp + 8*sizeof(Uint)*sparse_rate_index);
+    C1 = (Uint*)((Uchar*)B  + tmp + 8*sizeof(Uint));
     GET_PAD_SIZE(tmp,A_row_size_pad*(B_col_size_pad)*sizeof(Uint),8);
     sort_index = (Uint*)((Uchar*)C1 + tmp);
     C0 = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
@@ -229,7 +214,7 @@ for(data_index=0; data_index<data_index_len; data_index++){
 
     make_random_mat(&params,B,B_debug);
 
-    coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,fp1_tmp);
+    coo = make_mat(&params,params.sparsity,zero_bias,fp1_tmp);
     if(coo == NULL){
         fprintf(stderr,"coo NULL \n");
         exit(1);
@@ -278,7 +263,7 @@ for(data_index=0; data_index<data_index_len; data_index++){
 
                 printf("C0[%d][%d]=%f C_debug[%d][%d]=%f\n", row, col, *(float*)&C0[col*A_row_size_pad+row],
                                                     row, col, *(float*)&C_debug[col*A_row_size_pad+row]);
-                // exit(1);
+                exit(1);
             }
         }
     }
@@ -304,6 +289,9 @@ for(data_index=0; data_index<data_index_len; data_index++){
     if(C_debug != NULL){
     free(C_debug);
     C_debug = NULL;
+
+    fclose(fp1_tmp);
+    fp1_tmp = NULL;
 }
 mem_release(memsize,&membase);
 }

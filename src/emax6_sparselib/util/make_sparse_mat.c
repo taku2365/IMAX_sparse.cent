@@ -242,7 +242,7 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
     nnz_tmp = 0;
     for (i=0; i<(nnz_shift1); i++)
     {
-        fscanf(f, "%d %d %lf\n", &col_index[i], &row_index[i], &val);
+        fscanf(f, "%d %d %lf\n", &row_index[i], &col_index[i], &val);
         col_index[i]--;  /* adjust from 1-based to 0-based */
         row_index[i]--;
         if(col_index[i] != row_index[i]){
@@ -255,21 +255,22 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
 
         A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
     }
+    coo->nnz = (nnz>>1)+nnz_tmp;
   }
   else{
     for (i=0; i<nnz; i++)
     {
-      fscanf(f, "%d %d %lf\n", &col_index[i], &row_index[i], &val);
+      fscanf(f, "%d %d %lf\n", &row_index[i], &col_index[i], &val);
       col_index[i]--;  /* adjust from 1-based to 0-based */
       row_index[i]--;
       A_tmp[row_index[i]+col_index[i]*A_row_size_pad] = (float)1;
     }
+    coo->nnz = nnz;
   }
 
 
   coo->col_index = col_index;
   coo->row_index = row_index;
-  coo->nnz = (nnz>>1)+nnz_tmp;
   coo->val = A_tmp;
 
   return coo;

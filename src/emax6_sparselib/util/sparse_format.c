@@ -274,7 +274,8 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     }
 
     for(tmp=0; tmp<row_size; tmp++){
-        if(row_count[tmp]>col_max){col_max = row_count[tmp]; }
+        if(row_count[tmp]>col_max){
+            col_max = row_count[tmp]; }
     }
 
 

@@ -42,7 +42,6 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     exit(1);
     }
     
-//  "\377\177\000"
     if (mm_read_banner(f, &matcode) != 0)
     {
         printf("Could not process Matrix Market banner.\n");
@@ -85,6 +84,10 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
         exit(1);
     }
 
+    if((A_row_size == 0)||(A_col_size == 0)||(B_row_size == 0)){
+        fprintf(stderr,"invalid size conf_param.c:%d\n",__LINE__);
+        exit(1);
+    }
     params->A_row_size_param = A_row_size;
     params->A_row_size_pad_param = A_row_size_pad;
     params->A_col_size_param = A_col_size;
@@ -92,6 +95,7 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     params->B_row_size_param = B_row_size;
     params->B_row_size_pad_param = B_row_size_pad;
     params->W_param = W;
+    params->sparsity = nnz/(float)(A_row_size*A_col_size);
     if(mm_is_symmetric(matcode)){
         params->nnz = 2*nnz;
     }
