@@ -95,6 +95,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
     Sll col_max = 0;
+    Sll byte_conv = 0;
     //A_colがHで割れないときのpadding
      //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3
@@ -110,6 +111,15 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
         }
         // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
     for(col=0; col<col_size; col++) count_tmp[col+1] += count_tmp[col];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
+
+    //BとCがベクトルになるかで分ける
+    if((emax6_param->data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT)||(emax6_param->data_format == JDS_INDEX_VAL_SET_SPMV_FORMAT)){
+        byte_conv = 4;
+    }
+    else{
+        byte_conv = 4*2;
+    }
+
     if((emax6_param->data_format != CSR_INDEX_VAL_SET_FORMAT)&&(emax6_param->data_format != CSR_INDEX_VAL_SET_SPMV_FORMAT)){
         for(row=0; row<row_size; row++){
             count_tmp1 = --count_tmp[count[row]]; // ex count[3]==4　--count_tmp[count[3]]==--8 == 7  row=3に4つのnnzがあって、8-1=7番目に少ない(昇順)      --は0番目から始めるため
@@ -121,7 +131,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
             // 実際のIMAXではUllでの足し算なのでポインタの足し算にならない　よって×4がいる。
             //Cが元の場所に戻すためにつかう
             tmp = (row_size-1) - count_tmp1;
-            count_sort_index[tmp] =  row*2*4;  //降下sortされた場所に入る //simdの×2  spmvはAがsimdで2をかける
+            count_sort_index[tmp] =  row*byte_conv;  //降下sortされた場所に入る //simdの×2  spmvはAがsimdで2をかける
 
             //CSCで格納　indexがその列で何番目かを表している。分布数えソートは昇順なので、 (row_size-1) - count_tmp1dで降順にする。  
             // row_size-1は0から始めるために引く1している。            
@@ -181,10 +191,11 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
         //mmとspmvのCSR処理
 
         pad_max = 0;
-        // count max = col_size   rowとcolを混同してはいけない                                                                                                                  //row_nnz=2が3つ   row_nnz=3が4つ
+        // count max = col_size   rowとcolを混同してはいけない                                                                                                                  
+        
         for(row=0; row<row_size; row++){
             
-            count_sort_index[row] =  row*2*4;  //降下sortされた場所に入る //simdの×2 
+            count_sort_index[row] =  row*byte_conv;  //降下sortされた場所に入る //simdの×2 
             paddings[row] = count[row]/H + (int)(count[row]%H != 0); 
             if(paddings[row]>pad_max){pad_max = paddings[row];}   
         }
@@ -249,23 +260,37 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     else if(emax6_param->data_format == JDS_INDEX_VAL_SET_FORMAT){
         for(k=0; k<nnz; k++){
         
-        row_index_k = row_index[k];
-        col_index_k = col_index[k];
-        val_index_index = (count_sort_index_inverse[row_index_k]+row_count[row_index_k]*row_size)*2;
-        *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*2*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
+            row_index_k = row_index[k];
+            col_index_k = col_index[k];
+            val_index_index = (count_sort_index_inverse[row_index_k]+row_count[row_index_k]*row_size)*2;
+            //col_index_k*2*4はBをsimdで折りたたんでいるため
+            *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*2*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
 
-        row_count[row_index_k]++;
+            row_count[row_index_k]++;
         }
     }
-    else if(emax6_param->data_format == CSR_INDEX_VAL_SET_SPMV_FORMAT){
+    else if(emax6_param->data_format == JDS_INDEX_VAL_SET_SPMV_FORMAT){
         for(k=0; k<nnz; k++){
-        row_index_k = row_index[k];
-        col_index_k = col_index[k];
         
-        val_index_index = (row_index_k+row_count[row_index_k]*row_size)*2;
-        *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
+            row_index_k = row_index[k];
+            col_index_k = col_index[k];
+            val_index_index = (count_sort_index_inverse[row_index_k]+row_count[row_index_k]*row_size)*2;
+            //col_index_k*2*4はBをsimdで折りたたんでいるため
+            *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
 
-        row_count[row_index_k]++;
+            row_count[row_index_k]++;
+        }
+    }
+    else if((emax6_param->data_format == CSR_INDEX_VAL_SET_SPMV_FORMAT)){
+        for(k=0; k<nnz; k++){
+            row_index_k = row_index[k];
+            col_index_k = col_index[k];
+            
+            val_index_index = (row_index_k+row_count[row_index_k]*row_size)*2;
+            //折りたたんでないので*4だけでいい
+            *((Ull*)&val_index_set[val_index_index]) = ((Ull)col_index_k*4)<<32|(Ull)val_tmp[row_index_k+col_index_k*row_size];
+
+            row_count[row_index_k]++;
         }
 
     }
