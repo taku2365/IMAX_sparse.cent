@@ -113,7 +113,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     for(col=0; col<col_size; col++) count_tmp[col+1] += count_tmp[col];  //値を適切な場所に入れるため ex {[0] = 0, [1] = 1, [2] = 3, [3] = 4, [4] = 8, [5] = 9, [6] = 10, [7] = 10, [8] = 10, [9] = 10, [10] = 10}  
 
     //BとCがベクトルになるかで分ける
-    if((emax6_param->data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT)||(emax6_param->data_format == JDS_INDEX_VAL_SET_SPMV_FORMAT)){
+    if((emax6_param->data_format == CSR_INDEX_VAL_SET_SPMV_FORMAT)||(emax6_param->data_format == JDS_INDEX_VAL_SET_SPMV_FORMAT)){
         byte_conv = 4;
     }
     else{

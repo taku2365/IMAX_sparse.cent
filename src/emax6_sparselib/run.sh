@@ -36,6 +36,7 @@ if [ "$1" = "spmv_sparse_all" ]; then
     sed -i -e  's@\./.*/@@g' -e 's@\.mtx$@@g' ${csv_name}
     # ex ./run.sh spmv_sparse_all ./result/result_spmv_real_data_dense_ver.csv
     # ex ./run.sh spmv_sparse_all ./result/result_spmv_real_data_sparse_ver.csv
+    # ex ./run.sh spmv_sparse_all ./result/result_spmv_real_data_sparse_ver1.csv
 fi
 # -regextype posix-basicでgrepと同じ正規表現  拡張正規表現ならposix-egrep　!で否定
 # 末尾がgz以外削除

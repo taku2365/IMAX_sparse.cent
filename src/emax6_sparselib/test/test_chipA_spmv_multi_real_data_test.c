@@ -109,18 +109,18 @@ char* dataset_names[10] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx"
 
 // char* dataset_names[1] = {"./data/ex10/ex10.mtx"};
 
-params.mode = SPARSE_DENSE_58_SPMV_MODE;
-params.data_format = JDS_INDEX_VAL_SET_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
+// params.mode = SPARSE_DENSE_58_SPMV_MODE;
+// params.data_format = JDS_INDEX_VAL_SET_SPMV_FORMAT;
+// params.data_type = REAL_DATA_TYPE;
 
 
 // params.mode = SPARSE_DENSE_58_SPMV_MODE;
 // params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-// params.mode = DENSE_SPMV_MODE;
-// params.data_format = DENSE_DENSE_SPMV_FORMAT;
-// params.data_type = REAL_DATA_TYPE;
+params.mode = DENSE_SPMV_MODE;
+params.data_format = DENSE_DENSE_SPMV_FORMAT;
+params.data_type = REAL_DATA_TYPE;
 
 // params.data_format = DENSE_DENSE_FORMAT;
 // params.mode = DENSE_DENSE_MODE;

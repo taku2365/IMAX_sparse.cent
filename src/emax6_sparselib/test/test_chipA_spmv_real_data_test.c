@@ -102,13 +102,17 @@ W_ini          = W          = 4LL  ;
 // params = (emax6_param*) malloc(sizeof(emax6_param)*1);
 emax6_param params;
 
+params.mode = SPARSE_DENSE_58_SPMV_MODE;
+params.data_format = JDS_INDEX_VAL_SET_SPMV_FORMAT;
+params.data_type = REAL_DATA_TYPE;
+
 // params.mode = SPARSE_DENSE_58_SPMV_MODE;
 // params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-params.mode = DENSE_SPMV_MODE;
-params.data_format = DENSE_DENSE_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
+// params.mode = DENSE_SPMV_MODE;
+// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.data_type = REAL_DATA_TYPE;
 
 // 43686119
 // 1418588

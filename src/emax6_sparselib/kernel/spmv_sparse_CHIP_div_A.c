@@ -462,6 +462,7 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Sll A_col_blk = params->A_col_blk_param;
     Sll A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
     Sll A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk;
+    Sll A_row_size_mul_2_mul_A_col_blk1 = A_row_size_pad*2*A_col_blk;
     Sll A_row_size_mul_B_col_blk = A_row_size_pad*B_col_blk;
     Sll A_row_size_mul_4 = A_row_size_pad*4;
     Sll A_row_size_mul_8 = A_row_size_pad*8;
@@ -494,6 +495,22 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
             }
         }
         if(A_col_blk_tmp == 0){break;}
+        //制限つきで導入 
+        // TODO サイズに関わらず適用する
+        if((A_margin[blk_iter] < 500)&&(A_row_size_pad>2000)&&(A_col_blk == 1)&&(params->data_format == JDS_INDEX_VAL_SET_SPMV_FORMAT)){
+            //マージンをA_rowの確保用として使用
+            A_row_size_mul_2_mul_A_col_blk1 = A_margin[blk_iter];
+            //A_rowはsimd単位なので2の倍数にする
+            GET_PAD_SIZE(A_row_size_mul_2_mul_A_col_blk1,(A_row_size_mul_2_mul_A_col_blk1),2);
+            //A_rowの実行回数 simd単位で進むので2で割る
+            A_row_size_div2 = A_row_size_mul_2_mul_A_col_blk1>>1;
+            //indexとvalをセットで確保するので掛ける2
+            A_row_size_mul_2_mul_A_col_blk1 = A_row_size_mul_2_mul_A_col_blk1*2;
+            A_col_blk_tmp = 1;
+        }
+        else{
+            A_row_size_mul_2_mul_A_col_blk1 = A_row_size_mul_2_mul_A_col_blk;
+        }
 
         b =  (Uint*)B;
         c  = (Uint*)C;
@@ -521,8 +538,8 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     #define spaerse_core1_1(ar,ar_pre,br,br_pre,br_pre_pre,a_index,b_index) \
             exe(OP_FMA, &AR[ar][0], AR[ar_pre][0], EXP_H3210, BR[br_pre_pre][0][1], EXP_H1010, BR[br_pre][2][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); \
             exe(OP_FMA, &AR[ar][1], AR[ar_pre][1], EXP_H3210, BR[br_pre_pre][1][1], EXP_H1010, BR[br_pre][3][1], EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); \
-            mop(OP_LDR, 3, &BR[br][0][1],  (Ull)a0_base[a_index], (Ull)a_rofs,  MSK_W0, (Ull)a[a_index], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk); \
-            mop(OP_LDR, 3, &BR[br][1][1],  (Ull)a1_base[a_index], (Ull)a_rofs,  MSK_W0, (Ull)a[a_index], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk); \
+            mop(OP_LDR, 3, &BR[br][0][1],  (Ull)a0_base[a_index], (Ull)a_rofs,  MSK_W0, (Ull)a[a_index], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1); \
+            mop(OP_LDR, 3, &BR[br][1][1],  (Ull)a1_base[a_index], (Ull)a_rofs,  MSK_W0, (Ull)a[a_index], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1); \
             mop(OP_LDWR,3, &BR[br][2][1],  (Ull)b,  BR[br_pre][0][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size); \
             mop(OP_LDWR,3, &BR[br][3][1],  (Ull)b,  BR[br_pre][1][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size)
 
@@ -544,7 +561,7 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
             exe(OP_FAD, &AR[rp1][0], AR[r][0], EXP_H3210,  BR[rp1][0][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
             exe(OP_FAD, &AR[rp1][1], AR[r][1], EXP_H3210,  BR[rp1][1][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL);\
             mop(OP_STWR,  1, &AR[rp1][0],  (Ull)index_val, (Ull)c0, MSK_D0, (Ull)c, A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk);\
-            mop(OP_STWR,  1, &AR[rp1][1],  (Ull)index_val, (Ull)c1, MSK_D0, (Ull)c, A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk)
+            mop(OP_STWR,  1, &AR[rp1][1],  (Ull)index_val1, (Ull)c0, MSK_D0, (Ull)c, A_row_size_mul_B_col_blk, 0, 1, (Ull)NULL, A_row_size_mul_B_col_blk)
 
 
 //EMAX5A begin spmv1 mapdist=0
@@ -558,19 +575,19 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
             mop(OP_LDWR, 1, &c_index1, (Ull)A_sort_index2, (Ull)rofs, MSK_W0, (Ull)A_sort_index, A_row_size_pad, 0, Force, (Ull)NULL, A_row_size_pad);
             exe(OP_ADD,    &a_rofs, rofs, EXP_H3232, cofs, EXP_H3232, 0LL, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
             // exe(OP_ADD,    &c_rofs, rofs, EXP_H1010, 0LL, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */            
-            mop(OP_LDR,  3, &BR[2][0][1], (Ull)a0_base[0], (Ull)a_rofs, MSK_W0, (Ull)a[0], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk);             /* stage#1 */
-            mop(OP_LDR,  3, &BR[2][1][1], (Ull)a1_base[0], (Ull)a_rofs, MSK_W0, (Ull)a[0], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk);             /* stage#1 */
+            mop(OP_LDR,  3, &BR[2][0][1], (Ull)a0_base[0], (Ull)a_rofs, MSK_W0, (Ull)a[0], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1);             /* stage#1 */
+            mop(OP_LDR,  3, &BR[2][1][1], (Ull)a1_base[0], (Ull)a_rofs, MSK_W0, (Ull)a[0], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1);             /* stage#1 */
             exe(OP_ADD,    &c_index2, (Ull)c_index, EXP_H1010, 0LL, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
             exe(OP_ADD,    &c_index3, (Ull)c_index1, EXP_H1010,0LL, EXP_H3210, 0LL, EXP_H3210, OP_AND, 0xffffffff, OP_NOP, 0LL);            /* stage#1 */
-            mop(OP_LDR,  3, &BR[3][0][1], (Ull)a0_base[1], (Ull)a_rofs, MSK_W0, (Ull)a[1], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk); /* stage#2 16KB */
-            mop(OP_LDR,  3, &BR[3][1][1], (Ull)a1_base[1], (Ull)a_rofs, MSK_W0, (Ull)a[1], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk); /* stage#2 16KB */
+            mop(OP_LDR,  3, &BR[3][0][1], (Ull)a0_base[1], (Ull)a_rofs, MSK_W0, (Ull)a[1], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1); /* stage#2 16KB */
+            mop(OP_LDR,  3, &BR[3][1][1], (Ull)a1_base[1], (Ull)a_rofs, MSK_W0, (Ull)a[1], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1); /* stage#2 16KB */
             mop(OP_LDWR, 3, &BR[3][2][1], (Ull)b, BR[2][0][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL,B_col_blk_mul_B_row_size);             /* stage#2 */
             mop(OP_LDWR, 3, &BR[3][3][1], (Ull)b, BR[2][1][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL,B_col_blk_mul_B_row_size);             /* stage#2 */
 
             exe(OP_FML, &AR[4][0], BR[2][0][1], EXP_H1010, BR[3][2][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
             exe(OP_FML, &AR[4][1], BR[2][1][1], EXP_H1010, BR[3][3][1], EXP_H3210, 0LL, EXP_H3210, OP_NOP, 0LL, OP_NOP, 0LL); /* stage#3 */
-            mop(OP_LDR, 3, &BR[4][0][1],  (Ull)a0_base[2],    (Ull)a_rofs, MSK_W0, (Ull)a[2], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk);
-            mop(OP_LDR, 3, &BR[4][1][1],  (Ull)a1_base[2],    (Ull)a_rofs, MSK_W0, (Ull)a[2], A_row_size_mul_2_mul_A_col_blk, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk);
+            mop(OP_LDR, 3, &BR[4][0][1],  (Ull)a0_base[2],    (Ull)a_rofs, MSK_W0, (Ull)a[2], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1);
+            mop(OP_LDR, 3, &BR[4][1][1],  (Ull)a1_base[2],    (Ull)a_rofs, MSK_W0, (Ull)a[2], A_row_size_mul_2_mul_A_col_blk1, 0, Force, (Ull)NULL, A_row_size_mul_2_mul_A_col_blk1);
             mop(OP_LDWR,3, &BR[4][2][1],  (Ull)b,      BR[3][0][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
             mop(OP_LDWR,3, &BR[4][3][1],  (Ull)b,      BR[3][1][1], MSK_W1, (Ull)b,B_col_blk_mul_B_row_size, 0, Force, (Ull)NULL, B_col_blk_mul_B_row_size);
 
