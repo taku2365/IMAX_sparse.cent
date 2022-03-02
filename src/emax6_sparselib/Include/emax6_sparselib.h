@@ -93,8 +93,8 @@ typedef struct {
     Uint mode;    // 0:dense dense  1:sparse dense H=46 ver  2:sparse dense H=58 ver 3:sparse dense H=58 C_col_blk != B_col_blk ver
     Uint data_format; // 0:dense normal  1:csr index val set  2:jds index val separate  3:jds index val set 
     Uint data_type; // 0:normal 1:sparse 2:biased sparse
-    Sll H_param;
-    Sll W_param;
+    Uint H_param;
+    Uint W_param;
     Sll A_col_blk_param     ;
     Sll A_row_blk_param     ;
     Sll B_col_blk_param     ;
@@ -135,6 +135,14 @@ typedef struct {
     int col_size;
 } coo_format;
 
+typedef struct {
+    Uint mode; //データの取得方法
+    Uint init_allocate_mat_len; //確保したい初期の行列サイズ
+    Sll memsize; //確保するメモリのサイズ
+    Uchar* membase; //確保した先頭アドレス
+    FILE* fp;
+} init_param;
+
 
 coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,FILE* fp);
 void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
@@ -144,6 +152,7 @@ void orig(Uint* A_orig,Uint* B_orig,Uint* C_orig,emax6_param* emax6_param);
 void mem_release(Uint memsize,Uchar** membase);
 void IMAX_param_tunig(emax6_param* params);
 emax6_sparse2* sparse_format(int nnz,Ull* val,Uint* val_tmp, const int* const col_index, const int* const row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
+void get_param(emax6_param* params,init_param* init_param);
 // emax6_sparse2* sparse_format1(int nnz,Ull* val,const Uint* const val_tmp, int* col_index, int* row_index,int row_size,int col_size,emax6_param* emax6_param,Uint* sort_index,const char* file_name,int read_or_write);
 // void sparse_multiply(const emax6_sparse* const  A_sparse, const Uint* const B, Uint* C_sparse, int B_col_size);
 // int sparse_multiply_imax(const emax6_sparse* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
@@ -152,7 +161,7 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint* val_tmp, const int* const co
 int sparse_multiply_imax3(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
-Sll get_H_param(emax6_param* params); 
+Uint get_H_param(emax6_param* params); 
 FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 //mode  
 #define DENSE_DENSE_MODE 0
@@ -177,6 +186,11 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 #define SPARSE_SPMV_TYPE 4
 #define REAL_DATA_TYPE 5
 
+//init_param get_mode
+#define INITIAL_NO_MEMSIZE 0
+#define INITIAL_HAS_MEMSIZE 1
+#define RAND_DATA 2
+#define REAL_DATA 3
 
 #define LMM_MAX_LENGTH 1024
 

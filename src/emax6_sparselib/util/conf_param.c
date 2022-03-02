@@ -1,7 +1,7 @@
 #include "../Include/emax6_sparselib.h"
 
-Sll get_H_param(emax6_param* params){
-    Sll H = 0;
+Uint get_H_param(emax6_param* params){
+    Uint H;
     switch(params->mode){
 
         case DENSE_DENSE_MODE:
@@ -34,7 +34,7 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     int ret_code;
     int i;
     MM_typecode matcode;
-    Sll H = params->H_param;
+    Uint H = params->H_param;
     
 
     if (!f) {
@@ -108,4 +108,74 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
 
     return f;
     
+}
+
+static void get_param_spmv1(emax6_param* params,init_param* init_param){
+
+    Uint H = get_H_param(params);
+    Sll A_row_size_pad;
+    Sll A_col_size_pad;
+    Sll B_row_size_pad;
+    Sll B_col_size_pad;
+    Uint W = 2;
+    Uint init_len = init_param->init_allocate_mat_len;
+    Uchar* membase;
+    Sll memsize;
+    GET_PAD_SIZE(A_row_size_pad,init_len,H);
+    GET_PAD_SIZE(A_col_size_pad,init_len,H);
+    if(params->mode == DENSE_SPMV_MODE){
+        GET_PAD_SIZE(A_row_size_pad,init_len,(W*2));
+        GET_PAD_SIZE(B_row_size_pad,init_len,H);
+    }
+    else if(params->mode == SPARSE_DENSE_58_SPMV_MODE){
+        GET_PAD_SIZE(A_row_size_pad,init_len,W);
+        B_row_size_pad = init_len;  
+    }
+    else{
+        fprintf("future work conf_param.c %d \n",__LINE__);
+        exit(1);
+    }
+
+    B_col_size_pad = 1;
+    if(init_param->mode == INITIAL_NO_MEMSIZE){
+        memsize = 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint)
+                +(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint)
+                +A_row_size_pad*(B_col_size_pad)*sizeof(Uint)
+                // +A_row_size*B_col_size*sizeof(Uint)
+                +A_row_size_pad*sizeof(Uint)
+                +8*sizeof(Uint);
+    }
+    else{
+        memsize = init_param->memsize;
+    }
+    memsize += ((memsize%32) != 0) ? (-memsize%32 + 32) : 0;
+    sysinit((Uint)memsize,32,&membase);
+    init_param->membase = membase;
+    params->W_param = W;
+    init_param->memsize = memsize;
+}
+
+
+// static void get_param_spmv2(emax6_param* params,init_param* init_param){
+
+//     Uint H = get_H_param(params);
+//     Sll A_row_size_pad;
+//     Sll A_col_size_pad;
+//     Sll B_row_size_pad;
+//     Sll B_col_size_pad;
+//     init_param->fp1 = get_param_from_dataset(params,init_param->fp1);
+//     init_param->membase = membase;
+//     params->W_param = W;
+//     init_param->memsize = memsize;
+// }
+
+
+
+void get_param(emax6_param* params,init_param* init_param){
+    if((init_param->mode == INITIAL_NO_MEMSIZE)&&((params->mode == SPARSE_DENSE_58_SPMV_MODE)||(params->mode == DENSE_SPMV_MODE))){
+        get_param_spmv1(params,init_param);
+    }
+    // else if((init_param->mode == REAL_DATA)&&(params->mode == SPARSE_DENSE_58_SPMV_MODE)){
+    //     get_param_spmv2(params,init_param);
+    // }
 }

@@ -15,8 +15,8 @@ static void IMAX_param_tunig_spmv_impl0(emax6_param* params){
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 1                       ;
     Sll NCHIP      = params->NCHIP_param     ;
-    Sll W          = params->W_param         ;
-    Sll H          = params->H_param         ;
+    Uint W         = params->W_param         ;
+    Uint H          = params->H_param         ;
     Uint B_col_pad = 0;
     if(NCHIP>1){
         fprintf(stderr,"you need to support MUlti CHIP IMAX_param_tuning %d \n",__LINE__);
@@ -68,8 +68,8 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
-    Sll W          = params->W_param         ;
-    Sll H          = params->H_param         ;
+    Uint W         = params->W_param         ;
+    Uint H          = params->H_param         ;
     Uint B_col_pad = 0;
 
     // LMM_SIZE 64k LMM>>32 32k
@@ -135,8 +135,8 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
     Sll A_col_blk  = 0                         ;
     Sll B_col_blk  = 0                         ;
     Sll NCHIP      = params->NCHIP_param       ;
-    Sll W          = params->W_param           ;
-    Sll H          = params->H_param           ;
+    Uint W         = params->W_param           ;
+    Uint H          = params->H_param           ;
     Uint A_H_pad   = 0                       ;
     Uint B_col_pad = 0;
     Uint LMM_MAX_LENGTH_modify = LMM_MAX_LENGTH - LMM_MAX_LENGTH%H;
@@ -269,8 +269,8 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
-    Sll W          = params->W_param         ;
-    Sll H          = params->H_param         ;
+    Uint W         = params->W_param         ;
+    Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
@@ -329,8 +329,8 @@ static void IMAX_param_tunig_spmv_impl2(emax6_param* params){
     Sll A_col_blk  = 0                       ;
     Sll B_col_blk  = 1                       ;
     Sll NCHIP      = params->NCHIP_param     ;
-    Sll W          = params->W_param         ;
-    Sll H          = params->H_param         ;
+    Uint W         = params->W_param         ;
+    Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
@@ -367,8 +367,8 @@ static void IMAX_param_tunig_impl3(emax6_param* params){
     Sll B_col_blk  = 0                       ;
     Sll C_col_blk  = 0                       ;
     Sll NCHIP      = params->NCHIP_param     ;
-    Sll W          = params->W_param         ;
-    Sll H          = params->H_param         ;
+    Uint W         = params->W_param         ;
+    Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 

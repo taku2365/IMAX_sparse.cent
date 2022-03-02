@@ -353,7 +353,7 @@ double sum=0,sum1=0;
 FILE* fp;
 Uint size_array_index,size_array_len;
 Uint memsize_tmp;
-Sll H;
+Uint H;
 Sll A_row_size_ini,A_row_size;
 Sll A_col_size_ini,A_col_size;
 Sll B_row_size_ini,B_row_size;

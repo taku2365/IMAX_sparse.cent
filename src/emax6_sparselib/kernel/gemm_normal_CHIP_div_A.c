@@ -42,8 +42,8 @@
 //     Sll B_col_blk = params->B_col_blk_param;
 //     /*Sll NCHIP 4*/
 //     // Sll NCHIP = params->NCHIP_param;
-//     Sll W  = params->W_param;
-//     Sll H  = params->H_param;
+//     Uint W = params->W_param;
+//     Uint H  = params->H_param;
 //     // Sll A_col_blk = 1;
 //     Sll A_col_blk = params->A_col_blk_param;
 //     Sll A_row_size_mul_mul_A_col_blk = A_row_size*A_col_blk;

@@ -55,8 +55,8 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Sll B_col_blk = params->B_col_blk_param;
     /*Sll NCHIP 4*/
     // Sll NCHIP = params->NCHIP_param;
-    Sll W  = params->W_param;
-    Sll H  = params->H_param;
+    Uint W = params->W_param;
+    Uint H  = params->H_param;
     // Sll A_col_blk = 1;
     Sll A_col_blk = params->A_col_blk_param;
     Sll A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
@@ -455,8 +455,8 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Sll B_col_blk = params->B_col_blk_param;
     /*Sll NCHIP 4*/
     // Sll NCHIP = params->NCHIP_param;
-    Sll W  = params->W_param;
-    Sll H  = params->H_param;
+    Uint W = params->W_param;
+    Uint H  = params->H_param;
     // Sll A_col_blk = 1;
     Sll A_col_blk = params->A_col_blk_param;
     Sll A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;

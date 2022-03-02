@@ -42,8 +42,8 @@
 //   Sll B_col_blk = params->B_col_blk_param;
 //   /*Sll NCHIP 4*/
 //   // Sll NCHIP = params->NCHIP_param;
-//   Sll W  = params->W_param;
-//   Sll H  = params->H_param;
+//   Uint W = params->W_param;
+//   Uint H  = params->H_param;
 //   Sll A_H_pad = 0;
 //   A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
 //   Sll A_row_blk = params->A_row_blk_param;
@@ -248,8 +248,8 @@ void gemm_normal_CHIP_div_B(Uint* C, const Uint* A, const Uint* B,emax6_param* p
     Sll B_col_blk = params->B_col_blk_param;
     /*Sll NCHIP 4*/
     // Sll NCHIP = params->NCHIP_param;
-    Sll W  = params->W_param;
-    Sll H  = params->H_param;
+    Uint W = params->W_param;
+    Uint H  = params->H_param;
     // Sll A_col_blk = 1;
     Sll A_col_blk = params->A_col_blk_param;
     Sll A_row_size_mul_mul_A_col_blk = A_row_size*A_col_blk;

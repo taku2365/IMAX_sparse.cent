@@ -74,8 +74,8 @@ void sparse_gemm_CHIP_div_B_impl1(Uint* C, const Uint* A, const Uint* B, emax6_s
   Sll B_col_blk = params->B_col_blk_param;
   /*Sll NCHIP 4*/
   // Sll NCHIP = params->NCHIP_param;
-  Sll W  = params->W_param;
-  Sll H  = params->H_param;
+  Uint W = params->W_param;
+  Uint H  = params->H_param;
 
   Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
   Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;

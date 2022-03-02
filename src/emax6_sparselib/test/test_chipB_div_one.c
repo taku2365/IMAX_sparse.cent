@@ -75,7 +75,7 @@ int index_tmp = 0;
 
 main()
 { 
-Sll H;
+Uint H;
 Sll A_row_size_ini,A_row_size,A_row_size_pad;
 Sll A_col_size_ini,A_col_size,A_col_size_pad;
 Sll B_row_size_ini,B_row_size,B_row_size_pad;

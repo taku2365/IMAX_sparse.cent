@@ -73,7 +73,7 @@ double sum=0,sum1=0;
 FILE* fp,*fp1,*fp1_tmp;
 Uint size_array_index,size_array_len;
 Uint memsize_tmp;
-Sll H;
+Uint H;
 Sll A_row_size_ini,A_row_size,A_row_size_pad;
 Sll A_col_size_ini,A_col_size,A_col_size_pad;
 Sll B_row_size_ini,B_row_size,B_row_size_pad;
@@ -101,6 +101,7 @@ NCHIP_ini      = NCHIP      = 1LL  ;
 W_ini          = W          = 4LL  ;
 Uint data_index = 0;
 emax6_param params; 
+init_param init_params;
 Uint data_index_len = 10;
 char* dataset_names[10] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx","./data/S80PI_n1/S80PI_n1.mtx",
                           "./data/ACTIVSg2000/ACTIVSg2000.mtx","./data/ex10/ex10.mtx","./data/ex31/ex31.mtx",
@@ -114,36 +115,22 @@ char* dataset_names[10] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx"
 // params.data_type = REAL_DATA_TYPE;
 
 
-params.mode = SPARSE_DENSE_58_SPMV_MODE;
-params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
-
-// params.mode = DENSE_SPMV_MODE;
-// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.mode = SPARSE_DENSE_58_SPMV_MODE;
+// params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-// params.data_format = DENSE_DENSE_FORMAT;
-// params.mode = DENSE_DENSE_MODE;
-// params.data_type = DENSE_TYPE;
+params.mode = DENSE_SPMV_MODE;
+params.data_format = DENSE_DENSE_SPMV_FORMAT;
+params.data_type = REAL_DATA_TYPE;
 
-H = get_H_param(&params);
+init_params.mode = INITIAL_NO_MEMSIZE;
+init_params.init_allocate_mat_len = 6000;
+get_param(&params,&init_params);
+Uchar* membase = NULL;
+Uint memsize;
+membase = init_params.membase;
+memsize = init_params.memsize;
 
-GET_PAD_SIZE(A_row_size_pad,1024*8,H);
-GET_PAD_SIZE(A_col_size_pad,1024*8,H);
-if(params.mode == DENSE_SPMV_MODE){
-    GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
-    GET_PAD_SIZE(B_row_size_pad,1024*8,H);
-}
-else if(params.mode == SPARSE_DENSE_58_SPMV_MODE){
-    GET_PAD_SIZE(A_row_size_pad,A_row_size,W);
-    B_row_size_pad = 1024*8;  
-}
-else{
-    fprintf("future work spmv_size_test %d \n",__LINE__);
-    exit(1);
-}
-
-B_col_size_pad = 1;
 argc--;
 if(argc == 1){
     store_name = argv[1]; 
@@ -163,18 +150,7 @@ if((fp=fopen(store_name,"w"))==NULL){
 #if !defined(CSIMDEBUG)
 STORE_CSV_INI(fp);
 #endif
-//はみ出た時の拡張
-Uchar* membase = NULL;
-sparse_rate_len = 4;
-Uint memsize = 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint)
-                +(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint)
-                +A_row_size_pad*(B_col_size_pad)*sizeof(Uint)
-                // +A_row_size*B_col_size*sizeof(Uint)
-                +A_row_size_pad*sizeof(Uint)
-                +8*sizeof(Uint)*sparse_rate_len;
-                
-memsize += ((memsize%32) != 0) ? (-memsize%32 + 32) : 0;
-sysinit((Uint)memsize,32,&membase);
+
 //fpをparam取得まで進める
 for(data_index=0; data_index<data_index_len; data_index++){
     if((fp1=fopen(dataset_names[data_index],"r"))==NULL){
@@ -189,8 +165,6 @@ for(data_index=0; data_index<data_index_len; data_index++){
     B_col_size_pad = params.B_col_size_pad_param = 1;
 
     H = params.H_param;
-    // GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-    // GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
     A_row_size_pad = params.A_row_size_pad_param;
     A_col_size_pad = params.A_col_size_pad_param;
     B_row_size_pad = params.B_row_size_pad_param;
