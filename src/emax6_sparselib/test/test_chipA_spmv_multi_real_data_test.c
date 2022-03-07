@@ -4,19 +4,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_
 /*                           Primary writer: Y.Nakashima */
 /*                                  nakashim@is.naist.jp */
 
-#ifndef UTYPEDEF
-#define UTYPEDEF
-typedef unsigned char      Uchar;
-typedef unsigned short     Ushort;
-typedef unsigned int       Uint;
-typedef unsigned long long Ull;
-typedef long long int      Sll;
-#if __AARCH64EL__ == 1
-typedef long double Dll;
-#else
-typedef struct {Ull u[2];} Dll;
-#endif
-#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -74,15 +62,15 @@ FILE* fp,*fp1,*fp1_tmp;
 Uint size_array_index,size_array_len;
 Uint memsize_tmp;
 Uint H;
-Sll A_row_size_ini,A_row_size,A_row_size_pad;
-Sll A_col_size_ini,A_col_size,A_col_size_pad;
-Sll B_row_size_ini,B_row_size,B_row_size_pad;
-Sll B_col_size_ini,B_col_size,B_col_size_pad;
-Sll B_col_blk_ini ,B_col_blk ;
-Sll NCHIP_ini     ,NCHIP     ;
-Sll W_ini         ,W         ;
-Sll A_col_blk_ini ,A_col_blk ;
-Sll C_col_blk_ini ,C_col_blk ;
+size_t A_row_size_ini,A_row_size,A_row_size_pad;
+size_t A_col_size_ini,A_col_size,A_col_size_pad;
+size_t B_row_size_ini,B_row_size,B_row_size_pad;
+size_t B_col_size_ini,B_col_size,B_col_size_pad;
+size_t B_col_blk_ini ,B_col_blk ;
+size_t NCHIP_ini     ,NCHIP     ;
+size_t W_ini         ,W         ;
+size_t A_col_blk_ini ,A_col_blk ;
+size_t C_col_blk_ini ,C_col_blk ;
 extern Ull nanosec[NANOS_CLASS];
 Uint tmp = 0;
 float zero_bias = 0.0;
@@ -123,7 +111,7 @@ params.data_type = REAL_DATA_TYPE;
 // params.data_format = DENSE_DENSE_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-init_params.mode = INITIAL_NO_MEMSIZE;
+init_params.mode = INITIAL_MEMBASE_WITH_MAT_LEN;
 init_params.init_allocate_mat_len = 6000;
 get_param(&params,&init_params);
 Uchar* membase = NULL;
@@ -167,26 +155,26 @@ for(data_index=0; data_index<data_index_len; data_index++){
     A_row_size_pad = params.A_row_size_pad_param;
     A_col_size_pad = params.A_col_size_pad_param;
     B_row_size_pad = params.B_row_size_pad_param;
-    params.A_col_blk_param  = A_col_blk ;
-    params.B_col_blk_param  = B_col_blk ;
-    params.C_col_blk_param  = C_col_blk ;
     params.NCHIP_param      = NCHIP     ;
-    params.W_param          = W         ;
     IMAX_param_tunig(&params);
 
     PRINT_PARAM_REAL_DATA(params,data_index);
 
-    Base_p  = (Uint*)((Uchar*)membase);
-    A  = (Uint*)((Uchar*)Base_p);
-    B  = (Uint*)((Uchar*)A  + 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
-    //aligmentを8byteにしないとバグる
-    GET_PAD_SIZE(tmp,(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint),8);
-    C1 = (Uint*)((Uchar*)B  + tmp + 8*sizeof(Uint));
-    GET_PAD_SIZE(tmp,A_row_size_pad*(B_col_size_pad)*sizeof(Uint),8);
-    sort_index = (Uint*)((Uchar*)C1 + tmp);
+    // Base_p  = (Uint*)((Uchar*)membase);
+    // A  = (Uint*)((Uchar*)Base_p);
+    // B  = (Uint*)((Uchar*)A  + 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
+    // //aligmentを8byteにしないとバグる
+    // GET_PAD_SIZE(tmp,(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint),8);
+    // C1 = (Uint*)((Uchar*)B  + tmp + 8*sizeof(Uint));
+    // GET_PAD_SIZE(tmp,A_row_size_pad*(B_col_size_pad)*sizeof(Uint),8);
+    // sort_index = (Uint*)((Uchar*)C1 + tmp);
+    mem_reset_offset();
+
+    A = (Uint*)IMAX_malloc(2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
+    B = (Uint*)IMAX_malloc((B_row_size_pad)*(B_col_size_pad)*sizeof(Uint));
     C0 = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
-
-
+    C1 = (Uint*)IMAX_malloc_output(A_row_size_pad*(B_col_size_pad)*sizeof(Uint));
+    sort_index = (Uint*)IMAX_malloc((A_row_size_pad)*sizeof(Uint));
     C_debug = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
     B_debug = (Uint*)calloc((B_col_size_pad)*(B_row_size_pad),sizeof(Uint));
 

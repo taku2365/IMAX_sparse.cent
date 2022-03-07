@@ -16,7 +16,7 @@ typedef unsigned char      Uchar;
 typedef unsigned short     Ushort;
 typedef unsigned int       Uint;
 typedef unsigned long long Ull;
-typedef long long int      Sll;
+typedef long long int      size_t;
 #if __AARCH64EL__ == 1
 typedef long double Dll;
 #else
@@ -78,15 +78,15 @@ typedef struct {
 } emax6_sparse2;
 
 typedef struct{
-    Sll row_subsize;
-    Sll col_subsize;
-    Sll col_blk_param;
+    size_t row_subsize;
+    size_t col_subsize;
+    size_t col_blk_param;
 } A_blk_set;
 
 typedef struct{
-    Sll row_subsize;
-    Sll col_subsize;
-    Sll col_blk_param;
+    size_t row_subsize;
+    size_t col_subsize;
+    size_t col_blk_param;
 } B_blk_set;
 
 typedef struct {
@@ -95,23 +95,23 @@ typedef struct {
     Uint data_type; // 0:normal 1:sparse 2:biased sparse
     Uint H_param;
     Uint W_param;
-    Sll A_col_blk_param     ;
-    Sll A_row_blk_param     ;
-    Sll B_col_blk_param     ;
-    Sll B_row_blk_param     ;
-    Sll C_col_blk_param     ;
-    Sll C_row_blk_param     ;
-    Sll NCHIP_param         ;
-    Sll A_row_size_param    ;
-    Sll A_col_size_param    ;
-    Sll B_row_size_param    ;
-    Sll B_col_size_param    ;
-    Sll A_row_size_pad_param;
-    Sll A_col_size_pad_param;
-    Sll B_row_size_pad_param;
-    Sll B_col_size_pad_param;
+    size_t A_col_blk_param     ;
+    size_t A_row_blk_param     ;
+    size_t B_col_blk_param     ;
+    size_t B_row_blk_param     ;
+    size_t C_col_blk_param     ;
+    size_t C_row_blk_param     ;
+    size_t NCHIP_param         ;
+    size_t A_row_size_param    ;
+    size_t A_col_size_param    ;
+    size_t B_row_size_param    ;
+    size_t B_col_size_param    ;
+    size_t A_row_size_pad_param;
+    size_t A_col_size_pad_param;
+    size_t B_row_size_pad_param;
+    size_t B_col_size_pad_param;
     int nnz                 ;  
-    Sll col_max; //1行あたりのnnzの最大数 
+    size_t col_max; //1行あたりのnnzの最大数 
     A_blk_set* A_blk_sets   ;
     B_blk_set* B_blk_sets   ;
     MM_typecode matcode     ;
@@ -138,7 +138,7 @@ typedef struct {
 typedef struct {
     Uint mode; //データの取得方法
     Uint init_allocate_mat_len; //確保したい初期の行列サイズ
-    Sll memsize; //確保するメモリのサイズ
+    size_t memsize; //確保するメモリのサイズ
     Uchar* membase; //確保した先頭アドレス
     FILE* fp;
 } init_param;
@@ -163,6 +163,9 @@ int sparse_multiply_imax4(const int nnz,const emax6_sparse2* const A_sparse, con
 int sparse_multiply_imax5(const int nnz,const emax6_sparse2* const A_sparse, const Uint* const B, Uint* C, int B_col_size,emax6_param* params);
 Uint get_H_param(emax6_param* params); 
 FILE* get_param_from_dataset(emax6_param* params,FILE* f);
+Uchar* IMAX_malloc(size_t size );
+Uchar* IMAX_malloc_output(size_t size );
+void mem_reset_offset();
 //mode  
 #define DENSE_DENSE_MODE 0
 #define DENSE_SPMV_MODE 1 
@@ -187,10 +190,10 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 #define REAL_DATA_TYPE 5
 
 //init_param get_mode
-#define INITIAL_NO_MEMSIZE 0
-#define INITIAL_HAS_MEMSIZE 1
-#define RAND_DATA 2
-#define REAL_DATA 3
+#define INITIAL_MEMBASE_WITH_MEMSIZE 0
+#define INITIAL_MEMBASE_WITH_MAT_LEN 1
+#define INITIAL_PARAM_FROM_FILE_DATA 2
+#define INITIAL_PARAM_FROM_RAND_DATA 3
 
 #define LMM_MAX_LENGTH 1024
 

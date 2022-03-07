@@ -86,16 +86,15 @@ elif [ "$1" = "all" ]; then
     result6=$?
 
     if [ $result1 -eq 0 ] && [ $result2 -eq 0 ] && [ $result3 -eq 0 ] \
-       && [ $result4 -eq 0 ] && [ $result5 -eq 0 ] && [ $result6 -eq 0 ]\
-       ; then
+       && [ $result4 -eq 0 ] && [ $result5 -eq 0 ] && [ $result6 -eq 0 ]; then
         echo "success"
-        echo "spmv_sparse_all ${result1} spmv_sparse_one ${result2}  
+        echo "spmv_sparse_real_all ${result1} spmv_sparse_real_one ${result2}  
               spmv_sparse_rand ${result3} spmm_sparse_rand_all ${result4} 
               spmm_sparse_rand_one ${result5} spmm_sparse_rand_irregular_size ${result6}
               "
     else
         echo "fail"
-        echo "spmv_sparse_all ${result1} spmv_sparse_one ${result2}  
+        echo "spmv_sparse_real_all ${result1} spmv_sparse_real_one ${result2}  
               spmv_sparse_rand ${result3} spmm_sparse_rand_all ${result4} 
               spmm_sparse_rand_one ${result5} spmm_sparse_rand_irregular_size ${result6}
               "
@@ -112,11 +111,11 @@ elif [ "$1" = "all_parallel" ]; then
     pid2=$!
     eval "./${base_dir}/test_chipA_spmv_size_test${tail_name} ${csv_name} &"
     pid3=$!
-    eval "./${base_dir}/test_chipB_div_size_test${tail_name} ${csv_name} "
+    eval "./${base_dir}/test_chipB_div_size_test${tail_name} ${csv_name} &"
     pid4=$!
-    eval "./${base_dir}/test_chipB_div_one${tail_name} ${csv_name} "
+    eval "./${base_dir}/test_chipB_div_one${tail_name} ${csv_name} &"
     pid5=$!
-    eval "./${base_dir}/test_chipB_div_Acol_Brow_size_test${tail_name} ${csv_name} "
+    eval "./${base_dir}/test_chipB_div_Acol_Brow_size_test${tail_name} ${csv_name} &"
     pid6=$!
     wait $pid1
     result1=$?
@@ -131,16 +130,15 @@ elif [ "$1" = "all_parallel" ]; then
     wait $pid6
     result6=$?
     if [ $result1 -eq 0 ] && [ $result2 -eq 0 ] && [ $result3 -eq 0 ] \
-       && [ $result4 -eq 0 ] && [ $result5 -eq 0 ] && [ $result6 -eq 0 ]\
-       ; then
+       && [ $result4 -eq 0 ] && [ $result5 -eq 0 ] && [ $result6 -eq 0 ]; then
         echo "success"
-        echo "spmv_sparse_all ${result1} spmv_sparse_one ${result2}  
+        echo "spmv_sparse_real_all ${result1} spmv_sparse_real_one ${result2}  
               spmv_sparse_rand ${result3} spmm_sparse_rand_all ${result4} 
               spmm_sparse_rand_one ${result5} spmm_sparse_rand_irregular_size ${result6}
               "
     else
         echo "fail"
-        echo "spmv_sparse_all ${result1} spmv_sparse_one ${result2}  
+        echo "spmv_sparse_real_all ${result1} spmv_sparse_real_one ${result2}  
               spmv_sparse_rand ${result3} spmm_sparse_rand_all ${result4} 
               spmm_sparse_rand_one ${result5} spmm_sparse_rand_irregular_size ${result6}
               "
@@ -154,4 +152,4 @@ fi
 # 末尾がgz以外削除
 # find ./* -type d -regextype posix-basic !  -regex ".*\.gz$"| xargs rm -ir 
 # 展開
-# find ./* -type f -regextype posix-basic   -regex ".*\.gz$" | xargs -n 1 tar zxvf elif [ "$1" = "spmv_sparse_one" ]; then
+# find ./* -type f -regextype posix-basic   -regex ".*\.gz$" | xargs -n 1 tar zxvf elif [ "$1" = "spmv_sparse_real_one" ]; then

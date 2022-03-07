@@ -4,17 +4,17 @@
 
 static void IMAX_param_tunig_spmv_impl0(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param;
-    Sll A_col_size = params->A_col_size_param;
-    Sll B_row_size = params->B_row_size_param;
-    Sll B_col_size = params->B_col_size_param;
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
-    Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 1                       ;
-    Sll NCHIP      = params->NCHIP_param     ;
+    size_t A_row_size = params->A_row_size_param;
+    size_t A_col_size = params->A_col_size_param;
+    size_t B_row_size = params->B_row_size_param;
+    size_t B_col_size = params->B_col_size_param;
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_col_blk  = 0                       ;
+    size_t B_col_blk  = 1                       ;
+    size_t NCHIP      = params->NCHIP_param     ;
     Uint W         = params->W_param         ;
     Uint H          = params->H_param         ;
     Uint B_col_pad = 0;
@@ -57,17 +57,17 @@ static void IMAX_param_tunig_spmv_impl0(emax6_param* params){
 
 static void IMAX_param_tunig_impl0(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param;
-    Sll A_col_size = params->A_col_size_param;
-    Sll B_row_size = params->B_row_size_param;
-    Sll B_col_size = params->B_col_size_param;
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
-    Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 0                       ;
-    Sll NCHIP      = params->NCHIP_param     ;
+    size_t A_row_size = params->A_row_size_param;
+    size_t A_col_size = params->A_col_size_param;
+    size_t B_row_size = params->B_row_size_param;
+    size_t B_col_size = params->B_col_size_param;
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_col_blk  = 0                       ;
+    size_t B_col_blk  = 0                       ;
+    size_t NCHIP      = params->NCHIP_param     ;
     Uint W         = params->W_param         ;
     Uint H          = params->H_param         ;
     Uint B_col_pad = 0;
@@ -128,13 +128,13 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
 
 static void IMAX_param_tunig_impl0_large(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param  ;
-    Sll A_col_size = params->A_col_size_param  ;
-    Sll B_row_size = params->B_row_size_param  ;
-    Sll B_col_size = params->B_col_size_param  ;
-    Sll A_col_blk  = 0                         ;
-    Sll B_col_blk  = 0                         ;
-    Sll NCHIP      = params->NCHIP_param       ;
+    size_t A_row_size = params->A_row_size_param  ;
+    size_t A_col_size = params->A_col_size_param  ;
+    size_t B_row_size = params->B_row_size_param  ;
+    size_t B_col_size = params->B_col_size_param  ;
+    size_t A_col_blk  = 0                         ;
+    size_t B_col_blk  = 0                         ;
+    size_t NCHIP      = params->NCHIP_param       ;
     Uint W         = params->W_param           ;
     Uint H          = params->H_param           ;
     Uint A_H_pad   = 0                       ;
@@ -152,14 +152,14 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
     A_blk_set* A_blk_sets = calloc(blk_iter_Arow*blk_iter_Acol,sizeof(A_blk_set));
     B_blk_set* B_blk_sets =  calloc(blk_iter_Brow,sizeof(B_blk_set));
     Uint blk_iter_tmp = 0;
-    Sll* LMM_MAX_LENGTH_modify_pad = 0;
-    Sll A_row_blk_mean = 0;
-    Sll A_col_blk_mean = 0;
-    Sll B_row_blk_mean = 0;
-    Sll B_col_blk_mean = 0;
-    Sll tmp = 0;
-    Sll tmp1 = 0;
-    Sll tmp_pad = 0;
+    size_t* LMM_MAX_LENGTH_modify_pad = 0;
+    size_t A_row_blk_mean = 0;
+    size_t A_col_blk_mean = 0;
+    size_t B_row_blk_mean = 0;
+    size_t B_col_blk_mean = 0;
+    size_t tmp = 0;
+    size_t tmp1 = 0;
+    size_t tmp_pad = 0;
     
     //LMM_MAX_LENGTH_modifyはHで割り切れる最大のブロックサイズを表している
     //LMM_MAX_LENGTH_modify1は分割後のHで割り切れるブロックサイズを表している
@@ -258,17 +258,17 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
 
 static void IMAX_param_tunig_impl2(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param;
-    Sll A_col_size = params->A_col_size_param;
-    Sll B_row_size = params->B_row_size_param;
-    Sll B_col_size = params->B_col_size_param;
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
-    Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 0                       ;
-    Sll NCHIP      = params->NCHIP_param     ;
+    size_t A_row_size = params->A_row_size_param;
+    size_t A_col_size = params->A_col_size_param;
+    size_t B_row_size = params->B_row_size_param;
+    size_t B_col_size = params->B_col_size_param;
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_col_blk  = 0                       ;
+    size_t B_col_blk  = 0                       ;
+    size_t NCHIP      = params->NCHIP_param     ;
     Uint W         = params->W_param         ;
     Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
@@ -318,17 +318,17 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
 
 static void IMAX_param_tunig_spmv_impl2(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param;
-    Sll A_col_size = params->A_col_size_param;
-    Sll B_row_size = params->B_row_size_param;
-    Sll B_col_size = params->B_col_size_param;
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
-    Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 1                       ;
-    Sll NCHIP      = params->NCHIP_param     ;
+    size_t A_row_size = params->A_row_size_param;
+    size_t A_col_size = params->A_col_size_param;
+    size_t B_row_size = params->B_row_size_param;
+    size_t B_col_size = params->B_col_size_param;
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_col_blk  = 0                       ;
+    size_t B_col_blk  = 1                       ;
+    size_t NCHIP      = params->NCHIP_param     ;
     Uint W         = params->W_param         ;
     Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
@@ -355,18 +355,18 @@ static void IMAX_param_tunig_spmv_impl2(emax6_param* params){
 
 static void IMAX_param_tunig_impl3(emax6_param* params){
 
-    Sll A_row_size = params->A_row_size_param;
-    Sll A_col_size = params->A_col_size_param;
-    Sll B_row_size = params->B_row_size_param;
-    Sll B_col_size = params->B_col_size_param;
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
-    Sll A_col_blk  = 0                       ;
-    Sll B_col_blk  = 0                       ;
-    Sll C_col_blk  = 0                       ;
-    Sll NCHIP      = params->NCHIP_param     ;
+    size_t A_row_size = params->A_row_size_param;
+    size_t A_col_size = params->A_col_size_param;
+    size_t B_row_size = params->B_row_size_param;
+    size_t B_col_size = params->B_col_size_param;
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_col_blk  = 0                       ;
+    size_t B_col_blk  = 0                       ;
+    size_t C_col_blk  = 0                       ;
+    size_t NCHIP      = params->NCHIP_param     ;
     Uint W         = params->W_param         ;
     Uint H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k

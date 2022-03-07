@@ -94,8 +94,8 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     int* col_count = (int*) calloc((col_size),sizeof(int));
     int* paddings = (int*) calloc((row_size),sizeof(int));
     int count_tmp1;
-    Sll col_max = 0;
-    Sll byte_conv = 0;
+    size_t col_max = 0;
+    size_t byte_conv = 0;
     //A_colがHで割れないときのpadding
      //Hで割り切れないとき、割り切れない分のa_indexは0が入る  その結果、B_row=0が選ばれるがa[]には0がpadされているのでA[]*B[]=0となり問題ない
     //ex  H=42 col_size=96  -> H_pad = -4 + 46 = 42   size = 42+96=138   138/46=3

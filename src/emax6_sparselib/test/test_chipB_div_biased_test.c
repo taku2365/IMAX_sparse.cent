@@ -4,19 +4,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/sample/mm_cnn_
 /*                           Primary writer: Y.Nakashima */
 /*                                  nakashim@is.naist.jp */
 
-#ifndef UTYPEDEF
-#define UTYPEDEF
-typedef unsigned char      Uchar;
-typedef unsigned short     Ushort;
-typedef unsigned int       Uint;
-typedef unsigned long long Ull;
-typedef long long int      Sll;
-#if __AARCH64EL__ == 1
-typedef long double Dll;
-#else
-typedef struct {Ull u[2];} Dll;
-#endif
-#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -75,15 +63,15 @@ FILE* fp;
 Uint size_array_index,size_array_len;
 Uint memsize_tmp;
 Uint H;
-Sll A_row_size_ini,A_row_size,A_row_size_pad;
-Sll A_col_size_ini,A_col_size,A_col_size_pad;
-Sll B_row_size_ini,B_row_size,B_row_size_pad;
-Sll B_col_size_ini,B_col_size,B_col_size_pad;
-Sll B_col_blk_ini ,B_col_blk ;
-Sll NCHIP_ini     ,NCHIP     ;
-Sll W_ini         ,W         ;
-Sll A_col_blk_ini ,A_col_blk ;
-Sll C_col_blk_ini ,C_col_blk ;
+size_t A_row_size_ini,A_row_size,A_row_size_pad;
+size_t A_col_size_ini,A_col_size,A_col_size_pad;
+size_t B_row_size_ini,B_row_size,B_row_size_pad;
+size_t B_col_size_ini,B_col_size,B_col_size_pad;
+size_t B_col_blk_ini ,B_col_blk ;
+size_t NCHIP_ini     ,NCHIP     ;
+size_t W_ini         ,W         ;
+size_t A_col_blk_ini ,A_col_blk ;
+size_t C_col_blk_ini ,C_col_blk ;
 extern Ull nanosec[NANOS_CLASS];
 Uint tmp;
 float zero_bias = 0.0;

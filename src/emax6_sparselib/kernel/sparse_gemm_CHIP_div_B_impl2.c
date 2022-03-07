@@ -43,29 +43,29 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
 
 
     #define NCHIP 1
-    Sll A_row_size = params->A_row_size_param;   // 縛りなし
-    Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
-    Sll B_row_size = params->B_row_size_param;    // 縛りなし
-    Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_row_size = params->A_row_size_param;   // 縛りなし
+    size_t A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
+    size_t B_row_size = params->B_row_size_param;    // 縛りなし
+    size_t B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
     // #define B_col_blk 16
-    Sll B_col_blk = params->B_col_blk_param;
-    /*Sll NCHIP 4*/
-    // Sll NCHIP = params->NCHIP_param;
+    size_t B_col_blk = params->B_col_blk_param;
+    /*size_t NCHIP 4*/
+    // size_t NCHIP = params->NCHIP_param;
     Uint W = params->W_param;
     Uint H  = params->H_param;
-    // Sll A_col_blk = 1;
-    Sll A_col_blk = params->A_col_blk_param;
-    Sll B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
-    Sll A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
-    Sll A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
-    Sll A_row_size_mul_8 = A_row_size*8;
-    Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
-    Sll rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
-    Sll A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
+    // size_t A_col_blk = 1;
+    size_t A_col_blk = params->A_col_blk_param;
+    size_t B_col_blk_mul_B_row_size = B_col_blk*B_row_size;
+    size_t A_row_size_mul_2_mul_A_col_blk = A_row_size*2*A_col_blk;
+    size_t A_row_size_mul_B_col_blk = A_row_size*B_col_blk;
+    size_t A_row_size_mul_8 = A_row_size*8;
+    size_t cofs_init = (0-A_row_size_mul_8)<<32|((0-A_row_size_mul_8)&0xffffffff);
+    size_t rofs_init = (0-1*8LL)<<32|((0-1*4LL)&0xffffffff);
+    size_t A_row_size_mul_8_64 = (A_row_size_mul_8)<<32|(A_row_size_mul_8);
     Ull Force,Force_reverse;
 
     Force = 1;

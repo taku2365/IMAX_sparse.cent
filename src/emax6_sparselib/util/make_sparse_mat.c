@@ -212,10 +212,10 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   Uint A_row_size_pad, A_col_size_pad; 
   Uint B_row_size, B_col_size; 
   Uint B_row_size_pad, B_col_size_pad; 
-  Sll W; 
+  size_t W; 
   int i;  
   double val;
-  Sll nnz_shift1,nnz_tmp;
+  size_t nnz_shift1,nnz_tmp;
   MM_typecode* matcode;
   A_row_size     = emax6_param->A_row_size_param    ; 
   A_row_size_pad = emax6_param->A_row_size_pad_param; 

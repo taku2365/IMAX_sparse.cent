@@ -36,14 +36,14 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
     #define NCHIP 1
-    Sll A_row_size = params->A_row_size_param;   // 縛りなし
-    Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
-    Sll B_row_size = params->B_row_size_param;    // 縛りなし
-    Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_row_size = params->A_row_size_param;   // 縛りなし
+    size_t A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
+    size_t B_row_size = params->B_row_size_param;    // 縛りなし
+    size_t B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
     Uint blk_iter,A_margin_tmp,blk_iter_tmp;
     Ull* A_margin = A_sparse->margin;
     Uint* val_index_set = A_sparse->val_index_set;
@@ -52,30 +52,30 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
 
     Uint* A_sort_index= A_sparse->sort_index;
     // #define B_col_blk 16
-    Sll B_col_blk = params->B_col_blk_param;
-    /*Sll NCHIP 4*/
-    // Sll NCHIP = params->NCHIP_param;
+    size_t B_col_blk = params->B_col_blk_param;
+    /*size_t NCHIP 4*/
+    // size_t NCHIP = params->NCHIP_param;
     Uint W = params->W_param;
     Uint H  = params->H_param;
-    // Sll A_col_blk = 1;
-    Sll A_col_blk = params->A_col_blk_param;
-    Sll A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
-    Sll A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk;
-    Sll A_row_size_mul_2_mul_A_col_blk1 = A_row_size_pad*2*A_col_blk;
-    Sll A_row_size_mul_B_col_blk = A_row_size_pad*B_col_blk;
-    Sll A_row_size_mul_4 = A_row_size_pad*4;
-    Sll A_row_size_mul_8 = A_row_size_pad*8;
-    Sll A_row_size_div2 = A_row_size_pad>>1;
-    Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-1*4LL)&0xffffffff);
+    // size_t A_col_blk = 1;
+    size_t A_col_blk = params->A_col_blk_param;
+    size_t A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
+    size_t A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk;
+    size_t A_row_size_mul_2_mul_A_col_blk1 = A_row_size_pad*2*A_col_blk;
+    size_t A_row_size_mul_B_col_blk = A_row_size_pad*B_col_blk;
+    size_t A_row_size_mul_4 = A_row_size_pad*4;
+    size_t A_row_size_mul_8 = A_row_size_pad*8;
+    size_t A_row_size_div2 = A_row_size_pad>>1;
+    size_t cofs_init = (0-A_row_size_mul_8)<<32|((0-1*4LL)&0xffffffff);
     // 4(byte)*2(index+val)*2(W)
-    Sll rofs_init = (0-4*2*2LL)<<32|((0-8LL)&0xffffffff);
-    Sll A_row_size_mul_4_4 = (A_row_size_mul_4)<<32|(4LL&0xffffffff);
-    Sll A_row_size_mul_8_4 = (A_row_size_mul_8)<<32|(4LL&0xffffffff);
+    size_t rofs_init = (0-4*2*2LL)<<32|((0-8LL)&0xffffffff);
+    size_t A_row_size_mul_4_4 = (A_row_size_mul_4)<<32|(4LL&0xffffffff);
+    size_t A_row_size_mul_8_4 = (A_row_size_mul_8)<<32|(4LL&0xffffffff);
     Ull Force,Force_reverse;
     Force = 1;
     // Force_reverse = ~Force;
-    Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size_pad);
-    // Sll A_col_add_A_H_pad = A_col_size + A_H_pad;
+    size_t B_col_blk_mul_B_row_size = B_col_blk*(B_row_size_pad);
+    // size_t A_col_add_A_H_pad = A_col_size + A_H_pad;
     Uint *a[H],*a0_base[H],*a1_base[H],*a2_base[H],*a3_base[H],*a_index[H],*a_debug[H+1];
     Uint  *b, *b0[H], *b1[H], *b2[H], *b3[H];
     Uint  *c,*c0_debug;
@@ -436,14 +436,14 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
     #define NCHIP 1
-    Sll A_row_size = params->A_row_size_param;   // 縛りなし
-    Sll A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
-    Sll B_row_size = params->B_row_size_param;    // 縛りなし
-    Sll B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
-    Sll A_row_size_pad = params->A_row_size_pad_param;
-    Sll A_col_size_pad = params->A_col_size_pad_param;
-    Sll B_row_size_pad = params->B_row_size_pad_param;
-    Sll B_col_size_pad = params->B_col_size_pad_param;
+    size_t A_row_size = params->A_row_size_param;   // 縛りなし
+    size_t A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ
+    size_t B_row_size = params->B_row_size_param;    // 縛りなし
+    size_t B_col_size = params->B_col_size_param;   // B_col_blk*NCHIP縛り
+    size_t A_row_size_pad = params->A_row_size_pad_param;
+    size_t A_col_size_pad = params->A_col_size_pad_param;
+    size_t B_row_size_pad = params->B_row_size_pad_param;
+    size_t B_col_size_pad = params->B_col_size_pad_param;
     Uint blk_iter,A_margin_tmp,blk_iter_tmp;
     Ull* A_margin = A_sparse->margin;
     Uint* val_index_set = A_sparse->val_index_set;
@@ -452,30 +452,30 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
 
     Uint* A_sort_index= A_sparse->sort_index;
     // #define B_col_blk 16
-    Sll B_col_blk = params->B_col_blk_param;
-    /*Sll NCHIP 4*/
-    // Sll NCHIP = params->NCHIP_param;
+    size_t B_col_blk = params->B_col_blk_param;
+    /*size_t NCHIP 4*/
+    // size_t NCHIP = params->NCHIP_param;
     Uint W = params->W_param;
     Uint H  = params->H_param;
-    // Sll A_col_blk = 1;
-    Sll A_col_blk = params->A_col_blk_param;
-    Sll A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
-    Sll A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk;
-    Sll A_row_size_mul_2_mul_A_col_blk1 = A_row_size_pad*2*A_col_blk;
-    Sll A_row_size_mul_B_col_blk = A_row_size_pad*B_col_blk;
-    Sll A_row_size_mul_4 = A_row_size_pad*4;
-    Sll A_row_size_mul_8 = A_row_size_pad*8;
-    Sll A_row_size_div2 = A_row_size_pad>>1;
-    Sll cofs_init = (0-A_row_size_mul_8)<<32|((0-1*4LL)&0xffffffff);
+    // size_t A_col_blk = 1;
+    size_t A_col_blk = params->A_col_blk_param;
+    size_t A_row_size_mul_mul_A_col_blk = A_row_size_pad*A_col_blk;
+    size_t A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk;
+    size_t A_row_size_mul_2_mul_A_col_blk1 = A_row_size_pad*2*A_col_blk;
+    size_t A_row_size_mul_B_col_blk = A_row_size_pad*B_col_blk;
+    size_t A_row_size_mul_4 = A_row_size_pad*4;
+    size_t A_row_size_mul_8 = A_row_size_pad*8;
+    size_t A_row_size_div2 = A_row_size_pad>>1;
+    size_t cofs_init = (0-A_row_size_mul_8)<<32|((0-1*4LL)&0xffffffff);
     // 4(byte)*2(index+val)*2(W)
-    Sll rofs_init = (0-4*2*2LL)<<32|((0-8LL)&0xffffffff);
-    Sll A_row_size_mul_4_4 = (A_row_size_mul_4)<<32|(4LL&0xffffffff);
-    Sll A_row_size_mul_8_4 = (A_row_size_mul_8)<<32|(4LL&0xffffffff);
+    size_t rofs_init = (0-4*2*2LL)<<32|((0-8LL)&0xffffffff);
+    size_t A_row_size_mul_4_4 = (A_row_size_mul_4)<<32|(4LL&0xffffffff);
+    size_t A_row_size_mul_8_4 = (A_row_size_mul_8)<<32|(4LL&0xffffffff);
     Ull Force,Force_reverse;
     Force = 1;
     // Force_reverse = ~Force;
-    Sll B_col_blk_mul_B_row_size = B_col_blk*(B_row_size_pad);
-    // Sll A_col_add_A_H_pad = A_col_size + A_H_pad;
+    size_t B_col_blk_mul_B_row_size = B_col_blk*(B_row_size_pad);
+    // size_t A_col_add_A_H_pad = A_col_size + A_H_pad;
     Uint *a[H],*a0_base[H],*a1_base[H],*a2_base[H],*a3_base[H],*a_index[H],*a_debug[H+1];
     Uint  *b, *b0[H], *b1[H], *b2[H], *b3[H];
     Uint  *c,*c0_debug;
