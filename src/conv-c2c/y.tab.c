@@ -860,7 +860,7 @@ typedef struct {
 } YYSTACKDATA;
 /* variables for the parser stack */
 static YYSTACKDATA yystack;
-#line 1141 "conv-c2c.y"
+#line 1135 "conv-c2c.y"
 
 #include "conv-c2c.h"
 #include "emax6.h"
@@ -1176,35 +1176,29 @@ case 5:
 	  fprintf(ofile, "#ifndef EMAXSC\n");
           fprintf(ofile, "volatile emax6_conf_%s();\n", id[current_prefix].name);
 	  fprintf(ofile, "#endif\n");
-#if 0
-          fprintf(ofile, "volatile struct { struct regv_breg breg[%d][%d] ;} *emax6_breg_%s  = emax6.reg_breg;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct regv_addr addr[%d][%d] ;} *emax6_addr_%s  = emax6.reg_addr;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct lddmr     lddmr[%d][%d];} *emax6_lddmr_%s = emax6.reg_lddmr;\n", EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct lddmw     lddmw[%d][%d];} *emax6_lddmw_%s = emax6.reg_lddmw;\n", EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-#endif
         }
 break;
 case 6:
-#line 70 "conv-c2c.y"
+#line 64 "conv-c2c.y"
 	{
         }
 break;
 case 7:
-#line 72 "conv-c2c.y"
+#line 66 "conv-c2c.y"
 	{
 	  emit_emax6a(0);
 	  hash_clear();
         }
 break;
 case 8:
-#line 76 "conv-c2c.y"
+#line 70 "conv-c2c.y"
 	{
 	  emit_emax6a(1);
 	  hash_clear();
         }
 break;
 case 9:
-#line 80 "conv-c2c.y"
+#line 74 "conv-c2c.y"
 	{ /* reset tconf[][] */
           printf("==EMAX6TB reading line=%d name=%s\n", y_lineno, id[yystack.l_mark[0]].name);
           current_prefix = yystack.l_mark[0];
@@ -1214,29 +1208,29 @@ case 9:
 	}
 break;
 case 10:
-#line 87 "conv-c2c.y"
+#line 81 "conv-c2c.y"
 	{
 	}
 break;
 case 11:
-#line 89 "conv-c2c.y"
+#line 83 "conv-c2c.y"
 	{
 	  emit_emax6t(0);
 	  hash_clear();
 	}
 break;
 case 12:
-#line 95 "conv-c2c.y"
+#line 89 "conv-c2c.y"
 	{
         }
 break;
 case 13:
-#line 97 "conv-c2c.y"
+#line 91 "conv-c2c.y"
 	{
         }
 break;
 case 14:
-#line 101 "conv-c2c.y"
+#line 95 "conv-c2c.y"
 	{
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
@@ -1263,7 +1257,7 @@ case 14:
 	}
 break;
 case 15:
-#line 125 "conv-c2c.y"
+#line 119 "conv-c2c.y"
 	{
 	  if (id[yystack.l_mark[-9]].val != 0) {
 	    fprintf(stderr, "in %s: for(CHIP=0;;) should be specified\n", id[current_prefix].name);
@@ -1280,7 +1274,7 @@ case 15:
 	}
 break;
 case 16:
-#line 139 "conv-c2c.y"
+#line 133 "conv-c2c.y"
 	{
 	  int loop_no = id[yystack.l_mark[-19]].val;
           if (last_insn >= INSN_DEPTH) {
@@ -1343,7 +1337,7 @@ case 16:
 	}
 break;
 case 17:
-#line 199 "conv-c2c.y"
+#line 193 "conv-c2c.y"
 	{
           if (last_insn >= INSN_DEPTH) {
 	    fprintf(stderr, "in %s: last_insn exceeds INSN_DEPTH=%d\n", id[current_prefix].name, INSN_DEPTH);
@@ -1368,7 +1362,7 @@ case 17:
         }
 break;
 case 18:
-#line 221 "conv-c2c.y"
+#line 215 "conv-c2c.y"
 	{
 	  /* ex4(op1, &BR[r-1][c1], &BR[r-1][c2], &BR[r-1][c3], op2, IMM, op3, IMM, &BR[r][c], NULL); followed by next ex */
 	  /* ex4(op1, &BR[r-1][c1], &BR[r-1][c2], &BR[r-1][c3], op2, IMM, op3, IMM, &AR[r],    NULL); followed by store(automatic allocating) */
@@ -1409,7 +1403,7 @@ case 18:
         }
 break;
 case 19:
-#line 259 "conv-c2c.y"
+#line 253 "conv-c2c.y"
 	{
 	  /* ex4(OP_SFMA, &b00, b00, EXP_H3210, BR[r][1], EXP_H3210, BR[r][2], EXP_H3210, OP_NOP, 0LL, OP_NOP, 32LL) */
           if (last_insn >= INSN_DEPTH) {
@@ -1446,7 +1440,7 @@ case 19:
         }
 break;
 case 20:
-#line 293 "conv-c2c.y"
+#line 287 "conv-c2c.y"
 	{
 	  /* ex4(OP_SFMA, &b00, INIT0?b00:b00, EXP_H3210, BR[r][1], EXP_H3210, BR[r][2], EXP_H3210, OP_NOP, 0LL, OP_NOP, 32LL) */
 	  int loop_no0 = id[yystack.l_mark[-24]].val;
@@ -1492,7 +1486,7 @@ case 20:
         }
 break;
 case 21:
-#line 336 "conv-c2c.y"
+#line 330 "conv-c2c.y"
 	{
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
@@ -1527,7 +1521,7 @@ case 21:
         }
 break;
 case 22:
-#line 368 "conv-c2c.y"
+#line 362 "conv-c2c.y"
 	{
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
@@ -1571,7 +1565,7 @@ case 22:
         }
 break;
 case 23:
-#line 409 "conv-c2c.y"
+#line 403 "conv-c2c.y"
 	{
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &BR[r][c][s]); followed by next ex */
 	  /* exe(op1, BR[r-1][c1][s], BR[r-1][c2][s], BR[r-1][c3][s], op2, IMM, op3, IMM, &AR[r][c]   ); followed by store(automatic allocating) */
@@ -1615,7 +1609,7 @@ case 23:
         }
 break;
 case 24:
-#line 450 "conv-c2c.y"
+#line 444 "conv-c2c.y"
 	{
 	  /* mex(OP_CMPA_LE, &b0[h],       INIT0?b:b0[h],                INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
 	  /* mex(OP_CMPA_GE, &a0[h][CHIP], INIT0?a[h][CHIP]:a0[h][CHIP], INIT0?0:8, BR[r][2][1], BR[r][2][0]); */
@@ -1673,7 +1667,7 @@ case 24:
         }
 break;
 case 25:
-#line 505 "conv-c2c.y"
+#line 499 "conv-c2c.y"
 	{
 	  /* mop(load,  ex, BR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); load requires target regs */
 	  /* mop(store, ex, AR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); store requires current ex */
@@ -1746,7 +1740,7 @@ case 25:
         }
 break;
 case 26:
-#line 575 "conv-c2c.y"
+#line 569 "conv-c2c.y"
 	{
 	  /* mop(load,  ex, BR[r][c][s], single_reg, offset, offset_mask, stream_top, length, block, force, ptop, plen); load requires target regs */
 	  /* mop(store, ex, AR[r][c][s], single_reg, offset, offset_mask, stream_top, length, , blockforce, ptop, plen); store requires current ex */
@@ -1809,393 +1803,393 @@ case 26:
         }
 break;
 case 27:
-#line 635 "conv-c2c.y"
+#line 629 "conv-c2c.y"
 	{
         }
 break;
 case 28:
-#line 637 "conv-c2c.y"
+#line 631 "conv-c2c.y"
 	{
         }
 break;
 case 29:
-#line 641 "conv-c2c.y"
+#line 635 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 30:
-#line 644 "conv-c2c.y"
+#line 638 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 31:
-#line 647 "conv-c2c.y"
+#line 641 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 32:
-#line 652 "conv-c2c.y"
+#line 646 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 33:
-#line 657 "conv-c2c.y"
+#line 651 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 34:
-#line 660 "conv-c2c.y"
+#line 654 "conv-c2c.y"
 	{ /* var ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 35:
-#line 663 "conv-c2c.y"
+#line 657 "conv-c2c.y"
 	{ /* var ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 36:
-#line 666 "conv-c2c.y"
+#line 660 "conv-c2c.y"
 	{ /* AR[r] ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 37:
-#line 669 "conv-c2c.y"
+#line 663 "conv-c2c.y"
 	{ /* BR[r][c] ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 38:
-#line 674 "conv-c2c.y"
+#line 668 "conv-c2c.y"
 	{ /* var ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 39:
-#line 677 "conv-c2c.y"
+#line 671 "conv-c2c.y"
 	{ /* AR[r] ([UNIT_WIDTH]) */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 40:
-#line 682 "conv-c2c.y"
+#line 676 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src1s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 41:
-#line 686 "conv-c2c.y"
+#line 680 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src1s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 42:
-#line 690 "conv-c2c.y"
+#line 684 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src1s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 43:
-#line 694 "conv-c2c.y"
+#line 688 "conv-c2c.y"
 	{ /* AR[r][s] */
 	  insn[last_insn].iexe.src1s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 44:
-#line 698 "conv-c2c.y"
+#line 692 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].iexe.src1s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 45:
-#line 704 "conv-c2c.y"
+#line 698 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src2s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 46:
-#line 708 "conv-c2c.y"
+#line 702 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src2s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 47:
-#line 712 "conv-c2c.y"
+#line 706 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src2s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 48:
-#line 716 "conv-c2c.y"
+#line 710 "conv-c2c.y"
 	{ /* AR[r][s] */
 	  insn[last_insn].iexe.src2s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 49:
-#line 720 "conv-c2c.y"
+#line 714 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].iexe.src2s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 50:
-#line 726 "conv-c2c.y"
+#line 720 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src3s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 51:
-#line 730 "conv-c2c.y"
+#line 724 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src3s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 52:
-#line 734 "conv-c2c.y"
+#line 728 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src3s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 53:
-#line 738 "conv-c2c.y"
+#line 732 "conv-c2c.y"
 	{ /* AR[r][s] */
 	  insn[last_insn].iexe.src3s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 54:
-#line 742 "conv-c2c.y"
+#line 736 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].iexe.src3s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 55:
-#line 748 "conv-c2c.y"
+#line 742 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src4s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 56:
-#line 752 "conv-c2c.y"
+#line 746 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src4s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 57:
-#line 756 "conv-c2c.y"
+#line 750 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src4s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 58:
-#line 760 "conv-c2c.y"
+#line 754 "conv-c2c.y"
 	{ /* AR[r][s] */
 	  insn[last_insn].iexe.src4s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 59:
-#line 764 "conv-c2c.y"
+#line 758 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].iexe.src4s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 60:
-#line 770 "conv-c2c.y"
+#line 764 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src5s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 61:
-#line 774 "conv-c2c.y"
+#line 768 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src5s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 62:
-#line 778 "conv-c2c.y"
+#line 772 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src5s = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 63:
-#line 782 "conv-c2c.y"
+#line 776 "conv-c2c.y"
 	{ /* AR[r][s] */
 	  insn[last_insn].iexe.src5s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 64:
-#line 786 "conv-c2c.y"
+#line 780 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].iexe.src5s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 65:
-#line 792 "conv-c2c.y"
+#line 786 "conv-c2c.y"
 	{ /* &var */
 	  insn[last_insn].iexe.exeds = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 66:
-#line 796 "conv-c2c.y"
+#line 790 "conv-c2c.y"
 	{ /* &AR[r][s] */
 	  insn[last_insn].iexe.exeds = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 67:
-#line 802 "conv-c2c.y"
+#line 796 "conv-c2c.y"
 	{
 	  insn[last_insn].imex.src1s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 68:
-#line 808 "conv-c2c.y"
+#line 802 "conv-c2c.y"
 	{
 	  insn[last_insn].imex.src2s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 69:
-#line 814 "conv-c2c.y"
+#line 808 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src3s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 70:
-#line 818 "conv-c2c.y"
+#line 812 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].imex.src3s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
         }
 break;
 case 71:
-#line 824 "conv-c2c.y"
+#line 818 "conv-c2c.y"
 	{
 	  insn[last_insn].iexe.src4s = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 72:
-#line 828 "conv-c2c.y"
+#line 822 "conv-c2c.y"
 	{ /* BR[r][c][s] */
 	  insn[last_insn].imex.src4s = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
         }
 break;
 case 73:
-#line 834 "conv-c2c.y"
+#line 828 "conv-c2c.y"
 	{
 	  insn[last_insn].imex.mexds = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 74:
-#line 840 "conv-c2c.y"
+#line 834 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 75:
-#line 843 "conv-c2c.y"
+#line 837 "conv-c2c.y"
 	{ /* exx */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 76:
-#line 848 "conv-c2c.y"
+#line 842 "conv-c2c.y"
 	{ /* for load/store */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 77:
-#line 851 "conv-c2c.y"
+#line 845 "conv-c2c.y"
 	{ /* for store */
           yyval = yystack.l_mark[0];
 	}
 break;
 case 78:
-#line 854 "conv-c2c.y"
+#line 848 "conv-c2c.y"
 	{ /* for load */
           yyval = yystack.l_mark[0];
         }
 break;
 case 79:
-#line 859 "conv-c2c.y"
+#line 853 "conv-c2c.y"
 	{ /* for load/store */
 	  insn[last_insn].imop.mopds = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 80:
-#line 863 "conv-c2c.y"
+#line 857 "conv-c2c.y"
 	{ /* for store */
 	  insn[last_insn].imop.mopds = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 81:
-#line 867 "conv-c2c.y"
+#line 861 "conv-c2c.y"
 	{ /* for load */
 	  insn[last_insn].imop.mopds = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
         }
 break;
 case 82:
-#line 873 "conv-c2c.y"
+#line 867 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.bases = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 83:
-#line 877 "conv-c2c.y"
+#line 871 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.bases = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 84:
-#line 881 "conv-c2c.y"
+#line 875 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.bases = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 85:
-#line 885 "conv-c2c.y"
+#line 879 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.updt  = 1;
 	  insn[last_insn].imop.bases = -1;
@@ -2203,7 +2197,7 @@ case 85:
 	}
 break;
 case 86:
-#line 890 "conv-c2c.y"
+#line 884 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.updt  = 1;
 	  insn[last_insn].imop.bases = -1;
@@ -2211,122 +2205,122 @@ case 86:
 	}
 break;
 case 87:
-#line 895 "conv-c2c.y"
+#line 889 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.bases = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 88:
-#line 901 "conv-c2c.y"
+#line 895 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.offss = -1;
           yyval = yystack.l_mark[0];
         }
 break;
 case 89:
-#line 905 "conv-c2c.y"
+#line 899 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.offss = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 90:
-#line 909 "conv-c2c.y"
+#line 903 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.offss = -1;
           yyval = yystack.l_mark[0];
 	}
 break;
 case 91:
-#line 913 "conv-c2c.y"
+#line 907 "conv-c2c.y"
 	{
 	  insn[last_insn].imop.offss = id[yystack.l_mark[-1]].val;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 92:
-#line 919 "conv-c2c.y"
+#line 913 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 93:
-#line 922 "conv-c2c.y"
+#line 916 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 94:
-#line 925 "conv-c2c.y"
+#line 919 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 95:
-#line 930 "conv-c2c.y"
+#line 924 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 96:
-#line 933 "conv-c2c.y"
+#line 927 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 97:
-#line 936 "conv-c2c.y"
+#line 930 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 98:
-#line 941 "conv-c2c.y"
+#line 935 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 99:
-#line 944 "conv-c2c.y"
+#line 938 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 100:
-#line 947 "conv-c2c.y"
+#line 941 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 101:
-#line 952 "conv-c2c.y"
+#line 946 "conv-c2c.y"
 	{
           /*id[$1].chip = 1;*/
           yyval = yystack.l_mark[0];
         }
 break;
 case 102:
-#line 956 "conv-c2c.y"
+#line 950 "conv-c2c.y"
 	{
 	  id[yystack.l_mark[-3]].cidx = 1;
           yyval = yystack.l_mark[-3];
 	}
 break;
 case 103:
-#line 960 "conv-c2c.y"
+#line 954 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
 	}
 break;
 case 104:
-#line 964 "conv-c2c.y"
+#line 958 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 105:
-#line 967 "conv-c2c.y"
+#line 961 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2342,7 +2336,7 @@ case 105:
         }
 break;
 case 106:
-#line 980 "conv-c2c.y"
+#line 974 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2358,7 +2352,7 @@ case 106:
         }
 break;
 case 107:
-#line 993 "conv-c2c.y"
+#line 987 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2374,7 +2368,7 @@ case 107:
         }
 break;
 case 108:
-#line 1006 "conv-c2c.y"
+#line 1000 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2390,7 +2384,7 @@ case 108:
         }
 break;
 case 109:
-#line 1019 "conv-c2c.y"
+#line 1013 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2406,7 +2400,7 @@ case 109:
         }
 break;
 case 110:
-#line 1032 "conv-c2c.y"
+#line 1026 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2422,7 +2416,7 @@ case 110:
         }
 break;
 case 111:
-#line 1045 "conv-c2c.y"
+#line 1039 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2438,13 +2432,13 @@ case 111:
         }
 break;
 case 112:
-#line 1060 "conv-c2c.y"
+#line 1054 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 113:
-#line 1063 "conv-c2c.y"
+#line 1057 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "~(",        BUF_MAXLEN-1);
@@ -2458,7 +2452,7 @@ case 113:
         }
 break;
 case 114:
-#line 1074 "conv-c2c.y"
+#line 1068 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "-(",        BUF_MAXLEN-1);
@@ -2472,7 +2466,7 @@ case 114:
         }
 break;
 case 115:
-#line 1085 "conv-c2c.y"
+#line 1079 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2488,7 +2482,7 @@ case 115:
         }
 break;
 case 116:
-#line 1098 "conv-c2c.y"
+#line 1092 "conv-c2c.y"
 	{
           int hashval;
 	  strncpy(buf, "(",         BUF_MAXLEN-1);
@@ -2504,48 +2498,48 @@ case 116:
         }
 break;
 case 117:
-#line 1113 "conv-c2c.y"
+#line 1107 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[-1];
         }
 break;
 case 118:
-#line 1116 "conv-c2c.y"
+#line 1110 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 119:
-#line 1121 "conv-c2c.y"
+#line 1115 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 120:
-#line 1124 "conv-c2c.y"
+#line 1118 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 121:
-#line 1127 "conv-c2c.y"
+#line 1121 "conv-c2c.y"
 	{
           yyval = yystack.l_mark[0];
         }
 break;
 case 122:
-#line 1132 "conv-c2c.y"
+#line 1126 "conv-c2c.y"
 	{
           trans[trans_pc].rw = 0; /* READ */
 	}
 break;
 case 123:
-#line 1135 "conv-c2c.y"
+#line 1129 "conv-c2c.y"
 	{
           trans[trans_pc].rw = 1; /* WRITE */
         }
 break;
-#line 2549 "y.tab.c"
+#line 2543 "y.tab.c"
     }
     yystack.s_mark -= yym;
     yystate = *yystack.s_mark;

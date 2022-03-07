@@ -223,6 +223,7 @@ for (col=0; col<(B_col_size_pad); col+=1){
 if(abs(sum-sum1)>1){
 printf("sum %f \n",sum);
 printf("sum1 %f \n",sum1);
+exit(1);
 }
 #endif
 // memory clean

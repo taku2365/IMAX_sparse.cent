@@ -69,6 +69,11 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     B_row_size = A_col_size;
     GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
 
+
+    if((A_row_size == 0)||(A_col_size == 0)||(B_row_size == 0)){
+        fprintf(stderr,"invalid size conf_param.c:%d\n",__LINE__);
+        exit(1);
+    }
     if(params->mode == DENSE_SPMV_MODE){
         W = 4;
         GET_PAD_SIZE(A_row_size_pad,A_row_size,(W*2));
@@ -81,11 +86,6 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     }
     else{
         fprintf("future work spmv_size_test %d \n",__LINE__);
-        exit(1);
-    }
-
-    if((A_row_size == 0)||(A_col_size == 0)||(B_row_size == 0)){
-        fprintf(stderr,"invalid size conf_param.c:%d\n",__LINE__);
         exit(1);
     }
     params->A_row_size_param = A_row_size;
@@ -117,18 +117,24 @@ static void get_param_spmv1(emax6_param* params,init_param* init_param){
     Sll A_col_size_pad;
     Sll B_row_size_pad;
     Sll B_col_size_pad;
-    Uint W = 2;
+    Uint W;
+
+
     Uint init_len = init_param->init_allocate_mat_len;
     Uchar* membase;
     Sll memsize;
-    GET_PAD_SIZE(A_row_size_pad,init_len,H);
+    //HごとにAcolを進む
     GET_PAD_SIZE(A_col_size_pad,init_len,H);
+    //denseでは8行分を計算できる sparseは2行分しか計算できないがindex+valのためにW*2とする。
+    //sparseでははみ出た分はindex=0が割り当たるのでHでpadする必要がない
     if(params->mode == DENSE_SPMV_MODE){
+        W = 4;
         GET_PAD_SIZE(A_row_size_pad,init_len,(W*2));
         GET_PAD_SIZE(B_row_size_pad,init_len,H);
     }
     else if(params->mode == SPARSE_DENSE_58_SPMV_MODE){
-        GET_PAD_SIZE(A_row_size_pad,init_len,W);
+        W = 2;
+        GET_PAD_SIZE(A_row_size_pad,init_len,(W*2));
         B_row_size_pad = init_len;  
     }
     else{
@@ -175,6 +181,7 @@ void get_param(emax6_param* params,init_param* init_param){
     if((init_param->mode == INITIAL_NO_MEMSIZE)&&((params->mode == SPARSE_DENSE_58_SPMV_MODE)||(params->mode == DENSE_SPMV_MODE))){
         get_param_spmv1(params,init_param);
     }
+    
     // else if((init_param->mode == REAL_DATA)&&(params->mode == SPARSE_DENSE_58_SPMV_MODE)){
     //     get_param_spmv2(params,init_param);
     // }

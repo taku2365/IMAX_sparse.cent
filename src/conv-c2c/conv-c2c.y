@@ -60,12 +60,6 @@ line :  EOL {
 	  fprintf(ofile, "#ifndef EMAXSC\n");
           fprintf(ofile, "volatile emax6_conf_%s();\n", id[current_prefix].name);
 	  fprintf(ofile, "#endif\n");
-#if 0
-          fprintf(ofile, "volatile struct { struct regv_breg breg[%d][%d] ;} *emax6_breg_%s  = emax6.reg_breg;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct regv_addr addr[%d][%d] ;} *emax6_addr_%s  = emax6.reg_addr;\n",  EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct lddmr     lddmr[%d][%d];} *emax6_lddmr_%s = emax6.reg_lddmr;\n", EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-          fprintf(ofile, "volatile struct { struct lddmw     lddmw[%d][%d];} *emax6_lddmw_%s = emax6.reg_lddmw;\n", EMAX_DEPTH, EMAX_WIDTH, id[current_prefix].name);
-#endif
         }
         | EMAX6ASTATEM EMAX6ABODY {
         }

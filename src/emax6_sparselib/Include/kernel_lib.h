@@ -15,3 +15,6 @@ void sparse_spmv_CHIP_div_A(  Uint* C, const Uint* A, const Uint* B , emax6_spar
 void sparse_gemm_CHIP_div_A(  Uint* C, const Uint* A, const Uint* B , emax6_sparse2* A_sparse, emax6_param* params);
 void sysinit(Uint memsize,Uint alignment,Uchar** membase);
 #endif
+
+
+

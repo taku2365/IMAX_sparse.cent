@@ -110,18 +110,18 @@ char* dataset_names[10] = {"./data/poli/poli.mtx","./data/S40PI_n1/S40PI_n1.mtx"
 
 // char* dataset_names[1] = {"./data/ex10/ex10.mtx"};
 
-// params.mode = SPARSE_DENSE_58_SPMV_MODE;
-// params.data_format = JDS_INDEX_VAL_SET_SPMV_FORMAT;
-// params.data_type = REAL_DATA_TYPE;
+params.mode = SPARSE_DENSE_58_SPMV_MODE;
+params.data_format = JDS_INDEX_VAL_SET_SPMV_FORMAT;
+params.data_type = REAL_DATA_TYPE;
 
 
 // params.mode = SPARSE_DENSE_58_SPMV_MODE;
 // params.data_format = CSR_INDEX_VAL_SET_SPMV_FORMAT;
 // params.data_type = REAL_DATA_TYPE;
 
-params.mode = DENSE_SPMV_MODE;
-params.data_format = DENSE_DENSE_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
+// params.mode = DENSE_SPMV_MODE;
+// params.data_format = DENSE_DENSE_SPMV_FORMAT;
+// params.data_type = REAL_DATA_TYPE;
 
 init_params.mode = INITIAL_NO_MEMSIZE;
 init_params.init_allocate_mat_len = 6000;
@@ -150,7 +150,6 @@ if((fp=fopen(store_name,"w"))==NULL){
 #if !defined(CSIMDEBUG)
 STORE_CSV_INI(fp);
 #endif
-
 //fpをparam取得まで進める
 for(data_index=0; data_index<data_index_len; data_index++){
     if((fp1=fopen(dataset_names[data_index],"r"))==NULL){
@@ -253,6 +252,7 @@ for(data_index=0; data_index<data_index_len; data_index++){
     if(abs(sum-sum1)>1){
         printf("sum %f \n",sum);
         printf("sum1 %f \n",sum1);
+        exit(1);
     }
     #endif
     free_sparse_mat(coo);

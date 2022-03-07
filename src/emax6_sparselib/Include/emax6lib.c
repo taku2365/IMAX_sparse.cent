@@ -150,7 +150,7 @@ enum { LMRING_IDLE, LMRING_BUSY};
 enum { CMD_NOP, CMD_RESET, CMD_SCON, CMD_EXEC};
 struct reg_ctrl {
   struct i0 {
-    Ull  stat; /* +0000 bit7-4:LMRING, bit3-0:EXRING */
+    Ull  stat; /* +0000 bit15-12:LMM_SIZE, bit11-8:EMAX_DEPTH, bit7-4:LMRING, bit3-0:EXRING */
     Uint mcid; /* +0008 maximum chip-ID of IMAX (<EMAX_NCHIP) to be chained (activated) */
     Uint dmy0;
     Uint cmd;  /* +0010 host writes Ull cmd then chip# is propagated to succesors */
@@ -196,9 +196,9 @@ struct emax6 { /* host status of EMAX6 */
   Ull   lmmio             : 1; /* 0:lmm[0] is prev,   1:lmm[1] is prev    */
   Ull   mapdist           : 6; /* specified mapdist */
   Ull   lastdist          : 6; /* lastdist for DYNAMIC_SCON */
-  struct lmmi lmmi[EMAX_NCHIP][EMAX_DEPTH][EMAX_WIDTH][2]; /* lmmi for host (len/ofs/top are resolved) */
+  struct lmmi lmmi[EMAX_NCHIP][AMAP_DEPTH][EMAX_WIDTH][2]; /* lmmi for host (len/ofs/top are resolved) */
   Ull   lmmi_bitmap[EMAX_WIDTH];      /* based on lmmi[*][EMAX_WIDTH][2].v */
-  Uchar lmmd[EMAX_DEPTH][EMAX_WIDTH]; /* chip#7,6,..,0:clean, 1:dirty, exec後store箇所に1, drain直後0 */
+  Uchar lmmd[AMAP_DEPTH][EMAX_WIDTH]; /* chip#7,6,..,0:clean, 1:dirty, exec後store箇所に1, drain直後0 */
 
 #ifndef IGNORE_LMMI_BLKGATHER
   Ull   plist                ; /* pointer-list */
@@ -1629,14 +1629,14 @@ mex(Uint op_mx, Uchar **d, Uchar *base, Ull ofs, Ull s2, Ull s1)
   case OP_NOP:
     *d = base;
     break;
+  case OP_ALWAYS: /* base++ 対応 */
+    *d = base + ofs;
+    break;
   case OP_CMPA_LE:
     *d = base + ((ss1!=0xffffffff && ss2<=ss1) ? ofs:0); /* sparse matrix */
     break;
   case OP_CMPA_GE:
     *d = base + ((ss2!=0xffffffff && ss2>=ss1) ? ofs:0); /* sparse matrix */
-    break;
-  case OP_ALWAYS: /* base++ 対応 */
-    *d = base + ofs;
     break;
   default:
     printf("emax6lib: mex: undefined op_mx=%d\n", op_mx);
@@ -1707,7 +1707,7 @@ mmp(Uint op_mm, Ull ex, Ull *d, Ull adr, Ull top, Uint len, Uint blk)
   if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (!adr || !top)) return; /* NULL skip DMA */
 
 #define CHECK_MMP_MARGIN 12
-  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr > (top+len*sizeof(Uint)))) {
+  if (!((op_mm==OP_LDRQ && blk) || op_mm==OP_LDDMQ || op_mm==OP_TR) && (adr < top || adr >= top+len*sizeof(Uint)+CHECK_MMP_MARGIN)) {
     printf("mmp: adr=%08.8x_%08.8x out of range (top=%08.8x_%08.8x len=%dB)\n", (Uint)(adr>>32), (Uint)adr, (Uint)(top>>32), (Uint)top, len*sizeof(Uint));
     fflush(stdout);
   }

@@ -66,6 +66,14 @@ void sysinit(Uint memsize,Uint alignment,Uchar** membase)
   #endif
     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
     ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
+   switch (((struct reg_ctrl*)emax6.reg_ctrl)->i[0].stat>>8 & 0xf) {
+   case  3:EMAX_DEPTH = 64;break;
+   case  2:EMAX_DEPTH = 32;break;
+   case  1:EMAX_DEPTH = 16;break;
+   default:EMAX_DEPTH =  8;break;
+   }
+  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].adtr = emax_info.ddr_mmap - emax_info.lmm_phys;
+  ((struct reg_ctrl*)emax6.reg_ctrl)->i[0].dmrp = 0LL;
   #endif
 
   // return membase;

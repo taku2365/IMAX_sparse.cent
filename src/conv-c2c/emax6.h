@@ -42,9 +42,10 @@ void /*__attribute__((always_inline))*/ mmp(Uint, Ull,     Ull*, Ull, Ull, Uint,
 /* EMAX_NCHIP <= MAXCORE (in csim.h) */
 #define EMAX_NCHIP      4
 #define AMAP_DEPTH      64
-#define EMAX_DEPTH      64
+//#define EMAX_DEPTH    64
+int     EMAX_DEPTH;
 #define EMAX_WIDTH      4
-#define INSN_DEPTH      (EMAX_WIDTH*EMAX_DEPTH*4)
+#define INSN_DEPTH      (EMAX_WIDTH*AMAP_DEPTH*4)
 #define LMEM_SIZE       131072
 #define LMEM_UMASK0     0
 #define LMEM_UMASK1     0
@@ -125,9 +126,9 @@ void /*__attribute__((always_inline))*/ mmp(Uint, Ull,     Ull*, Ull, Ull, Uint,
 #define EXP_B5410       3
 #define EXP_B7632       4
 
-#define OP_CMPA_LE      1
-#define OP_CMPA_GE      2
-#define OP_ALWAYS       3
+#define OP_ALWAYS       1
+#define OP_CMPA_LE      2
+#define OP_CMPA_GE      3
 
 #define OP_LDR          0x01
 #define OP_LDWR         0x02
@@ -240,7 +241,7 @@ struct insn { /* EMAX6 instruction format */
     char exeds     ; /* suffix for var[s], alr[][s], bdr[][][s] */
   } iexe;
   struct mex {
-    char op        ; /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+    char op        ; /* mex(sparse matrix) conditional 0:NOP, 1:AL, 2:OP_CMPA_LE, 3:GE */
     Ull  init   : 1; /* mex(sparse matrix) 0:none, 1:INIT0? */
     char src1v     ; /* id.type */
     int  src1h     ; /* hash val */
@@ -336,11 +337,11 @@ struct dec { /* EMAX6 instruction analysis */
     int  exdh      ; /* hash val */
     char exds      ; /* suffix for var[s], bdr[][][s] */
   } dexu;
-  struct mex dmex0; /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
-  struct mex dmex1; /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+  struct mex dmex0; /* mex(sparse matrix) conditional 0:NOP, 1:AL, 2:OP_CMPA_LE, 3:GE */
+  struct mex dmex1; /* mex(sparse matrix) conditional 0:NOP, 1:AL, 2:OP_CMPA_LE, 3:GE */
   struct mop dmop0; /* mop0:store/load, load_single is assigned to BR[r][c][0] */
   struct mop dmop1; /* mop1:load only,  load_single is assigned to BR[r][c][1] */
-} dec[EMAX_DEPTH][EMAX_WIDTH];
+} dec[AMAP_DEPTH][EMAX_WIDTH];
 
 /* regmap & busmap */
 struct bus {
@@ -389,7 +390,7 @@ struct bus {
     int  h  ; /* hash */
     char s  ; /* suffix */
   } br[UNIT_WIDTH];
-} bus[EMAX_DEPTH][EMAX_WIDTH];
+} bus[AMAP_DEPTH][EMAX_WIDTH];
 
 /* conf */
 struct conf { /* final configuration info. for EMAX6-CGRA */
@@ -412,10 +413,10 @@ struct conf { /* final configuration info. for EMAX6-CGRA */
     Ull  init   :  2; /* bit0:activate s1+INIT0 bit1:activate s2+INIT0 */
     Ull  fold   :  1; /* 0:normal, 1:load-exe-store folding */
     /* sparse matrix */
-    Ull  mex0op :  2; /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+    Ull  mex0op :  2; /* mex(sparse matrix) conditional 0:NOP, 1:AL, 2:OP_CMPA_LE, 3:GE */
     Ull  mex0init: 1; /* mex(sparse matrix) 0:none, 1:INIT0? */
     Ull  mex0dist: 3; /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
-    Ull  mex1op :  2; /* mex(sparse matrix) conditional 0:NOP, 1:OP_CMPA_LE, 2:GE, 3:AL */
+    Ull  mex1op :  2; /* mex(sparse matrix) conditional 0:NOP, 1:AL, 2:OP_CMPA_LE, 3:GE */
     Ull  mex1init: 1; /* mex(sparse matrix) 0:none, 1:INIT0? */
     Ull  mex1dist: 3; /* distance 0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64byte */
     Ull  dmy00  :  5;
@@ -468,7 +469,7 @@ struct conf { /* final configuration info. for EMAX6-CGRA */
   struct cdw3 { /* e2 immediate */
     Ull  e2imm  : 64;
   } cdw3;
-} conf[EMAX_DEPTH][EMAX_WIDTH]; /* 4dwords/unit costs 1cycle/unit: 4-parallel conf costs 1cycle/stage */
+} conf[AMAP_DEPTH][EMAX_WIDTH]; /* 4dwords/unit costs 1cycle/unit: 4-parallel conf costs 1cycle/stage */
 
 /* lmminfo */
 struct lmmi { /* final FSM configuration for EMAX6-CGRA */
@@ -486,17 +487,17 @@ struct lmmi { /* final FSM configuration for EMAX6-CGRA */
   Ull len  :16; /* words of current stream (words) */
   Ull ofs  :32; /* lmp/lmd offset for f=0,p=1,mapdist=0 */
   Ull top  :64; /* top of current stream / TCU function() */
-} lmmi[EMAX_DEPTH][EMAX_WIDTH]; /* 2dwords/unit costs 0.5cycle/unit: 4-parallel conf costs 0.5cycle/stage */
+} lmmi[AMAP_DEPTH][EMAX_WIDTH]; /* 2dwords/unit costs 0.5cycle/unit: 4-parallel conf costs 0.5cycle/stage */
 int   lmmi_first_loc;           /* 最初のlmr/lmf位置を記憶.+mapdist位置の新旧topを比較し異なればSCON停止 */
 Ull   lmmi_bitmap[EMAX_WIDTH];  /* based on lmmi[*][EMAX_WIDTH][2].v */
 Ull   range_bitmap[EMAX_WIDTH]; /* based on lmmi[*][EMAX_WIDTH][2].v */
-Uchar range_link[EMAX_DEPTH][EMAX_WIDTH]; /* valid depth# of vcopy!=0 */
+Uchar range_link[AMAP_DEPTH][EMAX_WIDTH]; /* valid depth# of vcopy!=0 */
 struct lmmx { 
   int  forcev    ; /* id.type */
   int  forceh    ;
   int  lenv      ; /* id.type */
   int  lenh      ;
-} lmmx[EMAX_DEPTH][EMAX_WIDTH]; /* 2dwords/unit costs 0.5cycle/unit: 4-parallel conf costs 0.5cycle/stage */
+} lmmx[AMAP_DEPTH][EMAX_WIDTH]; /* 2dwords/unit costs 0.5cycle/unit: 4-parallel conf costs 0.5cycle/stage */
 
 /* regv template */
 struct {
@@ -517,7 +518,7 @@ struct {
   int  ea1o_v; /* id.type */
   int  ea1o_h;
   int  ea1o_s; /* suffix */
-} regv[EMAX_DEPTH][EMAX_WIDTH];
+} regv[AMAP_DEPTH][EMAX_WIDTH];
 
 /*******************************************/
 /* EMAX6T **********************************/

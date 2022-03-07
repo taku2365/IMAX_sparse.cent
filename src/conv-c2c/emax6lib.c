@@ -150,7 +150,7 @@ enum { LMRING_IDLE, LMRING_BUSY};
 enum { CMD_NOP, CMD_RESET, CMD_SCON, CMD_EXEC};
 struct reg_ctrl {
   struct i0 {
-    Ull  stat; /* +0000 bit7-4:LMRING, bit3-0:EXRING */
+    Ull  stat; /* +0000 bit15-12:LMM_SIZE, bit11-8:EMAX_DEPTH, bit7-4:LMRING, bit3-0:EXRING */
     Uint mcid; /* +0008 maximum chip-ID of IMAX (<EMAX_NCHIP) to be chained (activated) */
     Uint dmy0;
     Uint cmd;  /* +0010 host writes Ull cmd then chip# is propagated to succesors */
@@ -196,9 +196,9 @@ struct emax6 { /* host status of EMAX6 */
   Ull   lmmio             : 1; /* 0:lmm[0] is prev,   1:lmm[1] is prev    */
   Ull   mapdist           : 6; /* specified mapdist */
   Ull   lastdist          : 6; /* lastdist for DYNAMIC_SCON */
-  struct lmmi lmmi[EMAX_NCHIP][EMAX_DEPTH][EMAX_WIDTH][2]; /* lmmi for host (len/ofs/top are resolved) */
+  struct lmmi lmmi[EMAX_NCHIP][AMAP_DEPTH][EMAX_WIDTH][2]; /* lmmi for host (len/ofs/top are resolved) */
   Ull   lmmi_bitmap[EMAX_WIDTH];      /* based on lmmi[*][EMAX_WIDTH][2].v */
-  Uchar lmmd[EMAX_DEPTH][EMAX_WIDTH]; /* chip#7,6,..,0:clean, 1:dirty, exec¸åstore²Õ½ê¤Ë1, drainÄ¾¸å0 */
+  Uchar lmmd[AMAP_DEPTH][EMAX_WIDTH]; /* chip#7,6,..,0:clean, 1:dirty, exec¸åstore²Õ½ê¤Ë1, drainÄ¾¸å0 */
 
 #ifndef IGNORE_LMMI_BLKGATHER
   Ull   plist                ; /* pointer-list */
@@ -488,25 +488,25 @@ get_nanosec(int class)
 show_nanosec()
 {
 #if defined(ARMSIML)
-  printf("SIML_cycle: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
+  printf("SIML_cycle/1000: ARM:%d DRAIN:%d CONF:%d REGV:%d RANGE:%d LOAD:%d EXEC:%d total:%d\n",
+	 (Uint)(nanosec[NANOS_ARM]/1000),
+	 (Uint)(nanosec[NANOS_DRAIN]/1000),
+	 (Uint)(nanosec[NANOS_CONF]/1000),
+	 (Uint)(nanosec[NANOS_REGV]/1000),
+	 (Uint)(nanosec[NANOS_RANGE]/1000),
+	 (Uint)(nanosec[NANOS_LOAD]/1000),
+	 (Uint)(nanosec[NANOS_EXEC]/1000),
+	 (Uint)(nanosec[NANOS_TOTAL]/1000));
 #else
-  printf("nanosec: ARM:%llu DRAIN:%llu CONF:%llu REGV:%llu RANGE:%llu LOAD:%llu EXEC:%llu total:%llu\n",
-	 nanosec[NANOS_ARM],
-	 nanosec[NANOS_DRAIN],
-	 nanosec[NANOS_CONF],
-	 nanosec[NANOS_REGV],
-	 nanosec[NANOS_RANGE],
-	 nanosec[NANOS_LOAD],
-	 nanosec[NANOS_EXEC],
-	 nanosec[NANOS_TOTAL]);
+  printf("usec: ARM:%d DRAIN:%d CONF:%d REGV:%d RANGE:%d LOAD:%d EXEC:%d total:%d\n",
+	 (Uint)(nanosec[NANOS_ARM]/1000),
+	 (Uint)(nanosec[NANOS_DRAIN]/1000),
+	 (Uint)(nanosec[NANOS_CONF]/1000),
+	 (Uint)(nanosec[NANOS_REGV]/1000),
+	 (Uint)(nanosec[NANOS_RANGE]/1000),
+	 (Uint)(nanosec[NANOS_LOAD]/1000),
+	 (Uint)(nanosec[NANOS_EXEC]/1000),
+	 (Uint)(nanosec[NANOS_TOTAL]/1000));
 #endif
 }
 
@@ -548,8 +548,8 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
   int dmlen;
   Ull dmnxt;
   int dmrw; /* 0:mem->lmm 1:lmm->mem */
-  static Ull concat_adr; /* NULL:invalid, !NULL:top_addr */
-  static int concat_len; /* byte-len */
+  static Ull concat_adr[EMAX_NCHIP]; /* NULL:invalid, !NULL:top_addr */
+  static int concat_len[EMAX_NCHIP]; /* byte-len */
 
   /* check_lmmi */
   if ((phase == 1 && mode == 0) || phase == 2 || phase == 3) { /* (drain && array) || load || exec */
@@ -596,23 +596,23 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
       /* concat_adr=adr0,L=2          mark=0 |          mark=0 | adr2,L=0,mark=1 */
 //printf("drain: adr=%08.8x len=%08.8x nxt=%08.8x\n", (Uint)dmaadr, (Uint)dmalen, (Uint)dmnxt);
       if ((emax6.lmmd[(m+1)%EMAX_DEPTH][j]&(1<<c)) && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
-	if (!concat_adr) { concat_adr = dmadr; concat_len = dmlen; }
-	else             { concat_len += dmlen+1; }
-	if (concat_len < 8192) mark = 0;
+	if (!concat_adr[c]) { concat_adr[c] = dmadr; concat_len[c] = dmlen; }
+	else             { concat_len[c] += dmlen+1; }
+	if (concat_len[c] < 8192) mark = 0;
       }
       else {
-	if (concat_adr)  { concat_len += dmlen+1; }
+	if (concat_adr[c])  { concat_len[c] += dmlen+1; }
       }
     }
     else if (phase == 2) { /* load */
 //printf("load: adr=%08.8x len=%08.8x nxt=%08.8x\n", (Uint)dmadr, (Uint)dmlen, (Uint)dmnxt);
       if (lmmicp1->v && (dmadr+(dmlen+1)*sizeof(Uint)) == dmnxt) {
-	if (!concat_adr) { concat_adr = dmadr; concat_len = dmlen; }
-	else             { concat_len += dmlen+1; }
-	if (concat_len < 8192) mark = 0;
+	if (!concat_adr[c]) { concat_adr[c] = dmadr; concat_len[c] = dmlen; }
+	else             { concat_len[c] += dmlen+1; }
+	if (concat_len[c] < 8192) mark = 0;
       }
       else {
-	if (concat_adr)  { concat_len += dmlen+1; }
+	if (concat_adr[c])  { concat_len[c] += dmlen+1; }
       }
     }
 #endif
@@ -622,9 +622,9 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
   if (mark) {
     emax6.rw = dmrw;
     if (phase == 1) { /* drain */
-      emax6.ddraddr = (concat_adr)?concat_adr:dmadr; /* address should be 4B-aligned */
+      emax6.ddraddr = (concat_adr[c])?concat_adr[c]:dmadr; /* address should be 4B-aligned */
       emax6.lmmaddr = emax6.ddraddr;
-      emax6.dmalen  = (concat_adr)?concat_len:dmlen; /* length should be # of words */
+      emax6.dmalen  = (concat_adr[c])?concat_len[c]:dmlen; /* length should be # of words */
     }
     else if (phase == 3 && dmrw==1) { /* pdrain */
       emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs; /* ¡ú¡ú¡úPDRAIN address should be 4B-aligned */
@@ -635,9 +635,9 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
 	  ||(phase == 3 && dmrw==0)) { /* pload *//* address should be 4B-aligned *//* length should be # of words */
       if (lmmicp->blk==0) { /* inf */
 	if (phase == 2) { /* load */
-	  emax6.ddraddr = (concat_adr)?concat_adr:dmadr; /* address should be 4B-aligned */
+	  emax6.ddraddr = (concat_adr[c])?concat_adr[c]:dmadr; /* address should be 4B-aligned */
 	  emax6.lmmaddr = emax6.ddraddr;
-	  emax6.dmalen  = (concat_adr)?concat_len:dmlen; /* length should be # of words */
+	  emax6.dmalen  = (concat_adr[c])?concat_len[c]:dmlen; /* length should be # of words */
 	}
 	else {
 	  emax6.ddraddr = dmadr+(Sll)(int)lmmicp->ofs; /* ¡ú¡ú¡úPLOAD address should be 4B-aligned */
@@ -675,7 +675,7 @@ emax6_check_lmmi_and_dma(int mode, int phase, int lastdist, int c, int i, int j)
 printf("====DMA mode=%x phase=%x i=%x m=%x j=%x lmmic/o=%x/%x lmmc_stat=%x(dirty=%x) lmmo_stat=%x(dirty=%x) mark=%x\n", mode, phase, i, m, j, emax6.lmmic, emax6.lmmio, lmmc_stat, emax6.lmmd[i][j], lmmo_stat, emax6.lmmd[m][j], mark);
 printf("        rw=%d ddraddr=%08.8x lmmaddr=%08.8x dmalen=%d", emax6.rw, (Uint)emax6.ddraddr, (Uint)emax6.lmmaddr, (Uint)emax6.dmalen);
 #endif
-    concat_adr = 0;
+    concat_adr[c] = 0;
     emax6_kick_dma(j);
   }
 }
@@ -1629,14 +1629,14 @@ mex(Uint op_mx, Uchar **d, Uchar *base, Ull ofs, Ull s2, Ull s1)
   case OP_NOP:
     *d = base;
     break;
+  case OP_ALWAYS: /* base++ ÂÐ±þ */
+    *d = base + ofs;
+    break;
   case OP_CMPA_LE:
     *d = base + ((ss1!=0xffffffff && ss2<=ss1) ? ofs:0); /* sparse matrix */
     break;
   case OP_CMPA_GE:
     *d = base + ((ss2!=0xffffffff && ss2>=ss1) ? ofs:0); /* sparse matrix */
-    break;
-  case OP_ALWAYS: /* base++ ÂÐ±þ */
-    *d = base + ofs;
     break;
   default:
     printf("emax6lib: mex: undefined op_mx=%d\n", op_mx);

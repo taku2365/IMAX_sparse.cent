@@ -1,5 +1,5 @@
 
-static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.8 2021/12/23 09:46:04 nakashim Exp nakashim $";
+static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/RCS/main.c,v 1.9 2022/03/03 14:58:15 nakashim Exp nakashim $";
 
 /* EMAX6 Compiler                      */
 /*        Copyright (C) 2012 by NAIST. */
@@ -9,6 +9,7 @@ static char RcsHeader[] = "$Header: /usr/home/nakashim/proj-arm64/src/conv-c2c/R
 /* main.c: emin assembler 2012/3/16 */ 
 
 #include "conv-c2c.h"
+#include "emax6.h"
 
 extern FILE *yyin;
 
@@ -18,6 +19,7 @@ main(argc, argv) int argc; char **argv;
   struct stat stbuf;
   int i, j, offset;
 
+  EMAX_DEPTH = 64; /* default */
   /* オプション解析 */
   for (argc--, argv++; argc; argc--, argv++) {
     if (**argv == '-') { /* regard as a command */
@@ -25,9 +27,27 @@ main(argc, argv) int argc; char **argv;
       case 'v':
 	printf("Conv-c2c Version %s\n", version());
 	break;
+      case 'u':
+	sscanf(*argv+2, "%d", &EMAX_DEPTH);
+	switch (EMAX_DEPTH) {
+	case 64:
+	case 32:
+	case 16:
+	case  8:
+	  break;
+	default:
+	  printf("usage: conv-c2c [-v] [-uxx] src_prog\n");
+	  printf(" xx should be 64,32,16,8\n");
+	  exit(1);
+	}
+	break;
       default:
-	printf("usage: conv-c2c [-v] src_prog\n");
+	printf("usage: conv-c2c [-v] [-uxx] src_prog\n");
 	printf("       -v: vervose\n");
+	printf("       -u64: 64 units\n");
+	printf("       -u32: 32 units\n");
+	printf("       -u16: 16 units\n");
+	printf("       -u8 :  8 units\n");
 	exit(1);
       }
     }

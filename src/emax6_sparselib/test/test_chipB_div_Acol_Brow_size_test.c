@@ -267,6 +267,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         if(abs(sum-sum1)>1){
             printf("sum %f \n",sum);
             printf("sum1 %f \n",sum1);
+            exit(1);
         }
         #endif
         free_sparse_mat(coo);
