@@ -206,9 +206,7 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         // make B dense matrix for simd calculation
         make_random_mat(&params,B,B_debug);
 
-        if(coo == NULL){
-            fprintf(stderr,"coo NULL \n");
-        }
+
     
         if(params.mode == DENSE_DENSE_MODE){
             for(index_tmp=0;index_tmp<(A_row_size*(A_col_size_pad));index_tmp++){

@@ -1,3 +1,4 @@
+#!/bin/sh 
 
 # tail -n +2 filename.csv
 
@@ -71,7 +72,7 @@ elif [ "$1" = "spmm_sparse_rand_irregular_size" ]; then
     # ex ./run.sh spmm_sparse_rand_irregular_size ./result/result.csv
 
 elif [ "$1" = "all" ]; then
-    start_time=$(date +s%)
+    start_time=$(date +%s)
     eval "./${base_dir}/test_chipA_spmv_multi_real_data_test${tail_name} ${csv_name} " 
     result1=$?
     eval "./${base_dir}/test_chipA_spmv_real_data_test${tail_name} ${csv_name} ${data_name} "

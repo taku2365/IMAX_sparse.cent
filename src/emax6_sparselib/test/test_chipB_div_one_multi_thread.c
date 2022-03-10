@@ -193,9 +193,7 @@ coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,NULL);
 // make B dense matrix for simd calculation
 make_random_mat(&params,B,B_debug);
 
-if(coo == NULL){
-fprintf(stderr,"coo NULL \n");
-}
+
 if(params.mode == DENSE_DENSE_MODE){
     for(index_tmp=0;index_tmp<(A_row_size_pad*(A_col_size_pad));index_tmp++){
         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];

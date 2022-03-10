@@ -188,9 +188,6 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         // make B dense matrix for simd calculation
         make_random_mat(&params,B,B_debug);
 
-        if(coo == NULL){
-            fprintf(stderr,"coo NULL \n");
-        }
 
         reset_nanosec();
         A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size,A_col_size,&params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);

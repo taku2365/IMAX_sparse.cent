@@ -50,44 +50,30 @@ Uint *B_debug = NULL; /*[L][B_col_size];*/
 Uint *C_debug = NULL; /*[A_row_size][B_col_size];*/
 coo_format* coo = NULL;
 emax6_sparse2* A_sparse = NULL;
-int blk_iter;
-int mode,sparse_rate_len,sparse_rate_index;
 int row,row1, col, col1, n, n1;
-int top, blk;
-int w, h;
 int count0, count1, count2;
-int nnz_A=0,nnz_B=0,nnz_B_debug=0;
 double sum=0,sum1=0;
 FILE* fp,*fp1,*fp1_tmp;
-Uint size_array_index,size_array_len;
 Uint memsize_tmp;
 Uint H;
-size_t A_row_size_ini,A_row_size,A_row_size_pad;
-size_t A_col_size_ini,A_col_size,A_col_size_pad;
-size_t B_row_size_ini,B_row_size,B_row_size_pad;
-size_t B_col_size_ini,B_col_size,B_col_size_pad;
+size_t A_row_size,A_row_size_pad;
+size_t A_col_size,A_col_size_pad;
+size_t B_row_size,B_row_size_pad;
+size_t B_col_size,B_col_size_pad;
 size_t B_col_blk_ini ,B_col_blk ;
-size_t NCHIP_ini     ,NCHIP     ;
-size_t W_ini         ,W         ;
-size_t A_col_blk_ini ,A_col_blk ;
-size_t C_col_blk_ini ,C_col_blk ;
+size_t NCHIP = 1                ;
+size_t W                        ;
+size_t A_col_blk                ;
+size_t C_col_blk                ;
 extern Ull nanosec[NANOS_CLASS];
 Uint tmp = 0;
 float zero_bias = 0.0;
 int index_tmp = 0;
 char* data_name = NULL;
 char* store_name = "result/result.csv";
-A_row_size_ini = A_row_size = 1024*8LL;
-A_col_size_ini = A_col_size = 1024*8LL;
-B_row_size_ini = B_row_size = 1024*8LL;
-B_col_size_ini = B_col_size = 1LL;
-
-A_col_blk_ini  = A_col_blk  = 5LL  ;
-B_col_blk_ini  = B_col_blk  = 8LL  ;
-C_col_blk_ini  = C_col_blk  = 0LL  ;
-NCHIP_ini      = NCHIP      = 1LL  ;
-W_ini          = W          = 4LL  ;
-// params = (emax6_param*) malloc(sizeof(emax6_param)*1);
+Uint data_index = 0;
+int sparse_rate_index = 0;
+float sparse_rate[1] = {0.0};
 emax6_param params;
 init_param init_params;
 
@@ -110,14 +96,7 @@ params.data_type = REAL_DATA_TYPE;
 // params.mode = DENSE_DENSE_MODE;
 // params.data_type = DENSE_TYPE;
 
-size_array_len = 6;
-Uint size_array[6] = {1003,512,256,128,64,32};
-// size_array_len = 1;
-// Uint size_array[1] = {32};
-// Uint size_array[6] = {32,32,32,32,32,32};
-sparse_rate_len = 12;
-float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
-sparse_rate_index = 0;
+
 
 params.mode = DENSE_SPMV_MODE;
 params.data_format = DENSE_DENSE_SPMV_FORMAT;
@@ -161,7 +140,9 @@ STORE_CSV_INI(fp);
 #endif
 //はみ出た時の拡張
 //fpをparam取得まで進める
-fp1_tmp = get_param_from_dataset(&params,fp1);
+init_params.mode = INITIAL_PARAM_FROM_FILE_DATA;
+init_params.fp = fp1;
+get_param(&params,&init_params);
 A_row_size = params.A_row_size_param;
 A_col_size = params.A_col_size_param;
 B_row_size = params.B_row_size_param;
@@ -169,49 +150,32 @@ B_col_size = params.B_col_size_param = 1;
 B_col_size_pad = params.B_col_size_pad_param = 1;
 
 H = params.H_param;
-// GET_PAD_SIZE(A_col_size_pad,A_col_size,H);
-// GET_PAD_SIZE(B_col_size_pad,B_col_size,(W*2));
 A_row_size_pad = params.A_row_size_pad_param;
 A_col_size_pad = params.A_col_size_pad_param;
 B_row_size_pad = params.B_row_size_pad_param;
-params.A_col_blk_param  = A_col_blk ;
-params.B_col_blk_param  = B_col_blk ;
-params.C_col_blk_param  = C_col_blk ;
 params.NCHIP_param      = NCHIP     ;
-params.W_param          = W         ;
+W = params.W_param;
+
 IMAX_param_tunig(&params);
 
 PRINT_PARAM(params);
 
-Base_p  = (Uint*)((Uchar*)membase);
-A  = (Uint*)((Uchar*)Base_p);
-B  = (Uint*)((Uchar*)A  + 2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
-//aligmentを8byteにしないとバグる
-GET_PAD_SIZE(tmp,(B_row_size_pad)*(B_col_size_pad)*sizeof(Uint),8);
-C1 = (Uint*)((Uchar*)B  + tmp + 8*sizeof(Uint)*sparse_rate_index);
-GET_PAD_SIZE(tmp,A_row_size_pad*(B_col_size_pad)*sizeof(Uint),8);
-sort_index = (Uint*)((Uchar*)C1 + tmp);
-C0 = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
 
+mem_reset_offset();
 
+A          = (Uint*)IMAX_malloc(2*(A_row_size_pad*(A_col_size_pad))*sizeof(Uint));
+B          = (Uint*)IMAX_malloc((B_row_size_pad)*(B_col_size_pad)*sizeof(Uint));
+C1         = (Uint*)IMAX_malloc_output(A_row_size_pad*(B_col_size_pad)*sizeof(Uint));
+sort_index = (Uint*)IMAX_malloc((A_row_size_pad)*sizeof(Uint));
+
+C0      = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
 C_debug = (Uint*)calloc(A_row_size_pad*(B_col_size_pad),sizeof(Uint));
 B_debug = (Uint*)calloc((B_col_size_pad)*(B_row_size_pad),sizeof(Uint));
 
 make_random_mat(&params,B,B_debug);
 
-coo = make_mat(&params,sparse_rate[sparse_rate_index],zero_bias,fp1_tmp);
-if(coo == NULL){
-    fprintf(stderr,"coo NULL \n");
-    exit(1);
-}
+coo = make_mat(&params,params.sparsity,zero_bias,&init_params);
 
-if((params.mode == DENSE_DENSE_MODE)||(params.mode == DENSE_SPMV_MODE)){
-    for(index_tmp=0;index_tmp<(A_row_size_pad*A_col_size_pad);index_tmp++){
-        *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
-    }
-}   
-
-//疎行列取得
 
 reset_nanosec();
 A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size_pad,A_col_size,&params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);
@@ -229,15 +193,7 @@ STORE_CSV(fp,sparse_rate_index);
 orig(coo->val,B_debug,C0,&params);
 sum = 0;
 sum1 = 0;
-for (row=0,row1=0; row<A_row_size_pad;row+=1) {
-        count2++;
-    #ifdef CSIMDEBUG
-        printf("C in\n");
-    #endif
-    *(float*)&C_debug[row] = *(float*)&C1[row];
-    // printf("C1[%d][%d]=%f \n", row, col, (double)*(float*)&C1[col*A_row_size_pad+row]);
-    
-}
+memcpy(C_debug,C1,A_row_size_pad*sizeof(Uint));
 
 for (col=0; col<(B_col_size_pad); col+=1){
     for (row=0; row<A_row_size_pad; row+=1) {
@@ -290,9 +246,9 @@ if(fp != NULL){
 fclose(fp);
 fp = NULL;
 }
-if(fp1_tmp != NULL){
-fclose(fp1_tmp);
-fp1_tmp = NULL;
+if(init_params.fp != NULL){
+    fclose(init_params.fp);
+    init_params.fp = NULL;
 }
 #endif
 } // main

@@ -144,7 +144,7 @@ typedef struct {
 } init_param;
 
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,FILE* fp);
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,init_param* init_param);
 void make_random_mat(emax6_param* emax6_param,Uint* B,Uint* B_debug);
 void free_sparse_format(emax6_sparse2* sparse_format);
 void free_sparse_mat(coo_format* coo);
@@ -166,6 +166,7 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f);
 Uchar* IMAX_malloc(size_t size );
 Uchar* IMAX_malloc_output(size_t size );
 void mem_reset_offset();
+void IMAX_memcpy(Uchar* dst, Uchar* src, size_t len, emax6_param* param);
 //mode  
 #define DENSE_DENSE_MODE 0
 #define DENSE_SPMV_MODE 1 

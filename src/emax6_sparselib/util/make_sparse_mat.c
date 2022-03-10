@@ -202,7 +202,7 @@ static coo_format* make_sparse_mat_2(emax6_param* emax6_param,float sparsity,flo
 }
 
 
-static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
+static coo_format* make_sparse_mat_3(emax6_param* emax6_param,init_param* init_param){
   // sparsity 何パーセント疎か
 
   int col,row,tmp,tmp1,nnz=0;
@@ -226,6 +226,7 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   W              = emax6_param->W_param             ; 
   nnz            = emax6_param->nnz                 ; 
   matcode        = emax6_param->matcode             ;
+  FILE* f = init_param->fp;
 
  
 
@@ -272,12 +273,13 @@ static coo_format* make_sparse_mat_3(emax6_param* emax6_param,FILE* f){
   coo->col_index = col_index;
   coo->row_index = row_index;
   coo->val = A_tmp;
+  init_param->fp = f;
 
   return coo;
 }
 
 
-coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,FILE* fp){
+coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percent,init_param* init_param){
   coo_format* coo = NULL;
 
   switch (emax6_param->data_type)
@@ -292,7 +294,7 @@ coo_format* make_mat(emax6_param* emax6_param,float sparsity,float biased_percen
     coo = make_sparse_mat_2(emax6_param,sparsity,biased_percent);
     break;
   case REAL_DATA_TYPE:
-    coo = make_sparse_mat_3(emax6_param,fp);
+    coo = make_sparse_mat_3(emax6_param,init_param);
     break;
   default:
     fprintf(stderr,"This pattern doesnt exsit in make_sparse_mat\n");
