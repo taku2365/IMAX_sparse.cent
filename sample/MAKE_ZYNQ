@@ -1,5 +1,0 @@
- (cd filter;       ./MAKE_ZYNQ)
- (cd mm_cnn_lf;    ./MAKE_ZYNQ)
- (cd stencil;      ./MAKE_ZYNQ)
- (cd stringsearch; ./MAKE_ZYNQ)
- (cd test;         ./MAKE_ZYNQ)
