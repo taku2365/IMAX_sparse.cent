@@ -111,7 +111,7 @@ sparse_rate_len = 12;
 float sparse_rate[12] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9,0.95};
 params.mode = DENSE_SPMV_MODE;
 params.data_format = DENSE_DENSE_SPMV_FORMAT;
-params.data_type = REAL_DATA_TYPE;
+params.data_type = SPARSE_SPMV_TYPE;
 
 init_params.mode = INITIAL_MEMBASE_WITH_MAT_LEN;
 init_params.init_allocate_mat_len = 6000;
@@ -195,11 +195,11 @@ for(size_array_index=0;size_array_index<size_array_len;size_array_index++){
         make_random_mat(&params,B,B_debug);
 
     
-        if((params.mode == DENSE_DENSE_MODE)||(params.mode == DENSE_SPMV_MODE)){
-            for(index_tmp=0;index_tmp<(A_row_size_pad*A_col_size_pad);index_tmp++){
-                *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
-            }
-        }   
+        // if((params.mode == DENSE_DENSE_MODE)||(params.mode == DENSE_SPMV_MODE)){
+        //     for(index_tmp=0;index_tmp<(A_row_size_pad*A_col_size_pad);index_tmp++){
+        //         *(float*)&A[index_tmp] = *(float*)&coo->val[index_tmp];
+        //     }
+        // }   
 
         reset_nanosec();
         A_sparse = sparse_format(coo->nnz,A,coo->val,coo->col_index,coo->row_index,A_row_size_pad,A_col_size,&params,sort_index,"/home/takuya-s/IMAX_sparse.cent/sample/test/sparse_data.wb",0);

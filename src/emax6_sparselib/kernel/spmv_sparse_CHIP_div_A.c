@@ -83,7 +83,7 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
     Uint  *A_sort_index1,*A_sort_index2;
     //(Uint *) 0x7ffff747fd84
     printf("IMAX\n");
-    if(params->col_max>50){
+    if(params->col_max>=50){
         H = 58;
     }
     else if (params->col_max>=40 && params->col_max<50){
@@ -102,7 +102,9 @@ void spmv_sparse_CHIP_div_A(Uint* C, const Uint* A, const Uint* B,emax6_sparse2*
         H = 10;
     }
     else  {
-        fprintf(stderr,"Thie pattern does not exist spmv_sparse_CHIP_div_A.c:%d ",__LINE__);
+        // printf("H %llu\n",H);
+        fprintf(stderr,"Thie pattern does not exist spmv_sparse_CHIP_div_A.c:%d \n",__LINE__);
+        exit(1);
     }
     for (blk=0,blk_iter=0,A_col_blk_tmp=A_col_blk,A_row_size_mul_2_mul_A_col_blk = A_row_size_pad*2*A_col_blk; blk<A_col_size; blk+=A_col_blk*H,blk_iter+=A_col_blk) { /* 3重ループ展開の外側対象 */
         if ((A_margin_tmp=A_margin[blk_iter])==0) {break;}

@@ -1,0 +1,271 @@
+head	1.11;
+access;
+symbols;
+locks
+	nakashim:1.11; strict;
+comment	@# @;
+
+
+1.11
+date	2018.12.19.03.51.03;	author nakashim;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2017.04.28.04.09.45;	author nakashim;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2017.04.21.03.30.08;	author nakashim;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2017.04.21.03.28.08;	author nakashim;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2016.05.18.23.58.51;	author nakashim;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2016.05.08.11.02.17;	author nakashim;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2016.04.10.12.01.55;	author nakashim;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2016.04.02.14.04.06;	author nakashim;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2016.02.03.09.59.49;	author nakashim;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2015.09.14.08.20.37;	author nakashim;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2015.07.21.05.44.37;	author nakashim;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.11
+log
+@*** empty log message ***
+@
+text
+@
+## ARM Instruction Simulator           ##
+##         Copyright (C) 2005 by NAIST ##
+##         Primary writer: Y.Nakashima ##
+##                nakashim@@is.naist.jp ##
+
+OPTION	      = -DCHECK_CACHE -DIGNORE_LMMI_BLKGATHER -DIGNORE_LDDMQ_HANDSHAKE
+PROGRAM       = csim
+CC            = gcc
+#CFLAGS       = -O3 -I. -I/usr/local/include $(OPTION)
+CFLAGS        = -O3 -m32 -I. -I/usr/X11R6/include $(OPTION)
+ASFLAGS       = 
+#LDFLAGS      =
+LDFLAGS       = -m32
+#LIBFLAGS      = -L/usr/local/lib -lm -lX11 -pthread
+LIBFLAGS      = -L/usr/X11R6/lib -lm -lrt -lX11 -pthread
+DESTDIR	      = $(HOME)/bin
+
+OBJS	      =	csim.o armfile64.o decode.o exec.o alu.o mul.o vxx.o ld.o st.o \
+		reg.o sim-core.o sim-mreq.o sim-mem.o xdisp.o emax6.o 
+
+SRCS	      =	csim.c armfile64.c decode.c exec.c alu.c mul.c vxx.c ld.c st.c \
+		reg.c sim-core.c sim-mreq.c sim-mem.c xdisp.c emax6.c
+
+all:		$(PROGRAM)
+
+$(PROGRAM):     $(OBJS)
+		$(CC) $(LDFLAGS) $(OBJS) -o $(PROGRAM) $(LIBFLAGS)
+
+clean:;		rm -f $(OBJS) core *~
+
+test:;		./$(PROGRAM)       -b5000 ../../sample/test/test000
+
+###
+
+csim.o:		csim.h
+armfile64.o:	csim.h
+decode.o:	csim.h
+exec.o:		csim.h
+alu.o:		csim.h
+mul.o:		csim.h
+vxx.o:		csim.h
+ld.o:		csim.h
+st.o:		csim.h
+reg.o:		csim.h
+sim-core.o:	csim.h
+sim-mreq.o:	csim.h
+sim-mem.o:	csim.h
+xdisp.o:	csim.h
+emax6.o:	../conv-c2c/emax6.h ../conv-c2c/emax6lib.c
+
+###
+@
+
+
+1.10
+log
+@*** empty log message ***
+@
+text
+@d16 1
+a16 1
+LIBFLAGS      = -L/usr/X11R6/lib -lm -lX11 -pthread
+@
+
+
+1.9
+log
+@*** empty log message ***
+@
+text
+@d50 1
+a50 1
+emax6.o:	../conv-c2e/emax6.h ../conv-c2e/emax6lib.c
+@
+
+
+1.8
+log
+@*** empty log message ***
+@
+text
+@d20 1
+a20 1
+		reg.o sim-core.o sim-mreq.o sim-mem.o xdisp.o emax5.o 
+d23 1
+a23 1
+		reg.c sim-core.c sim-mreq.c sim-mem.c xdisp.c emax5.c
+@
+
+
+1.7
+log
+@*** empty log message ***
+@
+text
+@d7 2
+a8 2
+OPTION	      = -DCHECK_CACHE
+PROGRAM       = bsim
+d19 1
+a19 1
+OBJS	      =	bsim.o armfile64.o decode.o exec.o alu.o mul.o vxx.o ld.o st.o \
+d22 1
+a22 1
+SRCS	      =	bsim.c armfile64.c decode.c exec.c alu.c mul.c vxx.c ld.c st.c \
+d36 15
+a50 15
+bsim.o:		bsim.h
+armfile64.o:	bsim.h
+decode.o:	bsim.h
+exec.o:		bsim.h
+alu.o:		bsim.h
+mul.o:		bsim.h
+vxx.o:		bsim.h
+ld.o:		bsim.h
+st.o:		bsim.h
+reg.o:		bsim.h
+sim-core.o:	bsim.h
+sim-mreq.o:	bsim.h
+sim-mem.o:	bsim.h
+xdisp.o:	bsim.h
+emax5.o:	../conv-c2d/emax5.h ../conv-c2d/emax5lib.c
+@
+
+
+1.6
+log
+@*** empty log message ***
+@
+text
+@d7 1
+a7 1
+OPTION	      = -DEMAX5HOST_RATIO=12 -DCHECK_CACHE
+@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@d15 1
+@
+
+
+1.4
+log
+@*** empty log message ***
+@
+text
+@d19 1
+a19 1
+		reg.o sim-core.o sim-mreq.o sim-mem.o xdisp.o emax5.o
+d49 1
+a49 1
+emax5.o:	../conv-c2d/emax5.h
+@
+
+
+1.3
+log
+@*** empty log message ***
+@
+text
+@d7 1
+a7 1
+OPTION	      = -DEMAX4HOST_RATIO=12 -DCHECK_CACHE
+@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@d7 1
+a7 1
+OPTION	      = -DCHECK_CACHE
+d19 1
+a19 1
+		reg.o sim-core.o sim-mreq.o sim-mem.o xdisp.o
+d22 1
+a22 1
+		reg.c sim-core.c sim-mreq.c sim-mem.c xdisp.c
+d49 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d11 1
+a11 1
+CFLAGS        = -g -m32 -I. -I/usr/X11R6/include $(OPTION)
+@

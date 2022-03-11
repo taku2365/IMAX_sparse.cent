@@ -7,6 +7,11 @@
 #     exit
 # fi
 
+# ./run.sh build ARM_CROSS=1
+
+if [ $# -eq 0 ]; then
+echo 'You need to specify arguments'
+fi
 
 arch_name=$(arch)
 if [ $arch_name = "aarch64" ]; then
@@ -17,9 +22,31 @@ elif [ $arch_name = "x86_64" ]; then
     tail_name=""
 fi
 
+if [ "$1" = "build" ]; then
+    eval "make $2"
+fi
+if [ "$1" = "install" ]; then
+    if [ $# -ne 2 ]; then
+        echo "you need 2 arguments"
+        exit 1
+    fi
+    eval "mv ./${base_dir}/libsparse.a $2"    
+fi
 
-if [ $# -eq 0 ]; then
-echo 'You need to specify arguments'
+
+# ./run.sh download_mtx_from_URL https://suitesparse-collection-website.herokuapp.com/MM/VDOL/freeFlyingRobot_7.tar.gz
+if [ "$1" = "download_mtx_from_URL" ]; then
+    if [ $# -ne 2 ]; then
+        echo "you need 2 arguments"
+        exit 1
+    fi
+    
+    cd ./data||exit
+    wget "$2"||exit
+    filename=$(echo "$2"|sed 's@^h.*/@@')
+
+    tar zxvf "./$filename"
+    cd ..||exit
 fi
 
 if [ $# -eq 3 ]; then
@@ -153,4 +180,4 @@ fi
 # 末尾がgz以外削除
 # find ./* -type d -regextype posix-basic !  -regex ".*\.gz$"| xargs rm -ir 
 # 展開
-# find ./* -type f -regextype posix-basic   -regex ".*\.gz$" | xargs -n 1 tar zxvf elif [ "$1" = "spmv_sparse_real_one" ]; then
+# find ./* -type f -regextype posix-basic   -regex ".*\.gz$" | xargs -n 1 tar zxvf 

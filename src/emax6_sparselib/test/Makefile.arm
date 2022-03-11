@@ -36,11 +36,11 @@ pthread_test.o:	pthread_test.c
 
 
 ifeq ($(LINK_FORMAT),static)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.a
+test_depend: ../conv-c2c/emax6.h ../conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.a
 endif
 
 ifeq ($(LINK_FORMAT),shared)
-test_depend: $(PROJTOP)/conv-c2c/emax6.h $(PROJTOP)/conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.so
+test_depend: ../conv-c2c/emax6.h ../conv-c2c/emax6lib.c ../Include/emax6_sparselib.h ../build_arm/libsparse.so
 
 endif
 

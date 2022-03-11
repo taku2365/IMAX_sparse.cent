@@ -1,0 +1,19 @@
+ARM+EMAX6 Simulator Version 1.67 2021/06/14 03:53:22 nakashim Exp nakashim $
+ MAXTHRD   =  16
+ MAXCORE   =  4
+ THR/CORE  =  4.000000 (should be integer)
+ ROBSIZE   =  16 (actives are CORE_ROBSIZE-1)
+ LINESIZE  =  64B
+ I1SIZE    =  16384B (4way delay=16)
+ D1SIZE    =  16384B (4way delay=16)
+ L2SIZE    =  131072B (4way dirdl=50, cc=100, mm=150)
+ MAXL1BK   =  8
+ MAXL2BK   =  8
+ MAXMMBK   =  4
+ memspace  =  00000000-4fffffff
+ arm_hdr   =  00001000-
+ arm_param =  00001080-
+ aloclimit = -4dffff00
+ stack/thr =  00010000
+ stackinit = -4fffff00
+Can't open elf_file test/test_chipB_div+dma

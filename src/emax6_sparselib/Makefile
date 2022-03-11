@@ -207,14 +207,14 @@ endif
 ifeq ($(ARM),1)
 ifeq ($(LINK_FORMAT),shared)
 ./build_arm/kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h
-	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	perl ./conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./../conv-c2c/conv-c2c.arm $<-cppo.c
+	./conv-c2c/conv-c2c.arm $<-cppo.c
 else
 ./build_arm/kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h
-	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	perl ./conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./..//conv-c2c/conv-c2c.arm $<-cppo.c
+	./conv-c2c/conv-c2c.arm $<-cppo.c
 	$(CC) $(CFLAGS) -c  $(basename $<)-emax6.c -o $@
 endif
 endif
@@ -229,14 +229,14 @@ endif
 ifeq ($(ARM_CROSS),1)
 ifeq ($(LINK_FORMAT),shared)
 ./build_arm_cross/kernel/%-emax6.c: ./kernel/%.c ./Include/emax6_sparselib.h
-	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	perl ./conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./../conv-c2c/conv-c2c.csim $<-cppo.c
+	./conv-c2c/conv-c2c.csim $<-cppo.c
 else
 ./build_arm_cross/kernel/%-emax6.o: ./kernel/%.c  ./Include/emax6_sparselib.h
-	perl ./../conv-mark/conv-mark $< > $<-mark.c
+	perl ./conv-mark/conv-mark $< > $<-mark.c
 	$(CPP) $(OPTION) $(INCLUDE)  $<-mark.c > $<-cppo.c
-	./..//conv-c2c/conv-c2c.csim $<-cppo.c
+	./conv-c2c/conv-c2c.csim $<-cppo.c
 	$(CC) $(CFLAGS) -c  $(basename $<)-emax6.c -o $@
 endif
 endif
@@ -254,6 +254,7 @@ make_build_dir:
 	@mkdir -p ${CURDIR}/build_arm_cross/kernel
 	@mkdir -p ${CURDIR}/build_arm_cross/util
 	@mkdir -p ${CURDIR}/build_arm_cross/3rd/Matrix_Format_Io
+
 
 
 ifeq ($(CENT),1)

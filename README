@@ -3,6 +3,7 @@
 
 </aside>
 
+
 # 検証におけるフィロソフィー
 
 検証のアプローチとなぜそれが重要なのかを記載
@@ -24,3 +25,13 @@
 - 翌日リリース予定のアイテム一覧を確認
 - リストのアイテムをひとつずつ確認し、変更箇所をすべて検証
 
+- [ ] マグロ
+- [ ] コハダ
+- [x] エンガワ
+
+```sequence {theme=hand}
+Andrew->China: Says Hello
+Note right of China: China thinks\nabout it
+China-->Andrew: How are you?
+Andrew->>China: I am good thanks!
+```

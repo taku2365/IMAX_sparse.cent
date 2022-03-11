@@ -6,7 +6,7 @@ static Uchar* mem_current;
 static size_t memsize1;
 
 Uint get_H_param(emax6_param* params){
-    Uint H;
+    size_t H;
     switch(params->mode){
 
         case DENSE_DENSE_MODE:
@@ -39,7 +39,7 @@ FILE* get_param_from_dataset(emax6_param* params,FILE* f){
     int ret_code;
     int i;
     MM_typecode matcode;
-    Uint H = params->H_param;
+    size_t H = params->H_param;
     
 
     if (!f) {
@@ -220,7 +220,7 @@ static void get_param_spmv_from_file(emax6_param* params,init_param* init_param)
     int ret_code;
     int i;
     MM_typecode matcode;
-    Uint H = params->H_param;
+    size_t H = params->H_param;
     FILE* f = init_param->fp;
     
 
