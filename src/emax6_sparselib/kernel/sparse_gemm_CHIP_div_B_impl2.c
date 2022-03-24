@@ -41,7 +41,8 @@ void sparse_gemm_CHIP_div_B_impl2(Uint* C, const Uint* A, const Uint* B, emax6_s
     Ull c_index,c_index1;
     Uint C_debug_val = 0,A_debug_val = 0,B_debug_val = 0;
 
-
+// 6367792
+//17863147
     #define NCHIP 1
     size_t A_row_size = params->A_row_size_param;   // 縛りなし
     size_t A_col_size = params->A_col_size_param;   // 縛りなし　H_padのおかげ

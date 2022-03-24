@@ -15,9 +15,9 @@ static void IMAX_param_tunig_spmv_impl0(emax6_param* params){
     size_t A_col_blk  = 0                       ;
     size_t B_col_blk  = 1                       ;
     size_t NCHIP      = params->NCHIP_param     ;
-    Uint W         = params->W_param         ;
-    Uint H          = params->H_param         ;
-    Uint B_col_pad = 0;
+    size_t W         = params->W_param         ;
+    size_t H          = params->H_param         ;
+    size_t B_col_pad = 0;
     if(NCHIP>1){
         fprintf(stderr,"you need to support MUlti CHIP IMAX_param_tuning %d \n",__LINE__);
 
@@ -68,9 +68,9 @@ static void IMAX_param_tunig_impl0(emax6_param* params){
     size_t A_col_blk  = 0                       ;
     size_t B_col_blk  = 0                       ;
     size_t NCHIP      = params->NCHIP_param     ;
-    Uint W         = params->W_param         ;
-    Uint H          = params->H_param         ;
-    Uint B_col_pad = 0;
+    size_t W         = params->W_param         ;
+    size_t H          = params->H_param         ;
+    size_t B_col_pad = 0;
 
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
@@ -135,23 +135,23 @@ static void IMAX_param_tunig_impl0_large(emax6_param* params){
     size_t A_col_blk  = 0                         ;
     size_t B_col_blk  = 0                         ;
     size_t NCHIP      = params->NCHIP_param       ;
-    Uint W         = params->W_param           ;
-    Uint H          = params->H_param           ;
-    Uint A_H_pad   = 0                       ;
-    Uint B_col_pad = 0;
-    Uint LMM_MAX_LENGTH_modify = LMM_MAX_LENGTH - LMM_MAX_LENGTH%H;
-    Uint LMM_MAX_LENGTH_modify1 = 0;
-    Uint LMM_MAX_LENGTH_modify2 = 0;
+    size_t W         = params->W_param           ;
+    size_t H          = params->H_param           ;
+    size_t A_H_pad   = 0                       ;
+    size_t B_col_pad = 0;
+    size_t LMM_MAX_LENGTH_modify = LMM_MAX_LENGTH - LMM_MAX_LENGTH%H;
+    size_t LMM_MAX_LENGTH_modify1 = 0;
+    size_t LMM_MAX_LENGTH_modify2 = 0;
     B_col_pad = ((B_col_size%(W*2)) != 0) ? -B_col_size%(W*2) + (W*2) : B_col_pad;
     A_H_pad = ((A_col_size%H) != 0) ? -A_col_size%H + H : A_H_pad;
-    Uint blk_iter_Arow = ((A_row_size%LMM_MAX_LENGTH_modify) != 0) ? (int)A_row_size/LMM_MAX_LENGTH_modify+1:(int)A_row_size/LMM_MAX_LENGTH_modify;
-    Uint blk_iter_Acol = (((A_col_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(A_col_size)/LMM_MAX_LENGTH_modify+1:(int)(A_col_size)/LMM_MAX_LENGTH_modify;
-    Uint blk_iter_Brow = (((B_row_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_row_size)/LMM_MAX_LENGTH_modify+1:(int)(B_row_size)/LMM_MAX_LENGTH_modify;
-    Uint blk_iter_Bcol = (((B_col_size+B_col_pad)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify+1:(int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify;
+    size_t blk_iter_Arow = ((A_row_size%LMM_MAX_LENGTH_modify) != 0) ? (int)A_row_size/LMM_MAX_LENGTH_modify+1:(int)A_row_size/LMM_MAX_LENGTH_modify;
+    size_t blk_iter_Acol = (((A_col_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(A_col_size)/LMM_MAX_LENGTH_modify+1:(int)(A_col_size)/LMM_MAX_LENGTH_modify;
+    size_t blk_iter_Brow = (((B_row_size)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_row_size)/LMM_MAX_LENGTH_modify+1:(int)(B_row_size)/LMM_MAX_LENGTH_modify;
+    size_t blk_iter_Bcol = (((B_col_size+B_col_pad)%LMM_MAX_LENGTH_modify) != 0) ? (int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify+1:(int)(B_col_size+B_col_pad)/LMM_MAX_LENGTH_modify;
     // typedefの影響で A_blk_set* A_blk_setと宣言するとバグる
     A_blk_set* A_blk_sets = calloc(blk_iter_Arow*blk_iter_Acol,sizeof(A_blk_set));
     B_blk_set* B_blk_sets =  calloc(blk_iter_Brow,sizeof(B_blk_set));
-    Uint blk_iter_tmp = 0;
+    size_t blk_iter_tmp = 0;
     size_t* LMM_MAX_LENGTH_modify_pad = 0;
     size_t A_row_blk_mean = 0;
     size_t A_col_blk_mean = 0;
@@ -269,8 +269,8 @@ static void IMAX_param_tunig_impl2(emax6_param* params){
     size_t A_col_blk  = 0                       ;
     size_t B_col_blk  = 0                       ;
     size_t NCHIP      = params->NCHIP_param     ;
-    Uint W         = params->W_param         ;
-    Uint H          = params->H_param         ;
+    size_t W         = params->W_param         ;
+    size_t H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
@@ -329,8 +329,8 @@ static void IMAX_param_tunig_spmv_impl2(emax6_param* params){
     size_t A_col_blk  = 0                       ;
     size_t B_col_blk  = 1                       ;
     size_t NCHIP      = params->NCHIP_param     ;
-    Uint W         = params->W_param         ;
-    Uint H          = params->H_param         ;
+    size_t W         = params->W_param         ;
+    size_t H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 
@@ -367,8 +367,8 @@ static void IMAX_param_tunig_impl3(emax6_param* params){
     size_t B_col_blk  = 0                       ;
     size_t C_col_blk  = 0                       ;
     size_t NCHIP      = params->NCHIP_param     ;
-    Uint W         = params->W_param         ;
-    Uint H          = params->H_param         ;
+    size_t W         = params->W_param         ;
+    size_t H          = params->H_param         ;
     // LMM_SIZE 64k LMM>>32 32k
     // *4 はbyte変換
 

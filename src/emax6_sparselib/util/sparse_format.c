@@ -24,9 +24,13 @@ emax6_sparse2* sparse_format(int nnz,Ull* val,Uint*val_tmp, const int* const col
     Uint* val_index_set = (Uint*) val;
     size_t A_row_size_pad = emax6_param->A_row_size_pad_param;
     size_t A_col_size_pad = emax6_param->A_col_size_pad_param;
-    if((emax6_param->mode == DENSE_DENSE_MODE)||(emax6_param->mode == DENSE_SPMV_MODE)){
+    // if((emax6_param->mode == DENSE_DENSE_MODE)||(emax6_param->mode == DENSE_SPMV_MODE)){
+    if((emax6_param->mode == DENSE_SPMV_MODE)){
         memcpy(val,val_tmp,A_row_size_pad*A_col_size_pad*sizeof(Uint));
         sparse_info->val_index_set = val;
+        return sparse_info;
+    }
+    if((emax6_param->mode == DENSE_DENSE_MODE)){
         return sparse_info;
     }
 
